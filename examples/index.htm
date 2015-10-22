@@ -1,29 +1,27 @@
 <!DOCTYPE html>
 <html>
-
  <head>
   <meta charset="UTF-8">
   <title>Booking.js demo</title>
-  <link rel="stylesheet" href="node_modules/fullcalendar/dist/fullcalendar.css" type="text/css">
-  <link rel="stylesheet" href="src/fullcalendar-theme.css" type="text/css">
+  <style type="text/css">
+    body { background-color: #E6E6E6; }
+  </style>
  </head>
-
  <body>
 
-  <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.js"></script>
-  <script type="text/javascript" src="node_modules/moment/moment.js"></script>
-  <script type="text/javascript" src="node_modules/fullcalendar/dist/fullcalendar.js"></script>
-  <script type="text/javascript" src="dist/timekit-booking.js"></script>
-
-  <div id="timekit-booking"></div>
-
-  <script type="text/javascript">
-    timekitBooking.init({
-      userBookableEmail: 'marty.mcfly@timekit.io',
-      userBookableCalendar: 'a896241a-4e45-4f5e-ac40-e3442b9a10ca',
-      avatar: ''
-    });
-  </script>
+  <div id="timekit-booking" class="timekit-booking">
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.js"></script>
+    <script type="text/javascript" src="../dist/timekit-booking.js"></script>
+    <script type="text/javascript">
+      timekitBooking.init({
+        name:     'Marty McFly',
+        email:    'marty.mcfly@timekit.io',
+        apiToken: 'DarthVader',
+        calendar: 'a896241a-4e45-4f5e-ac40-e3442b9a10ca',
+        avatar:   'http://url.to/photo.png'
+      });
+    </script>
+  </div>
 
 </body>
 </html>

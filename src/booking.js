@@ -10,9 +10,17 @@
  *
  */
 
+// JS dependencies
 var utils = require('./utils');
 var timekit = require('timekit-js-sdk');
+var fullcalendar = require('fullcalendar');
+var moment = require('moment');
 var $ = require('jquery');
+
+// CSS dependencies
+require('../node_modules/fullcalendar/dist/fullcalendar.css');
+require('./fullcalendar-theme.css');
+require('./booking.css');
 
 function TimekitBooking() {
 
@@ -22,10 +30,10 @@ function TimekitBooking() {
   // Default config and constants
   var config = {
     targetEl: '#timekit-booking',
-    userAssistantEmail: 'assistant@timekit.io',
-    userAssistantApiToken: 'S3x4oV7rukW2S9d6Fo5cybITiYQWlatiF2ktImi2',
-    userBookableEmail: '',
-    userBookableCalendar: '',
+    email: '',
+    apiToken: '',
+    calendar: '',
+    name: '',
     avatar: '',
     timekitConfig: {
       app: 'sign-up'
@@ -69,9 +77,9 @@ function TimekitBooking() {
       },
       allDaySlot: false,
       scrollTime: '08:00:00',
-      minTime: '08:00:00',
-      maxTime: '19:00:00',
-      timezone: 'America/Los_angeles',
+      //minTime: '08:00:00',
+      //maxTime: '19:00:00',
+      timezone: 'local',
       defaultDate: '2015-10-25'
     },
     localization: {
@@ -90,14 +98,14 @@ function TimekitBooking() {
     timekit.configure(args);
 
     timekit.setUser(
-      config.userAssistantEmail,
-      config.userAssistantApiToken
+      config.email,
+      config.apiToken
     );
   };
 
   // Fetch availabile time through Timekit SDK
   var timekitFindTime = function(callback) {
-    var args = { emails: [config.userBookableEmail] };
+    var args = { emails: [config.email] };
 
     $.extend(args, config.findTime);
 
@@ -111,13 +119,15 @@ function TimekitBooking() {
   };
 
   // Calculate and display timezone helper
-  var calculateTimezones = function() {
-    if (config.localization.showTimezoneHelper) {
-
-    }
-    // var localTzOffset = (new Date()).getTimezoneOffset()/60*-1;
-    // var localTzFormatted = (localTzOffset > 0 ? "+" : "") + localTzOffset;
-    // $('#localtimezone').text(localTzFormatted);
+  var renderTimezoneHelper = function() {
+    var localTzOffset = (new Date()).getTimezoneOffset()/60*-1;
+    var localTzFormatted = (localTzOffset > 0 ? "+" : "") + localTzOffset;
+    el = $(
+      '<div class="timekit-booking-timezonehelper">' +
+        '<span>Showing timeslots in your timezone (UTC ' + localTzFormatted + ')</span>' +
+      '</div>'
+    );
+    $(config.targetEl).append(el);
   };
 
   // Setup and render FullCalendar
@@ -140,7 +150,7 @@ function TimekitBooking() {
 
     $.extend(args, config.fullCalendar);
 
-    calendarTarget = $('<div class="' + 'timekit-booking-calendar' + '">');
+    calendarTarget = $('<div class="timekit-booking-calendar">');
     $(config.targetEl).append(calendarTarget);
     calendarTarget.fullCalendar(args);
   };
@@ -152,6 +162,18 @@ function TimekitBooking() {
     });
   };
 
+  var renderBookingPage = function() {
+
+  };
+
+  var showBookingPage = function() {
+
+  };
+
+  var hideBookingPage = function() {
+
+  };
+
   // Event handler when a timeslot is clicked in FullCalendar
   var clickCalendarTimeslot = function(calEvent, jsEvent, view) {
     // $('#bookmeform_start').val(moment(calEvent.start).format());
@@ -159,10 +181,7 @@ function TimekitBooking() {
     // $('#chosendate').text(moment(calEvent.start).format('D. MMMM YYYY'));
     // $('#chosentime').text(moment(calEvent.start).format('h:mm a') + ' to ' + moment(calEvent.end).format('h:mm a'));
     // $('.bookme_create').show().css('opacity','1');
-  };
-
-  var renderBookingPage = function() {
-
+    showBookingPage();
   };
 
   var submitBookingForm = function() {
@@ -174,12 +193,12 @@ function TimekitBooking() {
     var args = {
       start: data.start,
       end: data.end,
-      what: config.userBookableName + ' x '+ data.name,
+      what: config.name + ' x '+ data.name,
       where: data.where,
-      calendar_id: config.userBookableCalendar,
+      calendar_id: config.calendar,
       participants: [
         data.email,
-        config.userBookableEmail
+        config.email
       ]
     };
 
@@ -210,7 +229,7 @@ function TimekitBooking() {
       return;
     }
 
-    // Extend the default confg with supplied settings
+    // Extend the default config with supplied settings
     $.extend(config, suppliedConfig);
 
     // Initialize FullCalendar
@@ -224,6 +243,11 @@ function TimekitBooking() {
       // Render available timeslots in FullCalendar
       renderCalendarEvents(response.data);
     });
+
+    // Show timezone helper if enabled
+    if (config.localization.showTimezoneHelper) {
+      renderTimezoneHelper();
+    }
 
   };
 

@@ -10,6 +10,9 @@
   "author": "Timekit Inc.",
   "license": "MIT",
   "devDependencies": {
+    "css-loader": "^0.21.0",
+    "jquery": "^2.1.4",
+    "style-loader": "^0.13.0",
     "webpack": "^1.12.2"
   },
   "dependencies": {

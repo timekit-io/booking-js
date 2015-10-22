@@ -1,0 +1,19 @@
+{
+  "name": "timekit-booking",
+  "version": "1.0.0",
+  "description": "Make a beautiful embeddable booking widget in minutes",
+  "main": "booking.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/timekit/booking.git"
+  },
+  "author": "Timekit Inc.",
+  "license": "MIT",
+  "devDependencies": {
+    "webpack": "^1.12.2"
+  },
+  "dependencies": {
+    "fullcalendar": "^2.4.0",
+    "moment": "^2.10.6"
+  }
+}

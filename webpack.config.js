@@ -3,7 +3,7 @@
 var webpack = require("webpack");
 
 module.exports = {
-    entry: "./src/booking.js",
+    entry: "./src/main.js",
     devtool: "source-map",
     output: {
         path: "./dist",
@@ -19,7 +19,8 @@ module.exports = {
     ],
     module: {
         loaders: [
-            { test: /\.css$/, loader: "style-loader!css-loader" }
+            { test: /\.css$/, loader: "style-loader!css-loader" },
+            { test: /\.scss$/, loaders: ["style", "css", "sass"] },
         ]
     }
 };

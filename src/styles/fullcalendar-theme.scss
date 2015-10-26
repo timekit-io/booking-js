@@ -1,9 +1,17 @@
+// Colors
+
+$bgColor:         #ececec;
+$primaryColor:    #689AD8;
+$primaryDarkColor: darken($primaryColor, 10%);
+
+// Classes
+
 .fc-view-container {
   background-color: #FBFBFB;
 }
 
 .fc-row.fc-widget-header {
-  border-bottom: 1px solid #ECECEC;
+  border-bottom: 1px solid $bgColor;
 }
 
 .fc-state-default {
@@ -12,10 +20,6 @@
   background-image: none;
   background-color: white;
   border-color: white;
-}
-
-.fc-state-disabled {
-  color: #9FA9BD;
 }
 
 .fc-button {
@@ -31,7 +35,7 @@
 .fc-toolbar {
   padding: 0px;
   margin-bottom: 0;
-  border-bottom: 1px solid #ECECEC;
+  border-bottom: 1px solid $bgColor;
 }
 
 .fc .fc-toolbar > * > button {
@@ -39,10 +43,21 @@
   height: auto;
   outline: 0;
   margin-left: 0;
-}
+  transition: opacity 0.2s ease;
+  opacity: 0.3;
 
-.fc .fc-toolbar > * > button .fc-icon {
-  font-size: 1.1em;
+  &:hover {
+    opacity: 1;
+  }
+
+  &.fc-state-disabled {
+    transition: opacity 0s;
+    opacity: 0;
+  }
+
+  .fc-icon {
+    font-size: 1.1em;
+  }
 }
 
 .fc-unthemed .fc-today {
@@ -66,7 +81,7 @@
 .fc-event {
   transition: all 200ms;
   border: none;
-  border-left: 3px solid #689AD8;
+  border-left: 3px solid $primaryColor;
   padding: 5px;
   background-color: white;
   border-radius: 4px;
@@ -74,12 +89,12 @@
   margin: 1px 0;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.07);
   cursor: pointer;
-}
 
-.fc-event:hover {
-  color: white;
-  background-color: #4179BF;
-  border-left: 3px solid #4179BF;
+  &:hover {
+    color: white;
+    background-color: $primaryDarkColor;
+    border-left: 3px solid $primaryDarkColor;
+  }
 }
 
 .fc-day-grid-event {
@@ -91,12 +106,19 @@
   border-top-style: none;
 }
 
-.fc-time-grid-event .fc-time {
-  font-size: 1.1em;
+.fc-time-grid-event {
+
+  &.fc-short .fc-time:after {
+    content: '';
+  }
+
+  .fc-time {
+    font-size: 1.1em;
+  }
 }
 
 .fc-unthemed th, .fc-unthemed td, .fc-unthemed thead, .fc-unthemed tbody, .fc-unthemed .fc-divider, .fc-unthemed .fc-row, .fc-unthemed .fc-popover {
-  border-color: #ECECEC;
+  border-color: $bgColor;
 }
 
 .fc-agendaMonthly-view .fc-event {

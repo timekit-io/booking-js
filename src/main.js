@@ -1,5 +1,16 @@
 'use strict';
 
+// External depenencies
+var timekit = require('timekit-sdk');
+var fullcalendar = require('fullcalendar');
+var moment = require('moment');
+var $ = require('jquery');
+
+// Internal dependencies
+var utils = require('./utils');
+var templates = require('./templates');
+var config = require('./defaultConfig');
+
 /*!
  * Booking.js
  * Version: 1.0.0
@@ -10,84 +21,10 @@
  *
  */
 
-// JS dependencies
-var utils = require('./utils');
-var timekit = require('timekit-js-sdk');
-var fullcalendar = require('fullcalendar');
-var moment = require('moment');
-var $ = require('jquery');
-
-// CSS dependencies
-require('../node_modules/fullcalendar/dist/fullcalendar.css');
-require('./fullcalendar-theme.css');
-require('./booking.css');
-
 function TimekitBooking() {
 
   var TB = {};
   var calendarTarget = '';
-
-  // Default config and constants
-  var config = {
-    targetEl: '#timekit-booking',
-    email: '',
-    apiToken: '',
-    calendar: '',
-    name: '',
-    avatar: '',
-    timekitConfig: {
-      app: 'sign-up'
-    },
-    findTime: {
-      filters: {
-        'and': [
-          { 'business_hours': {'timezone': 'America/Los_angeles'}},
-          { 'exclude_weekend': {'timezone': 'America/Los_angeles'}}
-        ],
-        'or': [
-          { 'specific_day_and_time': {'day': 'Monday', 'start': 10, 'end': 12, 'timezone': 'America/Los_angeles'}},
-          { 'specific_day_and_time': {'day': 'Monday', 'start': 16, 'end': 17, 'timezone': 'America/Los_angeles'}},
-          { 'specific_day_and_time': {'day': 'Tuesday', 'start': 15, 'end': 18, 'timezone': 'America/Los_angeles'}},
-          { 'specific_day_and_time': {'day': 'Tuesday', 'start': 11, 'end': 12, 'timezone': 'America/Los_angeles'}},
-          { 'specific_day_and_time': {'day': 'Wednesday', 'start': 15, 'end': 18, 'timezone': 'America/Los_angeles'}},
-          { 'specific_day_and_time': {'day': 'Thursday', 'start': 10, 'end': 12, 'timezone': 'America/Los_angeles'}},
-          { 'specific_day_and_time': {'day': 'Friday', 'start': 10, 'end': 11, 'timezone': 'America/Los_angeles'}}
-        ]
-      },
-      future: '3 weeks',
-      duration: '1 hour'
-    },
-    createEvent: {
-      invite: true
-    },
-    fullCalendar: {
-      header: {
-        left: 'today',
-        center: '',
-        right: 'prev, next'
-      },
-      views: {
-        basic: {
-          columnFormat: 'dddd M/D',
-          timeFormat: 'h:mm a'
-        },
-        agenda: {
-          timeFormat: 'h:mm a'
-        }
-      },
-      allDaySlot: false,
-      scrollTime: '08:00:00',
-      //minTime: '08:00:00',
-      //maxTime: '19:00:00',
-      timezone: 'local',
-      defaultDate: '2015-10-25'
-    },
-    localization: {
-      showTimezoneHelper: true,
-      dateFormat: 'D. MMMM YYYY',
-      timeFormat: 'h:mm a'
-    }
-  };
 
   // Setup the Timekit SDK with correct credentials
   var timekitSetup = function() {
@@ -96,11 +33,7 @@ function TimekitBooking() {
     $.extend(args, config.timekitConfig);
 
     timekit.configure(args);
-
-    timekit.setUser(
-      config.email,
-      config.apiToken
-    );
+    timekit.setUser(config.email, config.apiToken);
   };
 
   // Fetch availabile time through Timekit SDK
@@ -122,12 +55,33 @@ function TimekitBooking() {
   var renderTimezoneHelper = function() {
     var localTzOffset = (new Date()).getTimezoneOffset()/60*-1;
     var localTzFormatted = (localTzOffset > 0 ? "+" : "") + localTzOffset;
-    el = $(
-      '<div class="timekit-booking-timezonehelper">' +
-        '<span>Showing timeslots in your timezone (UTC ' + localTzFormatted + ')</span>' +
-      '</div>'
-    );
-    $(config.targetEl).append(el);
+
+    var timezoneHelperTarget = $('<div class="bookingjs-timezonehelper"><span>Loading...</span></div>');
+    $(config.targetEl).append(timezoneHelperTarget);
+
+    timekit.getUserTimezone({
+      email: config.email
+    }).then(function(response){
+
+      var hostTzOffset = response.data.utc_offset;
+      var tzOffsetDiff = localTzOffset - hostTzOffset;
+      var tzOffsetDiffAbs = Math.abs(tzOffsetDiff);
+
+      var aheadOfHost = true;
+      if (tzOffsetDiff < 0) {
+        aheadOfHost = false;
+      }
+
+      var template = templates.timezoneHelper({
+        tzOffsetDiff: tzOffsetDiff,
+        tzOffsetDiffAbs: tzOffsetDiffAbs,
+        aheadOfHost: aheadOfHost,
+        hostName: config.name
+      });
+
+      timezoneHelperTarget.html(template);
+
+    });
   };
 
   // Setup and render FullCalendar
@@ -150,20 +104,26 @@ function TimekitBooking() {
 
     $.extend(args, config.fullCalendar);
 
-    calendarTarget = $('<div class="timekit-booking-calendar">');
+    calendarTarget = $('<div class="bookingjs-calendar">');
     $(config.targetEl).append(calendarTarget);
     calendarTarget.fullCalendar(args);
   };
 
   // Render the supplied calendar events in FullCalendar
   var renderCalendarEvents = function(eventData) {
-    calendarTarget.fullCalendar( 'addEventSource', {
+    calendarTarget.fullCalendar('addEventSource', {
       events: eventData
     });
   };
 
   var renderBookingPage = function() {
 
+    // var el = $(
+    //     '<div class="bookingjs-bookcard">' +
+    //       '<a href=""><' +
+    //     '</div>'
+    //   );
+    // $(config.targetEl).append(el);
   };
 
   var showBookingPage = function() {
@@ -224,7 +184,7 @@ function TimekitBooking() {
   TB.init = function(suppliedConfig) {
 
     // Check whether a config is supplied
-    if(suppliedConfig == undefined || typeof suppliedConfig !== 'object') {
+    if(suppliedConfig === undefined || typeof suppliedConfig !== 'object') {
       utils.log('No configuration was supplied. Please supply a config object upon library initialization');
       return;
     }
@@ -249,10 +209,27 @@ function TimekitBooking() {
       renderTimezoneHelper();
     }
 
+    // Includes stylesheets if enabled
+    if (config.styling.fullCalendarCore) {
+      require('../node_modules/fullcalendar/dist/fullcalendar.css');
+    }
+    if (config.styling.fullCalendarTheme) {
+      require('./styles/fullcalendar-theme.scss');
+    }
+    if (config.styling.general) {
+      require('./styles/booking.scss');
+    }
+
+  };
+
+  // Expose the fullCalendar object for advanced puppeting
+  TB.fullCalender = function() {
+    if (calendarTarget.fullCalendar === undefined) { return undefined; }
+    return calendarTarget.fullCalendar.apply(calendarTarget, arguments);
   };
 
   return TB;
 
-};
+}
 
 module.exports = new TimekitBooking();

@@ -1,5 +1,14 @@
-var timekitBooking =
-/******/ (function(modules) { // webpackBootstrap
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory(require("jQuery"));
+	else if(typeof define === 'function' && define.amd)
+		define(["jQuery"], factory);
+	else if(typeof exports === 'object')
+		exports["timekitBooking"] = factory(require("jQuery"));
+	else
+		root["timekitBooking"] = factory(root["jQuery"]);
+})(this, function(__WEBPACK_EXTERNAL_MODULE_3__) {
+return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
@@ -47,6 +56,17 @@ var timekitBooking =
 
 	'use strict';
 	
+	// External depenencies
+	var timekit = __webpack_require__(4);
+	var fullcalendar = __webpack_require__(27);
+	var moment = __webpack_require__(28);
+	var $ = __webpack_require__(3);
+	
+	// Internal dependencies
+	var utils = __webpack_require__(1);
+	var templates = __webpack_require__(2);
+	var config = __webpack_require__(39);
+	
 	/*!
 	 * Booking.js
 	 * Version: 1.0.0
@@ -57,84 +77,10 @@ var timekitBooking =
 	 *
 	 */
 	
-	// JS dependencies
-	var utils = __webpack_require__(1);
-	var timekit = __webpack_require__(2);
-	var fullcalendar = __webpack_require__(25);
-	var moment = __webpack_require__(27);
-	var $ = __webpack_require__(26);
-	
-	// CSS dependencies
-	__webpack_require__(30);
-	__webpack_require__(34);
-	__webpack_require__(36);
-	
 	function TimekitBooking() {
 	
 	  var TB = {};
 	  var calendarTarget = '';
-	
-	  // Default config and constants
-	  var config = {
-	    targetEl: '#timekit-booking',
-	    email: '',
-	    apiToken: '',
-	    calendar: '',
-	    name: '',
-	    avatar: '',
-	    timekitConfig: {
-	      app: 'sign-up'
-	    },
-	    findTime: {
-	      filters: {
-	        'and': [
-	          { 'business_hours': {'timezone': 'America/Los_angeles'}},
-	          { 'exclude_weekend': {'timezone': 'America/Los_angeles'}}
-	        ],
-	        'or': [
-	          { 'specific_day_and_time': {'day': 'Monday', 'start': 10, 'end': 12, 'timezone': 'America/Los_angeles'}},
-	          { 'specific_day_and_time': {'day': 'Monday', 'start': 16, 'end': 17, 'timezone': 'America/Los_angeles'}},
-	          { 'specific_day_and_time': {'day': 'Tuesday', 'start': 15, 'end': 18, 'timezone': 'America/Los_angeles'}},
-	          { 'specific_day_and_time': {'day': 'Tuesday', 'start': 11, 'end': 12, 'timezone': 'America/Los_angeles'}},
-	          { 'specific_day_and_time': {'day': 'Wednesday', 'start': 15, 'end': 18, 'timezone': 'America/Los_angeles'}},
-	          { 'specific_day_and_time': {'day': 'Thursday', 'start': 10, 'end': 12, 'timezone': 'America/Los_angeles'}},
-	          { 'specific_day_and_time': {'day': 'Friday', 'start': 10, 'end': 11, 'timezone': 'America/Los_angeles'}}
-	        ]
-	      },
-	      future: '3 weeks',
-	      duration: '1 hour'
-	    },
-	    createEvent: {
-	      invite: true
-	    },
-	    fullCalendar: {
-	      header: {
-	        left: 'today',
-	        center: '',
-	        right: 'prev, next'
-	      },
-	      views: {
-	        basic: {
-	          columnFormat: 'dddd M/D',
-	          timeFormat: 'h:mm a'
-	        },
-	        agenda: {
-	          timeFormat: 'h:mm a'
-	        }
-	      },
-	      allDaySlot: false,
-	      scrollTime: '08:00:00',
-	      //minTime: '08:00:00',
-	      //maxTime: '19:00:00',
-	      timezone: 'local',
-	      defaultDate: '2015-10-25'
-	    },
-	    localization: {
-	      showTimezoneHelper: true,
-	      dateFormat: 'D. MMMM YYYY',
-	      timeFormat: 'h:mm a'
-	    }
-	  };
 	
 	  // Setup the Timekit SDK with correct credentials
 	  var timekitSetup = function() {
@@ -143,11 +89,7 @@ var timekitBooking =
 	    $.extend(args, config.timekitConfig);
 	
 	    timekit.configure(args);
-	
-	    timekit.setUser(
-	      config.email,
-	      config.apiToken
-	    );
+	    timekit.setUser(config.email, config.apiToken);
 	  };
 	
 	  // Fetch availabile time through Timekit SDK
@@ -169,12 +111,33 @@ var timekitBooking =
 	  var renderTimezoneHelper = function() {
 	    var localTzOffset = (new Date()).getTimezoneOffset()/60*-1;
 	    var localTzFormatted = (localTzOffset > 0 ? "+" : "") + localTzOffset;
-	    el = $(
-	      '<div class="timekit-booking-timezonehelper">' +
-	        '<span>Showing timeslots in your timezone (UTC ' + localTzFormatted + ')</span>' +
-	      '</div>'
-	    );
-	    $(config.targetEl).append(el);
+	
+	    var timezoneHelperTarget = $('<div class="bookingjs-timezonehelper"><span>Loading...</span></div>');
+	    $(config.targetEl).append(timezoneHelperTarget);
+	
+	    timekit.getUserTimezone({
+	      email: config.email
+	    }).then(function(response){
+	
+	      var hostTzOffset = response.data.utc_offset;
+	      var tzOffsetDiff = localTzOffset - hostTzOffset;
+	      var tzOffsetDiffAbs = Math.abs(tzOffsetDiff);
+	
+	      var aheadOfHost = true;
+	      if (tzOffsetDiff < 0) {
+	        aheadOfHost = false;
+	      }
+	
+	      var template = templates.timezoneHelper({
+	        tzOffsetDiff: tzOffsetDiff,
+	        tzOffsetDiffAbs: tzOffsetDiffAbs,
+	        aheadOfHost: aheadOfHost,
+	        hostName: config.name
+	      });
+	
+	      timezoneHelperTarget.html(template);
+	
+	    });
 	  };
 	
 	  // Setup and render FullCalendar
@@ -197,20 +160,26 @@ var timekitBooking =
 	
 	    $.extend(args, config.fullCalendar);
 	
-	    calendarTarget = $('<div class="timekit-booking-calendar">');
+	    calendarTarget = $('<div class="bookingjs-calendar">');
 	    $(config.targetEl).append(calendarTarget);
 	    calendarTarget.fullCalendar(args);
 	  };
 	
 	  // Render the supplied calendar events in FullCalendar
 	  var renderCalendarEvents = function(eventData) {
-	    calendarTarget.fullCalendar( 'addEventSource', {
+	    calendarTarget.fullCalendar('addEventSource', {
 	      events: eventData
 	    });
 	  };
 	
 	  var renderBookingPage = function() {
 	
+	    // var el = $(
+	    //     '<div class="bookingjs-bookcard">' +
+	    //       '<a href=""><' +
+	    //     '</div>'
+	    //   );
+	    // $(config.targetEl).append(el);
 	  };
 	
 	  var showBookingPage = function() {
@@ -271,7 +240,7 @@ var timekitBooking =
 	  TB.init = function(suppliedConfig) {
 	
 	    // Check whether a config is supplied
-	    if(suppliedConfig == undefined || typeof suppliedConfig !== 'object') {
+	    if(suppliedConfig === undefined || typeof suppliedConfig !== 'object') {
 	      utils.log('No configuration was supplied. Please supply a config object upon library initialization');
 	      return;
 	    }
@@ -296,11 +265,28 @@ var timekitBooking =
 	      renderTimezoneHelper();
 	    }
 	
+	    // Includes stylesheets if enabled
+	    if (config.styling.fullCalendarCore) {
+	      __webpack_require__(31);
+	    }
+	    if (config.styling.fullCalendarTheme) {
+	      __webpack_require__(35);
+	    }
+	    if (config.styling.general) {
+	      __webpack_require__(37);
+	    }
+	
+	  };
+	
+	  // Expose the fullCalendar object for advanced puppeting
+	  TB.fullCalender = function() {
+	    if (calendarTarget.fullCalendar === undefined) { return undefined; }
+	    return calendarTarget.fullCalendar.apply(calendarTarget, arguments);
 	  };
 	
 	  return TB;
 	
-	};
+	}
 	
 	module.exports = new TimekitBooking();
 
@@ -311,19 +297,18 @@ var timekitBooking =
 
 	'use strict';
 	
-	function TimekitBookingUtilities() {
+	/*
+	 * Utily functions for Booking.js
+	 */
 	
-	  var TBU = {};
+	module.exports = {
 	
-	  TBU.log = function(message) {
+	  log: function(message) {
+	    throw new Error(message);
 	    console.log('Timekit Booking: ' + message);
-	  };
+	  }
 	
-	  return TBU;
-	
-	}
-	
-	module.exports = new TimekitBookingUtilities();
+	};
 
 
 /***/ },
@@ -332,18 +317,55 @@ var timekitBooking =
 
 	'use strict';
 	
+	/*
+	 * Utily functions for Booking.js
+	 */
+	var $ = __webpack_require__(3);
+	
+	module.exports = {
+	
+	  timezoneHelper: function(data) {
+	
+	    var tzText = '';
+	
+	    if (data.tzOffsetDiff === 0) {
+	      tzText = 'You are in the same timezone as ' + data.hostName;
+	    } else {
+	      tzText = 'Your timezone is ' + data.tzOffsetDiffAbs + ' hours ' + (data.aheadOfHost ? 'ahead' : 'behind') + ' ' + data.hostName + ' (calendar shown in your local time)';
+	    }
+	
+	    var el = $('<span>' + tzText + '</span>');
+	
+	    return el;
+	  }
+	
+	};
+
+
+/***/ },
+/* 3 */
+/***/ function(module, exports) {
+
+	module.exports = __WEBPACK_EXTERNAL_MODULE_3__;
+
+/***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
 	/*!
 	 * Timekit JavaScript SDK
-	 * Version: 1.0.0
+	 * Version: 1.1.0
 	 * http://timekit.io
 	 *
 	 * Copyright 2015 Timekit, Inc.
 	 * The Timekit JavaScript SDK is freely distributable under the MIT license.
 	 *
 	 */
-	var axios = __webpack_require__(3);
-	var base64 = __webpack_require__(23);
-	var humps = __webpack_require__(24);
+	var axios = __webpack_require__(5);
+	var base64 = __webpack_require__(25);
+	var humps = __webpack_require__(26);
 	
 	function Timekit() {
 	
@@ -739,10 +761,10 @@ var timekitBooking =
 	   * @type {Function}
 	   * @return {Promise}
 	   */
-	  TK.getEvent = function(id) {
+	  TK.getEvent = function(data) {
 	
 	    return TK.makeRequest({
-	      url: '/events/' + id,
+	      url: '/events/' + data.id,
 	      method: 'get'
 	    });
 	
@@ -768,10 +790,10 @@ var timekitBooking =
 	   * @type {Function}
 	   * @return {Promise}
 	   */
-	  TK.deleteEvent = function(id) {
+	  TK.deleteEvent = function(data) {
 	
 	    return TK.makeRequest({
-	      url: '/events/' + id,
+	      url: '/events/' + data.id,
 	      method: 'delete'
 	    });
 	
@@ -991,6 +1013,20 @@ var timekitBooking =
 	  };
 	
 	  /**
+	   * Get a specific users' timezone
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getUserTimezone = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/users/timezone/' + data.email,
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
 	   * Get a user property by key
 	   * @type {Function}
 	   * @return {Promise}
@@ -1041,28 +1077,28 @@ var timekitBooking =
 
 
 /***/ },
-/* 3 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(4);
+	module.exports = __webpack_require__(6);
 
 /***/ },
-/* 4 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var defaults = __webpack_require__(5);
-	var utils = __webpack_require__(6);
-	var deprecatedMethod = __webpack_require__(7);
-	var dispatchRequest = __webpack_require__(8);
-	var InterceptorManager = __webpack_require__(16);
+	var defaults = __webpack_require__(7);
+	var utils = __webpack_require__(8);
+	var deprecatedMethod = __webpack_require__(9);
+	var dispatchRequest = __webpack_require__(10);
+	var InterceptorManager = __webpack_require__(18);
 	
 	// Polyfill ES6 Promise if needed
 	(function () {
 	  // webpack is being used to set es6-promise to the native Promise
 	  // for the standalone build. It's necessary to make sure polyfill exists.
-	  var P = __webpack_require__(17);
+	  var P = __webpack_require__(19);
 	  if (P && typeof P.polyfill === 'function') {
 	    P.polyfill();
 	  }
@@ -1125,7 +1161,7 @@ var timekitBooking =
 	axios.all = function (promises) {
 	  return Promise.all(promises);
 	};
-	axios.spread = __webpack_require__(22);
+	axios.spread = __webpack_require__(24);
 	
 	// Expose interceptors
 	axios.interceptors = {
@@ -1164,12 +1200,12 @@ var timekitBooking =
 
 
 /***/ },
-/* 5 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(6);
+	var utils = __webpack_require__(8);
 	
 	var PROTECTION_PREFIX = /^\)\]\}',?\n/;
 	var DEFAULT_CONTENT_TYPE = {
@@ -1222,7 +1258,7 @@ var timekitBooking =
 
 
 /***/ },
-/* 6 */
+/* 8 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1445,7 +1481,7 @@ var timekitBooking =
 
 
 /***/ },
-/* 7 */
+/* 9 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1473,7 +1509,7 @@ var timekitBooking =
 
 
 /***/ },
-/* 8 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -1490,11 +1526,11 @@ var timekitBooking =
 	    try {
 	      // For browsers use XHR adapter
 	      if (typeof window !== 'undefined') {
-	        __webpack_require__(10)(resolve, reject, config);
+	        __webpack_require__(12)(resolve, reject, config);
 	      }
 	      // For node use HTTP adapter
 	      else if (typeof process !== 'undefined') {
-	        __webpack_require__(10)(resolve, reject, config);
+	        __webpack_require__(12)(resolve, reject, config);
 	      }
 	    } catch (e) {
 	      reject(e);
@@ -1503,10 +1539,10 @@ var timekitBooking =
 	};
 	
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11)))
 
 /***/ },
-/* 9 */
+/* 11 */
 /***/ function(module, exports) {
 
 	// shim for using process in browser
@@ -1603,20 +1639,20 @@ var timekitBooking =
 
 
 /***/ },
-/* 10 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	/*global ActiveXObject:true*/
 	
-	var defaults = __webpack_require__(5);
-	var utils = __webpack_require__(6);
-	var buildUrl = __webpack_require__(11);
-	var cookies = __webpack_require__(12);
-	var parseHeaders = __webpack_require__(13);
-	var transformData = __webpack_require__(14);
-	var urlIsSameOrigin = __webpack_require__(15);
+	var defaults = __webpack_require__(7);
+	var utils = __webpack_require__(8);
+	var buildUrl = __webpack_require__(13);
+	var cookies = __webpack_require__(14);
+	var parseHeaders = __webpack_require__(15);
+	var transformData = __webpack_require__(16);
+	var urlIsSameOrigin = __webpack_require__(17);
 	
 	module.exports = function xhrAdapter(resolve, reject, config) {
 	  // Transform request data
@@ -1715,12 +1751,12 @@ var timekitBooking =
 
 
 /***/ },
-/* 11 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(6);
+	var utils = __webpack_require__(8);
 	
 	function encode(val) {
 	  return encodeURIComponent(val).
@@ -1773,12 +1809,12 @@ var timekitBooking =
 
 
 /***/ },
-/* 12 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(6);
+	var utils = __webpack_require__(8);
 	
 	module.exports = {
 	  write: function write(name, value, expires, path, domain, secure) {
@@ -1816,12 +1852,12 @@ var timekitBooking =
 
 
 /***/ },
-/* 13 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(6);
+	var utils = __webpack_require__(8);
 	
 	/**
 	 * Parse headers into an object
@@ -1856,12 +1892,12 @@ var timekitBooking =
 
 
 /***/ },
-/* 14 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(6);
+	var utils = __webpack_require__(8);
 	
 	/**
 	 * Transform the data for a request or a response
@@ -1881,12 +1917,12 @@ var timekitBooking =
 
 
 /***/ },
-/* 15 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(6);
+	var utils = __webpack_require__(8);
 	var msie = /(msie|trident)/i.test(navigator.userAgent);
 	var urlParsingNode = document.createElement('a');
 	var originUrl;
@@ -1939,12 +1975,12 @@ var timekitBooking =
 
 
 /***/ },
-/* 16 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(6);
+	var utils = __webpack_require__(8);
 	
 	function InterceptorManager() {
 	  this.handlers = [];
@@ -1997,7 +2033,7 @@ var timekitBooking =
 
 
 /***/ },
-/* 17 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process, setImmediate, global, module) {/*!
@@ -2136,7 +2172,7 @@ var timekitBooking =
 	    function lib$es6$promise$asap$$attemptVertex() {
 	      try {
 	        var r = require;
-	        var vertx = __webpack_require__(20);
+	        var vertx = __webpack_require__(22);
 	        lib$es6$promise$asap$$vertxNext = vertx.runOnLoop || vertx.runOnContext;
 	        return lib$es6$promise$asap$$useVertxTimer();
 	      } catch(e) {
@@ -2961,7 +2997,7 @@ var timekitBooking =
 	    };
 	
 	    /* global define:true module:true window: true */
-	    if ("function" === 'function' && __webpack_require__(21)['amd']) {
+	    if ("function" === 'function' && __webpack_require__(23)['amd']) {
 	      !(__WEBPACK_AMD_DEFINE_RESULT__ = function() { return lib$es6$promise$umd$$ES6Promise; }.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	    } else if (typeof module !== 'undefined' && module['exports']) {
 	      module['exports'] = lib$es6$promise$umd$$ES6Promise;
@@ -2973,13 +3009,13 @@ var timekitBooking =
 	}).call(this);
 	
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9), __webpack_require__(18).setImmediate, (function() { return this; }()), __webpack_require__(19)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11), __webpack_require__(20).setImmediate, (function() { return this; }()), __webpack_require__(21)(module)))
 
 /***/ },
-/* 18 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {var nextTick = __webpack_require__(9).nextTick;
+	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {var nextTick = __webpack_require__(11).nextTick;
 	var apply = Function.prototype.apply;
 	var slice = Array.prototype.slice;
 	var immediateIds = {};
@@ -3055,10 +3091,10 @@ var timekitBooking =
 	exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
 	  delete immediateIds[id];
 	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(18).setImmediate, __webpack_require__(18).clearImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(20).setImmediate, __webpack_require__(20).clearImmediate))
 
 /***/ },
-/* 19 */
+/* 21 */
 /***/ function(module, exports) {
 
 	module.exports = function(module) {
@@ -3074,20 +3110,20 @@ var timekitBooking =
 
 
 /***/ },
-/* 20 */
+/* 22 */
 /***/ function(module, exports) {
 
 	/* (ignored) */
 
 /***/ },
-/* 21 */
+/* 23 */
 /***/ function(module, exports) {
 
 	module.exports = function() { throw new Error("define cannot be used indirect"); };
 
 
 /***/ },
-/* 22 */
+/* 24 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -3120,7 +3156,7 @@ var timekitBooking =
 
 
 /***/ },
-/* 23 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(module, global) {/*! http://mths.be/base64 v0.1.0 by @mathias | MIT license */
@@ -3287,10 +3323,10 @@ var timekitBooking =
 	
 	}(this));
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(19)(module), (function() { return this; }())))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(21)(module), (function() { return this; }())))
 
 /***/ },
-/* 24 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;// =========
@@ -3427,7 +3463,7 @@ var timekitBooking =
 
 
 /***/ },
-/* 25 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -3438,7 +3474,7 @@ var timekitBooking =
 	
 	(function(factory) {
 		if (true) {
-			!(__WEBPACK_AMD_DEFINE_ARRAY__ = [ __webpack_require__(26), __webpack_require__(27) ], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+			!(__WEBPACK_AMD_DEFINE_ARRAY__ = [ __webpack_require__(3), __webpack_require__(28) ], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 		}
 		else if (typeof exports === 'object') { // Node/CommonJS
 			module.exports = factory(require('jquery'), require('moment'));
@@ -14602,13 +14638,7 @@ var timekitBooking =
 	});
 
 /***/ },
-/* 26 */
-/***/ function(module, exports) {
-
-	module.exports = jQuery;
-
-/***/ },
-/* 27 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(module) {//! moment.js
@@ -14879,7 +14909,7 @@ var timekitBooking =
 	                module && module.exports) {
 	            try {
 	                oldLocale = globalLocale._abbr;
-	                __webpack_require__(28)("./" + name);
+	                __webpack_require__(29)("./" + name);
 	                // because defineLocale currently also sets the global locale, we
 	                // want to undo that for lazy loaded locales
 	                locale_locales__getSetGlobalLocale(oldLocale);
@@ -17806,15 +17836,15 @@ var timekitBooking =
 	    return _moment;
 	
 	}));
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(19)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(21)(module)))
 
 /***/ },
-/* 28 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var map = {
-		"./en-gb": 29,
-		"./en-gb.js": 29
+		"./en-gb": 30,
+		"./en-gb.js": 30
 	};
 	function webpackContext(req) {
 		return __webpack_require__(webpackContextResolve(req));
@@ -17827,11 +17857,11 @@ var timekitBooking =
 	};
 	webpackContext.resolve = webpackContextResolve;
 	module.exports = webpackContext;
-	webpackContext.id = 28;
+	webpackContext.id = 29;
 
 
 /***/ },
-/* 29 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -17839,7 +17869,7 @@ var timekitBooking =
 	//! author : Chris Gedrim : https://github.com/chrisgedrim
 	
 	(function (global, factory) {
-	    true ? factory(__webpack_require__(27)) :
+	    true ? factory(__webpack_require__(28)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -17902,16 +17932,16 @@ var timekitBooking =
 	}));
 
 /***/ },
-/* 30 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(31);
+	var content = __webpack_require__(32);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(33)(content, {});
+	var update = __webpack_require__(34)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -17928,10 +17958,10 @@ var timekitBooking =
 	}
 
 /***/ },
-/* 31 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(32)();
+	exports = module.exports = __webpack_require__(33)();
 	// imports
 	
 	
@@ -17942,7 +17972,7 @@ var timekitBooking =
 
 
 /***/ },
-/* 32 */
+/* 33 */
 /***/ function(module, exports) {
 
 	/*
@@ -17998,7 +18028,7 @@ var timekitBooking =
 
 
 /***/ },
-/* 33 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -18252,23 +18282,23 @@ var timekitBooking =
 
 
 /***/ },
-/* 34 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(35);
+	var content = __webpack_require__(36);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(33)(content, {});
+	var update = __webpack_require__(34)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../node_modules/css-loader/index.js!./fullcalendar-theme.css", function() {
-				var newContent = require("!!./../node_modules/css-loader/index.js!./fullcalendar-theme.css");
+			module.hot.accept("!!./../../node_modules/css-loader/index.js!./../../node_modules/sass-loader/index.js!./fullcalendar-theme.scss", function() {
+				var newContent = require("!!./../../node_modules/css-loader/index.js!./../../node_modules/sass-loader/index.js!./fullcalendar-theme.scss");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -18276,39 +18306,39 @@ var timekitBooking =
 		// When the module is disposed, remove the <style> tags
 		module.hot.dispose(function() { update(); });
 	}
-
-/***/ },
-/* 35 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(32)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, ".fc-view-container {\n  background-color: #FBFBFB;\n}\n\n.fc-row.fc-widget-header {\n  border-bottom: 1px solid #ECECEC;\n}\n\n.fc-state-default {\n  text-shadow: none;\n  box-shadow: none;\n  background-image: none;\n  background-color: white;\n  border-color: white;\n}\n\n.fc-state-disabled {\n  color: #9FA9BD;\n}\n\n.fc-button {\n  text-transform: uppercase;\n  font-weight: 700;\n  font-size: 13px;\n}\n\n.fc-content-skeleton {\n  border-top: 1px solid #DDD;\n}\n\n.fc-toolbar {\n  padding: 0px;\n  margin-bottom: 0;\n  border-bottom: 1px solid #ECECEC;\n}\n\n.fc .fc-toolbar > * > button {\n  padding: 15px;\n  height: auto;\n  outline: 0;\n  margin-left: 0;\n}\n\n.fc .fc-toolbar > * > button .fc-icon {\n  font-size: 1.1em;\n}\n\n.fc-unthemed .fc-today {\n  background: white;\n}\n\n.fc-body > tr > .fc-widget-content,\n.fc-head > tr > .fc-widget-header {\n  border: 0 !important;\n}\n\n.fc th {\n  border-color: white;\n  padding: 5px;\n}\n\n.fc-unthemed .fc-divider, .fc-unthemed .fc-popover .fc-header {\n  background-color: transparent;\n}\n\n.fc-event {\n  transition: all 200ms;\n  border: none;\n  border-left: 3px solid #689AD8;\n  padding: 5px;\n  background-color: white;\n  border-radius: 4px;\n  color: #444;\n  margin: 1px 0;\n  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.07);\n  cursor: pointer;\n}\n\n.fc-event:hover {\n  color: white;\n  background-color: #4179BF;\n  border-left: 3px solid #4179BF;\n}\n\n.fc-day-grid-event {\n  padding: 15px;\n  margin: 5px;\n}\n\n.fc-time-grid .fc-slats .fc-minor td {\n  border-top-style: none;\n}\n\n.fc-time-grid-event .fc-time {\n  font-size: 1.1em;\n}\n\n.fc-unthemed th, .fc-unthemed td, .fc-unthemed thead, .fc-unthemed tbody, .fc-unthemed .fc-divider, .fc-unthemed .fc-row, .fc-unthemed .fc-popover {\n  border-color: #ECECEC;\n}\n\n.fc-agendaMonthly-view .fc-event {\n  color: white;\n}\n", ""]);
-	
-	// exports
-
 
 /***/ },
 /* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
+	exports = module.exports = __webpack_require__(33)();
+	// imports
+	
+	
+	// module
+	exports.push([module.id, ".fc-view-container {\n  background-color: #FBFBFB; }\n\n.fc-row.fc-widget-header {\n  border-bottom: 1px solid #ececec; }\n\n.fc-state-default {\n  text-shadow: none;\n  box-shadow: none;\n  background-image: none;\n  background-color: white;\n  border-color: white; }\n\n.fc-button {\n  text-transform: uppercase;\n  font-weight: 700;\n  font-size: 13px; }\n\n.fc-content-skeleton {\n  border-top: 1px solid #DDD; }\n\n.fc-toolbar {\n  padding: 0px;\n  margin-bottom: 0;\n  border-bottom: 1px solid #ececec; }\n\n.fc .fc-toolbar > * > button {\n  padding: 15px;\n  height: auto;\n  outline: 0;\n  margin-left: 0;\n  transition: opacity 0.2s ease;\n  opacity: 0.3; }\n  .fc .fc-toolbar > * > button:hover {\n    opacity: 1; }\n  .fc .fc-toolbar > * > button.fc-state-disabled {\n    transition: opacity 0s;\n    opacity: 0; }\n  .fc .fc-toolbar > * > button .fc-icon {\n    font-size: 1.1em; }\n\n.fc-unthemed .fc-today {\n  background: white; }\n\n.fc-body > tr > .fc-widget-content,\n.fc-head > tr > .fc-widget-header {\n  border: 0 !important; }\n\n.fc th {\n  border-color: white;\n  padding: 5px; }\n\n.fc-unthemed .fc-divider, .fc-unthemed .fc-popover .fc-header {\n  background-color: transparent; }\n\n.fc-event {\n  transition: all 200ms;\n  border: none;\n  border-left: 3px solid #689AD8;\n  padding: 5px;\n  background-color: white;\n  border-radius: 4px;\n  color: #444;\n  margin: 1px 0;\n  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.07);\n  cursor: pointer; }\n  .fc-event:hover {\n    color: white;\n    background-color: #3f7fce;\n    border-left: 3px solid #3f7fce; }\n\n.fc-day-grid-event {\n  padding: 15px;\n  margin: 5px; }\n\n.fc-time-grid .fc-slats .fc-minor td {\n  border-top-style: none; }\n\n.fc-time-grid-event.fc-short .fc-time:after {\n  content: ''; }\n\n.fc-time-grid-event .fc-time {\n  font-size: 1.1em; }\n\n.fc-unthemed th, .fc-unthemed td, .fc-unthemed thead, .fc-unthemed tbody, .fc-unthemed .fc-divider, .fc-unthemed .fc-row, .fc-unthemed .fc-popover {\n  border-color: #ececec; }\n\n.fc-agendaMonthly-view .fc-event {\n  color: white; }\n", ""]);
+	
+	// exports
+
+
+/***/ },
+/* 37 */
+/***/ function(module, exports, __webpack_require__) {
+
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(37);
+	var content = __webpack_require__(38);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(33)(content, {});
+	var update = __webpack_require__(34)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../node_modules/css-loader/index.js!./booking.css", function() {
-				var newContent = require("!!./../node_modules/css-loader/index.js!./booking.css");
+			module.hot.accept("!!./../../node_modules/css-loader/index.js!./../../node_modules/sass-loader/index.js!./booking.scss", function() {
+				var newContent = require("!!./../../node_modules/css-loader/index.js!./../../node_modules/sass-loader/index.js!./booking.scss");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -18318,19 +18348,92 @@ var timekitBooking =
 	}
 
 /***/ },
-/* 37 */
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(32)();
+	exports = module.exports = __webpack_require__(33)();
 	// imports
 	
 	
 	// module
-	exports.push([module.id, ".timekit-booking {\n  max-width: 700px;\n  font-family: sans-serif;\n  font-size: 13px;\n  border-radius: 4px;\n  background-color: white;\n  box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px 0px;\n  margin: 50px auto 20px auto;\n}\n", ""]);
+	exports.push([module.id, ".bookingjs {\n  max-width: 700px;\n  font-family: sans-serif;\n  font-size: 13px;\n  border-radius: 4px;\n  background-color: white;\n  box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px 0px;\n  margin: 50px auto 20px auto;\n  overflow: hidden; }\n\n.bookingjs-timezonehelper {\n  color: #AEAEAE;\n  text-align: center;\n  padding: 7px;\n  background-color: #FBFBFB;\n  border-top: 1px solid #ececec;\n  height: 15px; }\n", ""]);
 	
 	// exports
 
 
+/***/ },
+/* 39 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	/*
+	 * Default configuration for for Booking.js
+	 */
+	
+	module.exports = {
+	
+	  targetEl: '#bookingjs',
+	  email: '',
+	  apiToken: '',
+	  calendar: '',
+	  name: '',
+	  avatar: '',
+	  debug: false,
+	  timekitConfig: {
+	    app: 'sign-up'
+	  },
+	  findTime: {
+	    filters: {
+	      'and': [
+	        { 'business_hours': {}},
+	        { 'exclude_weekend': {}}
+	      ]
+	    },
+	    future: '3 weeks',
+	    duration: '1 hour'
+	  },
+	  createEvent: {
+	    invite: true
+	  },
+	  fullCalendar: {
+	    header: {
+	      left: 'today',
+	      center: '',
+	      right: 'prev, next'
+	    },
+	    views: {
+	      basic: {
+	        columnFormat: 'dddd M/D',
+	        timeFormat: 'h:mm a'
+	      },
+	      agenda: {
+	        timeFormat: 'h:mm a',
+	        displayEventEnd: false
+	      }
+	    },
+	    allDaySlot: false,
+	    scrollTime: '08:00:00',
+	    //minTime: '08:00:00',
+	    //maxTime: '19:00:00',
+	    timezone: 'local'
+	  },
+	  localization: {
+	    showTimezoneHelper: true,
+	    dateFormat: 'D. MMMM YYYY',
+	    timeFormat: 'h:mm a'
+	  },
+	  styling: {
+	    fullCalendarCore: true,
+	    fullCalendarTheme: true,
+	    general: true
+	  }
+	
+	};
+
+
 /***/ }
-/******/ ]);
+/******/ ])
+});
+;
 //# sourceMappingURL=timekit-booking.js.map

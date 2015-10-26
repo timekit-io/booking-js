@@ -1,0 +1,27 @@
+// Colors
+
+$bgColor:     #FBFBFB;
+$borderColor: #ececec;
+$textColor:   #AEAEAE;
+
+// Classes
+
+.bookingjs {
+  max-width: 700px;
+  font-family: sans-serif;
+  font-size: 13px;
+  border-radius: 4px;
+  background-color: white;
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px 0px;
+  margin: 50px auto 20px auto;
+  overflow: hidden;
+}
+
+.bookingjs-timezonehelper {
+  color: $textColor;
+  text-align: center;
+  padding: 7px;
+  background-color: $bgColor;
+  border-top: 1px solid $borderColor;
+  height: 15px;
+}

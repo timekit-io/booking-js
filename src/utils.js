@@ -1,15 +1,14 @@
 'use strict';
 
-function TimekitBookingUtilities() {
+/*
+ * Utily functions for Booking.js
+ */
 
-  var TBU = {};
+module.exports = {
 
-  TBU.log = function(message) {
+  log: function(message) {
+    throw new Error(message);
     console.log('Timekit Booking: ' + message);
-  };
+  }
 
-  return TBU;
-
-}
-
-module.exports = new TimekitBookingUtilities();
+};

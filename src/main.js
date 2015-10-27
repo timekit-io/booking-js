@@ -31,7 +31,7 @@ function TimekitBooking() {
   var timekitSetup = function() {
     var args = {};
 
-    $.extend(args, config.timekitConfig);
+    $.extend(true, args, config.timekitConfig);
 
     timekit.configure(args);
     timekit.setUser(config.email, config.apiToken);
@@ -54,8 +54,9 @@ function TimekitBooking() {
 
   // Calculate and display timezone helper
   var renderTimezoneHelper = function() {
+
     var localTzOffset = (new Date()).getTimezoneOffset()/60*-1;
-    var localTzFormatted = (localTzOffset > 0 ? "+" : "") + localTzOffset;
+    //var localTzFormatted = (localTzOffset > 0 ? "+" : "") + localTzOffset;
 
     var timezoneHelperTarget = $('<div class="bookingjs-timezonehelper"><span>Loading...</span></div>');
     $(config.targetEl).append(timezoneHelperTarget);
@@ -103,22 +104,20 @@ function TimekitBooking() {
       eventClick: showBookingPage
     };
 
-    $.extend(args, config.fullCalendar);
+    $.extend(true, args, config.fullCalendar);
 
     calendarTarget = $('<div class="bookingjs-calendar">');
     $(config.targetEl).append(calendarTarget);
     calendarTarget.fullCalendar(args);
+
   };
 
   // Render the supplied calendar events in FullCalendar
   var renderCalendarEvents = function(eventData) {
+
     calendarTarget.fullCalendar('addEventSource', {
       events: eventData
     });
-  };
-
-  var renderBookingPage = function() {
-
 
   };
 
@@ -127,10 +126,12 @@ function TimekitBooking() {
 
     bookingPageTarget = templates.bookingPage({
       chosenDate: moment(eventData.start).format('D. MMMM YYYY'),
-      chosenTime: moment(eventData.start).format('h:mma') + ' to ' + moment(eventData.end).format('h:mma')
+      chosenTime: moment(eventData.start).format('h:mma') + ' to ' + moment(eventData.end).format('h:mma'),
+      start: moment(eventData.start).format(),
+      end: moment(eventData.start).format()
     });
 
-    bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
+    bookingPageTarget.children('.bookingjs-bookpage-close').click(function() {
       hideBookingPage();
     });
 
@@ -141,14 +142,9 @@ function TimekitBooking() {
 
     $(config.targetEl).append(bookingPageTarget);
 
-    // $('#bookmeform_start').val(moment(calEvent.start).format());
-    // $('#bookmeform_end').val(moment(calEvent.end).format());
-    // $('#chosendate').text(moment(calEvent.start).format('D. MMMM YYYY'));
-    // $('#chosentime').text(moment(calEvent.start).format('h:mm a') + ' to ' + moment(calEvent.end).format('h:mm a'));
-    // $('.bookme_create').show().css('opacity','1');
-
   };
 
+  // Remove the booking page DOM node
   var hideBookingPage = function() {
 
     bookingPageTarget.remove();
@@ -174,7 +170,7 @@ function TimekitBooking() {
       ]
     };
 
-    $.extend(args, config.createEvent);
+    $.extend(true, args, config.createEvent);
 
     timekit.createEvent(args)
     .then(function(response){
@@ -202,7 +198,7 @@ function TimekitBooking() {
     }
 
     // Extend the default config with supplied settings
-    $.extend(config, suppliedConfig);
+    $.extend(true, config, suppliedConfig);
 
     // Initialize FullCalendar
     initializeCalendar();
@@ -220,8 +216,6 @@ function TimekitBooking() {
     if (config.localization.showTimezoneHelper) {
       renderTimezoneHelper();
     }
-
-    renderBookingPage();
 
     // Includes stylesheets if enabled
     if (config.styling.fullCalendarCore) {

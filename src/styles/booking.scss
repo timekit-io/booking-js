@@ -26,7 +26,7 @@ $textColor:   #AEAEAE;
     padding: 7px;
     background-color: $bgColor;
     border-top: 1px solid $borderColor;
-    height: 15px;
+    min-height: 15px;
     z-index: 20;
   }
 

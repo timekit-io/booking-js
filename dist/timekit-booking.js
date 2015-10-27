@@ -65,7 +65,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Internal dependencies
 	var utils = __webpack_require__(29);
 	var templates = __webpack_require__(30);
-	var config = __webpack_require__(32);
+	var config = __webpack_require__(33);
 	
 	/*!
 	 * Booking.js
@@ -87,7 +87,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var timekitSetup = function() {
 	    var args = {};
 	
-	    $.extend(args, config.timekitConfig);
+	    $.extend(true, args, config.timekitConfig);
 	
 	    timekit.configure(args);
 	    timekit.setUser(config.email, config.apiToken);
@@ -110,8 +110,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  // Calculate and display timezone helper
 	  var renderTimezoneHelper = function() {
+	
 	    var localTzOffset = (new Date()).getTimezoneOffset()/60*-1;
-	    var localTzFormatted = (localTzOffset > 0 ? "+" : "") + localTzOffset;
+	    //var localTzFormatted = (localTzOffset > 0 ? "+" : "") + localTzOffset;
 	
 	    var timezoneHelperTarget = $('<div class="bookingjs-timezonehelper"><span>Loading...</span></div>');
 	    $(config.targetEl).append(timezoneHelperTarget);
@@ -159,22 +160,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	      eventClick: showBookingPage
 	    };
 	
-	    $.extend(args, config.fullCalendar);
+	    $.extend(true, args, config.fullCalendar);
 	
 	    calendarTarget = $('<div class="bookingjs-calendar">');
 	    $(config.targetEl).append(calendarTarget);
 	    calendarTarget.fullCalendar(args);
+	
 	  };
 	
 	  // Render the supplied calendar events in FullCalendar
 	  var renderCalendarEvents = function(eventData) {
+	
 	    calendarTarget.fullCalendar('addEventSource', {
 	      events: eventData
 	    });
-	  };
-	
-	  var renderBookingPage = function() {
-	
 	
 	  };
 	
@@ -183,10 +182,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    bookingPageTarget = templates.bookingPage({
 	      chosenDate: moment(eventData.start).format('D. MMMM YYYY'),
-	      chosenTime: moment(eventData.start).format('h:mma') + ' to ' + moment(eventData.end).format('h:mma')
+	      chosenTime: moment(eventData.start).format('h:mma') + ' to ' + moment(eventData.end).format('h:mma'),
+	      start: moment(eventData.start).format(),
+	      end: moment(eventData.start).format()
 	    });
 	
-	    bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
+	    bookingPageTarget.children('.bookingjs-bookpage-close').click(function() {
 	      hideBookingPage();
 	    });
 	
@@ -197,14 +198,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    $(config.targetEl).append(bookingPageTarget);
 	
-	    // $('#bookmeform_start').val(moment(calEvent.start).format());
-	    // $('#bookmeform_end').val(moment(calEvent.end).format());
-	    // $('#chosendate').text(moment(calEvent.start).format('D. MMMM YYYY'));
-	    // $('#chosentime').text(moment(calEvent.start).format('h:mm a') + ' to ' + moment(calEvent.end).format('h:mm a'));
-	    // $('.bookme_create').show().css('opacity','1');
-	
 	  };
 	
+	  // Remove the booking page DOM node
 	  var hideBookingPage = function() {
 	
 	    bookingPageTarget.remove();
@@ -230,7 +226,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      ]
 	    };
 	
-	    $.extend(args, config.createEvent);
+	    $.extend(true, args, config.createEvent);
 	
 	    timekit.createEvent(args)
 	    .then(function(response){
@@ -258,7 +254,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	
 	    // Extend the default config with supplied settings
-	    $.extend(config, suppliedConfig);
+	    $.extend(true, config, suppliedConfig);
 	
 	    // Initialize FullCalendar
 	    initializeCalendar();
@@ -277,17 +273,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	      renderTimezoneHelper();
 	    }
 	
-	    renderBookingPage();
-	
 	    // Includes stylesheets if enabled
 	    if (config.styling.fullCalendarCore) {
-	      __webpack_require__(33);
+	      __webpack_require__(34);
 	    }
 	    if (config.styling.fullCalendarTheme) {
-	      __webpack_require__(37);
+	      __webpack_require__(38);
 	    }
 	    if (config.styling.general) {
-	      __webpack_require__(39);
+	      __webpack_require__(40);
 	    }
 	
 	  };
@@ -17934,7 +17928,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (data.tzOffsetDiff === 0) {
 	      tzText = 'You are in the same timezone as ' + data.hostName;
 	    } else {
-	      tzText = 'Your timezone is ' + data.tzOffsetDiffAbs + ' hours ' + (data.aheadOfHost ? 'ahead' : 'behind') + ' ' + data.hostName + ' (calendar shown in your local time)';
+	      tzText = 'Your timezone is ' + data.tzOffsetDiffAbs + ' hours ' + (data.aheadOfHost ? 'ahead' : 'behind') + ' of ' + data.hostName + ' (calendar shown in your local time)';
 	    }
 	
 	    var timezonIcon = __webpack_require__(31);
@@ -17946,13 +17940,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  bookingPage: function(data) {
 	
-	    var closeIcon = __webpack_require__(41);
+	    var closeIcon = __webpack_require__(32);
 	
 	    var el = $(
 	      '<div class="bookingjs-bookpage">' +
 	        '<a class="bookingjs-bookpage-close" href="#">' + closeIcon +  '</a>' +
 	        '<h2 class="bookingjs-bookpage-date">' + data.chosenDate + '</h2>' +
 	        '<h3 class="bookingjs-bookpage-time">' + data.chosenTime + '</h3>' +
+	        '<form action=""></form>' +
 	      '</div>'
 	    );
 	
@@ -17971,6 +17966,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 32 */
+/***/ function(module, exports) {
+
+	module.exports = "<svg class=\"bookingjs-closeicon\" viewBox=\"0 0 90 90\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>close-icon</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"close-icon\" sketch:type=\"MSLayerGroup\" fill=\"#000000\"><path d=\"M58,45 L87.2,15.8 C90.9,12.1 90.9,6.3 87.3,2.7 C83.7,-0.9 77.8,-0.8 74.2,2.8 L45,32 L15.8,2.8 C12.1,-0.9 6.3,-0.9 2.7,2.7 C-0.9,6.3 -0.8,12.2 2.8,15.8 L32,45 L2.8,74.2 C-0.9,77.9 -0.9,83.7 2.7,87.3 C6.3,90.9 12.2,90.8 15.8,87.2 L45,58 L74.2,87.2 C77.9,90.9 83.7,90.9 87.3,87.3 C90.9,83.7 90.8,77.8 87.2,74.2 L58,45 L58,45 Z\" id=\"Shape\" sketch:type=\"MSShapeGroup\"></path></g></g></svg>"
+
+/***/ },
+/* 33 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -18022,9 +18023,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 	    allDaySlot: false,
 	    scrollTime: '08:00:00',
+	    timezone: 'local',
 	    //minTime: '08:00:00',
 	    //maxTime: '19:00:00',
-	    timezone: 'local'
 	  },
 	  localization: {
 	    showTimezoneHelper: true,
@@ -18041,16 +18042,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 33 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(34);
+	var content = __webpack_require__(35);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(36)(content, {});
+	var update = __webpack_require__(37)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -18067,10 +18068,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 34 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(35)();
+	exports = module.exports = __webpack_require__(36)();
 	// imports
 	
 	
@@ -18081,7 +18082,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 35 */
+/* 36 */
 /***/ function(module, exports) {
 
 	/*
@@ -18137,7 +18138,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 36 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -18391,16 +18392,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 37 */
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(38);
+	var content = __webpack_require__(39);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(36)(content, {});
+	var update = __webpack_require__(37)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -18417,10 +18418,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 38 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(35)();
+	exports = module.exports = __webpack_require__(36)();
 	// imports
 	
 	
@@ -18431,16 +18432,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 39 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(40);
+	var content = __webpack_require__(41);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(36)(content, {});
+	var update = __webpack_require__(37)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -18457,24 +18458,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 40 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(35)();
+	exports = module.exports = __webpack_require__(36)();
 	// imports
 	
 	
 	// module
-	exports.push([module.id, ".bookingjs {\n  position: relative;\n  max-width: 700px;\n  font-family: sans-serif;\n  font-size: 13px;\n  border-radius: 4px;\n  background-color: white;\n  box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px 0px;\n  margin: 50px auto 20px auto;\n  overflow: hidden;\n  z-index: 10; }\n  .bookingjs-timezonehelper {\n    color: #AEAEAE;\n    text-align: center;\n    padding: 7px;\n    background-color: #FBFBFB;\n    border-top: 1px solid #ececec;\n    height: 15px;\n    z-index: 20; }\n  .bookingjs-timezoneicon {\n    width: 10px;\n    margin-right: 5px; }\n  .bookingjs-bookpage {\n    position: absolute;\n    height: 100%;\n    width: 100%;\n    top: 0;\n    left: 0;\n    background-color: #FBFBFB;\n    z-index: 30; }\n    .bookingjs-bookpage-close {\n      position: absolute;\n      top: 0;\n      right: 0;\n      padding: 18px;\n      transition: opacity 0.2s ease;\n      opacity: 0.3; }\n      .bookingjs-bookpage-close:hover {\n        opacity: 1; }\n    .bookingjs-bookpage-date {\n      text-align: center;\n      font-size: 34px;\n      font-weight: 400;\n      margin-top: 80px; }\n    .bookingjs-bookpage-time {\n      text-align: center;\n      font-size: 19px;\n      font-weight: 400;\n      margin-bottom: 80px; }\n  .bookingjs-closeicon {\n    width: 15px; }\n", ""]);
+	exports.push([module.id, ".bookingjs {\n  position: relative;\n  max-width: 700px;\n  font-family: sans-serif;\n  font-size: 13px;\n  border-radius: 4px;\n  background-color: white;\n  box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px 0px;\n  margin: 50px auto 20px auto;\n  overflow: hidden;\n  z-index: 10; }\n  .bookingjs-timezonehelper {\n    color: #AEAEAE;\n    text-align: center;\n    padding: 7px;\n    background-color: #FBFBFB;\n    border-top: 1px solid #ececec;\n    min-height: 15px;\n    z-index: 20; }\n  .bookingjs-timezoneicon {\n    width: 10px;\n    margin-right: 5px; }\n  .bookingjs-bookpage {\n    position: absolute;\n    height: 100%;\n    width: 100%;\n    top: 0;\n    left: 0;\n    background-color: #FBFBFB;\n    z-index: 30; }\n    .bookingjs-bookpage-close {\n      position: absolute;\n      top: 0;\n      right: 0;\n      padding: 18px;\n      transition: opacity 0.2s ease;\n      opacity: 0.3; }\n      .bookingjs-bookpage-close:hover {\n        opacity: 1; }\n    .bookingjs-bookpage-date {\n      text-align: center;\n      font-size: 34px;\n      font-weight: 400;\n      margin-top: 80px; }\n    .bookingjs-bookpage-time {\n      text-align: center;\n      font-size: 19px;\n      font-weight: 400;\n      margin-bottom: 80px; }\n  .bookingjs-closeicon {\n    width: 15px; }\n", ""]);
 	
 	// exports
 
-
-/***/ },
-/* 41 */
-/***/ function(module, exports) {
-
-	module.exports = "<svg class=\"bookingjs-closeicon\" viewBox=\"0 0 90 90\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>close-icon</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"close-icon\" sketch:type=\"MSLayerGroup\" fill=\"#000000\"><path d=\"M58,45 L87.2,15.8 C90.9,12.1 90.9,6.3 87.3,2.7 C83.7,-0.9 77.8,-0.8 74.2,2.8 L45,32 L15.8,2.8 C12.1,-0.9 6.3,-0.9 2.7,2.7 C-0.9,6.3 -0.8,12.2 2.8,15.8 L32,45 L2.8,74.2 C-0.9,77.9 -0.9,83.7 2.7,87.3 C6.3,90.9 12.2,90.8 15.8,87.2 L45,58 L74.2,87.2 C77.9,90.9 83.7,90.9 87.3,87.3 C90.9,83.7 90.8,77.8 87.2,74.2 L58,45 L58,45 Z\" id=\"Shape\" sketch:type=\"MSShapeGroup\"></path></g></g></svg>"
 
 /***/ }
 /******/ ])

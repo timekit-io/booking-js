@@ -47,6 +47,12 @@ $primaryDarkColor: darken($primaryColor, 10%);
     left: 0;
     background-color: $bgColor;
     z-index: 30;
+    opacity: 0;
+    transition: opacity 200ms ease;
+
+    &.show {
+      opacity: 1;
+    }
 
     &-close {
       position: absolute;
@@ -164,14 +170,8 @@ $primaryDarkColor: darken($primaryColor, 10%);
         width: 100px;
         background-color: #B1B1B1;
 
-        .inactive-text,
-        .success-text {
-          opacity: 0;
-        }
-
-        .loading-text {
-          opacity: 1;
-        }
+        .inactive-text { opacity: 0; }
+        .loading-text { opacity: 1; }
       }
 
       &.success,
@@ -179,14 +179,9 @@ $primaryDarkColor: darken($primaryColor, 10%);
         width: 72px;
         background-color: #5BAF56;
 
-        .inactive-text,
-        .loading-text {
-          opacity: 0;
-        }
-
-        .success-text {
-          opacity: 1;
-        }
+        .loading-text,
+        .inactive-text { opacity: 0; }
+        .success-text { opacity: 1; }
       }
 
       &:hover {

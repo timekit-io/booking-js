@@ -65,7 +65,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Internal dependencies
 	var utils = __webpack_require__(29);
 	var templates = __webpack_require__(30);
-	var config = __webpack_require__(33);
+	var config = __webpack_require__(34);
 	
 	/*!
 	 * Booking.js
@@ -211,12 +211,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    $(config.targetEl).append(bookingPageTarget);
 	
+	    setTimeout(function(){
+	      bookingPageTarget.addClass('show');
+	    }, 100);
+	
 	  };
 	
 	  // Remove the booking page DOM node
 	  var hideBookingPage = function() {
 	
-	    bookingPageTarget.remove();
+	    bookingPageTarget.removeClass('show');
+	    setTimeout(function(){
+	      bookingPageTarget.remove();
+	    }, 200);
+	
 	    $(document).off('keyup');
 	
 	  };
@@ -300,13 +308,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    // Includes stylesheets if enabled
 	    if (config.styling.fullCalendarCore) {
-	      __webpack_require__(34);
+	      __webpack_require__(35);
 	    }
 	    if (config.styling.fullCalendarTheme) {
-	      __webpack_require__(38);
+	      __webpack_require__(39);
 	    }
 	    if (config.styling.general) {
-	      __webpack_require__(40);
+	      __webpack_require__(41);
 	    }
 	
 	  };
@@ -17965,7 +17973,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  bookingPage: function(data) {
 	
 	    var closeIcon = __webpack_require__(32);
-	    var checkmarkIcon = __webpack_require__(42);
+	    var checkmarkIcon = __webpack_require__(33);
 	
 	    var el = $(
 	      '<div class="bookingjs-bookpage">' +
@@ -18008,6 +18016,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 33 */
+/***/ function(module, exports) {
+
+	module.exports = "<svg viewBox=\"0 0 96 67\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>Rectangle 1</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><path d=\"M38,45.9791847 L15.0151818,22.9943665 C11.8943965,19.8735813 6.82450594,19.8704075 3.69944993,22.9954635 L2.99546354,23.6994499 C-0.128333673,26.8232471 -0.130083617,31.8907317 2.99436652,35.0151818 L31.9848182,64.0056335 C33.8955725,65.9163878 36.5369899,66.6584397 39.0153286,66.2293522 C40.8727143,66.1009582 42.6934802,65.327335 44.112815,63.9080003 L92.9080003,15.112815 C96.0277956,11.9930196 96.0290874,6.925011 92.9040314,3.799955 L92.200045,3.0959686 C89.0762478,-0.0278286101 84.010049,-0.030864319 80.887185,3.09199975 L38,45.9791847 Z\" id=\"Rectangle-1\" fill=\"#FFFFFF\" sketch:type=\"MSShapeGroup\"></path></g></svg>"
+
+/***/ },
+/* 34 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -18080,16 +18094,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 34 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(35);
+	var content = __webpack_require__(36);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(37)(content, {});
+	var update = __webpack_require__(38)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -18106,10 +18120,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 35 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(36)();
+	exports = module.exports = __webpack_require__(37)();
 	// imports
 	
 	
@@ -18120,7 +18134,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 36 */
+/* 37 */
 /***/ function(module, exports) {
 
 	/*
@@ -18176,7 +18190,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 37 */
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -18430,16 +18444,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 38 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(39);
+	var content = __webpack_require__(40);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(37)(content, {});
+	var update = __webpack_require__(38)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -18456,10 +18470,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 39 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(36)();
+	exports = module.exports = __webpack_require__(37)();
 	// imports
 	
 	
@@ -18470,16 +18484,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 40 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(41);
+	var content = __webpack_require__(42);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(37)(content, {});
+	var update = __webpack_require__(38)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -18496,24 +18510,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 41 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(36)();
+	exports = module.exports = __webpack_require__(37)();
 	// imports
 	
 	
 	// module
-	exports.push([module.id, ".bookingjs {\n  position: relative;\n  max-width: 700px;\n  font-family: 'Open Sans', Helvetica, Tahoma, Arial, sans-serif;\n  font-size: 13px;\n  border-radius: 4px;\n  background-color: white;\n  box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px 0px;\n  margin: 50px auto 20px auto;\n  overflow: hidden;\n  z-index: 10; }\n  .bookingjs-timezonehelper {\n    color: #AEAEAE;\n    text-align: center;\n    padding: 7px 10px;\n    background-color: #FBFBFB;\n    border-top: 1px solid #ececec;\n    min-height: 15px;\n    z-index: 20; }\n  .bookingjs-timezoneicon {\n    width: 10px;\n    margin-right: 5px; }\n  .bookingjs-bookpage {\n    position: absolute;\n    height: 100%;\n    width: 100%;\n    top: 0;\n    left: 0;\n    background-color: #FBFBFB;\n    z-index: 30; }\n    .bookingjs-bookpage-close {\n      position: absolute;\n      top: 0;\n      right: 0;\n      padding: 18px;\n      transition: opacity 0.2s ease;\n      opacity: 0.3; }\n      .bookingjs-bookpage-close:hover {\n        opacity: 1; }\n    .bookingjs-bookpage-date {\n      text-align: center;\n      font-size: 34px;\n      font-weight: 400;\n      margin-top: 90px;\n      margin-bottom: 20px; }\n    .bookingjs-bookpage-time {\n      text-align: center;\n      font-size: 17px;\n      font-weight: 400;\n      margin-bottom: 70px; }\n  .bookingjs-closeicon {\n    width: 15px; }\n  .bookingjs-form {\n    width: 50%;\n    position: relative;\n    margin: 0 auto;\n    text-align: center; }\n    .bookingjs-form-input {\n      transition: box-shadow 200ms ease;\n      width: 100%;\n      padding: 15px 25px;\n      border: 0px solid #ececec;\n      font-size: 1em;\n      box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), inset 0px 0px 1px 1px rgba(255, 255, 255, 0);\n      text-align: left;\n      box-sizing: border-box; }\n      .bookingjs-form-input:focus {\n        outline: 0;\n        box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), inset 0px 0px 1px 1px #689AD8; }\n      .bookingjs-form-input.first {\n        border-radius: 4px 4px 0 0; }\n      .bookingjs-form-input.last {\n        border-radius: 0 0 4px 4px; }\n      .bookingjs-form-input.hidden {\n        display: none; }\n    .bookingjs-form-button {\n      position: relative;\n      transition: background-color 200ms, width 300ms;\n      display: inline-block;\n      padding: 13px 25px;\n      background-color: #689AD8;\n      text-transform: uppercase;\n      box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);\n      color: white;\n      border: 0px;\n      border-radius: 3px;\n      font-size: 1.1em;\n      font-weight: 600;\n      margin-top: 30px;\n      cursor: pointer;\n      width: 110px;\n      height: 44px;\n      outline: 0; }\n      .bookingjs-form-button .inactive-text,\n      .bookingjs-form-button .success-text,\n      .bookingjs-form-button .loading-text {\n        transition: opacity 300ms ease;\n        position: absolute;\n        top: 13px;\n        left: 25px; }\n      .bookingjs-form-button .inactive-text {\n        opacity: 1; }\n      .bookingjs-form-button .loading-text,\n      .bookingjs-form-button .success-text {\n        opacity: 0; }\n      .bookingjs-form-button .success-text svg {\n        height: 15px;\n        margin-top: 2px; }\n      .bookingjs-form-button.loading, .bookingjs-form-button.loading:hover {\n        width: 100px;\n        background-color: #B1B1B1; }\n        .bookingjs-form-button.loading .inactive-text,\n        .bookingjs-form-button.loading .success-text, .bookingjs-form-button.loading:hover .inactive-text,\n        .bookingjs-form-button.loading:hover .success-text {\n          opacity: 0; }\n        .bookingjs-form-button.loading .loading-text, .bookingjs-form-button.loading:hover .loading-text {\n          opacity: 1; }\n      .bookingjs-form-button.success, .bookingjs-form-button.success:hover {\n        width: 72px;\n        background-color: #5BAF56; }\n        .bookingjs-form-button.success .inactive-text,\n        .bookingjs-form-button.success .loading-text, .bookingjs-form-button.success:hover .inactive-text,\n        .bookingjs-form-button.success:hover .loading-text {\n          opacity: 0; }\n        .bookingjs-form-button.success .success-text, .bookingjs-form-button.success:hover .success-text {\n          opacity: 1; }\n      .bookingjs-form-button:hover {\n        background-color: #3f7fce; }\n", ""]);
+	exports.push([module.id, ".bookingjs {\n  position: relative;\n  max-width: 700px;\n  font-family: 'Open Sans', Helvetica, Tahoma, Arial, sans-serif;\n  font-size: 13px;\n  border-radius: 4px;\n  background-color: white;\n  box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px 0px;\n  margin: 50px auto 20px auto;\n  overflow: hidden;\n  z-index: 10; }\n  .bookingjs-timezonehelper {\n    color: #AEAEAE;\n    text-align: center;\n    padding: 7px 10px;\n    background-color: #FBFBFB;\n    border-top: 1px solid #ececec;\n    min-height: 15px;\n    z-index: 20; }\n  .bookingjs-timezoneicon {\n    width: 10px;\n    margin-right: 5px; }\n  .bookingjs-bookpage {\n    position: absolute;\n    height: 100%;\n    width: 100%;\n    top: 0;\n    left: 0;\n    background-color: #FBFBFB;\n    z-index: 30;\n    opacity: 0;\n    transition: opacity 200ms ease; }\n    .bookingjs-bookpage.show {\n      opacity: 1; }\n    .bookingjs-bookpage-close {\n      position: absolute;\n      top: 0;\n      right: 0;\n      padding: 18px;\n      transition: opacity 0.2s ease;\n      opacity: 0.3; }\n      .bookingjs-bookpage-close:hover {\n        opacity: 1; }\n    .bookingjs-bookpage-date {\n      text-align: center;\n      font-size: 34px;\n      font-weight: 400;\n      margin-top: 90px;\n      margin-bottom: 20px; }\n    .bookingjs-bookpage-time {\n      text-align: center;\n      font-size: 17px;\n      font-weight: 400;\n      margin-bottom: 70px; }\n  .bookingjs-closeicon {\n    width: 15px; }\n  .bookingjs-form {\n    width: 50%;\n    position: relative;\n    margin: 0 auto;\n    text-align: center; }\n    .bookingjs-form-input {\n      transition: box-shadow 200ms ease;\n      width: 100%;\n      padding: 15px 25px;\n      border: 0px solid #ececec;\n      font-size: 1em;\n      box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), inset 0px 0px 1px 1px rgba(255, 255, 255, 0);\n      text-align: left;\n      box-sizing: border-box; }\n      .bookingjs-form-input:focus {\n        outline: 0;\n        box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), inset 0px 0px 1px 1px #689AD8; }\n      .bookingjs-form-input.first {\n        border-radius: 4px 4px 0 0; }\n      .bookingjs-form-input.last {\n        border-radius: 0 0 4px 4px; }\n      .bookingjs-form-input.hidden {\n        display: none; }\n    .bookingjs-form-button {\n      position: relative;\n      transition: background-color 200ms, width 300ms;\n      display: inline-block;\n      padding: 13px 25px;\n      background-color: #689AD8;\n      text-transform: uppercase;\n      box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);\n      color: white;\n      border: 0px;\n      border-radius: 3px;\n      font-size: 1.1em;\n      font-weight: 600;\n      margin-top: 30px;\n      cursor: pointer;\n      width: 110px;\n      height: 44px;\n      outline: 0; }\n      .bookingjs-form-button .inactive-text,\n      .bookingjs-form-button .success-text,\n      .bookingjs-form-button .loading-text {\n        transition: opacity 300ms ease;\n        position: absolute;\n        top: 13px;\n        left: 25px; }\n      .bookingjs-form-button .inactive-text {\n        opacity: 1; }\n      .bookingjs-form-button .loading-text,\n      .bookingjs-form-button .success-text {\n        opacity: 0; }\n      .bookingjs-form-button .success-text svg {\n        height: 15px;\n        margin-top: 2px; }\n      .bookingjs-form-button.loading, .bookingjs-form-button.loading:hover {\n        width: 100px;\n        background-color: #B1B1B1; }\n        .bookingjs-form-button.loading .inactive-text, .bookingjs-form-button.loading:hover .inactive-text {\n          opacity: 0; }\n        .bookingjs-form-button.loading .loading-text, .bookingjs-form-button.loading:hover .loading-text {\n          opacity: 1; }\n      .bookingjs-form-button.success, .bookingjs-form-button.success:hover {\n        width: 72px;\n        background-color: #5BAF56; }\n        .bookingjs-form-button.success .loading-text,\n        .bookingjs-form-button.success .inactive-text, .bookingjs-form-button.success:hover .loading-text,\n        .bookingjs-form-button.success:hover .inactive-text {\n          opacity: 0; }\n        .bookingjs-form-button.success .success-text, .bookingjs-form-button.success:hover .success-text {\n          opacity: 1; }\n      .bookingjs-form-button:hover {\n        background-color: #3f7fce; }\n", ""]);
 	
 	// exports
 
-
-/***/ },
-/* 42 */
-/***/ function(module, exports) {
-
-	module.exports = "<svg viewBox=\"0 0 96 67\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>Rectangle 1</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><path d=\"M38,45.9791847 L15.0151818,22.9943665 C11.8943965,19.8735813 6.82450594,19.8704075 3.69944993,22.9954635 L2.99546354,23.6994499 C-0.128333673,26.8232471 -0.130083617,31.8907317 2.99436652,35.0151818 L31.9848182,64.0056335 C33.8955725,65.9163878 36.5369899,66.6584397 39.0153286,66.2293522 C40.8727143,66.1009582 42.6934802,65.327335 44.112815,63.9080003 L92.9080003,15.112815 C96.0277956,11.9930196 96.0290874,6.925011 92.9040314,3.799955 L92.200045,3.0959686 C89.0762478,-0.0278286101 84.010049,-0.030864319 80.887185,3.09199975 L38,45.9791847 Z\" id=\"Rectangle-1\" fill=\"#FFFFFF\" sketch:type=\"MSShapeGroup\"></path></g></svg>"
 
 /***/ }
 /******/ ])

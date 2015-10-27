@@ -155,12 +155,20 @@ function TimekitBooking() {
 
     $(config.targetEl).append(bookingPageTarget);
 
+    setTimeout(function(){
+      bookingPageTarget.addClass('show');
+    }, 100);
+
   };
 
   // Remove the booking page DOM node
   var hideBookingPage = function() {
 
-    bookingPageTarget.remove();
+    bookingPageTarget.removeClass('show');
+    setTimeout(function(){
+      bookingPageTarget.remove();
+    }, 200);
+
     $(document).off('keyup');
 
   };

@@ -25,6 +25,7 @@ function TimekitBooking() {
 
   var TB = {};
   var calendarTarget = '';
+  var bookingPageTarget = '';
 
   // Setup the Timekit SDK with correct credentials
   var timekitSetup = function() {
@@ -99,7 +100,7 @@ function TimekitBooking() {
     var args = {
       defaultView: defaultView,
       height: height,
-      eventClick: clickCalendarTimeslot
+      eventClick: showBookingPage
     };
 
     $.extend(args, config.fullCalendar);
@@ -118,30 +119,41 @@ function TimekitBooking() {
 
   var renderBookingPage = function() {
 
-    // var el = $(
-    //     '<div class="bookingjs-bookcard">' +
-    //       '<a href=""><' +
-    //     '</div>'
-    //   );
-    // $(config.targetEl).append(el);
-  };
-
-  var showBookingPage = function() {
-
-  };
-
-  var hideBookingPage = function() {
 
   };
 
   // Event handler when a timeslot is clicked in FullCalendar
-  var clickCalendarTimeslot = function(calEvent, jsEvent, view) {
+  var showBookingPage = function(eventData) {
+
+    bookingPageTarget = templates.bookingPage({
+      chosenDate: moment(eventData.start).format('D. MMMM YYYY'),
+      chosenTime: moment(eventData.start).format('h:mma') + ' to ' + moment(eventData.end).format('h:mma')
+    });
+
+    bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
+      hideBookingPage();
+    });
+
+    $(document).on('keyup', function(e) {
+      // escape key maps to keycode `27`
+      if (e.keyCode === 27) { hideBookingPage(); }
+    });
+
+    $(config.targetEl).append(bookingPageTarget);
+
     // $('#bookmeform_start').val(moment(calEvent.start).format());
     // $('#bookmeform_end').val(moment(calEvent.end).format());
     // $('#chosendate').text(moment(calEvent.start).format('D. MMMM YYYY'));
     // $('#chosentime').text(moment(calEvent.start).format('h:mm a') + ' to ' + moment(calEvent.end).format('h:mm a'));
     // $('.bookme_create').show().css('opacity','1');
-    showBookingPage();
+
+  };
+
+  var hideBookingPage = function() {
+
+    bookingPageTarget.remove();
+    $(document).off('keyup');
+
   };
 
   var submitBookingForm = function() {
@@ -208,6 +220,8 @@ function TimekitBooking() {
     if (config.localization.showTimezoneHelper) {
       renderTimezoneHelper();
     }
+
+    renderBookingPage();
 
     // Includes stylesheets if enabled
     if (config.styling.fullCalendarCore) {

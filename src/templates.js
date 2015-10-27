@@ -17,9 +17,27 @@ module.exports = {
       tzText = 'Your timezone is ' + data.tzOffsetDiffAbs + ' hours ' + (data.aheadOfHost ? 'ahead' : 'behind') + ' ' + data.hostName + ' (calendar shown in your local time)';
     }
 
-    var el = $('<span>' + tzText + '</span>');
+    var timezonIcon = require('!svg-inline!./assets/timezone-icon.svg');
+
+    var el = $(timezonIcon + '<span>' + tzText + '</span>');
 
     return el;
+  },
+
+  bookingPage: function(data) {
+
+    var closeIcon = require('!svg-inline!./assets/close-icon.svg');
+
+    var el = $(
+      '<div class="bookingjs-bookpage">' +
+        '<a class="bookingjs-bookpage-close" href="#">' + closeIcon +  '</a>' +
+        '<h2 class="bookingjs-bookpage-date">' + data.chosenDate + '</h2>' +
+        '<h3 class="bookingjs-bookpage-time">' + data.chosenTime + '</h3>' +
+      '</div>'
+    );
+
+    return el;
+
   }
 
 };

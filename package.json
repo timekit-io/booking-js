@@ -15,6 +15,7 @@
     "node-sass": "^3.4.0",
     "sass-loader": "^3.1.1",
     "style-loader": "^0.13.0",
+    "svg-inline-loader": "^0.3.0",
     "webpack": "^1.12.2"
   },
   "dependencies": {

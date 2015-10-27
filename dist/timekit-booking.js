@@ -7,7 +7,7 @@
 		exports["timekitBooking"] = factory(require("jQuery"));
 	else
 		root["timekitBooking"] = factory(root["jQuery"]);
-})(this, function(__WEBPACK_EXTERNAL_MODULE_3__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE_25__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -57,15 +57,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 	
 	// External depenencies
-	var timekit = __webpack_require__(4);
-	var fullcalendar = __webpack_require__(27);
-	var moment = __webpack_require__(28);
-	var $ = __webpack_require__(3);
+	var timekit = __webpack_require__(1);
+	var fullcalendar = __webpack_require__(24);
+	var moment = __webpack_require__(26);
+	var $ = __webpack_require__(25);
 	
 	// Internal dependencies
-	var utils = __webpack_require__(1);
-	var templates = __webpack_require__(2);
-	var config = __webpack_require__(39);
+	var utils = __webpack_require__(29);
+	var templates = __webpack_require__(30);
+	var config = __webpack_require__(32);
 	
 	/*!
 	 * Booking.js
@@ -81,6 +81,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  var TB = {};
 	  var calendarTarget = '';
+	  var bookingPageTarget = '';
 	
 	  // Setup the Timekit SDK with correct credentials
 	  var timekitSetup = function() {
@@ -155,7 +156,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var args = {
 	      defaultView: defaultView,
 	      height: height,
-	      eventClick: clickCalendarTimeslot
+	      eventClick: showBookingPage
 	    };
 	
 	    $.extend(args, config.fullCalendar);
@@ -174,30 +175,41 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  var renderBookingPage = function() {
 	
-	    // var el = $(
-	    //     '<div class="bookingjs-bookcard">' +
-	    //       '<a href=""><' +
-	    //     '</div>'
-	    //   );
-	    // $(config.targetEl).append(el);
-	  };
-	
-	  var showBookingPage = function() {
-	
-	  };
-	
-	  var hideBookingPage = function() {
 	
 	  };
 	
 	  // Event handler when a timeslot is clicked in FullCalendar
-	  var clickCalendarTimeslot = function(calEvent, jsEvent, view) {
+	  var showBookingPage = function(eventData) {
+	
+	    bookingPageTarget = templates.bookingPage({
+	      chosenDate: moment(eventData.start).format('D. MMMM YYYY'),
+	      chosenTime: moment(eventData.start).format('h:mma') + ' to ' + moment(eventData.end).format('h:mma')
+	    });
+	
+	    bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
+	      hideBookingPage();
+	    });
+	
+	    $(document).on('keyup', function(e) {
+	      // escape key maps to keycode `27`
+	      if (e.keyCode === 27) { hideBookingPage(); }
+	    });
+	
+	    $(config.targetEl).append(bookingPageTarget);
+	
 	    // $('#bookmeform_start').val(moment(calEvent.start).format());
 	    // $('#bookmeform_end').val(moment(calEvent.end).format());
 	    // $('#chosendate').text(moment(calEvent.start).format('D. MMMM YYYY'));
 	    // $('#chosentime').text(moment(calEvent.start).format('h:mm a') + ' to ' + moment(calEvent.end).format('h:mm a'));
 	    // $('.bookme_create').show().css('opacity','1');
-	    showBookingPage();
+	
+	  };
+	
+	  var hideBookingPage = function() {
+	
+	    bookingPageTarget.remove();
+	    $(document).off('keyup');
+	
 	  };
 	
 	  var submitBookingForm = function() {
@@ -265,15 +277,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	      renderTimezoneHelper();
 	    }
 	
+	    renderBookingPage();
+	
 	    // Includes stylesheets if enabled
 	    if (config.styling.fullCalendarCore) {
-	      __webpack_require__(31);
+	      __webpack_require__(33);
 	    }
 	    if (config.styling.fullCalendarTheme) {
-	      __webpack_require__(35);
+	      __webpack_require__(37);
 	    }
 	    if (config.styling.general) {
-	      __webpack_require__(37);
+	      __webpack_require__(39);
 	    }
 	
 	  };
@@ -293,63 +307,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 1 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	/*
-	 * Utily functions for Booking.js
-	 */
-	
-	module.exports = {
-	
-	  log: function(message) {
-	    throw new Error(message);
-	    console.log('Timekit Booking: ' + message);
-	  }
-	
-	};
-
-
-/***/ },
-/* 2 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	/*
-	 * Utily functions for Booking.js
-	 */
-	var $ = __webpack_require__(3);
-	
-	module.exports = {
-	
-	  timezoneHelper: function(data) {
-	
-	    var tzText = '';
-	
-	    if (data.tzOffsetDiff === 0) {
-	      tzText = 'You are in the same timezone as ' + data.hostName;
-	    } else {
-	      tzText = 'Your timezone is ' + data.tzOffsetDiffAbs + ' hours ' + (data.aheadOfHost ? 'ahead' : 'behind') + ' ' + data.hostName + ' (calendar shown in your local time)';
-	    }
-	
-	    var el = $('<span>' + tzText + '</span>');
-	
-	    return el;
-	  }
-	
-	};
-
-
-/***/ },
-/* 3 */
-/***/ function(module, exports) {
-
-	module.exports = __WEBPACK_EXTERNAL_MODULE_3__;
-
-/***/ },
-/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -363,9 +320,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * The Timekit JavaScript SDK is freely distributable under the MIT license.
 	 *
 	 */
-	var axios = __webpack_require__(5);
-	var base64 = __webpack_require__(25);
-	var humps = __webpack_require__(26);
+	var axios = __webpack_require__(2);
+	var base64 = __webpack_require__(22);
+	var humps = __webpack_require__(23);
 	
 	function Timekit() {
 	
@@ -1077,28 +1034,28 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 5 */
+/* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(6);
+	module.exports = __webpack_require__(3);
 
 /***/ },
-/* 6 */
+/* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var defaults = __webpack_require__(7);
-	var utils = __webpack_require__(8);
-	var deprecatedMethod = __webpack_require__(9);
-	var dispatchRequest = __webpack_require__(10);
-	var InterceptorManager = __webpack_require__(18);
+	var defaults = __webpack_require__(4);
+	var utils = __webpack_require__(5);
+	var deprecatedMethod = __webpack_require__(6);
+	var dispatchRequest = __webpack_require__(7);
+	var InterceptorManager = __webpack_require__(15);
 	
 	// Polyfill ES6 Promise if needed
 	(function () {
 	  // webpack is being used to set es6-promise to the native Promise
 	  // for the standalone build. It's necessary to make sure polyfill exists.
-	  var P = __webpack_require__(19);
+	  var P = __webpack_require__(16);
 	  if (P && typeof P.polyfill === 'function') {
 	    P.polyfill();
 	  }
@@ -1161,7 +1118,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	axios.all = function (promises) {
 	  return Promise.all(promises);
 	};
-	axios.spread = __webpack_require__(24);
+	axios.spread = __webpack_require__(21);
 	
 	// Expose interceptors
 	axios.interceptors = {
@@ -1200,12 +1157,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 7 */
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(8);
+	var utils = __webpack_require__(5);
 	
 	var PROTECTION_PREFIX = /^\)\]\}',?\n/;
 	var DEFAULT_CONTENT_TYPE = {
@@ -1258,7 +1215,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 8 */
+/* 5 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1481,7 +1438,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 9 */
+/* 6 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1509,7 +1466,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 10 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -1526,11 +1483,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    try {
 	      // For browsers use XHR adapter
 	      if (typeof window !== 'undefined') {
-	        __webpack_require__(12)(resolve, reject, config);
+	        __webpack_require__(9)(resolve, reject, config);
 	      }
 	      // For node use HTTP adapter
 	      else if (typeof process !== 'undefined') {
-	        __webpack_require__(12)(resolve, reject, config);
+	        __webpack_require__(9)(resolve, reject, config);
 	      }
 	    } catch (e) {
 	      reject(e);
@@ -1539,10 +1496,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ },
-/* 11 */
+/* 8 */
 /***/ function(module, exports) {
 
 	// shim for using process in browser
@@ -1639,20 +1596,20 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 12 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	/*global ActiveXObject:true*/
 	
-	var defaults = __webpack_require__(7);
-	var utils = __webpack_require__(8);
-	var buildUrl = __webpack_require__(13);
-	var cookies = __webpack_require__(14);
-	var parseHeaders = __webpack_require__(15);
-	var transformData = __webpack_require__(16);
-	var urlIsSameOrigin = __webpack_require__(17);
+	var defaults = __webpack_require__(4);
+	var utils = __webpack_require__(5);
+	var buildUrl = __webpack_require__(10);
+	var cookies = __webpack_require__(11);
+	var parseHeaders = __webpack_require__(12);
+	var transformData = __webpack_require__(13);
+	var urlIsSameOrigin = __webpack_require__(14);
 	
 	module.exports = function xhrAdapter(resolve, reject, config) {
 	  // Transform request data
@@ -1751,12 +1708,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 13 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(8);
+	var utils = __webpack_require__(5);
 	
 	function encode(val) {
 	  return encodeURIComponent(val).
@@ -1809,12 +1766,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 14 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(8);
+	var utils = __webpack_require__(5);
 	
 	module.exports = {
 	  write: function write(name, value, expires, path, domain, secure) {
@@ -1852,12 +1809,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 15 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(8);
+	var utils = __webpack_require__(5);
 	
 	/**
 	 * Parse headers into an object
@@ -1892,12 +1849,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 16 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(8);
+	var utils = __webpack_require__(5);
 	
 	/**
 	 * Transform the data for a request or a response
@@ -1917,12 +1874,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 17 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(8);
+	var utils = __webpack_require__(5);
 	var msie = /(msie|trident)/i.test(navigator.userAgent);
 	var urlParsingNode = document.createElement('a');
 	var originUrl;
@@ -1975,12 +1932,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 18 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(8);
+	var utils = __webpack_require__(5);
 	
 	function InterceptorManager() {
 	  this.handlers = [];
@@ -2033,7 +1990,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 19 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process, setImmediate, global, module) {/*!
@@ -2172,7 +2129,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function lib$es6$promise$asap$$attemptVertex() {
 	      try {
 	        var r = require;
-	        var vertx = __webpack_require__(22);
+	        var vertx = __webpack_require__(19);
 	        lib$es6$promise$asap$$vertxNext = vertx.runOnLoop || vertx.runOnContext;
 	        return lib$es6$promise$asap$$useVertxTimer();
 	      } catch(e) {
@@ -2997,7 +2954,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	
 	    /* global define:true module:true window: true */
-	    if ("function" === 'function' && __webpack_require__(23)['amd']) {
+	    if ("function" === 'function' && __webpack_require__(20)['amd']) {
 	      !(__WEBPACK_AMD_DEFINE_RESULT__ = function() { return lib$es6$promise$umd$$ES6Promise; }.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	    } else if (typeof module !== 'undefined' && module['exports']) {
 	      module['exports'] = lib$es6$promise$umd$$ES6Promise;
@@ -3009,13 +2966,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	}).call(this);
 	
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11), __webpack_require__(20).setImmediate, (function() { return this; }()), __webpack_require__(21)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8), __webpack_require__(17).setImmediate, (function() { return this; }()), __webpack_require__(18)(module)))
 
 /***/ },
-/* 20 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {var nextTick = __webpack_require__(11).nextTick;
+	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {var nextTick = __webpack_require__(8).nextTick;
 	var apply = Function.prototype.apply;
 	var slice = Array.prototype.slice;
 	var immediateIds = {};
@@ -3091,10 +3048,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
 	  delete immediateIds[id];
 	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(20).setImmediate, __webpack_require__(20).clearImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17).setImmediate, __webpack_require__(17).clearImmediate))
 
 /***/ },
-/* 21 */
+/* 18 */
 /***/ function(module, exports) {
 
 	module.exports = function(module) {
@@ -3110,20 +3067,20 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 22 */
+/* 19 */
 /***/ function(module, exports) {
 
 	/* (ignored) */
 
 /***/ },
-/* 23 */
+/* 20 */
 /***/ function(module, exports) {
 
 	module.exports = function() { throw new Error("define cannot be used indirect"); };
 
 
 /***/ },
-/* 24 */
+/* 21 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -3156,7 +3113,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 25 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(module, global) {/*! http://mths.be/base64 v0.1.0 by @mathias | MIT license */
@@ -3323,10 +3280,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	}(this));
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(21)(module), (function() { return this; }())))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(18)(module), (function() { return this; }())))
 
 /***/ },
-/* 26 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;// =========
@@ -3463,7 +3420,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 27 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -3474,7 +3431,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	(function(factory) {
 		if (true) {
-			!(__WEBPACK_AMD_DEFINE_ARRAY__ = [ __webpack_require__(3), __webpack_require__(28) ], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+			!(__WEBPACK_AMD_DEFINE_ARRAY__ = [ __webpack_require__(25), __webpack_require__(26) ], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 		}
 		else if (typeof exports === 'object') { // Node/CommonJS
 			module.exports = factory(require('jquery'), require('moment'));
@@ -14638,7 +14595,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 
 /***/ },
-/* 28 */
+/* 25 */
+/***/ function(module, exports) {
+
+	module.exports = __WEBPACK_EXTERNAL_MODULE_25__;
+
+/***/ },
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(module) {//! moment.js
@@ -14909,7 +14872,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                module && module.exports) {
 	            try {
 	                oldLocale = globalLocale._abbr;
-	                __webpack_require__(29)("./" + name);
+	                __webpack_require__(27)("./" + name);
 	                // because defineLocale currently also sets the global locale, we
 	                // want to undo that for lazy loaded locales
 	                locale_locales__getSetGlobalLocale(oldLocale);
@@ -17836,15 +17799,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return _moment;
 	
 	}));
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(21)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(18)(module)))
 
 /***/ },
-/* 29 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var map = {
-		"./en-gb": 30,
-		"./en-gb.js": 30
+		"./en-gb": 28,
+		"./en-gb.js": 28
 	};
 	function webpackContext(req) {
 		return __webpack_require__(webpackContextResolve(req));
@@ -17857,11 +17820,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	webpackContext.resolve = webpackContextResolve;
 	module.exports = webpackContext;
-	webpackContext.id = 29;
+	webpackContext.id = 27;
 
 
 /***/ },
-/* 30 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -17869,7 +17832,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	//! author : Chris Gedrim : https://github.com/chrisgedrim
 	
 	(function (global, factory) {
-	    true ? factory(__webpack_require__(28)) :
+	    true ? factory(__webpack_require__(26)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
@@ -17932,16 +17895,162 @@ return /******/ (function(modules) { // webpackBootstrap
 	}));
 
 /***/ },
+/* 29 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	/*
+	 * Utily functions for Booking.js
+	 */
+	
+	module.exports = {
+	
+	  log: function(message) {
+	    throw new Error(message);
+	    console.log('Timekit Booking: ' + message);
+	  }
+	
+	};
+
+
+/***/ },
+/* 30 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	/*
+	 * Utily functions for Booking.js
+	 */
+	var $ = __webpack_require__(25);
+	
+	module.exports = {
+	
+	  timezoneHelper: function(data) {
+	
+	    var tzText = '';
+	
+	    if (data.tzOffsetDiff === 0) {
+	      tzText = 'You are in the same timezone as ' + data.hostName;
+	    } else {
+	      tzText = 'Your timezone is ' + data.tzOffsetDiffAbs + ' hours ' + (data.aheadOfHost ? 'ahead' : 'behind') + ' ' + data.hostName + ' (calendar shown in your local time)';
+	    }
+	
+	    var timezonIcon = __webpack_require__(31);
+	
+	    var el = $(timezonIcon + '<span>' + tzText + '</span>');
+	
+	    return el;
+	  },
+	
+	  bookingPage: function(data) {
+	
+	    var closeIcon = __webpack_require__(41);
+	
+	    var el = $(
+	      '<div class="bookingjs-bookpage">' +
+	        '<a class="bookingjs-bookpage-close" href="#">' + closeIcon +  '</a>' +
+	        '<h2 class="bookingjs-bookpage-date">' + data.chosenDate + '</h2>' +
+	        '<h3 class="bookingjs-bookpage-time">' + data.chosenTime + '</h3>' +
+	      '</div>'
+	    );
+	
+	    return el;
+	
+	  }
+	
+	};
+
+
+/***/ },
 /* 31 */
+/***/ function(module, exports) {
+
+	module.exports = "<svg class=\"bookingjs-timezoneicon\" viewBox=\"0 0 98 98\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>Shape</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"timezone-icon\" sketch:type=\"MSLayerGroup\" fill=\"#AEAEAE\"><path d=\"M37.656,1.387 L39.381,2.516 L46.176,3.475 L49.313,2.778 L55.186,3.495 L56.364,5.065 L52.274,4.52 L48.092,6.262 L49.293,9.385 L53.613,11.348 L54.189,7.395 L58.285,7.133 L64.121,12.707 L65.775,14.887 L66.56,16.28 L62.029,18.067 L55.185,21.169 L54.624,24.206 L50.095,28.476 L50.271,32.572 L48.9,32.559 L48.353,29.086 L45.757,28.238 L38.294,28.631 L35.286,34.137 L37.901,37.274 L42.221,34.917 L42.516,38.755 L44.172,40.062 L47.131,43.46 L46.985,47.751 L52.448,49.034 L56.454,46.159 L58.284,46.768 L65.003,49.45 L74.433,52.985 L76.396,57.698 L83.111,60.968 L84.644,66.732 L80.062,71.857 L74.66,77.519 L68.933,80.482 L63.04,84.408 L55.185,89.515 L50.835,93.941 L49.292,92.263 L52.782,83.419 L53.663,73.167 L46.15,66.34 L46.199,60.596 L48.164,58.239 L50.471,51.415 L45.809,48.811 L42.664,43.706 L37.75,41.817 L30.047,37.667 L26.904,29.024 L25.334,33.344 L22.977,26.276 L23.762,15.671 L27.69,12.136 L26.512,9.779 L29.26,5.459 L23.905,6.99 C9.611,15.545 0.01,31.135 0.01,49.006 C0.01,76.062 21.945,98 49.006,98 C76.062,98 98,76.062 98,49.006 C98,21.947 76.062,0.012 49.006,0.012 C45.092,0.012 41.305,0.52 37.656,1.387 Z\" id=\"Shape\" sketch:type=\"MSShapeGroup\"></path></g></g></svg>"
+
+/***/ },
+/* 32 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	/*
+	 * Default configuration for for Booking.js
+	 */
+	
+	module.exports = {
+	
+	  targetEl: '#bookingjs',
+	  email: '',
+	  apiToken: '',
+	  calendar: '',
+	  name: '',
+	  avatar: '',
+	  debug: false,
+	  timekitConfig: {
+	    app: 'sign-up'
+	  },
+	  findTime: {
+	    filters: {
+	      'and': [
+	        { 'business_hours': {}},
+	        { 'exclude_weekend': {}}
+	      ]
+	    },
+	    future: '3 weeks',
+	    duration: '1 hour'
+	  },
+	  createEvent: {
+	    invite: true
+	  },
+	  fullCalendar: {
+	    header: {
+	      left: 'today',
+	      center: '',
+	      right: 'prev, next'
+	    },
+	    views: {
+	      basic: {
+	        columnFormat: 'dddd M/D',
+	        timeFormat: 'h:mm a'
+	      },
+	      agenda: {
+	        timeFormat: 'h:mm a',
+	        displayEventEnd: false
+	      }
+	    },
+	    allDaySlot: false,
+	    scrollTime: '08:00:00',
+	    //minTime: '08:00:00',
+	    //maxTime: '19:00:00',
+	    timezone: 'local'
+	  },
+	  localization: {
+	    showTimezoneHelper: true,
+	    dateFormat: 'D. MMMM YYYY',
+	    timeFormat: 'h:mm a'
+	  },
+	  styling: {
+	    fullCalendarCore: true,
+	    fullCalendarTheme: true,
+	    general: true
+	  }
+	
+	};
+
+
+/***/ },
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(32);
+	var content = __webpack_require__(34);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(34)(content, {});
+	var update = __webpack_require__(36)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -17958,10 +18067,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 32 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(33)();
+	exports = module.exports = __webpack_require__(35)();
 	// imports
 	
 	
@@ -17972,7 +18081,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 33 */
+/* 35 */
 /***/ function(module, exports) {
 
 	/*
@@ -18028,7 +18137,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 34 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -18282,16 +18391,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 35 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(36);
+	var content = __webpack_require__(38);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(34)(content, {});
+	var update = __webpack_require__(36)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -18308,10 +18417,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 36 */
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(33)();
+	exports = module.exports = __webpack_require__(35)();
 	// imports
 	
 	
@@ -18322,16 +18431,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 37 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(38);
+	var content = __webpack_require__(40);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(34)(content, {});
+	var update = __webpack_require__(36)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -18348,89 +18457,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 38 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(33)();
+	exports = module.exports = __webpack_require__(35)();
 	// imports
 	
 	
 	// module
-	exports.push([module.id, ".bookingjs {\n  max-width: 700px;\n  font-family: sans-serif;\n  font-size: 13px;\n  border-radius: 4px;\n  background-color: white;\n  box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px 0px;\n  margin: 50px auto 20px auto;\n  overflow: hidden; }\n\n.bookingjs-timezonehelper {\n  color: #AEAEAE;\n  text-align: center;\n  padding: 7px;\n  background-color: #FBFBFB;\n  border-top: 1px solid #ececec;\n  height: 15px; }\n", ""]);
+	exports.push([module.id, ".bookingjs {\n  position: relative;\n  max-width: 700px;\n  font-family: sans-serif;\n  font-size: 13px;\n  border-radius: 4px;\n  background-color: white;\n  box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px 0px;\n  margin: 50px auto 20px auto;\n  overflow: hidden;\n  z-index: 10; }\n  .bookingjs-timezonehelper {\n    color: #AEAEAE;\n    text-align: center;\n    padding: 7px;\n    background-color: #FBFBFB;\n    border-top: 1px solid #ececec;\n    height: 15px;\n    z-index: 20; }\n  .bookingjs-timezoneicon {\n    width: 10px;\n    margin-right: 5px; }\n  .bookingjs-bookpage {\n    position: absolute;\n    height: 100%;\n    width: 100%;\n    top: 0;\n    left: 0;\n    background-color: #FBFBFB;\n    z-index: 30; }\n    .bookingjs-bookpage-close {\n      position: absolute;\n      top: 0;\n      right: 0;\n      padding: 18px;\n      transition: opacity 0.2s ease;\n      opacity: 0.3; }\n      .bookingjs-bookpage-close:hover {\n        opacity: 1; }\n    .bookingjs-bookpage-date {\n      text-align: center;\n      font-size: 34px;\n      font-weight: 400;\n      margin-top: 80px; }\n    .bookingjs-bookpage-time {\n      text-align: center;\n      font-size: 19px;\n      font-weight: 400;\n      margin-bottom: 80px; }\n  .bookingjs-closeicon {\n    width: 15px; }\n", ""]);
 	
 	// exports
 
 
 /***/ },
-/* 39 */
+/* 41 */
 /***/ function(module, exports) {
 
-	'use strict';
-	
-	/*
-	 * Default configuration for for Booking.js
-	 */
-	
-	module.exports = {
-	
-	  targetEl: '#bookingjs',
-	  email: '',
-	  apiToken: '',
-	  calendar: '',
-	  name: '',
-	  avatar: '',
-	  debug: false,
-	  timekitConfig: {
-	    app: 'sign-up'
-	  },
-	  findTime: {
-	    filters: {
-	      'and': [
-	        { 'business_hours': {}},
-	        { 'exclude_weekend': {}}
-	      ]
-	    },
-	    future: '3 weeks',
-	    duration: '1 hour'
-	  },
-	  createEvent: {
-	    invite: true
-	  },
-	  fullCalendar: {
-	    header: {
-	      left: 'today',
-	      center: '',
-	      right: 'prev, next'
-	    },
-	    views: {
-	      basic: {
-	        columnFormat: 'dddd M/D',
-	        timeFormat: 'h:mm a'
-	      },
-	      agenda: {
-	        timeFormat: 'h:mm a',
-	        displayEventEnd: false
-	      }
-	    },
-	    allDaySlot: false,
-	    scrollTime: '08:00:00',
-	    //minTime: '08:00:00',
-	    //maxTime: '19:00:00',
-	    timezone: 'local'
-	  },
-	  localization: {
-	    showTimezoneHelper: true,
-	    dateFormat: 'D. MMMM YYYY',
-	    timeFormat: 'h:mm a'
-	  },
-	  styling: {
-	    fullCalendarCore: true,
-	    fullCalendarTheme: true,
-	    general: true
-	  }
-	
-	};
-
+	module.exports = "<svg class=\"bookingjs-closeicon\" viewBox=\"0 0 90 90\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>close-icon</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"close-icon\" sketch:type=\"MSLayerGroup\" fill=\"#000000\"><path d=\"M58,45 L87.2,15.8 C90.9,12.1 90.9,6.3 87.3,2.7 C83.7,-0.9 77.8,-0.8 74.2,2.8 L45,32 L15.8,2.8 C12.1,-0.9 6.3,-0.9 2.7,2.7 C-0.9,6.3 -0.8,12.2 2.8,15.8 L32,45 L2.8,74.2 C-0.9,77.9 -0.9,83.7 2.7,87.3 C6.3,90.9 12.2,90.8 15.8,87.2 L45,58 L74.2,87.2 C77.9,90.9 83.7,90.9 87.3,87.3 C90.9,83.7 90.8,77.8 87.2,74.2 L58,45 L58,45 Z\" id=\"Shape\" sketch:type=\"MSShapeGroup\"></path></g></g></svg>"
 
 /***/ }
 /******/ ])

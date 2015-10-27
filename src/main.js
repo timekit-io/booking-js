@@ -106,9 +106,13 @@ function TimekitBooking() {
 
     $.extend(true, args, config.fullCalendar);
 
-    calendarTarget = $('<div class="bookingjs-calendar">');
+    calendarTarget = $('<div class="bookingjs-calendar empty-calendar">');
     $(config.targetEl).append(calendarTarget);
-    calendarTarget.fullCalendar(args);
+
+    // Wait until DOM is ready to init fullCalendar (fixes wrong event height bug)
+    $(window).load(function() {
+      calendarTarget.fullCalendar(args);
+    });
 
   };
 
@@ -118,6 +122,7 @@ function TimekitBooking() {
     calendarTarget.fullCalendar('addEventSource', {
       events: eventData
     });
+    calendarTarget.removeClass('empty-calendar');
 
   };
 
@@ -128,12 +133,20 @@ function TimekitBooking() {
       chosenDate: moment(eventData.start).format('D. MMMM YYYY'),
       chosenTime: moment(eventData.start).format('h:mma') + ' to ' + moment(eventData.end).format('h:mma'),
       start: moment(eventData.start).format(),
-      end: moment(eventData.start).format()
+      end: moment(eventData.start).format(),
+      submitText: 'Book it',
+      loadingText: 'Wait..',
+      successText: 'Booked!'
     });
 
     bookingPageTarget.children('.bookingjs-bookpage-close').click(function() {
       hideBookingPage();
     });
+
+    bookingPageTarget.children('.bookingjs-form').submit(function(e) {
+      submitBookingForm(this, e);
+    });
+
 
     $(document).on('keyup', function(e) {
       // escape key maps to keycode `27`
@@ -152,40 +165,52 @@ function TimekitBooking() {
 
   };
 
-  var submitBookingForm = function() {
+  // Event handler on form submit
+  var submitBookingForm = function(form, e) {
 
-  };
+    e.preventDefault();
 
-  // Create new event through Timekit SDK
-  var timekitCreateEvent = function(data, callback) {
-    var args = {
-      start: data.start,
-      end: data.end,
-      what: config.name + ' x '+ data.name,
-      where: data.where,
-      calendar_id: config.calendar,
-      participants: [
-        data.email,
-        config.email
-      ]
-    };
+    var submitButton = $(form).children('.bookingjs-form-button');
 
-    $.extend(true, args, config.createEvent);
+    if(submitButton.hasClass('loading') || submitButton.hasClass('success')) {
+      return;
+    }
 
-    timekit.createEvent(args)
-    .then(function(response){
-      callback(response);
+    var values = {};
+    $.each($(form).serializeArray(), function(i, field) {
+        values[field.name] = field.value;
+    });
+
+    $(form).children('.bookingjs-form-button').addClass('loading');
+
+    timekitCreateEvent(values).then(function(){
+      renderBookingCompleted(form);
     }).catch(function(response){
       utils.log('An error with CreateEvent occured');
       utils.log(response);
     });
   };
 
+  // Create new event through Timekit SDK
+  var timekitCreateEvent = function(data) {
+
+    var args = {
+      start: data.start,
+      end: data.end,
+      what: config.name + ' x '+ data.name,
+      calendar_id: config.calendar,
+      participants: [data.email],
+      description: data.comment || ''
+    };
+
+    $.extend(true, args, config.createEvent);
+
+    return timekit.createEvent(args);
+  };
+
   // Render the booking completed page when booking was successful
-  var renderBookingCompleted = function() {
-    // $('#bookmeform_block .w-form-done').show();
-    // $('#bookmeform_block .w-form-fail').hide();
-    // $('#bookmeform').hide();
+  var renderBookingCompleted = function(form) {
+    $(form).children('.bookingjs-form-button').removeClass('loading').addClass('success');
   };
 
   // Exposed initilization method

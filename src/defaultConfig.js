@@ -24,10 +24,11 @@ module.exports = {
       ]
     },
     future: '3 weeks',
-    duration: '1 hour'
+    length: '1 hour'
   },
   createEvent: {
-    invite: true
+    invite: true,
+    where: 'Online'
   },
   fullCalendar: {
     header: {
@@ -48,6 +49,7 @@ module.exports = {
     allDaySlot: false,
     scrollTime: '08:00:00',
     timezone: 'local',
+    columnFormat: 'ddd\n M/D'
     //minTime: '08:00:00',
     //maxTime: '19:00:00',
   },

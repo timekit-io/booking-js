@@ -1,17 +1,36 @@
 // Colors
 
-$bgColor:         #ececec;
+$textColor:       #333;
+$bgColor:         #FBFBFB;
+$borderColor:     #ececec;
+$subtleColor:     darken($borderColor, 20%);
 $primaryColor:    #689AD8;
 $primaryDarkColor: darken($primaryColor, 10%);
 
 // Classes
 
 .fc-view-container {
-  background-color: #FBFBFB;
+  background-color: $bgColor;
+  color: $textColor;
 }
 
 .fc-row.fc-widget-header {
-  border-bottom: 1px solid $bgColor;
+  border-bottom: 1px solid $borderColor;
+
+  .fc-day-header {
+    text-transform: uppercase;
+    font-size: 0.9em;
+    font-weight: 600;
+
+    &::first-line {
+      color: darken($borderColor, 20%);
+    }
+  }
+}
+
+.fc-axis {
+  color: $subtleColor;
+  font-size: 0.9em;
 }
 
 .fc-state-default {
@@ -25,7 +44,7 @@ $primaryDarkColor: darken($primaryColor, 10%);
 .fc-button {
   text-transform: uppercase;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 1.1em;
 }
 
 .fc-content-skeleton {
@@ -35,7 +54,7 @@ $primaryDarkColor: darken($primaryColor, 10%);
 .fc-toolbar {
   padding: 0px;
   margin-bottom: 0;
-  border-bottom: 1px solid $bgColor;
+  border-bottom: 1px solid $borderColor;
 }
 
 .fc .fc-toolbar > * > button {
@@ -78,23 +97,34 @@ $primaryDarkColor: darken($primaryColor, 10%);
   background-color: transparent;
 }
 
+.empty-calendar .fc-event {
+  opacity: 0;
+}
+
 .fc-event {
-  transition: all 200ms;
+  transition: all 200ms, opacity 600ms;
   border: none;
   border-left: 3px solid $primaryColor;
-  padding: 5px;
+  padding: 3px;
   background-color: white;
   border-radius: 4px;
-  color: #444;
+  color: $textColor;
   margin: 1px 0;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.07);
   cursor: pointer;
+  margin-bottom: 2px;
+  opacity: 1;
 
   &:hover {
     color: white;
-    background-color: $primaryDarkColor;
-    border-left: 3px solid $primaryDarkColor;
+    background-color: $primaryColor;
+    border-left: 3px solid $primaryColor;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   }
+}
+
+.fc-event .fc-bg {
+  opacity: 0;
 }
 
 .fc-day-grid-event {
@@ -106,6 +136,14 @@ $primaryDarkColor: darken($primaryColor, 10%);
   border-top-style: none;
 }
 
+.fc-time-grid .fc-slats td {
+  border-top-color: $bgColor;
+
+  &.fc-axis {
+    border-top-color: $borderColor;
+  }
+}
+
 .fc-time-grid-event {
 
   &.fc-short .fc-time:after {
@@ -114,11 +152,12 @@ $primaryDarkColor: darken($primaryColor, 10%);
 
   .fc-time {
     font-size: 1.1em;
+    padding: 5px;
   }
 }
 
 .fc-unthemed th, .fc-unthemed td, .fc-unthemed thead, .fc-unthemed tbody, .fc-unthemed .fc-divider, .fc-unthemed .fc-row, .fc-unthemed .fc-popover {
-  border-color: $bgColor;
+  border-color: $borderColor;
 }
 
 .fc-agendaMonthly-view .fc-event {

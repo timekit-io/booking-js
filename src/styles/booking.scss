@@ -6,6 +6,10 @@ $textColor:       #AEAEAE;
 $primaryColor:    #689AD8;
 $primaryDarkColor: darken($primaryColor, 10%);
 
+// Fonts
+
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);
+
 // Classes
 
 .bookingjs {

@@ -9,7 +9,7 @@ var $ = require('jquery');
 // Internal dependencies
 var utils = require('./utils');
 var templates = require('./templates');
-var config = require('./defaultConfig');
+var config = require('./defaults');
 
 /*!
  * Booking.js
@@ -23,9 +23,13 @@ var config = require('./defaultConfig');
 
 function TimekitBooking() {
 
+  // Export
   var TB = {};
-  var calendarTarget = '';
-  var bookingPageTarget = '';
+
+  // DOM nodes
+  var rootTarget;
+  var calendarTarget;
+  var bookingPageTarget;
 
   // Setup the Timekit SDK with correct credentials
   var timekitSetup = function() {
@@ -59,7 +63,7 @@ function TimekitBooking() {
     //var localTzFormatted = (localTzOffset > 0 ? "+" : "") + localTzOffset;
 
     var timezoneHelperTarget = $('<div class="bookingjs-timezonehelper"><span>Loading...</span></div>');
-    $(config.targetEl).append(timezoneHelperTarget);
+    rootTarget.append(timezoneHelperTarget);
 
     timekit.getUserTimezone({
       email: config.email
@@ -95,7 +99,7 @@ function TimekitBooking() {
 
     if (deviceWidth < 480) {
       defaultView = 'basicDay';
-      height = 530; //1132
+      height = 530;
     }
 
     var args = {
@@ -107,12 +111,10 @@ function TimekitBooking() {
     $.extend(true, args, config.fullCalendar);
 
     calendarTarget = $('<div class="bookingjs-calendar empty-calendar">');
-    $(config.targetEl).append(calendarTarget);
+    rootTarget.append(calendarTarget);
 
-    // Wait until DOM is ready to init fullCalendar (fixes wrong event height bug)
-    $(window).load(function() {
-      calendarTarget.fullCalendar(args);
-    });
+    calendarTarget.fullCalendar(args);
+    rootTarget.addClass('show');
 
   };
 
@@ -122,7 +124,19 @@ function TimekitBooking() {
     calendarTarget.fullCalendar('addEventSource', {
       events: eventData
     });
+
     calendarTarget.removeClass('empty-calendar');
+
+  };
+
+  // Render the avatar image
+  var renderAvatarImage = function() {
+
+    var avatarTarget = templates.avatarImage({
+      avatar: config.avatar
+    });
+
+    rootTarget.append(avatarTarget);
 
   };
 
@@ -135,8 +149,7 @@ function TimekitBooking() {
       start: moment(eventData.start).format(),
       end: moment(eventData.start).format(),
       submitText: 'Book it',
-      loadingText: 'Wait..',
-      successText: 'Booked!'
+      loadingText: 'Wait..'
     });
 
     bookingPageTarget.children('.bookingjs-bookpage-close').click(function() {
@@ -147,13 +160,12 @@ function TimekitBooking() {
       submitBookingForm(this, e);
     });
 
-
     $(document).on('keyup', function(e) {
       // escape key maps to keycode `27`
       if (e.keyCode === 27) { hideBookingPage(); }
     });
 
-    $(config.targetEl).append(bookingPageTarget);
+    rootTarget.append(bookingPageTarget);
 
     setTimeout(function(){
       bookingPageTarget.addClass('show');
@@ -207,7 +219,7 @@ function TimekitBooking() {
       end: data.end,
       what: config.name + ' x '+ data.name,
       calendar_id: config.calendar,
-      participants: [data.email],
+      participants: [config.email, data.email],
       description: data.comment || ''
     };
 
@@ -233,33 +245,46 @@ function TimekitBooking() {
     // Extend the default config with supplied settings
     $.extend(true, config, suppliedConfig);
 
-    // Initialize FullCalendar
-    initializeCalendar();
-
-    // Setup Timekit SDK config
-    timekitSetup();
-
-    // Get availability through Timekit SDK
-    timekitFindTime(function(response){
-      // Render available timeslots in FullCalendar
-      renderCalendarEvents(response.data);
-    });
-
-    // Show timezone helper if enabled
-    if (config.localization.showTimezoneHelper) {
-      renderTimezoneHelper();
-    }
-
     // Includes stylesheets if enabled
     if (config.styling.fullCalendarCore) {
       require('../node_modules/fullcalendar/dist/fullcalendar.css');
     }
     if (config.styling.fullCalendarTheme) {
-      require('./styles/fullcalendar-theme.scss');
+      require('./styles/fullcalendar.scss');
     }
     if (config.styling.general) {
-      require('./styles/booking.scss');
+      require('./styles/main.scss');
     }
+
+    // Set rootTargt to the target element
+    rootTarget = $(config.targetEl);
+
+    // Setup Timekit SDK config
+    timekitSetup();
+
+    // Wait until DOM is ready to init (fixes wrong event height bug in fullCalendar)
+    $(window).load(function() {
+
+      // Initialize FullCalendar
+      initializeCalendar();
+
+      // Get availability through Timekit SDK
+      timekitFindTime(function(response){
+        // Render available timeslots in FullCalendar
+        renderCalendarEvents(response.data);
+      });
+
+      // Show timezone helper if enabled
+      if (config.localization.showTimezoneHelper) {
+        renderTimezoneHelper();
+      }
+
+      // Show image avatar if set
+      if (config.avatar) {
+        renderAvatarImage();
+      }
+
+    });
 
   };
 

@@ -125,6 +125,10 @@ jQuery(document).ready(function($) {
     ga('send', 'event', 'Timekit Link', 'Click', 'Footer');
   });
 
+  $('#notify-me-form').submit(function(e) {
+    ga('send', 'event', 'Signup', 'Submit', 'Notify me');
+  });
+
   var cal = $('#calendar');
   var localTzOffset = (new Date()).getTimezoneOffset()/60*-1;
   var localTzFormatted = (localTzOffset > 0 ? "+" : "") + localTzOffset;

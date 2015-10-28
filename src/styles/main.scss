@@ -20,9 +20,14 @@ $primaryDarkColor: darken($primaryColor, 10%);
   border-radius: 4px;
   background-color: white;
   box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px 0px;
-  margin: 50px auto 20px auto;
-  overflow: hidden;
+  margin: 60px auto 20px auto;
   z-index: 10;
+  opacity: 0;
+
+  &.show {
+    transition: opacity 300ms ease;
+    opacity: 1;
+  }
 
   // Timezone Helper
 
@@ -34,11 +39,34 @@ $primaryDarkColor: darken($primaryColor, 10%);
     border-top: 1px solid $borderColor;
     min-height: 15px;
     z-index: 20;
+    border-radius: 0 0 4px 4px;
   }
 
   &-timezoneicon {
     width: 10px;
     margin-right: 5px;
+  }
+
+  // Image avatar
+
+  &-avatar {
+    position: absolute;
+    top: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 150px;
+    border: 3px solid white;
+    box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.13);
+    overflow: hidden;
+    z-index: 40;
+
+    img {
+      max-width: 100%;
+      vertical-align: middle;
+      display: inline-block;
+      width: 80px;
+      height: 80px;
+    }
   }
 
   // Book page
@@ -53,6 +81,7 @@ $primaryDarkColor: darken($primaryColor, 10%);
     z-index: 30;
     opacity: 0;
     transition: opacity 200ms ease;
+    border-radius: 4px;
 
     &.show {
       opacity: 1;

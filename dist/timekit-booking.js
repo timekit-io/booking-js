@@ -79,9 +79,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	function TimekitBooking() {
 	
+	  // Export
 	  var TB = {};
-	  var calendarTarget = '';
-	  var bookingPageTarget = '';
+	
+	  // DOM nodes
+	  var rootTarget;
+	  var calendarTarget;
+	  var bookingPageTarget;
 	
 	  // Setup the Timekit SDK with correct credentials
 	  var timekitSetup = function() {
@@ -115,7 +119,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    //var localTzFormatted = (localTzOffset > 0 ? "+" : "") + localTzOffset;
 	
 	    var timezoneHelperTarget = $('<div class="bookingjs-timezonehelper"><span>Loading...</span></div>');
-	    $(config.targetEl).append(timezoneHelperTarget);
+	    rootTarget.append(timezoneHelperTarget);
 	
 	    timekit.getUserTimezone({
 	      email: config.email
@@ -151,7 +155,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    if (deviceWidth < 480) {
 	      defaultView = 'basicDay';
-	      height = 530; //1132
+	      height = 530;
 	    }
 	
 	    var args = {
@@ -163,12 +167,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    $.extend(true, args, config.fullCalendar);
 	
 	    calendarTarget = $('<div class="bookingjs-calendar empty-calendar">');
-	    $(config.targetEl).append(calendarTarget);
+	    rootTarget.append(calendarTarget);
 	
-	    // Wait until DOM is ready to init fullCalendar (fixes wrong event height bug)
-	    $(window).load(function() {
-	      calendarTarget.fullCalendar(args);
-	    });
+	    calendarTarget.fullCalendar(args);
+	    rootTarget.addClass('show');
 	
 	  };
 	
@@ -178,7 +180,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	    calendarTarget.fullCalendar('addEventSource', {
 	      events: eventData
 	    });
+	
 	    calendarTarget.removeClass('empty-calendar');
+	
+	  };
+	
+	  // Render the avatar image
+	  var renderAvatarImage = function() {
+	
+	    var avatarTarget = templates.avatarImage({
+	      avatar: config.avatar
+	    });
+	
+	    rootTarget.append(avatarTarget);
 	
 	  };
 	
@@ -191,8 +205,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      start: moment(eventData.start).format(),
 	      end: moment(eventData.start).format(),
 	      submitText: 'Book it',
-	      loadingText: 'Wait..',
-	      successText: 'Booked!'
+	      loadingText: 'Wait..'
 	    });
 	
 	    bookingPageTarget.children('.bookingjs-bookpage-close').click(function() {
@@ -203,13 +216,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	      submitBookingForm(this, e);
 	    });
 	
-	
 	    $(document).on('keyup', function(e) {
 	      // escape key maps to keycode `27`
 	      if (e.keyCode === 27) { hideBookingPage(); }
 	    });
 	
-	    $(config.targetEl).append(bookingPageTarget);
+	    rootTarget.append(bookingPageTarget);
 	
 	    setTimeout(function(){
 	      bookingPageTarget.addClass('show');
@@ -263,7 +275,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      end: data.end,
 	      what: config.name + ' x '+ data.name,
 	      calendar_id: config.calendar,
-	      participants: [data.email],
+	      participants: [config.email, data.email],
 	      description: data.comment || ''
 	    };
 	
@@ -289,23 +301,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // Extend the default config with supplied settings
 	    $.extend(true, config, suppliedConfig);
 	
-	    // Initialize FullCalendar
-	    initializeCalendar();
-	
-	    // Setup Timekit SDK config
-	    timekitSetup();
-	
-	    // Get availability through Timekit SDK
-	    timekitFindTime(function(response){
-	      // Render available timeslots in FullCalendar
-	      renderCalendarEvents(response.data);
-	    });
-	
-	    // Show timezone helper if enabled
-	    if (config.localization.showTimezoneHelper) {
-	      renderTimezoneHelper();
-	    }
-	
 	    // Includes stylesheets if enabled
 	    if (config.styling.fullCalendarCore) {
 	      __webpack_require__(35);
@@ -316,6 +311,36 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (config.styling.general) {
 	      __webpack_require__(41);
 	    }
+	
+	    // Set rootTargt to the target element
+	    rootTarget = $(config.targetEl);
+	
+	    // Setup Timekit SDK config
+	    timekitSetup();
+	
+	    // Wait until DOM is ready to init (fixes wrong event height bug in fullCalendar)
+	    $(window).load(function() {
+	
+	      // Initialize FullCalendar
+	      initializeCalendar();
+	
+	      // Get availability through Timekit SDK
+	      timekitFindTime(function(response){
+	        // Render available timeslots in FullCalendar
+	        renderCalendarEvents(response.data);
+	      });
+	
+	      // Show timezone helper if enabled
+	      if (config.localization.showTimezoneHelper) {
+	        renderTimezoneHelper();
+	      }
+	
+	      // Show image avatar if set
+	      if (config.avatar) {
+	        renderAvatarImage();
+	      }
+	
+	    });
 	
 	  };
 	
@@ -17996,7 +18021,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    );
 	
 	    return el;
+	  },
 	
+	  avatarImage: function(data) {
+	
+	    var el = $(
+	      '<div class="bookingjs-avatar">' +
+	        '<img src="' + data.avatar + '" />' +
+	      '</div>'
+	    );
+	
+	    return el;
 	  }
 	
 	};
@@ -18459,8 +18494,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../node_modules/css-loader/index.js!./../../node_modules/sass-loader/index.js!./fullcalendar-theme.scss", function() {
-				var newContent = require("!!./../../node_modules/css-loader/index.js!./../../node_modules/sass-loader/index.js!./fullcalendar-theme.scss");
+			module.hot.accept("!!./../../node_modules/css-loader/index.js!./../../node_modules/sass-loader/index.js!./fullcalendar.scss", function() {
+				var newContent = require("!!./../../node_modules/css-loader/index.js!./../../node_modules/sass-loader/index.js!./fullcalendar.scss");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -18499,8 +18534,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../node_modules/css-loader/index.js!./../../node_modules/sass-loader/index.js!./booking.scss", function() {
-				var newContent = require("!!./../../node_modules/css-loader/index.js!./../../node_modules/sass-loader/index.js!./booking.scss");
+			module.hot.accept("!!./../../node_modules/css-loader/index.js!./../../node_modules/sass-loader/index.js!./main.scss", function() {
+				var newContent = require("!!./../../node_modules/css-loader/index.js!./../../node_modules/sass-loader/index.js!./main.scss");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -18518,7 +18553,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.push([module.id, "@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);", ""]);
 	
 	// module
-	exports.push([module.id, ".bookingjs {\n  position: relative;\n  max-width: 700px;\n  font-family: 'Open Sans', Helvetica, Tahoma, Arial, sans-serif;\n  font-size: 13px;\n  border-radius: 4px;\n  background-color: white;\n  box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px 0px;\n  margin: 50px auto 20px auto;\n  overflow: hidden;\n  z-index: 10; }\n  .bookingjs-timezonehelper {\n    color: #AEAEAE;\n    text-align: center;\n    padding: 7px 10px;\n    background-color: #FBFBFB;\n    border-top: 1px solid #ececec;\n    min-height: 15px;\n    z-index: 20; }\n  .bookingjs-timezoneicon {\n    width: 10px;\n    margin-right: 5px; }\n  .bookingjs-bookpage {\n    position: absolute;\n    height: 100%;\n    width: 100%;\n    top: 0;\n    left: 0;\n    background-color: #FBFBFB;\n    z-index: 30;\n    opacity: 0;\n    transition: opacity 200ms ease; }\n    .bookingjs-bookpage.show {\n      opacity: 1; }\n    .bookingjs-bookpage-close {\n      position: absolute;\n      top: 0;\n      right: 0;\n      padding: 18px;\n      transition: opacity 0.2s ease;\n      opacity: 0.3; }\n      .bookingjs-bookpage-close:hover {\n        opacity: 1; }\n    .bookingjs-bookpage-date {\n      text-align: center;\n      font-size: 34px;\n      font-weight: 400;\n      margin-top: 90px;\n      margin-bottom: 20px; }\n    .bookingjs-bookpage-time {\n      text-align: center;\n      font-size: 17px;\n      font-weight: 400;\n      margin-bottom: 70px; }\n  .bookingjs-closeicon {\n    width: 15px; }\n  .bookingjs-form {\n    width: 50%;\n    position: relative;\n    margin: 0 auto;\n    text-align: center; }\n    .bookingjs-form-input {\n      transition: box-shadow 200ms ease;\n      width: 100%;\n      padding: 15px 25px;\n      border: 0px solid #ececec;\n      font-size: 1em;\n      box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), inset 0px 0px 1px 1px rgba(255, 255, 255, 0);\n      text-align: left;\n      box-sizing: border-box; }\n      .bookingjs-form-input:focus {\n        outline: 0;\n        box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), inset 0px 0px 1px 1px #689AD8; }\n      .bookingjs-form-input.first {\n        border-radius: 4px 4px 0 0; }\n      .bookingjs-form-input.last {\n        border-radius: 0 0 4px 4px; }\n      .bookingjs-form-input.hidden {\n        display: none; }\n    .bookingjs-form-button {\n      position: relative;\n      transition: background-color 200ms, width 300ms;\n      display: inline-block;\n      padding: 13px 25px;\n      background-color: #689AD8;\n      text-transform: uppercase;\n      box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);\n      color: white;\n      border: 0px;\n      border-radius: 3px;\n      font-size: 1.1em;\n      font-weight: 600;\n      margin-top: 30px;\n      cursor: pointer;\n      width: 110px;\n      height: 44px;\n      outline: 0; }\n      .bookingjs-form-button .inactive-text,\n      .bookingjs-form-button .success-text,\n      .bookingjs-form-button .loading-text {\n        transition: opacity 300ms ease;\n        position: absolute;\n        top: 13px;\n        left: 25px; }\n      .bookingjs-form-button .inactive-text {\n        opacity: 1; }\n      .bookingjs-form-button .loading-text,\n      .bookingjs-form-button .success-text {\n        opacity: 0; }\n      .bookingjs-form-button .success-text svg {\n        height: 15px;\n        margin-top: 2px; }\n      .bookingjs-form-button.loading, .bookingjs-form-button.loading:hover {\n        width: 100px;\n        background-color: #B1B1B1; }\n        .bookingjs-form-button.loading .inactive-text, .bookingjs-form-button.loading:hover .inactive-text {\n          opacity: 0; }\n        .bookingjs-form-button.loading .loading-text, .bookingjs-form-button.loading:hover .loading-text {\n          opacity: 1; }\n      .bookingjs-form-button.success, .bookingjs-form-button.success:hover {\n        width: 72px;\n        background-color: #5BAF56; }\n        .bookingjs-form-button.success .loading-text,\n        .bookingjs-form-button.success .inactive-text, .bookingjs-form-button.success:hover .loading-text,\n        .bookingjs-form-button.success:hover .inactive-text {\n          opacity: 0; }\n        .bookingjs-form-button.success .success-text, .bookingjs-form-button.success:hover .success-text {\n          opacity: 1; }\n      .bookingjs-form-button:hover {\n        background-color: #3f7fce; }\n", ""]);
+	exports.push([module.id, ".bookingjs {\n  position: relative;\n  max-width: 700px;\n  font-family: 'Open Sans', Helvetica, Tahoma, Arial, sans-serif;\n  font-size: 13px;\n  border-radius: 4px;\n  background-color: white;\n  box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px 0px;\n  margin: 60px auto 20px auto;\n  z-index: 10;\n  opacity: 0; }\n  .bookingjs.show {\n    transition: opacity 300ms ease;\n    opacity: 1; }\n  .bookingjs-timezonehelper {\n    color: #AEAEAE;\n    text-align: center;\n    padding: 7px 10px;\n    background-color: #FBFBFB;\n    border-top: 1px solid #ececec;\n    min-height: 15px;\n    z-index: 20;\n    border-radius: 0 0 4px 4px; }\n  .bookingjs-timezoneicon {\n    width: 10px;\n    margin-right: 5px; }\n  .bookingjs-avatar {\n    position: absolute;\n    top: -50px;\n    left: 50%;\n    transform: translateX(-50%);\n    border-radius: 150px;\n    border: 3px solid white;\n    box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.13);\n    overflow: hidden;\n    z-index: 40; }\n    .bookingjs-avatar img {\n      max-width: 100%;\n      vertical-align: middle;\n      display: inline-block;\n      width: 80px;\n      height: 80px; }\n  .bookingjs-bookpage {\n    position: absolute;\n    height: 100%;\n    width: 100%;\n    top: 0;\n    left: 0;\n    background-color: #FBFBFB;\n    z-index: 30;\n    opacity: 0;\n    transition: opacity 200ms ease;\n    border-radius: 4px; }\n    .bookingjs-bookpage.show {\n      opacity: 1; }\n    .bookingjs-bookpage-close {\n      position: absolute;\n      top: 0;\n      right: 0;\n      padding: 18px;\n      transition: opacity 0.2s ease;\n      opacity: 0.3; }\n      .bookingjs-bookpage-close:hover {\n        opacity: 1; }\n    .bookingjs-bookpage-date {\n      text-align: center;\n      font-size: 34px;\n      font-weight: 400;\n      margin-top: 90px;\n      margin-bottom: 20px; }\n    .bookingjs-bookpage-time {\n      text-align: center;\n      font-size: 17px;\n      font-weight: 400;\n      margin-bottom: 70px; }\n  .bookingjs-closeicon {\n    width: 15px; }\n  .bookingjs-form {\n    width: 50%;\n    position: relative;\n    margin: 0 auto;\n    text-align: center; }\n    .bookingjs-form-input {\n      transition: box-shadow 200ms ease;\n      width: 100%;\n      padding: 15px 25px;\n      border: 0px solid #ececec;\n      font-size: 1em;\n      box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), inset 0px 0px 1px 1px rgba(255, 255, 255, 0);\n      text-align: left;\n      box-sizing: border-box; }\n      .bookingjs-form-input:focus {\n        outline: 0;\n        box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), inset 0px 0px 1px 1px #689AD8; }\n      .bookingjs-form-input.first {\n        border-radius: 4px 4px 0 0; }\n      .bookingjs-form-input.last {\n        border-radius: 0 0 4px 4px; }\n      .bookingjs-form-input.hidden {\n        display: none; }\n    .bookingjs-form-button {\n      position: relative;\n      transition: background-color 200ms, width 300ms;\n      display: inline-block;\n      padding: 13px 25px;\n      background-color: #689AD8;\n      text-transform: uppercase;\n      box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);\n      color: white;\n      border: 0px;\n      border-radius: 3px;\n      font-size: 1.1em;\n      font-weight: 600;\n      margin-top: 30px;\n      cursor: pointer;\n      width: 110px;\n      height: 44px;\n      outline: 0; }\n      .bookingjs-form-button .inactive-text,\n      .bookingjs-form-button .success-text,\n      .bookingjs-form-button .loading-text {\n        transition: opacity 300ms ease;\n        position: absolute;\n        top: 13px;\n        left: 25px; }\n      .bookingjs-form-button .inactive-text {\n        opacity: 1; }\n      .bookingjs-form-button .loading-text,\n      .bookingjs-form-button .success-text {\n        opacity: 0; }\n      .bookingjs-form-button .success-text svg {\n        height: 15px;\n        margin-top: 2px; }\n      .bookingjs-form-button.loading, .bookingjs-form-button.loading:hover {\n        width: 100px;\n        background-color: #B1B1B1; }\n        .bookingjs-form-button.loading .inactive-text, .bookingjs-form-button.loading:hover .inactive-text {\n          opacity: 0; }\n        .bookingjs-form-button.loading .loading-text, .bookingjs-form-button.loading:hover .loading-text {\n          opacity: 1; }\n      .bookingjs-form-button.success, .bookingjs-form-button.success:hover {\n        width: 72px;\n        background-color: #5BAF56; }\n        .bookingjs-form-button.success .loading-text,\n        .bookingjs-form-button.success .inactive-text, .bookingjs-form-button.success:hover .loading-text,\n        .bookingjs-form-button.success:hover .inactive-text {\n          opacity: 0; }\n        .bookingjs-form-button.success .success-text, .bookingjs-form-button.success:hover .success-text {\n          opacity: 1; }\n      .bookingjs-form-button:hover {\n        background-color: #3f7fce; }\n", ""]);
 	
 	// exports
 

@@ -49,7 +49,17 @@ module.exports = {
     );
 
     return el;
+  },
 
+  avatarImage: function(data) {
+
+    var el = $(
+      '<div class="bookingjs-avatar">' +
+        '<img src="' + data.avatar + '" />' +
+      '</div>'
+    );
+
+    return el;
   }
 
 };

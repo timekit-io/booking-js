@@ -1,3 +1,7 @@
+// Imports
+
+@import '_responsive.scss';
+
 // Colors
 
 $bgColor:         #FBFBFB;
@@ -107,6 +111,12 @@ $primaryDarkColor: darken($primaryColor, 10%);
       font-weight: 400;
       margin-top: 90px;
       margin-bottom: 20px;
+
+      @include mobile-only {
+        font-size: 24px;
+        margin-top: 60px;
+        margin-bottom: 15px;
+      }
     }
 
     &-time {
@@ -114,6 +124,11 @@ $primaryDarkColor: darken($primaryColor, 10%);
       font-size: 17px;
       font-weight: 400;
       margin-bottom: 70px;
+
+      @include mobile-only {
+        font-size: 15px;
+        margin-bottom: 30px;
+      }
     }
   }
 
@@ -128,6 +143,10 @@ $primaryDarkColor: darken($primaryColor, 10%);
     position: relative;
     margin: 0 auto;
     text-align: center;
+
+    @include mobile-only {
+      width: 75%;
+    }
 
     &-input {
       transition: box-shadow 200ms ease;

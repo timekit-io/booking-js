@@ -93,19 +93,13 @@ function TimekitBooking() {
   // Setup and render FullCalendar
   var initializeCalendar = function() {
 
-    var defaultView = 'agendaWeek';
-    var height = 600;
-    var deviceWidth = $(window).width();
-
-    if (deviceWidth < 480) {
-      defaultView = 'basicDay';
-      height = 530;
-    }
+    var sizing = decideCalendarSize(true);
 
     var args = {
-      defaultView: defaultView,
-      height: height,
-      eventClick: showBookingPage
+      defaultView: sizing.view,
+      height: sizing.height,
+      eventClick: showBookingPage,
+      windowResize: decideCalendarSize
     };
 
     $.extend(true, args, config.fullCalendar);
@@ -116,6 +110,29 @@ function TimekitBooking() {
     calendarTarget.fullCalendar(args);
     rootTarget.addClass('show');
 
+  };
+
+  // Fires when window is resized and calendar must adhere
+  var decideCalendarSize = function(shouldReturn) {
+
+    var view = 'agendaWeek';
+    var height = 550;
+    var deviceWidth = $(window).width();
+
+    if (deviceWidth < 480) {
+      view = 'basicDay';
+      height = 400;
+    }
+
+    if (shouldReturn) {
+      return {
+        height: height,
+        view: view
+      };
+    } else {
+      calendarTarget.fullCalendar('changeView', view);
+      calendarTarget.fullCalendar('option', 'height', height);
+    }
   };
 
   // Render the supplied calendar events in FullCalendar

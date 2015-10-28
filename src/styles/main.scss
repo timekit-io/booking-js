@@ -59,6 +59,7 @@ $primaryDarkColor: darken($primaryColor, 10%);
     box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.13);
     overflow: hidden;
     z-index: 40;
+    background-color: white;
 
     img {
       max-width: 100%;

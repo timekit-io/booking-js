@@ -93,7 +93,7 @@ function TimekitBooking() {
   // Setup and render FullCalendar
   var initializeCalendar = function() {
 
-    var sizing = decideCalendarSize(true);
+    var sizing = decideCalendarSize(null, true);
 
     var args = {
       defaultView: sizing.view,
@@ -113,7 +113,7 @@ function TimekitBooking() {
   };
 
   // Fires when window is resized and calendar must adhere
-  var decideCalendarSize = function(shouldReturn) {
+  var decideCalendarSize = function(view, shouldReturn) {
 
     var view = 'agendaWeek';
     var height = 550;

@@ -149,7 +149,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Setup and render FullCalendar
 	  var initializeCalendar = function() {
 	
-	    var sizing = decideCalendarSize(true);
+	    var sizing = decideCalendarSize(null, true);
 	
 	    var args = {
 	      defaultView: sizing.view,
@@ -169,7 +169,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 	
 	  // Fires when window is resized and calendar must adhere
-	  var decideCalendarSize = function(shouldReturn) {
+	  var decideCalendarSize = function(view, shouldReturn) {
 	
 	    var view = 'agendaWeek';
 	    var height = 550;

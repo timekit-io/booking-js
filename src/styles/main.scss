@@ -6,7 +6,8 @@
 
 $bgColor:         #FBFBFB;
 $borderColor:     #ececec;
-$textColor:       #AEAEAE;
+$textColor:       #333;
+$textLightColor:  #AEAEAE;
 $primaryColor:    #689AD8;
 $primaryDarkColor: darken($primaryColor, 10%);
 
@@ -27,6 +28,7 @@ $primaryDarkColor: darken($primaryColor, 10%);
   margin: 60px auto 20px auto;
   z-index: 10;
   opacity: 0;
+  color: $textColor;
 
   &.show {
     transition: opacity 300ms ease;
@@ -36,7 +38,7 @@ $primaryDarkColor: darken($primaryColor, 10%);
   // Timezone Helper
 
   &-timezonehelper {
-    color: $textColor;
+    color: $textLightColor;
     text-align: center;
     padding: 7px 10px;
     background-color: $bgColor;

@@ -7,7 +7,7 @@
 		exports["timekitBooking"] = factory(require("jQuery"));
 	else
 		root["timekitBooking"] = factory(root["jQuery"]);
-})(this, function(__WEBPACK_EXTERNAL_MODULE_25__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE_1__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -56,17 +56,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 	
-	// External depenencies
-	var timekit = __webpack_require__(1);
-	var fullcalendar = __webpack_require__(24);
-	var moment = __webpack_require__(26);
-	var $ = __webpack_require__(25);
-	
-	// Internal dependencies
-	var utils = __webpack_require__(29);
-	var templates = __webpack_require__(30);
-	var config = __webpack_require__(34);
-	
 	/*!
 	 * Booking.js
 	 * Version: 1.0.0
@@ -77,10 +66,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *
 	 */
 	
-	function TimekitBooking() {
+	// External depenencies
+	var $ = __webpack_require__(1);
+	var timekit = __webpack_require__(2);
+	var fullcalendar = __webpack_require__(25);
+	var moment = __webpack_require__(26);
+	
+	// Internal dependencies
+	var utils = __webpack_require__(29);
+	var templates = __webpack_require__(32);
+	var defaultConfig = __webpack_require__(36);
+	
+	// Style dependencies
+	__webpack_require__(37);
+	__webpack_require__(41);
+	__webpack_require__(43);
+	
+	function timekitBooking() {
 	
 	  // Export
 	  var TB = {};
+	
+	  // Object config
+	  var config = {};
 	
 	  // DOM nodes
 	  var rootTarget;
@@ -107,8 +115,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    .then(function(response){
 	      callback(response);
 	    }).catch(function(response){
-	      utils.log('An error with FindTime occured');
-	      utils.log(response);
+	      utils.log('error', 'An error with Timekit findTime occured', response);
 	    });
 	  };
 	
@@ -143,6 +150,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	      timezoneHelperTarget.html(template);
 	
+	    }).catch(function(response){
+	      utils.log('error', 'An error with Timekit getUserTimezone occured', response);
 	    });
 	  };
 	
@@ -163,6 +172,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    calendarTarget = $('<div class="bookingjs-calendar empty-calendar">');
 	    rootTarget.append(calendarTarget);
 	
+	    // Wait until DOM is ready to init (fixes wrong event height bug in fullCalendar)
 	    calendarTarget.fullCalendar(args);
 	    rootTarget.addClass('show');
 	
@@ -279,8 +289,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    timekitCreateEvent(values).then(function(){
 	      renderBookingCompleted(form);
 	    }).catch(function(response){
-	      utils.log('An error with CreateEvent occured');
-	      utils.log(response);
+	      utils.log('error', 'An error with Timekit createEvent occured', response);
 	    });
 	  };
 	
@@ -310,72 +319,76 @@ return /******/ (function(modules) { // webpackBootstrap
 	  TB.init = function(suppliedConfig) {
 	
 	    // Check whether a config is supplied
-	    if(suppliedConfig === undefined || typeof suppliedConfig !== 'object') {
-	      utils.log('No configuration was supplied. Please supply a config object upon library initialization');
-	      return;
+	    if(suppliedConfig === undefined || typeof suppliedConfig !== 'object' || $.isEmptyObject(suppliedConfig)) {
+	      if (window.timekitBookingConfig !== undefined) {
+	        suppliedConfig = window.timekitBookingConfig;
+	      } else {
+	        utils.log('error', 'No configuration was supplied or found. Please supply a config object upon library initialization');
+	        return;
+	      }
 	    }
 	
 	    // Extend the default config with supplied settings
-	    $.extend(true, config, suppliedConfig);
+	    $.extend(true, config, defaultConfig, suppliedConfig);
 	
-	    // Includes stylesheets if enabled
-	    if (config.styling.fullCalendarCore) {
-	      __webpack_require__(35);
-	    }
-	    if (config.styling.fullCalendarTheme) {
-	      __webpack_require__(39);
-	    }
-	    if (config.styling.general) {
-	      __webpack_require__(41);
-	    }
-	
-	    // Set rootTargt to the target element
-	    rootTarget = $(config.targetEl);
+	    // Set rootTarget to the target element and clean before child nodes before continuing
+	    rootTarget = $(config.targetEl).addClass('bookingjs');
+	    rootTarget.children(':not(script)').remove();
 	
 	    // Setup Timekit SDK config
 	    timekitSetup();
 	
-	    // Wait until DOM is ready to init (fixes wrong event height bug in fullCalendar)
-	    $(window).load(function() {
+	    // Initialize FullCalendar
+	    initializeCalendar();
 	
-	      // Initialize FullCalendar
-	      initializeCalendar();
-	
-	      // Get availability through Timekit SDK
-	      timekitFindTime(function(response){
-	        // Render available timeslots in FullCalendar
-	        renderCalendarEvents(response.data);
-	      });
-	
-	      // Show timezone helper if enabled
-	      if (config.localization.showTimezoneHelper) {
-	        renderTimezoneHelper();
-	      }
-	
-	      // Show image avatar if set
-	      if (config.avatar) {
-	        renderAvatarImage();
-	      }
-	
+	    // Get availability through Timekit SDK
+	    timekitFindTime(function(response){
+	      // Render available timeslots in FullCalendar
+	      renderCalendarEvents(response.data);
 	    });
+	
+	    // Show timezone helper if enabled
+	    if (config.localization.showTimezoneHelper) {
+	      renderTimezoneHelper();
+	    }
+	
+	    // Show image avatar if set
+	    if (config.avatar) {
+	      renderAvatarImage();
+	    }
+	
+	    return this;
 	
 	  };
 	
 	  // Expose the fullCalendar object for advanced puppeting
-	  TB.fullCalender = function() {
+	  TB.fullCalendar = function() {
 	    if (calendarTarget.fullCalendar === undefined) { return undefined; }
 	    return calendarTarget.fullCalendar.apply(calendarTarget, arguments);
 	  };
+	
+	  // Autoload if config is available on window
+	  if (window.timekitBookingConfig && window.timekitBookingConfig.autoload === true) {
+	    $(window).load(function(){
+	      TB.init(window.timekitBookingConfig);
+	    });
+	  }
 	
 	  return TB;
 	
 	}
 	
-	module.exports = new TimekitBooking();
+	module.exports = timekitBooking();
 
 
 /***/ },
 /* 1 */
+/***/ function(module, exports) {
+
+	module.exports = __WEBPACK_EXTERNAL_MODULE_1__;
+
+/***/ },
+/* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -389,9 +402,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * The Timekit JavaScript SDK is freely distributable under the MIT license.
 	 *
 	 */
-	var axios = __webpack_require__(2);
-	var base64 = __webpack_require__(22);
-	var humps = __webpack_require__(23);
+	var axios = __webpack_require__(3);
+	var base64 = __webpack_require__(23);
+	var humps = __webpack_require__(24);
 	
 	function Timekit() {
 	
@@ -1103,28 +1116,28 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 2 */
+/* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(3);
+	module.exports = __webpack_require__(4);
 
 /***/ },
-/* 3 */
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var defaults = __webpack_require__(4);
-	var utils = __webpack_require__(5);
-	var deprecatedMethod = __webpack_require__(6);
-	var dispatchRequest = __webpack_require__(7);
-	var InterceptorManager = __webpack_require__(15);
+	var defaults = __webpack_require__(5);
+	var utils = __webpack_require__(6);
+	var deprecatedMethod = __webpack_require__(7);
+	var dispatchRequest = __webpack_require__(8);
+	var InterceptorManager = __webpack_require__(16);
 	
 	// Polyfill ES6 Promise if needed
 	(function () {
 	  // webpack is being used to set es6-promise to the native Promise
 	  // for the standalone build. It's necessary to make sure polyfill exists.
-	  var P = __webpack_require__(16);
+	  var P = __webpack_require__(17);
 	  if (P && typeof P.polyfill === 'function') {
 	    P.polyfill();
 	  }
@@ -1187,7 +1200,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	axios.all = function (promises) {
 	  return Promise.all(promises);
 	};
-	axios.spread = __webpack_require__(21);
+	axios.spread = __webpack_require__(22);
 	
 	// Expose interceptors
 	axios.interceptors = {
@@ -1226,12 +1239,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 4 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(5);
+	var utils = __webpack_require__(6);
 	
 	var PROTECTION_PREFIX = /^\)\]\}',?\n/;
 	var DEFAULT_CONTENT_TYPE = {
@@ -1284,7 +1297,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1507,7 +1520,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1535,7 +1548,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -1552,11 +1565,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    try {
 	      // For browsers use XHR adapter
 	      if (typeof window !== 'undefined') {
-	        __webpack_require__(9)(resolve, reject, config);
+	        __webpack_require__(10)(resolve, reject, config);
 	      }
 	      // For node use HTTP adapter
 	      else if (typeof process !== 'undefined') {
-	        __webpack_require__(9)(resolve, reject, config);
+	        __webpack_require__(10)(resolve, reject, config);
 	      }
 	    } catch (e) {
 	      reject(e);
@@ -1565,10 +1578,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports) {
 
 	// shim for using process in browser
@@ -1665,20 +1678,20 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	/*global ActiveXObject:true*/
 	
-	var defaults = __webpack_require__(4);
-	var utils = __webpack_require__(5);
-	var buildUrl = __webpack_require__(10);
-	var cookies = __webpack_require__(11);
-	var parseHeaders = __webpack_require__(12);
-	var transformData = __webpack_require__(13);
-	var urlIsSameOrigin = __webpack_require__(14);
+	var defaults = __webpack_require__(5);
+	var utils = __webpack_require__(6);
+	var buildUrl = __webpack_require__(11);
+	var cookies = __webpack_require__(12);
+	var parseHeaders = __webpack_require__(13);
+	var transformData = __webpack_require__(14);
+	var urlIsSameOrigin = __webpack_require__(15);
 	
 	module.exports = function xhrAdapter(resolve, reject, config) {
 	  // Transform request data
@@ -1777,12 +1790,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(5);
+	var utils = __webpack_require__(6);
 	
 	function encode(val) {
 	  return encodeURIComponent(val).
@@ -1835,12 +1848,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(5);
+	var utils = __webpack_require__(6);
 	
 	module.exports = {
 	  write: function write(name, value, expires, path, domain, secure) {
@@ -1878,12 +1891,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(5);
+	var utils = __webpack_require__(6);
 	
 	/**
 	 * Parse headers into an object
@@ -1918,12 +1931,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(5);
+	var utils = __webpack_require__(6);
 	
 	/**
 	 * Transform the data for a request or a response
@@ -1943,12 +1956,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(5);
+	var utils = __webpack_require__(6);
 	var msie = /(msie|trident)/i.test(navigator.userAgent);
 	var urlParsingNode = document.createElement('a');
 	var originUrl;
@@ -2001,12 +2014,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(5);
+	var utils = __webpack_require__(6);
 	
 	function InterceptorManager() {
 	  this.handlers = [];
@@ -2059,7 +2072,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process, setImmediate, global, module) {/*!
@@ -2198,7 +2211,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function lib$es6$promise$asap$$attemptVertex() {
 	      try {
 	        var r = require;
-	        var vertx = __webpack_require__(19);
+	        var vertx = __webpack_require__(20);
 	        lib$es6$promise$asap$$vertxNext = vertx.runOnLoop || vertx.runOnContext;
 	        return lib$es6$promise$asap$$useVertxTimer();
 	      } catch(e) {
@@ -3023,7 +3036,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	
 	    /* global define:true module:true window: true */
-	    if ("function" === 'function' && __webpack_require__(20)['amd']) {
+	    if ("function" === 'function' && __webpack_require__(21)['amd']) {
 	      !(__WEBPACK_AMD_DEFINE_RESULT__ = function() { return lib$es6$promise$umd$$ES6Promise; }.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	    } else if (typeof module !== 'undefined' && module['exports']) {
 	      module['exports'] = lib$es6$promise$umd$$ES6Promise;
@@ -3035,13 +3048,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	}).call(this);
 	
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8), __webpack_require__(17).setImmediate, (function() { return this; }()), __webpack_require__(18)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9), __webpack_require__(18).setImmediate, (function() { return this; }()), __webpack_require__(19)(module)))
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {var nextTick = __webpack_require__(8).nextTick;
+	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {var nextTick = __webpack_require__(9).nextTick;
 	var apply = Function.prototype.apply;
 	var slice = Array.prototype.slice;
 	var immediateIds = {};
@@ -3117,10 +3130,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
 	  delete immediateIds[id];
 	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17).setImmediate, __webpack_require__(17).clearImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(18).setImmediate, __webpack_require__(18).clearImmediate))
 
 /***/ },
-/* 18 */
+/* 19 */
 /***/ function(module, exports) {
 
 	module.exports = function(module) {
@@ -3136,20 +3149,20 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 19 */
+/* 20 */
 /***/ function(module, exports) {
 
 	/* (ignored) */
 
 /***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports) {
 
 	module.exports = function() { throw new Error("define cannot be used indirect"); };
 
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -3182,7 +3195,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(module, global) {/*! http://mths.be/base64 v0.1.0 by @mathias | MIT license */
@@ -3349,10 +3362,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	}(this));
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(18)(module), (function() { return this; }())))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(19)(module), (function() { return this; }())))
 
 /***/ },
-/* 23 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;// =========
@@ -3489,7 +3502,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 24 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -3500,7 +3513,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	(function(factory) {
 		if (true) {
-			!(__WEBPACK_AMD_DEFINE_ARRAY__ = [ __webpack_require__(25), __webpack_require__(26) ], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+			!(__WEBPACK_AMD_DEFINE_ARRAY__ = [ __webpack_require__(1), __webpack_require__(26) ], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 		}
 		else if (typeof exports === 'object') { // Node/CommonJS
 			module.exports = factory(require('jquery'), require('moment'));
@@ -14664,12 +14677,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 
 /***/ },
-/* 25 */
-/***/ function(module, exports) {
-
-	module.exports = __WEBPACK_EXTERNAL_MODULE_25__;
-
-/***/ },
 /* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -17868,7 +17875,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return _moment;
 	
 	}));
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(18)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(19)(module)))
 
 /***/ },
 /* 27 */
@@ -17975,16 +17982,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	module.exports = {
 	
-	  log: function(message) {
-	    throw new Error(message);
-	    console.log('Timekit Booking: ' + message);
+	  log: function(type, message, context) {
+	    if (type === 'error') {
+	      if (context !== undefined) {
+	        console.log('Timekit Booking (error context):');
+	        console.log(context);
+	      }
+	      throw new Error('Timekit Booking: ' + message);
+	    } else {
+	      console.log('Timekit Booking: ' + message);
+	    }
 	  }
 	
 	};
 
 
 /***/ },
-/* 30 */
+/* 30 */,
+/* 31 */,
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -17992,7 +18008,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/*
 	 * Utily functions for Booking.js
 	 */
-	var $ = __webpack_require__(25);
+	var $ = __webpack_require__(1);
 	
 	module.exports = {
 	
@@ -18006,7 +18022,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      tzText = '<span>Your timezone is ' + data.tzOffsetDiffAbs + ' hours ' + (data.aheadOfHost ? 'ahead' : 'behind') + ' of ' + data.hostName + ' (calendar shown in your local time)</span>';
 	    }
 	
-	    var timezonIcon = __webpack_require__(31);
+	    var timezonIcon = __webpack_require__(33);
 	    var el = $(timezonIcon + tzText);
 	
 	    return el;
@@ -18014,8 +18030,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  bookingPage: function(data) {
 	
-	    var closeIcon = __webpack_require__(32);
-	    var checkmarkIcon = __webpack_require__(33);
+	    var closeIcon = __webpack_require__(34);
+	    var checkmarkIcon = __webpack_require__(35);
 	
 	    var el = $(
 	      '<div class="bookingjs-bookpage">' +
@@ -18055,25 +18071,25 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 31 */
+/* 33 */
 /***/ function(module, exports) {
 
 	module.exports = "<svg class=\"bookingjs-timezoneicon\" viewBox=\"0 0 98 98\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>Shape</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"timezone-icon\" sketch:type=\"MSLayerGroup\" fill=\"#AEAEAE\"><path d=\"M37.656,1.387 L39.381,2.516 L46.176,3.475 L49.313,2.778 L55.186,3.495 L56.364,5.065 L52.274,4.52 L48.092,6.262 L49.293,9.385 L53.613,11.348 L54.189,7.395 L58.285,7.133 L64.121,12.707 L65.775,14.887 L66.56,16.28 L62.029,18.067 L55.185,21.169 L54.624,24.206 L50.095,28.476 L50.271,32.572 L48.9,32.559 L48.353,29.086 L45.757,28.238 L38.294,28.631 L35.286,34.137 L37.901,37.274 L42.221,34.917 L42.516,38.755 L44.172,40.062 L47.131,43.46 L46.985,47.751 L52.448,49.034 L56.454,46.159 L58.284,46.768 L65.003,49.45 L74.433,52.985 L76.396,57.698 L83.111,60.968 L84.644,66.732 L80.062,71.857 L74.66,77.519 L68.933,80.482 L63.04,84.408 L55.185,89.515 L50.835,93.941 L49.292,92.263 L52.782,83.419 L53.663,73.167 L46.15,66.34 L46.199,60.596 L48.164,58.239 L50.471,51.415 L45.809,48.811 L42.664,43.706 L37.75,41.817 L30.047,37.667 L26.904,29.024 L25.334,33.344 L22.977,26.276 L23.762,15.671 L27.69,12.136 L26.512,9.779 L29.26,5.459 L23.905,6.99 C9.611,15.545 0.01,31.135 0.01,49.006 C0.01,76.062 21.945,98 49.006,98 C76.062,98 98,76.062 98,49.006 C98,21.947 76.062,0.012 49.006,0.012 C45.092,0.012 41.305,0.52 37.656,1.387 Z\" id=\"Shape\" sketch:type=\"MSShapeGroup\"></path></g></g></svg>"
 
 /***/ },
-/* 32 */
+/* 34 */
 /***/ function(module, exports) {
 
 	module.exports = "<svg class=\"bookingjs-closeicon\" viewBox=\"0 0 90 90\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>close-icon</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"close-icon\" sketch:type=\"MSLayerGroup\" fill=\"#000000\"><path d=\"M58,45 L87.2,15.8 C90.9,12.1 90.9,6.3 87.3,2.7 C83.7,-0.9 77.8,-0.8 74.2,2.8 L45,32 L15.8,2.8 C12.1,-0.9 6.3,-0.9 2.7,2.7 C-0.9,6.3 -0.8,12.2 2.8,15.8 L32,45 L2.8,74.2 C-0.9,77.9 -0.9,83.7 2.7,87.3 C6.3,90.9 12.2,90.8 15.8,87.2 L45,58 L74.2,87.2 C77.9,90.9 83.7,90.9 87.3,87.3 C90.9,83.7 90.8,77.8 87.2,74.2 L58,45 L58,45 Z\" id=\"Shape\" sketch:type=\"MSShapeGroup\"></path></g></g></svg>"
 
 /***/ },
-/* 33 */
+/* 35 */
 /***/ function(module, exports) {
 
 	module.exports = "<svg viewBox=\"0 0 96 67\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>Rectangle 1</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><path d=\"M38,45.9791847 L15.0151818,22.9943665 C11.8943965,19.8735813 6.82450594,19.8704075 3.69944993,22.9954635 L2.99546354,23.6994499 C-0.128333673,26.8232471 -0.130083617,31.8907317 2.99436652,35.0151818 L31.9848182,64.0056335 C33.8955725,65.9163878 36.5369899,66.6584397 39.0153286,66.2293522 C40.8727143,66.1009582 42.6934802,65.327335 44.112815,63.9080003 L92.9080003,15.112815 C96.0277956,11.9930196 96.0290874,6.925011 92.9040314,3.799955 L92.200045,3.0959686 C89.0762478,-0.0278286101 84.010049,-0.030864319 80.887185,3.09199975 L38,45.9791847 Z\" id=\"Rectangle-1\" fill=\"#FFFFFF\" sketch:type=\"MSShapeGroup\"></path></g></svg>"
 
 /***/ },
-/* 34 */
+/* 36 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -18090,7 +18106,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  calendar: '',
 	  name: '',
 	  avatar: '',
-	  debug: false,
+	  autoload: false,
 	  timekitConfig: {
 	    app: 'sign-up'
 	  },
@@ -18146,16 +18162,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 35 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(36);
+	var content = __webpack_require__(38);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(38)(content, {});
+	var update = __webpack_require__(40)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -18172,10 +18188,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 36 */
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(37)();
+	exports = module.exports = __webpack_require__(39)();
 	// imports
 	
 	
@@ -18186,7 +18202,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 37 */
+/* 39 */
 /***/ function(module, exports) {
 
 	/*
@@ -18242,7 +18258,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 38 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -18496,16 +18512,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 39 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(40);
+	var content = __webpack_require__(42);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(38)(content, {});
+	var update = __webpack_require__(40)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -18522,10 +18538,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 40 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(37)();
+	exports = module.exports = __webpack_require__(39)();
 	// imports
 	
 	
@@ -18536,16 +18552,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 41 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(42);
+	var content = __webpack_require__(44);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(38)(content, {});
+	var update = __webpack_require__(40)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -18562,15 +18578,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 42 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(37)();
+	exports = module.exports = __webpack_require__(39)();
 	// imports
 	exports.push([module.id, "@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);", ""]);
 	
 	// module
-	exports.push([module.id, ".bookingjs {\n  position: relative;\n  max-width: 700px;\n  font-family: 'Open Sans', Helvetica, Tahoma, Arial, sans-serif;\n  font-size: 13px;\n  border-radius: 4px;\n  background-color: white;\n  box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px 0px;\n  margin: 60px auto 20px auto;\n  z-index: 10;\n  opacity: 0; }\n  .bookingjs.show {\n    transition: opacity 300ms ease;\n    opacity: 1; }\n  .bookingjs-timezonehelper {\n    color: #AEAEAE;\n    text-align: center;\n    padding: 7px 10px;\n    background-color: #FBFBFB;\n    border-top: 1px solid #ececec;\n    min-height: 15px;\n    z-index: 20;\n    border-radius: 0 0 4px 4px; }\n  .bookingjs-timezoneicon {\n    width: 10px;\n    margin-right: 5px; }\n  .bookingjs-avatar {\n    position: absolute;\n    top: -50px;\n    left: 50%;\n    transform: translateX(-50%);\n    border-radius: 150px;\n    border: 3px solid white;\n    box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.13);\n    overflow: hidden;\n    z-index: 40;\n    background-color: white; }\n    .bookingjs-avatar img {\n      max-width: 100%;\n      vertical-align: middle;\n      display: inline-block;\n      width: 80px;\n      height: 80px; }\n  .bookingjs-bookpage {\n    position: absolute;\n    height: 100%;\n    width: 100%;\n    top: 0;\n    left: 0;\n    background-color: #FBFBFB;\n    z-index: 30;\n    opacity: 0;\n    transition: opacity 200ms ease;\n    border-radius: 4px; }\n    .bookingjs-bookpage.show {\n      opacity: 1; }\n    .bookingjs-bookpage-close {\n      position: absolute;\n      top: 0;\n      right: 0;\n      padding: 18px;\n      transition: opacity 0.2s ease;\n      opacity: 0.3; }\n      .bookingjs-bookpage-close:hover {\n        opacity: 1; }\n    .bookingjs-bookpage-date {\n      text-align: center;\n      font-size: 34px;\n      font-weight: 400;\n      margin-top: 90px;\n      margin-bottom: 20px; }\n      @media (max-width: 480px) {\n        .bookingjs-bookpage-date {\n          font-size: 24px;\n          margin-top: 60px;\n          margin-bottom: 15px; } }\n    .bookingjs-bookpage-time {\n      text-align: center;\n      font-size: 17px;\n      font-weight: 400;\n      margin-bottom: 70px; }\n      @media (max-width: 480px) {\n        .bookingjs-bookpage-time {\n          font-size: 15px;\n          margin-bottom: 30px; } }\n  .bookingjs-closeicon {\n    width: 15px; }\n  .bookingjs-form {\n    width: 50%;\n    position: relative;\n    margin: 0 auto;\n    text-align: center; }\n    @media (max-width: 480px) {\n      .bookingjs-form {\n        width: 75%; } }\n    .bookingjs-form-input {\n      transition: box-shadow 200ms ease;\n      width: 100%;\n      padding: 15px 25px;\n      border: 0px solid #ececec;\n      font-size: 1em;\n      box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), inset 0px 0px 1px 1px rgba(255, 255, 255, 0);\n      text-align: left;\n      box-sizing: border-box; }\n      .bookingjs-form-input:focus {\n        outline: 0;\n        box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), inset 0px 0px 1px 1px #689AD8; }\n      .bookingjs-form-input.first {\n        border-radius: 4px 4px 0 0; }\n      .bookingjs-form-input.last {\n        border-radius: 0 0 4px 4px; }\n      .bookingjs-form-input.hidden {\n        display: none; }\n    .bookingjs-form-button {\n      position: relative;\n      transition: background-color 200ms, width 300ms;\n      display: inline-block;\n      padding: 13px 25px;\n      background-color: #689AD8;\n      text-transform: uppercase;\n      box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);\n      color: white;\n      border: 0px;\n      border-radius: 3px;\n      font-size: 1.1em;\n      font-weight: 600;\n      margin-top: 30px;\n      cursor: pointer;\n      width: 110px;\n      height: 44px;\n      outline: 0; }\n      .bookingjs-form-button .inactive-text,\n      .bookingjs-form-button .success-text,\n      .bookingjs-form-button .loading-text {\n        transition: opacity 300ms ease;\n        position: absolute;\n        top: 13px;\n        left: 25px; }\n      .bookingjs-form-button .inactive-text {\n        opacity: 1; }\n      .bookingjs-form-button .loading-text,\n      .bookingjs-form-button .success-text {\n        opacity: 0; }\n      .bookingjs-form-button .success-text svg {\n        height: 15px;\n        margin-top: 2px; }\n      .bookingjs-form-button.loading, .bookingjs-form-button.loading:hover {\n        width: 100px;\n        background-color: #B1B1B1; }\n        .bookingjs-form-button.loading .inactive-text, .bookingjs-form-button.loading:hover .inactive-text {\n          opacity: 0; }\n        .bookingjs-form-button.loading .loading-text, .bookingjs-form-button.loading:hover .loading-text {\n          opacity: 1; }\n      .bookingjs-form-button.success, .bookingjs-form-button.success:hover {\n        width: 72px;\n        background-color: #5BAF56; }\n        .bookingjs-form-button.success .loading-text,\n        .bookingjs-form-button.success .inactive-text, .bookingjs-form-button.success:hover .loading-text,\n        .bookingjs-form-button.success:hover .inactive-text {\n          opacity: 0; }\n        .bookingjs-form-button.success .success-text, .bookingjs-form-button.success:hover .success-text {\n          opacity: 1; }\n      .bookingjs-form-button:hover {\n        background-color: #3f7fce; }\n", ""]);
+	exports.push([module.id, ".bookingjs {\n  position: relative;\n  max-width: 700px;\n  font-family: 'Open Sans', Helvetica, Tahoma, Arial, sans-serif;\n  font-size: 13px;\n  border-radius: 4px;\n  background-color: white;\n  box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px 0px;\n  margin: 60px auto 20px auto;\n  z-index: 10;\n  opacity: 0;\n  color: #333; }\n  .bookingjs.show {\n    transition: opacity 300ms ease;\n    opacity: 1; }\n  .bookingjs-timezonehelper {\n    color: #AEAEAE;\n    text-align: center;\n    padding: 7px 10px;\n    background-color: #FBFBFB;\n    border-top: 1px solid #ececec;\n    min-height: 15px;\n    z-index: 20;\n    border-radius: 0 0 4px 4px; }\n  .bookingjs-timezoneicon {\n    width: 10px;\n    margin-right: 5px; }\n  .bookingjs-avatar {\n    position: absolute;\n    top: -50px;\n    left: 50%;\n    transform: translateX(-50%);\n    border-radius: 150px;\n    border: 3px solid white;\n    box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.13);\n    overflow: hidden;\n    z-index: 40;\n    background-color: white; }\n    .bookingjs-avatar img {\n      max-width: 100%;\n      vertical-align: middle;\n      display: inline-block;\n      width: 80px;\n      height: 80px; }\n  .bookingjs-bookpage {\n    position: absolute;\n    height: 100%;\n    width: 100%;\n    top: 0;\n    left: 0;\n    background-color: #FBFBFB;\n    z-index: 30;\n    opacity: 0;\n    transition: opacity 200ms ease;\n    border-radius: 4px; }\n    .bookingjs-bookpage.show {\n      opacity: 1; }\n    .bookingjs-bookpage-close {\n      position: absolute;\n      top: 0;\n      right: 0;\n      padding: 18px;\n      transition: opacity 0.2s ease;\n      opacity: 0.3; }\n      .bookingjs-bookpage-close:hover {\n        opacity: 1; }\n    .bookingjs-bookpage-date {\n      text-align: center;\n      font-size: 34px;\n      font-weight: 400;\n      margin-top: 90px;\n      margin-bottom: 20px; }\n      @media (max-width: 480px) {\n        .bookingjs-bookpage-date {\n          font-size: 24px;\n          margin-top: 60px;\n          margin-bottom: 15px; } }\n    .bookingjs-bookpage-time {\n      text-align: center;\n      font-size: 17px;\n      font-weight: 400;\n      margin-bottom: 70px; }\n      @media (max-width: 480px) {\n        .bookingjs-bookpage-time {\n          font-size: 15px;\n          margin-bottom: 30px; } }\n  .bookingjs-closeicon {\n    width: 15px; }\n  .bookingjs-form {\n    width: 50%;\n    position: relative;\n    margin: 0 auto;\n    text-align: center; }\n    @media (max-width: 480px) {\n      .bookingjs-form {\n        width: 75%; } }\n    .bookingjs-form-input {\n      transition: box-shadow 200ms ease;\n      width: 100%;\n      padding: 15px 25px;\n      border: 0px solid #ececec;\n      font-size: 1em;\n      box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), inset 0px 0px 1px 1px rgba(255, 255, 255, 0);\n      text-align: left;\n      box-sizing: border-box; }\n      .bookingjs-form-input:focus {\n        outline: 0;\n        box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), inset 0px 0px 1px 1px #689AD8; }\n      .bookingjs-form-input.first {\n        border-radius: 4px 4px 0 0; }\n      .bookingjs-form-input.last {\n        border-radius: 0 0 4px 4px; }\n      .bookingjs-form-input.hidden {\n        display: none; }\n    .bookingjs-form-button {\n      position: relative;\n      transition: background-color 200ms, width 300ms;\n      display: inline-block;\n      padding: 13px 25px;\n      background-color: #689AD8;\n      text-transform: uppercase;\n      box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);\n      color: white;\n      border: 0px;\n      border-radius: 3px;\n      font-size: 1.1em;\n      font-weight: 600;\n      margin-top: 30px;\n      cursor: pointer;\n      width: 110px;\n      height: 44px;\n      outline: 0; }\n      .bookingjs-form-button .inactive-text,\n      .bookingjs-form-button .success-text,\n      .bookingjs-form-button .loading-text {\n        transition: opacity 300ms ease;\n        position: absolute;\n        top: 13px;\n        left: 25px; }\n      .bookingjs-form-button .inactive-text {\n        opacity: 1; }\n      .bookingjs-form-button .loading-text,\n      .bookingjs-form-button .success-text {\n        opacity: 0; }\n      .bookingjs-form-button .success-text svg {\n        height: 15px;\n        margin-top: 2px; }\n      .bookingjs-form-button.loading, .bookingjs-form-button.loading:hover {\n        width: 100px;\n        background-color: #B1B1B1; }\n        .bookingjs-form-button.loading .inactive-text, .bookingjs-form-button.loading:hover .inactive-text {\n          opacity: 0; }\n        .bookingjs-form-button.loading .loading-text, .bookingjs-form-button.loading:hover .loading-text {\n          opacity: 1; }\n      .bookingjs-form-button.success, .bookingjs-form-button.success:hover {\n        width: 72px;\n        background-color: #5BAF56; }\n        .bookingjs-form-button.success .loading-text,\n        .bookingjs-form-button.success .inactive-text, .bookingjs-form-button.success:hover .loading-text,\n        .bookingjs-form-button.success:hover .inactive-text {\n          opacity: 0; }\n        .bookingjs-form-button.success .success-text, .bookingjs-form-button.success:hover .success-text {\n          opacity: 1; }\n      .bookingjs-form-button:hover {\n        background-color: #3f7fce; }\n", ""]);
 	
 	// exports
 

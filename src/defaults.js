@@ -12,7 +12,7 @@ module.exports = {
   calendar: '',
   name: '',
   avatar: '',
-  debug: false,
+  autoload: false,
   timekitConfig: {
     app: 'sign-up'
   },

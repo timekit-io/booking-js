@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="UTF-8">
+  <title>Booking.js multiple instances example</title>
+  <style type="text/css">
+    body { background-color: #E6E6E6; text-align: center; }
+    body .bookingjs { width: 300px; display: inline-block; margin: 60px 10px; }
+  </style>
+ </head>
+ <body>
+
+  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <script type="text/javascript" src="../dist/timekit-booking.js"></script>
+
+  <div id="bookingjs1">
+    <script type="text/javascript">
+      var widget1 = new TimekitBooking();
+      widget1.init({
+        targetEl: '#bookingjs1',
+        name:     'Marty McFly',
+        email:    'timebirdcph@gmail.com',
+        apiToken: 'bNpbFHRmrfZbtS5nEtCVl8sY5vUkOFCL',
+        calendar: '8687f058-5b52-4fa4-885c-9294e52ab7d4',
+        avatar:   '../misc/avatar-mcfly.png',
+        timekitConfig: {
+          app: 'timebird',
+          apiBaseUrl: 'http://api-localhost.timekit.io/'
+        }
+      });
+    </script>
+  </div>
+
+  <div id="bookingjs2">
+    <script type="text/javascript">
+      var widget2 = new TimekitBooking();
+      widget2.init({
+        targetEl: '#bookingjs2',
+        name:     'Doc Brown',
+        email:    'timebirdcph@gmail.com',
+        apiToken: 'bNpbFHRmrfZbtS5nEtCVl8sY5vUkOFCL',
+        calendar: '8687f058-5b52-4fa4-885c-9294e52ab7d4',
+        avatar:   '../misc/avatar-doc.jpg',
+        timekitConfig: {
+          app: 'timebird',
+          apiBaseUrl: 'http://api-localhost.timekit.io/'
+        }
+      });
+    </script>
+  </div>
+
+  <div id="bookingjs3">
+    <script type="text/javascript">
+      var widget3 = new TimekitBooking();
+      widget3.init({
+        targetEl: '#bookingjs3',
+        name:     'Biff Tannen',
+        email:    'timebirdcph@gmail.com',
+        apiToken: 'bNpbFHRmrfZbtS5nEtCVl8sY5vUkOFCL',
+        calendar: '8687f058-5b52-4fa4-885c-9294e52ab7d4',
+        avatar:   '../misc/avatar-biff.jpg',
+        timekitConfig: {
+          app: 'bookingjs',
+          apiBaseUrl: 'http://api-localhost.timekit.io/'
+        }
+      });
+    </script>
+  </div>
+
+</body>
+</html>

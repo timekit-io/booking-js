@@ -22,11 +22,11 @@ var templates = require('./templates');
 var defaultConfig = require('./defaults');
 
 // Style dependencies
+require('./styles/main.scss');
 require('../node_modules/fullcalendar/dist/fullcalendar.css');
 require('./styles/fullcalendar.scss');
-require('./styles/main.scss');
 
-function timekitBooking() {
+function TimekitBooking() {
 
   // Export
   var TB = {};
@@ -116,22 +116,24 @@ function timekitBooking() {
     calendarTarget = $('<div class="bookingjs-calendar empty-calendar">');
     rootTarget.append(calendarTarget);
 
-    // Wait until DOM is ready to init (fixes wrong event height bug in fullCalendar)
     calendarTarget.fullCalendar(args);
     rootTarget.addClass('show');
 
   };
 
   // Fires when window is resized and calendar must adhere
-  var decideCalendarSize = function(view, shouldReturn) {
+  var decideCalendarSize = function(currentView, shouldReturn) {
 
     var view = 'agendaWeek';
     var height = 550;
-    var deviceWidth = $(window).width();
+    var deviceWidth = rootTarget.width();
 
     if (deviceWidth < 480) {
       view = 'basicDay';
       height = 400;
+      rootTarget.addClass('bookingjs-small');
+    } else {
+      rootTarget.removeClass('bookingjs-small');
     }
 
     if (shouldReturn) {
@@ -164,6 +166,17 @@ function timekitBooking() {
     });
 
     rootTarget.append(avatarTarget);
+
+  };
+
+  // Render the avatar image
+  var renderDisplayName = function() {
+
+    var displayNameTarget = templates.displayName({
+      name: config.name
+    });
+
+    rootTarget.append(displayNameTarget);
 
   };
 
@@ -272,6 +285,9 @@ function timekitBooking() {
       }
     }
 
+    // Reset local config
+    config = {};
+
     // Extend the default config with supplied settings
     $.extend(true, config, defaultConfig, suppliedConfig);
 
@@ -301,6 +317,8 @@ function timekitBooking() {
       renderAvatarImage();
     }
 
+    renderDisplayName();
+
     return this;
 
   };
@@ -311,15 +329,17 @@ function timekitBooking() {
     return calendarTarget.fullCalendar.apply(calendarTarget, arguments);
   };
 
-  // Autoload if config is available on window
-  if (window.timekitBookingConfig && window.timekitBookingConfig.autoload === true) {
-    $(window).load(function(){
-      TB.init(window.timekitBookingConfig);
-    });
-  }
-
   return TB;
 
 }
 
-module.exports = timekitBooking();
+// Autoload if config is available on window, else export function
+if (window.timekitBookingConfig && window.timekitBookingConfig.autoload === true) {
+  $(window).load(function(){
+    var instance = new TimekitBooking();
+    instance.init(window.timekitBookingConfig);
+    module.exports = instance;
+  });
+} else {
+  module.exports = TimekitBooking;
+}

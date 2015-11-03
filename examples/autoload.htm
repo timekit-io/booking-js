@@ -2,15 +2,15 @@
 <html>
  <head>
   <meta charset="UTF-8">
-  <title>Booking.js demo</title>
+  <title>Booking.js autoload example</title>
   <style type="text/css">
-    body { background-color: #E6E6E6; }
+    body { background-color: #E6E6E6; width: 700px; margin: 0 auto; }
   </style>
  </head>
  <body>
 
   <div id="bookingjs">
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
     <script type="text/javascript" src="../dist/timekit-booking.js" defer></script>
     <script type="text/javascript">
       window.timekitBookingConfig = {
@@ -18,10 +18,10 @@
         email:    'timebirdcph@gmail.com',
         apiToken: 'bNpbFHRmrfZbtS5nEtCVl8sY5vUkOFCL',
         calendar: '8687f058-5b52-4fa4-885c-9294e52ab7d4',
-        avatar:   'http://uploads.webflow.com/561b940c607fbeba27c78ae6/561bb4cba10e88401184df39_mcfly.png',
+        avatar:   '../misc/avatar-mcfly.png',
         autoload: true,
         timekitConfig: {
-          app: 'timebird',
+          app: 'bookingjs',
           apiBaseUrl: 'http://api-localhost.timekit.io/'
         }
       };
@@ -45,7 +45,6 @@
       // });
     </script>
   </div>
-
 
 </body>
 </html>

@@ -9,7 +9,7 @@ module.exports = {
         path: './dist',
         filename: 'timekit-booking.js',
         libraryTarget: 'umd',
-        library: 'timekitBooking'
+        library: 'TimekitBooking'
     },
     externals: {
         'jquery': 'jQuery'
@@ -19,8 +19,8 @@ module.exports = {
     ],
     module: {
         loaders: [
-            { test: /\.css$/, loader: 'style-loader!css-loader' },
-            { test: /\.scss$/, loaders: ['style', 'css', 'sass'] },
+            { test: /\.css$/, loaders: ['style?singleton', 'css?minimize'] },
+            { test: /\.scss$/, loaders: ['style?singleton', 'css?minimize', 'sass'] },
             { test: /\.svg$/, loader: 'svg-inline' }
         ]
     }

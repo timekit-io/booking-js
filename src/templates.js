@@ -60,6 +60,18 @@ module.exports = {
     );
 
     return el;
+  },
+
+  displayName: function(data) {
+
+    var el = $(
+      '<div class="bookingjs-displayname">' +
+        '<span>' + data.name + '</span>' +
+      '</div>'
+    );
+
+    return el;
   }
+
 
 };

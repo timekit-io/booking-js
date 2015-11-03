@@ -51,32 +51,45 @@ $primaryDarkColor: darken($primaryColor, 10%);
   border-top: 1px solid #DDD;
 }
 
-.fc-toolbar {
+.fc .fc-toolbar {
   padding: 0px;
   margin-bottom: 0;
   border-bottom: 1px solid $borderColor;
-}
 
-.fc .fc-toolbar > * > button {
-  padding: 15px;
-  height: auto;
-  outline: 0;
-  margin-left: 0;
-  transition: opacity 0.2s ease;
-  opacity: 0.3;
+  > * > button {
+    padding: 15px 17px;
+    height: auto;
+    outline: 0;
+    margin-left: 0;
+    transition: opacity 0.2s ease;
+    opacity: 0.3;
 
-  &:hover {
-    opacity: 1;
+    &:hover {
+      opacity: 1;
+    }
+
+    &.fc-state-disabled {
+      transition: opacity 0s;
+      opacity: 0;
+    }
+
+    &.fc-prev-button {
+      padding-right: 8px;
+    }
+
+    &.fc-next-button {
+      padding-left: 8px;
+    }
+
+    .fc-icon {
+      font-size: 1.1em;
+    }
   }
 
-  &.fc-state-disabled {
-    transition: opacity 0s;
-    opacity: 0;
+  > .fc-right > button.fc-today-button {
+    padding: 15px 5px;
   }
 
-  .fc-icon {
-    font-size: 1.1em;
-  }
 }
 
 .fc-unthemed .fc-today {

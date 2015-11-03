@@ -14,16 +14,10 @@ module.exports = {
   avatar: '',
   autoload: false,
   timekitConfig: {
-    app: 'sign-up'
+    app: 'bookingjs'
   },
   findTime: {
-    filters: {
-      'and': [
-        { 'business_hours': {}},
-        { 'exclude_weekend': {}}
-      ]
-    },
-    future: '3 weeks',
+    future: '4 weeks',
     length: '1 hour'
   },
   createEvent: {
@@ -32,9 +26,9 @@ module.exports = {
   },
   fullCalendar: {
     header: {
-      left: 'today',
+      left: '',
       center: '',
-      right: 'prev, next'
+      right: 'today, prev, next'
     },
     views: {
       basic: {

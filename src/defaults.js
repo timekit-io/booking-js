@@ -12,7 +12,7 @@ module.exports = {
   targetEl: '#bookingjs',
   name: '',
   avatar: '',
-  autoload: false,
+  autoload: true,
   includeStyles: true,
   timekitConfig: {
     app: 'bookingjs'

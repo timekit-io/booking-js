@@ -16,11 +16,15 @@ Maintainer: Lasse Boisen Andersen ([la@timekit.io](mailto:la@timekit.io)). PR's 
 
 Booking.js is meant as an easy to use, drop-in script that does it's job without any coding required. It's made for the browser and is quite similar to Stripe's Checkout.js. 
 
-*This repo is mainly for community contributions and the curious soul that would like to customize the widget beyond settings provided out of the box.*
+*This repo is mainly for community contributions and the curious soul that would like to customize the widget beyond settings provided in the wizard.*
 
 ## Dependencies
 
-The following libraries are bundled together with the SDK:
+Stuff you need to load:
+
+- [jQuery](https://jquery.com/) - primarily because it's a requisite for FullCalendar
+
+Bundled together with the library:
 
 - [fullCalendar](http://fullcalendar.io) - a customizable and flexible event calendar built for the browser
 - [moment](https://momentjs.com) - parse, validate, manipulate, and display dates in JavaScript
@@ -30,23 +34,42 @@ The following libraries are bundled together with the SDK:
 
 To ensure that we can push out updates, improvements and bugfixes to the library, you should load the library through our CDN. It's hosted on Amazon Cloudfront so it's snappy.
 
+The simplest and most universally compatible usage is with autoload:
+
 ```html
 <div id="bookingjs">
   <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
   <script type="text/javascript" src="//cdn.timekit.io/bookingjs/1/booking.min.js" defer></script>
   <script type="text/javascript">
     window.timekitBookingConfig = {
-      name:     'Marty McFly',
       email:    'marty.mcfly@timekit.io',
       apiToken: 'bNpbFHRmrfZbtS5nEtCVl8sY5vUkOFCL',
       calendar: '8687f058-5b52-4fa4-885c-9294e52ab7d4',
-      avatar:   '../misc/avatar-mcfly.png',
-      autoload: true
+      name:     'Marty McFly',
+      avatar:   '../misc/avatar-mcfly.png'
     };
   </script>
 </div>
 ```
-See `/examples` for implementation examples.
+
+If you intent to run multiple instances or want more control:
+```html
+<div id="bookingjs">
+  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <script type="text/javascript" src="//cdn.timekit.io/bookingjs/1/booking.min.js"></script>
+  <script type="text/javascript">
+    var widget = new TimekitBooking();
+    widget.init({
+      email:    'marty.mcfly@timekit.io',
+      apiToken: 'bNpbFHRmrfZbtS5nEtCVl8sY5vUkOFCL',
+      calendar: '8687f058-5b52-4fa4-885c-9294e52ab7d4'
+    });
+  </script>
+</div>
+```
+
+See `/examples` for more implementation examples.
+
 ## Configuration
 
 Booking.js is made for various use-cases, so it's really extensible and customizable. We augment all the intrinsic options so you can overwrite them as needed, e.g. Timekit FindTime options or FullCalendar settings.
@@ -64,7 +87,7 @@ Booking.js is made for various use-cases, so it's really extensible and customiz
   targetEl:       '#bookingjs', // Which element should we the library load into
   name:           '',           // Display name to show in the header and timezone helper
   avatar:         '',           // Provide an image URL for a circular image avatar
-  autoload:       false,        // Auto initialization if settings is found on window
+  autoload:       true,         // Auto initialization if config object is found on window var
   includeStyles:  true,         // Inject fullCalendar and library styles in <head>
 
   // Internationalization

@@ -61,17 +61,23 @@ function TimekitBooking() {
 
   // Fetch availabile time through Timekit SDK
   var timekitFindTime = function() {
+
     var args = { emails: [config.email] };
 
-    $.extend(args, config.findTime);
+    $.extend(args, config.timekitFindTime);
+
+    utils.doCallback('findTimeStarted', config, args);
 
     timekit.findTime(args)
     .then(function(response){
+
+      utils.doCallback('findTimeSuccessful', config, response);
 
       // Render available timeslots in FullCalendar
       renderCalendarEvents(response.data);
 
     }).catch(function(response){
+      utils.doCallback('findTimeFailed', config, response);
       utils.log('error', 'An error with Timekit findTime occured', response);
     });
   };
@@ -84,9 +90,15 @@ function TimekitBooking() {
     var timezoneHelperTarget = $('<div class="bookingjs-timezonehelper"><span>Loading...</span></div>');
     rootTarget.append(timezoneHelperTarget);
 
-    timekit.getUserTimezone({
+    var args = {
       email: config.email
-    }).then(function(response){
+    };
+
+    utils.doCallback('getUserTimezoneStarted', config, args);
+
+    timekit.getUserTimezone(args).then(function(response){
+
+      utils.doCallback('getUserTimezoneSuccesful', config, response);
 
       var hostTzOffset = response.data.utc_offset;
       var tzOffsetDiff = localTzOffset - hostTzOffset;
@@ -107,6 +119,7 @@ function TimekitBooking() {
       timezoneHelperTarget.html(template);
 
     }).catch(function(response){
+      utils.doCallback('getUserTimezoneFailed', config, response);
       utils.log('error', 'An error with Timekit getUserTimezone occured', response);
     });
   };
@@ -134,6 +147,8 @@ function TimekitBooking() {
 
     calendarTarget.fullCalendar(args);
     rootTarget.addClass('show');
+
+    utils.doCallback('fullCalendarInitialized', config);
 
   };
 
@@ -195,6 +210,8 @@ function TimekitBooking() {
   // Event handler when a timeslot is clicked in FullCalendar
   var showBookingPage = function(eventData) {
 
+    utils.doCallback('showBookingPage', config);
+
     bookingPageTarget = templates.bookingPage({
       chosenDate: moment(eventData.start).format('D. MMMM YYYY'),
       chosenTime: moment(eventData.start).format('h:mma') + ' to ' + moment(eventData.end).format('h:mma'),
@@ -229,6 +246,8 @@ function TimekitBooking() {
   // Remove the booking page DOM node
   var hideBookingPage = function() {
 
+    utils.doCallback('closeBookingPage', config);
+
     bookingPageTarget.removeClass('show');
     setTimeout(function(){
       bookingPageTarget.remove();
@@ -243,6 +262,8 @@ function TimekitBooking() {
 
     e.preventDefault();
 
+    utils.doCallback('submitBookingForm', config);
+
     var submitButton = $(form).children('.bookingjs-form-button');
 
     if(submitButton.hasClass('loading') || submitButton.hasClass('success')) {
@@ -256,9 +277,13 @@ function TimekitBooking() {
 
     $(form).children('.bookingjs-form-button').addClass('loading');
 
-    timekitCreateEvent(values).then(function(){
+    timekitCreateEvent(values).then(function(response){
+
+      utils.doCallback('createEventSuccessful', config, response);
       renderBookingCompleted(form);
+
     }).catch(function(response){
+      utils.doCallback('createEventFailed', config, response);
       utils.log('error', 'An error with Timekit createEvent occured', response);
     });
   };
@@ -275,7 +300,9 @@ function TimekitBooking() {
       description: data.comment || ''
     };
 
-    $.extend(true, args, config.createEvent);
+    $.extend(true, args, config.timekitCreateEvent);
+
+    utils.doCallback('createEventStarted', config, args);
 
     return timekit.createEvent(args);
   };
@@ -332,7 +359,6 @@ function TimekitBooking() {
   // Render method
   var render = function() {
 
-
     // Set rootTarget to the target element and clean before child nodes before continuing
     prepareDOM();
 
@@ -359,6 +385,8 @@ function TimekitBooking() {
     if (config.name) {
       renderDisplayName();
     }
+
+    utils.doCallback('renderCompleted', config);
 
     return this;
 

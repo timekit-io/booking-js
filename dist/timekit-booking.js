@@ -117,17 +117,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  // Fetch availabile time through Timekit SDK
 	  var timekitFindTime = function() {
+	
 	    var args = { emails: [config.email] };
 	
-	    $.extend(args, config.findTime);
+	    $.extend(args, config.timekitFindTime);
+	
+	    utils.doCallback('findTimeStarted', config, args);
 	
 	    timekit.findTime(args)
 	    .then(function(response){
+	
+	      utils.doCallback('findTimeSuccessful', config, response);
 	
 	      // Render available timeslots in FullCalendar
 	      renderCalendarEvents(response.data);
 	
 	    }).catch(function(response){
+	      utils.doCallback('findTimeFailed', config, response);
 	      utils.log('error', 'An error with Timekit findTime occured', response);
 	    });
 	  };
@@ -140,9 +146,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var timezoneHelperTarget = $('<div class="bookingjs-timezonehelper"><span>Loading...</span></div>');
 	    rootTarget.append(timezoneHelperTarget);
 	
-	    timekit.getUserTimezone({
+	    var args = {
 	      email: config.email
-	    }).then(function(response){
+	    };
+	
+	    utils.doCallback('getUserTimezoneStarted', config, args);
+	
+	    timekit.getUserTimezone(args).then(function(response){
+	
+	      utils.doCallback('getUserTimezoneSuccesful', config, response);
 	
 	      var hostTzOffset = response.data.utc_offset;
 	      var tzOffsetDiff = localTzOffset - hostTzOffset;
@@ -163,6 +175,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      timezoneHelperTarget.html(template);
 	
 	    }).catch(function(response){
+	      utils.doCallback('getUserTimezoneFailed', config, response);
 	      utils.log('error', 'An error with Timekit getUserTimezone occured', response);
 	    });
 	  };
@@ -190,6 +203,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    calendarTarget.fullCalendar(args);
 	    rootTarget.addClass('show');
+	
+	    utils.doCallback('fullCalendarInitialized', config);
 	
 	  };
 	
@@ -251,6 +266,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Event handler when a timeslot is clicked in FullCalendar
 	  var showBookingPage = function(eventData) {
 	
+	    utils.doCallback('showBookingPage', config);
+	
 	    bookingPageTarget = templates.bookingPage({
 	      chosenDate: moment(eventData.start).format('D. MMMM YYYY'),
 	      chosenTime: moment(eventData.start).format('h:mma') + ' to ' + moment(eventData.end).format('h:mma'),
@@ -285,6 +302,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Remove the booking page DOM node
 	  var hideBookingPage = function() {
 	
+	    utils.doCallback('closeBookingPage', config);
+	
 	    bookingPageTarget.removeClass('show');
 	    setTimeout(function(){
 	      bookingPageTarget.remove();
@@ -299,6 +318,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    e.preventDefault();
 	
+	    utils.doCallback('submitBookingForm', config);
+	
 	    var submitButton = $(form).children('.bookingjs-form-button');
 	
 	    if(submitButton.hasClass('loading') || submitButton.hasClass('success')) {
@@ -312,9 +333,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    $(form).children('.bookingjs-form-button').addClass('loading');
 	
-	    timekitCreateEvent(values).then(function(){
+	    timekitCreateEvent(values).then(function(response){
+	
+	      utils.doCallback('createEventSuccessful', config, response);
 	      renderBookingCompleted(form);
+	
 	    }).catch(function(response){
+	      utils.doCallback('createEventFailed', config, response);
 	      utils.log('error', 'An error with Timekit createEvent occured', response);
 	    });
 	  };
@@ -331,7 +356,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      description: data.comment || ''
 	    };
 	
-	    $.extend(true, args, config.createEvent);
+	    $.extend(true, args, config.timekitCreateEvent);
+	
+	    utils.doCallback('createEventStarted', config, args);
 	
 	    return timekit.createEvent(args);
 	  };
@@ -388,7 +415,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Render method
 	  var render = function() {
 	
-	
 	    // Set rootTarget to the target element and clean before child nodes before continuing
 	    prepareDOM();
 	
@@ -415,6 +441,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (config.name) {
 	      renderDisplayName();
 	    }
+	
+	    utils.doCallback('renderCompleted', config);
 	
 	    return this;
 	
@@ -18075,6 +18103,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    } else {
 	      console.log('Timekit Booking: ' + message);
 	    }
+	  },
+	
+	  isFunction: function(object) {
+	   return !!(object && object.constructor && object.call && object.apply);
+	  },
+	
+	  doCallback: function(hook, config, arg) {
+	    if(this.isFunction(config.callbacks[hook])) {
+	      config.callbacks[hook](arg);
+	    }
 	  }
 	
 	};
@@ -18204,11 +18242,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  timekitConfig: {
 	    app: 'bookingjs'
 	  },
-	  findTime: {
+	  timekitFindTime: {
 	    future: '4 weeks',
 	    length: '1 hour'
 	  },
-	  createEvent: {
+	  timekitCreateEvent: {
 	    where: 'Online',
 	    invite: true,
 	    my_rsvp: 'needsAction'

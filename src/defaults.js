@@ -17,11 +17,11 @@ module.exports = {
   timekitConfig: {
     app: 'bookingjs'
   },
-  findTime: {
+  timekitFindTime: {
     future: '4 weeks',
     length: '1 hour'
   },
-  createEvent: {
+  timekitCreateEvent: {
     where: 'Online',
     invite: true,
     my_rsvp: 'needsAction'

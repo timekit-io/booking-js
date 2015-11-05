@@ -99,7 +99,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var prepareDOM = function() {
 	    rootTarget = $(config.targetEl);
 	    if (rootTarget.length === 0) {
-	      utils.throwError('No target DOM element was found (' + config.targetEl + ')');
+	      throw new Error('TimekitBooking - No target DOM element was found (' + config.targetEl + ')');
 	    }
 	    rootTarget.addClass('bookingjs');
 	    rootTarget.children(':not(script)').remove();
@@ -134,7 +134,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    }).catch(function(response){
 	      utils.doCallback('findTimeFailed', config, response);
-	      utils.throwError('An error with Timekit findTime occured', response);
+	      throw new Error('TimekitBooking - An error with Timekit FindTime occured, context: ' + response);
 	    });
 	  };
 	
@@ -176,7 +176,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    }).catch(function(response){
 	      utils.doCallback('getUserTimezoneFailed', config, response);
-	      utils.throwError('An error with Timekit getUserTimezone occured', response);
+	      throw new Error('TimekitBooking - An error with Timekit getUserTimezone occured, context: ' + response);
 	    });
 	  };
 	
@@ -340,7 +340,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    }).catch(function(response){
 	      utils.doCallback('createEventFailed', config, response);
-	      utils.throwError('An error with Timekit createEvent occured', response);
+	      throw new Error('TimekitBooking - An error with Timekit createEvent occured, context: ' + response);
 	    });
 	  };
 	
@@ -376,28 +376,39 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (window.timekitBookingConfig !== undefined) {
 	        suppliedConfig = window.timekitBookingConfig;
 	      } else {
-	        utils.throwError('No configuration was supplied or found. Please supply a config object upon library initialization');
+	        throw new Error('TimekitBooking - No configuration was supplied or found. Please supply a config object upon library initialization');
 	      }
 	    }
 	
 	    // Reset local config
 	    var newConfig = {};
+	    var localizationConfig = {};
 	
 	    // Handle FullCalendar shorthand localization
 	    if(suppliedConfig.localization && suppliedConfig.localization.timeDateFormat === '24h-dmy-mon') {
-	      config.fullCalendar.timeFormat = 'HH:mm';
-	      config.fullCalendar.views.agenda.columnFormat = 'ddd\n D/M';
-	      config.fullCalendar.views.agenda.slotLabelFormat = 'HH:mm';
-	      config.fullCalendar.views.basic.columnFormat = 'dddd D/M';
-	      config.fullCalendar.firstDay = 1;
+	      localizationConfig = {
+	        fullCalendar: {
+	          timeFormat: 'HH:mm',
+	          firstDay: 1,
+	          views: {
+	            agenda: {
+	              columnFormat: 'ddd\n D/M',
+	              slotLabelFormat: 'HH:mm'
+	            },
+	            basic: {
+	              columnFormat: 'dddd D/M'
+	            }
+	          }
+	        }
+	      };
 	    }
 	
 	    // Extend the default config with supplied settings
-	    $.extend(true, newConfig, defaultConfig, config, suppliedConfig);
+	    $.extend(true, newConfig, defaultConfig, localizationConfig, suppliedConfig);
 	
 	    // Check for required settings
 	    if(!newConfig.email || !newConfig.apiToken || !newConfig.calendar) {
-	      utils.throwError('A required config setting was missing ("email", "apiToken" or "calendar")');
+	      throw new Error('TimekitBooking - A required config setting was missing ("email", "apiToken" or "calendar")');
 	    }
 	
 	    // Set new config to instance config
@@ -18099,10 +18110,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	
 	module.exports = {
-	
-	  throwError: function(message, context) {
-	    throw new Error('Timekit Booking - ' + message + (context ? ' - ' + context : ''));
-	  },
 	
 	  isFunction: function(object) {
 	   return !!(object && object.constructor && object.call && object.apply);

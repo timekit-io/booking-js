@@ -326,22 +326,33 @@ function TimekitBooking() {
 
     // Reset local config
     var newConfig = {};
+    var localizationConfig = {};
 
     // Handle FullCalendar shorthand localization
     if(suppliedConfig.localization && suppliedConfig.localization.timeDateFormat === '24h-dmy-mon') {
-      config.fullCalendar.timeFormat = 'HH:mm';
-      config.fullCalendar.views.agenda.columnFormat = 'ddd\n D/M';
-      config.fullCalendar.views.agenda.slotLabelFormat = 'HH:mm';
-      config.fullCalendar.views.basic.columnFormat = 'dddd D/M';
-      config.fullCalendar.firstDay = 1;
+      localizationConfig = {
+        fullCalendar: {
+          timeFormat: 'HH:mm',
+          firstDay: 1,
+          views: {
+            agenda: {
+              columnFormat: 'ddd\n D/M',
+              slotLabelFormat: 'HH:mm'
+            },
+            basic: {
+              columnFormat: 'dddd D/M'
+            }
+          }
+        }
+      };
     }
 
     // Extend the default config with supplied settings
-    $.extend(true, newConfig, defaultConfig, config, suppliedConfig);
+    $.extend(true, newConfig, defaultConfig, localizationConfig, suppliedConfig);
 
     // Check for required settings
     if(!newConfig.email || !newConfig.apiToken || !newConfig.calendar) {
-      throw new Error((TimekitBooking - 'A required config setting was missing ("email", "apiToken" or "calendar")');
+      throw new Error('TimekitBooking - A required config setting was missing ("email", "apiToken" or "calendar")');
     }
 
     // Set new config to instance config

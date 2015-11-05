@@ -26,6 +26,27 @@ The following libraries are bundled together with the SDK:
 - [moment](https://momentjs.com) - parse, validate, manipulate, and display dates in JavaScript
 - [timekit-js-sdk](https://github.com/timekit-io/js-sdk) - JavaScript SDK for the Timekit.io API
 
+## Usage
+
+To ensure that we can push out updates, improvements and bugfixes to the library, you should load the library through our CDN. It's hosted on Amazon Cloudfront so it's snappy.
+
+```html
+<div id="bookingjs">
+  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <script type="text/javascript" src="//cdn.timekit.io/bookingjs/1/booking.min.js" defer></script>
+  <script type="text/javascript">
+    window.timekitBookingConfig = {
+      name:     'Marty McFly',
+      email:    'marty.mcfly@timekit.io',
+      apiToken: 'bNpbFHRmrfZbtS5nEtCVl8sY5vUkOFCL',
+      calendar: '8687f058-5b52-4fa4-885c-9294e52ab7d4',
+      avatar:   '../misc/avatar-mcfly.png',
+      autoload: true
+    };
+  </script>
+</div>
+```
+See `/examples` for implementation examples.
 ## Configuration
 
 Booking.js is made for various use-cases, so it's really extensible and customizable. We augment all the intrinsic options so you can overwrite them as needed, e.g. Timekit FindTime options or FullCalendar settings.
@@ -34,62 +55,35 @@ Booking.js is made for various use-cases, so it's really extensible and customiz
 
 ```javascript
 {
-  // Required options
-  email:          '',
-  apiToken:       '',
-  calendar:       '',
+  // Required
+  email:          '',           // Your Timekit user's email (used for auth)
+  apiToken:       '',           // Your Timekit user's apiToken (as generated through the wizard)
+  calendar:       '',           // Your Timekit calendar ID that bookings should end up in
   
-  // Optional (will fallback to defaults)
-  targetEl:       '#bookingjs',
-  name:           '',
-  avatar:         '',
-  autoload:       false,
-  includeStyles:  true,
+  // Optional
+  targetEl:       '#bookingjs', // Which element should we the library load into
+  name:           '',           // Display name to show in the header and timezone helper
+  avatar:         '',           // Provide an image URL for a circular image avatar
+  autoload:       false,        // Auto initialization if settings is found on window
+  includeStyles:  true,         // Inject fullCalendar and library styles in <head>
 
-  // Specific config for the Timekit JS SDK
-  timekitConfig:      { ... },
-
-  // Properties to send the Timekit FindTime endpoint
-  timekitFindTime: {
-    future:       '4 weeks',
-    length:       '1 hour'
-  },
-
-  // Properties to send the Timekit CreateEvent endpoint
-  timekitCreateEvent: {
-    where:        'Online',
-    invite:       true,
-    my_rsvp:      'needsAction'
-  },
-
-  // Initialization options for FullCalendar
-  fullCalendar: {
-    header: {
-      left:       '',
-      center:     '',
-      right:      'today, prev, next'
-    },
-    views: {
-      basic: {
-        columnFormat:     'dddd M/D',
-      },
-      agenda: {
-        columnFormat:     'ddd\n M/D',
-        slotLabelFormat:  'ha',
-        displayEventEnd:  false
-      }
-    },
-    timeFormat:   'h:mma',
-    allDaySlot:   false,
-    scrollTime:   '08:00:00',
-    timezone:     'local',
-  },
-
-  // Shorthand options for easy localization
+  // Internationalization
   localization: {
-    showTimezoneHelper:   true || false,
-    timeDateFormat:       '12h-mdy-sun' || '24h-dmy-mon',
+    showTimezoneHelper:       true,         // Should the timezone difference helper (bottom) be shown?
+    timeDateFormat:           '12h-mdy-sun' // For EU-style formatting, use '24h-dmy-mon'
   }
+
+  // Timekit JS SDK (see below)
+  timekitConfig:              { ... },
+
+  // Timekit FindTime endpoint (see below)
+  timekitFindTime:            { ... },
+
+  // Timekit CreateEvent endpoint (see below)
+  timekitCreateEvent:         { ... },
+
+  // FullCalendar options (see below)
+  fullCalendar:               { ... },
 
   // Register callbacks on events
   callbacks: {
@@ -114,5 +108,57 @@ Booking.js is made for various use-cases, so it's really extensible and customiz
     submitBookingForm:        function() {}
 
   }
+}
+```
+
+**Timekit SDK**
+```javascript
+timekitConfig: {
+  app:          'bookingjs'
+},
+```
+
+**Timekit Find Time**
+
+```javascript
+timekitFindTime: {
+  future:       '4 weeks',
+  length:       '1 hour'
+},
+```
+
+**Timekit Create Event**
+
+```javascript
+timekitCreateEvent: {
+  where:        'Online',
+  invite:       true,
+  my_rsvp:      'needsAction'
+},
+```
+
+**FullCalendar**
+
+```javascript
+fullCalendar: {
+  header: {
+    left:       '',
+    center:     '',
+    right:      'today, prev, next'
+  },
+  views: {
+    basic: {
+      columnFormat:     'dddd M/D',
+    },
+    agenda: {
+      columnFormat:     'ddd\n M/D',
+      slotLabelFormat:  'ha',
+      displayEventEnd:  false
+    }
+  },
+  timeFormat:   'h:mma',
+  allDaySlot:   false,
+  scrollTime:   '08:00:00',
+  timezone:     'local'
 }
 ```

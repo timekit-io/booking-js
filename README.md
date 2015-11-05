@@ -28,3 +28,91 @@ The following libraries are bundled together with the SDK:
 
 ## Configuration
 
+Booking.js is made for various use-cases, so it's really extensible and customizable. We augment all the intrinsic options so you can overwrite them as needed, e.g. Timekit FindTime options or FullCalendar settings.
+
+### Example
+
+```javascript
+{
+  // Required options
+  email:          '',
+  apiToken:       '',
+  calendar:       '',
+  
+  // Optional (will fallback to defaults)
+  targetEl:       '#bookingjs',
+  name:           '',
+  avatar:         '',
+  autoload:       false,
+  includeStyles:  true,
+
+  // Specific config for the Timekit JS SDK
+  timekitConfig:      { ... },
+
+  // Properties to send the Timekit FindTime endpoint
+  timekitFindTime: {
+    future:       '4 weeks',
+    length:       '1 hour'
+  },
+
+  // Properties to send the Timekit CreateEvent endpoint
+  timekitCreateEvent: {
+    where:        'Online',
+    invite:       true,
+    my_rsvp:      'needsAction'
+  },
+
+  // Initialization options for FullCalendar
+  fullCalendar: {
+    header: {
+      left:       '',
+      center:     '',
+      right:      'today, prev, next'
+    },
+    views: {
+      basic: {
+        columnFormat:     'dddd M/D',
+      },
+      agenda: {
+        columnFormat:     'ddd\n M/D',
+        slotLabelFormat:  'ha',
+        displayEventEnd:  false
+      }
+    },
+    timeFormat:   'h:mma',
+    allDaySlot:   false,
+    scrollTime:   '08:00:00',
+    timezone:     'local',
+  },
+
+  // Shorthand options for easy localization
+  localization: {
+    showTimezoneHelper:   true || false,
+    timeDateFormat:       '12h-mdy-sun' || '24h-dmy-mon',
+  }
+
+  // Register callbacks on events
+  callbacks: {
+
+    findTimeStarted:          function(args) {},
+    findTimeSuccessful:       function(response) {},
+    findTimeFailed:           function(response) {},
+
+    createEventStarted:       function(args) {},
+    createEventSuccessful:    function(response) {},
+    createEventFailed:        function(response) {},
+
+    getUserTimezoneStarted:   function(args) {},
+    getUserTimezoneSuccesful: function(response) {},
+    getUserTimezoneFailed:    function(response) {},
+
+    fullCalendarInitialized:  function() {},
+    renderCompleted:          function() {},
+
+    showBookingPage:          function() {},
+    closeBookingPage:         function() {},
+    submitBookingForm:        function() {}
+
+  }
+}
+```

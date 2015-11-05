@@ -16,7 +16,7 @@ Maintainer: Lasse Boisen Andersen ([la@timekit.io](mailto:la@timekit.io)). PR's 
 
 Booking.js is meant as an easy to use, drop-in script that does it's job without any coding required. It's made for the browser and is quite similar to Stripe's Checkout.js. 
 
-*This repo is only for the curious soul that would like to customize the widget beyond settings provided out of the box.*
+*This repo is mainly for community contributions and the curious soul that would like to customize the widget beyond settings provided out of the box.*
 
 ## Dependencies
 
@@ -25,3 +25,6 @@ The following libraries are bundled together with the SDK:
 - [fullCalendar](http://fullcalendar.io) - a customizable and flexible event calendar built for the browser
 - [moment](https://momentjs.com) - parse, validate, manipulate, and display dates in JavaScript
 - [timekit-js-sdk](https://github.com/timekit-io/js-sdk) - JavaScript SDK for the Timekit.io API
+
+## Configuration
+

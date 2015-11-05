@@ -6,13 +6,14 @@
 
 module.exports = {
 
+  // email: '',
+  // apiToken: '',
+  // calendar: '',
   targetEl: '#bookingjs',
-  email: '',
-  apiToken: '',
-  calendar: '',
   name: '',
   avatar: '',
   autoload: false,
+  includeStyles: true,
   timekitConfig: {
     app: 'bookingjs'
   },
@@ -21,8 +22,9 @@ module.exports = {
     length: '1 hour'
   },
   createEvent: {
+    where: 'Online',
     invite: true,
-    where: 'Online'
+    my_rsvp: 'needsAction'
   },
   fullCalendar: {
     header: {
@@ -33,29 +35,26 @@ module.exports = {
     views: {
       basic: {
         columnFormat: 'dddd M/D',
-        timeFormat: 'h:mm a'
       },
       agenda: {
-        timeFormat: 'h:mm a',
+        columnFormat: 'ddd\n M/D',
+        slotLabelFormat: 'ha',
         displayEventEnd: false
       }
     },
+    timeFormat: 'h:mma',
     allDaySlot: false,
     scrollTime: '08:00:00',
     timezone: 'local',
-    columnFormat: 'ddd\n M/D'
     //minTime: '08:00:00',
     //maxTime: '19:00:00',
   },
   localization: {
     showTimezoneHelper: true,
-    dateFormat: 'D. MMMM YYYY',
-    timeFormat: 'h:mm a'
+    timeDateFormat: '12h-mdy-sun'
+    //dateFormat: 'D. MMMM YYYY',
+    //timeFormat: 'h:mm a'
   },
-  styling: {
-    fullCalendarCore: true,
-    fullCalendarTheme: true,
-    general: true
-  }
+  callbacks: {}
 
 };

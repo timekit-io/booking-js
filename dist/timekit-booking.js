@@ -77,23 +77,33 @@ return /******/ (function(modules) { // webpackBootstrap
 	var templates = __webpack_require__(30);
 	var defaultConfig = __webpack_require__(34);
 	
-	// Style dependencies
-	__webpack_require__(41);
-	__webpack_require__(35);
-	__webpack_require__(39);
-	
+	// Main library
 	function TimekitBooking() {
 	
-	  // Export
-	  var TB = {};
-	
-	  // Object config
+	  // Library config
 	  var config = {};
 	
 	  // DOM nodes
 	  var rootTarget;
 	  var calendarTarget;
 	  var bookingPageTarget;
+	
+	  // Inject style dependencies
+	  var includeStyles = function() {
+	    __webpack_require__(35);
+	    __webpack_require__(39);
+	    __webpack_require__(41);
+	  };
+	
+	  // Make sure DOM element is ready and clean it
+	  var prepareDOM = function() {
+	    rootTarget = $(config.targetEl);
+	    if (rootTarget.length === 0) {
+	      utils.log('error', 'No target DOM element was found (' + config.targetEl + ')');
+	    }
+	    rootTarget.addClass('bookingjs');
+	    rootTarget.children(':not(script)').remove();
+	  };
 	
 	  // Setup the Timekit SDK with correct credentials
 	  var timekitSetup = function() {
@@ -106,14 +116,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 	
 	  // Fetch availabile time through Timekit SDK
-	  var timekitFindTime = function(callback) {
+	  var timekitFindTime = function() {
 	    var args = { emails: [config.email] };
 	
 	    $.extend(args, config.findTime);
 	
 	    timekit.findTime(args)
 	    .then(function(response){
-	      callback(response);
+	
+	      // Render available timeslots in FullCalendar
+	      renderCalendarEvents(response.data);
+	
 	    }).catch(function(response){
 	      utils.log('error', 'An error with Timekit findTime occured', response);
 	    });
@@ -123,7 +136,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var renderTimezoneHelper = function() {
 	
 	    var localTzOffset = (new Date()).getTimezoneOffset()/60*-1;
-	    //var localTzFormatted = (localTzOffset > 0 ? "+" : "") + localTzOffset;
 	
 	    var timezoneHelperTarget = $('<div class="bookingjs-timezonehelper"><span>Loading...</span></div>');
 	    rootTarget.append(timezoneHelperTarget);
@@ -158,13 +170,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Setup and render FullCalendar
 	  var initializeCalendar = function() {
 	
-	    var sizing = decideCalendarSize(null, true);
+	    var sizing = decideCalendarSize();
 	
 	    var args = {
 	      defaultView: sizing.view,
 	      height: sizing.height,
 	      eventClick: showBookingPage,
-	      windowResize: decideCalendarSize
+	      windowResize: function() {
+	        var sizing = decideCalendarSize();
+	        calendarTarget.fullCalendar('changeView', sizing.view);
+	        calendarTarget.fullCalendar('option', 'height', sizing.height);
+	      }
 	    };
 	
 	    $.extend(true, args, config.fullCalendar);
@@ -178,13 +194,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 	
 	  // Fires when window is resized and calendar must adhere
-	  var decideCalendarSize = function(currentView, shouldReturn) {
+	  var decideCalendarSize = function() {
 	
 	    var view = 'agendaWeek';
 	    var height = 550;
-	    var deviceWidth = rootTarget.width();
+	    var rootWidth = rootTarget.width();
 	
-	    if (deviceWidth < 480) {
+	    if (rootWidth < 480) {
 	      view = 'basicDay';
 	      height = 400;
 	      rootTarget.addClass('bookingjs-small');
@@ -192,15 +208,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	      rootTarget.removeClass('bookingjs-small');
 	    }
 	
-	    if (shouldReturn) {
-	      return {
-	        height: height,
-	        view: view
-	      };
-	    } else {
-	      calendarTarget.fullCalendar('changeView', view);
-	      calendarTarget.fullCalendar('option', 'height', height);
-	    }
+	    return {
+	      height: height,
+	      view: view
+	    };
+	
 	  };
 	
 	  // Render the supplied calendar events in FullCalendar
@@ -248,7 +260,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      loadingText: 'Wait..'
 	    });
 	
-	    bookingPageTarget.children('.bookingjs-bookpage-close').click(function() {
+	    bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
+	      e.preventDefault();
 	      hideBookingPage();
 	    });
 	
@@ -328,8 +341,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    $(form).children('.bookingjs-form-button').removeClass('loading').addClass('success');
 	  };
 	
-	  // Exposed initilization method
-	  TB.init = function(suppliedConfig) {
+	  // Set configs and defaults
+	  var setConfig = function(suppliedConfig) {
 	
 	    // Check whether a config is supplied
 	    if(suppliedConfig === undefined || typeof suppliedConfig !== 'object' || $.isEmptyObject(suppliedConfig)) {
@@ -337,19 +350,47 @@ return /******/ (function(modules) { // webpackBootstrap
 	        suppliedConfig = window.timekitBookingConfig;
 	      } else {
 	        utils.log('error', 'No configuration was supplied or found. Please supply a config object upon library initialization');
-	        return;
 	      }
 	    }
 	
 	    // Reset local config
-	    config = {};
+	    var newConfig = {};
+	
+	    // Handle FullCalendar shorthand localization
+	    if(suppliedConfig.localization && suppliedConfig.localization.timeDateFormat === '24h-dmy-mon') {
+	      config.fullCalendar.timeFormat = 'HH:mm';
+	      config.fullCalendar.views.agenda.columnFormat = 'ddd\n D/M';
+	      config.fullCalendar.views.agenda.slotLabelFormat = 'HH:mm';
+	      config.fullCalendar.views.basic.columnFormat = 'dddd D/M';
+	      config.fullCalendar.firstDay = 1;
+	    }
 	
 	    // Extend the default config with supplied settings
-	    $.extend(true, config, defaultConfig, suppliedConfig);
+	    $.extend(true, newConfig, defaultConfig, config, suppliedConfig);
+	
+	    // Check for required settings
+	    if(!newConfig.email || !newConfig.apiToken || !newConfig.calendar) {
+	      utils.log('error', 'A required config setting was missing ("email", "apiToken" or "calendar")');
+	    }
+	
+	    // Set new config to instance config
+	    config = newConfig;
+	
+	    return config;
+	
+	  };
+	
+	  // Get library config
+	  var getConfig = function() {
+	    return config;
+	  };
+	
+	  // Render method
+	  var render = function() {
+	
 	
 	    // Set rootTarget to the target element and clean before child nodes before continuing
-	    rootTarget = $(config.targetEl).addClass('bookingjs');
-	    rootTarget.children(':not(script)').remove();
+	    prepareDOM();
 	
 	    // Setup Timekit SDK config
 	    timekitSetup();
@@ -358,10 +399,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    initializeCalendar();
 	
 	    // Get availability through Timekit SDK
-	    timekitFindTime(function(response){
-	      // Render available timeslots in FullCalendar
-	      renderCalendarEvents(response.data);
-	    });
+	    timekitFindTime();
 	
 	    // Show timezone helper if enabled
 	    if (config.localization.showTimezoneHelper) {
@@ -373,24 +411,49 @@ return /******/ (function(modules) { // webpackBootstrap
 	      renderAvatarImage();
 	    }
 	
-	    renderDisplayName();
+	    // Print out display name
+	    if (config.name) {
+	      renderDisplayName();
+	    }
 	
 	    return this;
 	
 	  };
 	
-	  // Expose the fullCalendar object for advanced puppeting
-	  TB.fullCalendar = function() {
+	  // Initilization method
+	  var init = function(suppliedConfig) {
+	
+	    // Handle config and defaults
+	    setConfig(suppliedConfig);
+	
+	    // Include library styles if enabled
+	    if (config.includeStyles) {
+	      includeStyles();
+	    }
+	
+	    return render();
+	
+	  };
+	
+	  // The fullCalendar object for advanced puppeting
+	  var fullCalendar = function() {
 	    if (calendarTarget.fullCalendar === undefined) { return undefined; }
 	    return calendarTarget.fullCalendar.apply(calendarTarget, arguments);
 	  };
 	
-	  return TB;
+	  // Expose methods
+	  return {
+	    setConfig: setConfig,
+	    getConfig: getConfig,
+	    render: render,
+	    init: init,
+	    fullCalendar: fullCalendar
+	  };
 	
 	}
 	
 	// Autoload if config is available on window, else export function
-	if (window.timekitBookingConfig && window.timekitBookingConfig.autoload === true) {
+	if (window && window.timekitBookingConfig && window.timekitBookingConfig.autoload === true) {
 	  $(window).load(function(){
 	    var instance = new TimekitBooking();
 	    instance.init(window.timekitBookingConfig);
@@ -18130,13 +18193,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	module.exports = {
 	
+	  // email: '',
+	  // apiToken: '',
+	  // calendar: '',
 	  targetEl: '#bookingjs',
-	  email: '',
-	  apiToken: '',
-	  calendar: '',
 	  name: '',
 	  avatar: '',
 	  autoload: false,
+	  includeStyles: true,
 	  timekitConfig: {
 	    app: 'bookingjs'
 	  },
@@ -18145,8 +18209,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    length: '1 hour'
 	  },
 	  createEvent: {
+	    where: 'Online',
 	    invite: true,
-	    where: 'Online'
+	    my_rsvp: 'needsAction'
 	  },
 	  fullCalendar: {
 	    header: {
@@ -18157,30 +18222,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	    views: {
 	      basic: {
 	        columnFormat: 'dddd M/D',
-	        timeFormat: 'h:mm a'
 	      },
 	      agenda: {
-	        timeFormat: 'h:mm a',
+	        columnFormat: 'ddd\n M/D',
+	        slotLabelFormat: 'ha',
 	        displayEventEnd: false
 	      }
 	    },
+	    timeFormat: 'h:mma',
 	    allDaySlot: false,
 	    scrollTime: '08:00:00',
 	    timezone: 'local',
-	    columnFormat: 'ddd\n M/D'
 	    //minTime: '08:00:00',
 	    //maxTime: '19:00:00',
 	  },
 	  localization: {
 	    showTimezoneHelper: true,
-	    dateFormat: 'D. MMMM YYYY',
-	    timeFormat: 'h:mm a'
+	    timeDateFormat: '12h-mdy-sun'
+	    //dateFormat: 'D. MMMM YYYY',
+	    //timeFormat: 'h:mm a'
 	  },
-	  styling: {
-	    fullCalendarCore: true,
-	    fullCalendarTheme: true,
-	    general: true
-	  }
+	  callbacks: {}
 	
 	};
 
@@ -18570,7 +18632,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 	// module
-	exports.push([module.id, ".fc-view-container{background-color:#fbfbfb;color:#333}.fc-row.fc-widget-header{border-bottom:1px solid #ececec}.fc-row.fc-widget-header .fc-day-header{text-transform:uppercase;font-size:.9em;font-weight:600}.fc-axis,.fc-row.fc-widget-header .fc-day-header:first-line{color:#b9b9b9}.fc-axis{font-size:.9em}.fc-state-default{text-shadow:none;box-shadow:none;background-image:none;background-color:#fff;border-color:#fff}.fc-button{text-transform:uppercase;font-weight:600;font-size:1.1em}.fc-content-skeleton{border-top:1px solid #ddd}.fc .fc-toolbar{padding:0;margin-bottom:0;border-bottom:1px solid #ececec}.fc .fc-toolbar>*>button{padding:15px 17px;height:auto;outline:0;margin-left:0;transition:opacity .2s ease;opacity:.3}.fc .fc-toolbar>*>button:hover{opacity:1}.fc .fc-toolbar>*>button.fc-state-disabled{transition:opacity 0s;opacity:0}.fc .fc-toolbar>*>button.fc-prev-button{padding-right:8px}.fc .fc-toolbar>*>button.fc-next-button{padding-left:8px}.fc .fc-toolbar>*>button .fc-icon{font-size:1.1em}.fc .fc-toolbar>.fc-right>button.fc-today-button{padding:15px 5px}.fc-unthemed .fc-today{background:#fff}.fc-body>tr>.fc-widget-content,.fc-head>tr>.fc-widget-header{border:0!important}.fc th{border-color:#fff;padding:5px}.fc-unthemed .fc-divider,.fc-unthemed .fc-popover .fc-header{background-color:transparent}.empty-calendar .fc-event{opacity:0}.fc-event{transition:all .2s,opacity .6s;border:none;border-left:3px solid #689ad8;padding:3px;background-color:#fff;border-radius:4px;color:#333;margin:1px 0;box-shadow:0 1px 2px rgba(0,0,0,.07);cursor:pointer;margin-bottom:2px;opacity:1}.fc-event:hover{color:#fff;background-color:#689ad8;border-left:3px solid #689ad8;box-shadow:0 1px 3px rgba(0,0,0,.15)}.fc-event .fc-bg{opacity:0}.fc-day-grid-event{padding:15px;margin:5px}.fc-time-grid .fc-slats .fc-minor td{border-top-style:none}.fc-time-grid .fc-slats td{border-top-color:#fbfbfb}.fc-time-grid .fc-slats td.fc-axis{border-top-color:#ececec}.fc-time-grid-event.fc-short .fc-time:after{content:''}.fc-time-grid-event .fc-time{font-size:1.1em;padding:5px}.fc-unthemed .fc-divider,.fc-unthemed .fc-popover,.fc-unthemed .fc-row,.fc-unthemed tbody,.fc-unthemed td,.fc-unthemed th,.fc-unthemed thead{border-color:#ececec}.fc-agendaMonthly-view .fc-event{color:#fff}", ""]);
+	exports.push([module.id, ".fc-view-container{background-color:#fbfbfb;color:#333}.fc-row.fc-widget-header{border-bottom:1px solid #ececec}.fc-row.fc-widget-header .fc-day-header{text-transform:uppercase;font-size:.9em;font-weight:600}.fc-axis,.fc-row.fc-widget-header .fc-day-header:first-line{color:#b9b9b9}.fc-axis{font-size:.9em}.fc-state-default{text-shadow:none;box-shadow:none;background-image:none;background-color:#fff;border-color:#fff}.fc-button{text-transform:uppercase;font-weight:600;font-size:1.1em}.fc-content-skeleton{border-top:1px solid #ddd}.fc .fc-toolbar{padding:0;margin-bottom:0;border-bottom:1px solid #ececec}.fc .fc-toolbar>*>button{padding:15px 17px;height:auto;outline:0;margin-left:0;transition:opacity .2s ease;opacity:.3}.fc .fc-toolbar>*>button:hover{opacity:1}.fc .fc-toolbar>*>button.fc-state-disabled{transition:opacity 0s;opacity:0}.fc .fc-toolbar>*>button.fc-prev-button{padding-right:8px}.fc .fc-toolbar>*>button.fc-next-button{padding-left:8px}.fc .fc-toolbar>*>button .fc-icon{font-size:1.1em}.fc .fc-toolbar>.fc-right>button.fc-today-button{padding:15px 5px}.fc-unthemed .fc-today{background:#fff}.fc-body>tr>.fc-widget-content,.fc-head>tr>.fc-widget-header{border:0!important}.fc th{border-color:#fff;padding:5px}.fc-unthemed .fc-divider,.fc-unthemed .fc-popover .fc-header{background-color:transparent}.empty-calendar .fc-event{opacity:0}.fc-event{transition:all .2s,opacity .6s;border:none;border-left:3px solid #689ad8;padding:3px;background-color:#fff;border-radius:4px;color:#333;margin:1px 0;box-shadow:0 1px 2px rgba(0,0,0,.07);cursor:pointer;margin-bottom:2px;opacity:1}.fc-event:hover{color:#fff;background-color:#689ad8;border-left:3px solid #689ad8;box-shadow:0 1px 3px rgba(0,0,0,.15)}.fc-event .fc-bg{opacity:0}.fc-day-grid-event{padding:15px;margin:5px}.fc-day-grid-event .fc-time{font-weight:600}.fc-time-grid .fc-slats .fc-minor td{border-top-style:none}.fc-time-grid .fc-slats td{border-top-color:#fbfbfb}.fc-time-grid .fc-slats td.fc-axis{border-top-color:#ececec}.fc-time-grid-event.fc-short .fc-time:after{content:''}.fc-time-grid-event .fc-time{font-size:1.1em;padding:5px}.fc-unthemed .fc-divider,.fc-unthemed .fc-popover,.fc-unthemed .fc-row,.fc-unthemed tbody,.fc-unthemed td,.fc-unthemed th,.fc-unthemed thead{border-color:#ececec}.fc-agendaMonthly-view .fc-event{color:#fff}", ""]);
 	
 	// exports
 

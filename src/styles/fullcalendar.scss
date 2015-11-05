@@ -143,6 +143,10 @@ $primaryDarkColor: darken($primaryColor, 10%);
 .fc-day-grid-event {
   padding: 15px;
   margin: 5px;
+
+  .fc-time {
+    font-weight: 600;
+  }
 }
 
 .fc-time-grid .fc-slats .fc-minor td {

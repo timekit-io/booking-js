@@ -21,23 +21,33 @@ var utils = require('./utils');
 var templates = require('./templates');
 var defaultConfig = require('./defaults');
 
-// Style dependencies
-require('./styles/main.scss');
-require('../node_modules/fullcalendar/dist/fullcalendar.css');
-require('./styles/fullcalendar.scss');
-
+// Main library
 function TimekitBooking() {
 
-  // Export
-  var TB = {};
-
-  // Object config
+  // Library config
   var config = {};
 
   // DOM nodes
   var rootTarget;
   var calendarTarget;
   var bookingPageTarget;
+
+  // Inject style dependencies
+  var includeStyles = function() {
+    require('../node_modules/fullcalendar/dist/fullcalendar.css');
+    require('./styles/fullcalendar.scss');
+    require('./styles/main.scss');
+  };
+
+  // Make sure DOM element is ready and clean it
+  var prepareDOM = function() {
+    rootTarget = $(config.targetEl);
+    if (rootTarget.length === 0) {
+      utils.log('error', 'No target DOM element was found (' + config.targetEl + ')');
+    }
+    rootTarget.addClass('bookingjs');
+    rootTarget.children(':not(script)').remove();
+  };
 
   // Setup the Timekit SDK with correct credentials
   var timekitSetup = function() {
@@ -50,14 +60,17 @@ function TimekitBooking() {
   };
 
   // Fetch availabile time through Timekit SDK
-  var timekitFindTime = function(callback) {
+  var timekitFindTime = function() {
     var args = { emails: [config.email] };
 
     $.extend(args, config.findTime);
 
     timekit.findTime(args)
     .then(function(response){
-      callback(response);
+
+      // Render available timeslots in FullCalendar
+      renderCalendarEvents(response.data);
+
     }).catch(function(response){
       utils.log('error', 'An error with Timekit findTime occured', response);
     });
@@ -67,7 +80,6 @@ function TimekitBooking() {
   var renderTimezoneHelper = function() {
 
     var localTzOffset = (new Date()).getTimezoneOffset()/60*-1;
-    //var localTzFormatted = (localTzOffset > 0 ? "+" : "") + localTzOffset;
 
     var timezoneHelperTarget = $('<div class="bookingjs-timezonehelper"><span>Loading...</span></div>');
     rootTarget.append(timezoneHelperTarget);
@@ -102,13 +114,17 @@ function TimekitBooking() {
   // Setup and render FullCalendar
   var initializeCalendar = function() {
 
-    var sizing = decideCalendarSize(null, true);
+    var sizing = decideCalendarSize();
 
     var args = {
       defaultView: sizing.view,
       height: sizing.height,
       eventClick: showBookingPage,
-      windowResize: decideCalendarSize
+      windowResize: function() {
+        var sizing = decideCalendarSize();
+        calendarTarget.fullCalendar('changeView', sizing.view);
+        calendarTarget.fullCalendar('option', 'height', sizing.height);
+      }
     };
 
     $.extend(true, args, config.fullCalendar);
@@ -122,13 +138,13 @@ function TimekitBooking() {
   };
 
   // Fires when window is resized and calendar must adhere
-  var decideCalendarSize = function(currentView, shouldReturn) {
+  var decideCalendarSize = function() {
 
     var view = 'agendaWeek';
     var height = 550;
-    var deviceWidth = rootTarget.width();
+    var rootWidth = rootTarget.width();
 
-    if (deviceWidth < 480) {
+    if (rootWidth < 480) {
       view = 'basicDay';
       height = 400;
       rootTarget.addClass('bookingjs-small');
@@ -136,15 +152,11 @@ function TimekitBooking() {
       rootTarget.removeClass('bookingjs-small');
     }
 
-    if (shouldReturn) {
-      return {
-        height: height,
-        view: view
-      };
-    } else {
-      calendarTarget.fullCalendar('changeView', view);
-      calendarTarget.fullCalendar('option', 'height', height);
-    }
+    return {
+      height: height,
+      view: view
+    };
+
   };
 
   // Render the supplied calendar events in FullCalendar
@@ -192,7 +204,8 @@ function TimekitBooking() {
       loadingText: 'Wait..'
     });
 
-    bookingPageTarget.children('.bookingjs-bookpage-close').click(function() {
+    bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
+      e.preventDefault();
       hideBookingPage();
     });
 
@@ -272,8 +285,8 @@ function TimekitBooking() {
     $(form).children('.bookingjs-form-button').removeClass('loading').addClass('success');
   };
 
-  // Exposed initilization method
-  TB.init = function(suppliedConfig) {
+  // Set configs and defaults
+  var setConfig = function(suppliedConfig) {
 
     // Check whether a config is supplied
     if(suppliedConfig === undefined || typeof suppliedConfig !== 'object' || $.isEmptyObject(suppliedConfig)) {
@@ -281,19 +294,47 @@ function TimekitBooking() {
         suppliedConfig = window.timekitBookingConfig;
       } else {
         utils.log('error', 'No configuration was supplied or found. Please supply a config object upon library initialization');
-        return;
       }
     }
 
     // Reset local config
-    config = {};
+    var newConfig = {};
+
+    // Handle FullCalendar shorthand localization
+    if(suppliedConfig.localization && suppliedConfig.localization.timeDateFormat === '24h-dmy-mon') {
+      config.fullCalendar.timeFormat = 'HH:mm';
+      config.fullCalendar.views.agenda.columnFormat = 'ddd\n D/M';
+      config.fullCalendar.views.agenda.slotLabelFormat = 'HH:mm';
+      config.fullCalendar.views.basic.columnFormat = 'dddd D/M';
+      config.fullCalendar.firstDay = 1;
+    }
 
     // Extend the default config with supplied settings
-    $.extend(true, config, defaultConfig, suppliedConfig);
+    $.extend(true, newConfig, defaultConfig, config, suppliedConfig);
+
+    // Check for required settings
+    if(!newConfig.email || !newConfig.apiToken || !newConfig.calendar) {
+      utils.log('error', 'A required config setting was missing ("email", "apiToken" or "calendar")');
+    }
+
+    // Set new config to instance config
+    config = newConfig;
+
+    return config;
+
+  };
+
+  // Get library config
+  var getConfig = function() {
+    return config;
+  };
+
+  // Render method
+  var render = function() {
+
 
     // Set rootTarget to the target element and clean before child nodes before continuing
-    rootTarget = $(config.targetEl).addClass('bookingjs');
-    rootTarget.children(':not(script)').remove();
+    prepareDOM();
 
     // Setup Timekit SDK config
     timekitSetup();
@@ -302,10 +343,7 @@ function TimekitBooking() {
     initializeCalendar();
 
     // Get availability through Timekit SDK
-    timekitFindTime(function(response){
-      // Render available timeslots in FullCalendar
-      renderCalendarEvents(response.data);
-    });
+    timekitFindTime();
 
     // Show timezone helper if enabled
     if (config.localization.showTimezoneHelper) {
@@ -317,24 +355,49 @@ function TimekitBooking() {
       renderAvatarImage();
     }
 
-    renderDisplayName();
+    // Print out display name
+    if (config.name) {
+      renderDisplayName();
+    }
 
     return this;
 
   };
 
-  // Expose the fullCalendar object for advanced puppeting
-  TB.fullCalendar = function() {
+  // Initilization method
+  var init = function(suppliedConfig) {
+
+    // Handle config and defaults
+    setConfig(suppliedConfig);
+
+    // Include library styles if enabled
+    if (config.includeStyles) {
+      includeStyles();
+    }
+
+    return render();
+
+  };
+
+  // The fullCalendar object for advanced puppeting
+  var fullCalendar = function() {
     if (calendarTarget.fullCalendar === undefined) { return undefined; }
     return calendarTarget.fullCalendar.apply(calendarTarget, arguments);
   };
 
-  return TB;
+  // Expose methods
+  return {
+    setConfig: setConfig,
+    getConfig: getConfig,
+    render: render,
+    init: init,
+    fullCalendar: fullCalendar
+  };
 
 }
 
 // Autoload if config is available on window, else export function
-if (window.timekitBookingConfig && window.timekitBookingConfig.autoload === true) {
+if (window && window.timekitBookingConfig && window.timekitBookingConfig.autoload === true) {
   $(window).load(function(){
     var instance = new TimekitBooking();
     instance.init(window.timekitBookingConfig);

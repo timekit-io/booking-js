@@ -32,7 +32,7 @@ Bundled together with the library:
 
 ## Usage
 
-To ensure that we can push out updates, improvements and bugfixes to the library, you should load the library through our CDN. It's hosted on Amazon Cloudfront so it's snappy.
+To ensure that we can push out updates, improvements and bugfixes to the library, you should load the library through our CDN. It's hosted on Amazon Cloudfront so it's snappy enough for production.
 
 The simplest and most universally compatible usage is with autoload:
 
@@ -184,4 +184,18 @@ fullCalendar: {
   scrollTime:   '08:00:00',
   timezone:     'local'
 }
+```
+
+## Methods
+
+After you instantiated the widget, you can control it with the following methods:
+
+```javascript
+var widget = new TimekitBooking();
+widget.init(config);          // Initalizes the widget with the given config
+widget.render();              // Re-renders the widget with it's instance config
+widget.setConfig(config);     // Push a new config into it (call render() afterwards)
+widget.getConfig();           // Returns the current config
+widget.destroy();             // Cleans the DOM element and empty config
+widget.fullCalendar(action);  // Direct access to FullCalendar's own method (for advanced use)
 ```

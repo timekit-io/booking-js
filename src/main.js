@@ -43,7 +43,7 @@ function TimekitBooking() {
   var prepareDOM = function() {
     rootTarget = $(config.targetEl);
     if (rootTarget.length === 0) {
-      utils.log('error', 'No target DOM element was found (' + config.targetEl + ')');
+      throw new Error('TimekitBooking - No target DOM element was found (' + config.targetEl + ')');
     }
     rootTarget.addClass('bookingjs');
     rootTarget.children(':not(script)').remove();
@@ -78,7 +78,7 @@ function TimekitBooking() {
 
     }).catch(function(response){
       utils.doCallback('findTimeFailed', config, response);
-      utils.log('error', 'An error with Timekit findTime occured', response);
+      throw new Error('TimekitBooking - An error with Timekit FindTime occured, context: ' + response);
     });
   };
 
@@ -120,7 +120,7 @@ function TimekitBooking() {
 
     }).catch(function(response){
       utils.doCallback('getUserTimezoneFailed', config, response);
-      utils.log('error', 'An error with Timekit getUserTimezone occured', response);
+      throw new Error('TimekitBooking - An error with Timekit getUserTimezone occured, context: ' + response);
     });
   };
 
@@ -284,7 +284,7 @@ function TimekitBooking() {
 
     }).catch(function(response){
       utils.doCallback('createEventFailed', config, response);
-      utils.log('error', 'An error with Timekit createEvent occured', response);
+      throw new Error('TimekitBooking - An error with Timekit createEvent occured, context: ' + response);
     });
   };
 
@@ -320,7 +320,7 @@ function TimekitBooking() {
       if (window.timekitBookingConfig !== undefined) {
         suppliedConfig = window.timekitBookingConfig;
       } else {
-        utils.log('error', 'No configuration was supplied or found. Please supply a config object upon library initialization');
+        throw new Error('TimekitBooking - No configuration was supplied or found. Please supply a config object upon library initialization');
       }
     }
 
@@ -341,7 +341,7 @@ function TimekitBooking() {
 
     // Check for required settings
     if(!newConfig.email || !newConfig.apiToken || !newConfig.calendar) {
-      utils.log('error', 'A required config setting was missing ("email", "apiToken" or "calendar")');
+      throw new Error((TimekitBooking - 'A required config setting was missing ("email", "apiToken" or "calendar")');
     }
 
     // Set new config to instance config
@@ -407,6 +407,12 @@ function TimekitBooking() {
 
   };
 
+  var destroy = function() {
+    prepareDOM();
+    config = {};
+    return this;
+  };
+
   // The fullCalendar object for advanced puppeting
   var fullCalendar = function() {
     if (calendarTarget.fullCalendar === undefined) { return undefined; }
@@ -419,6 +425,7 @@ function TimekitBooking() {
     getConfig: getConfig,
     render: render,
     init: init,
+    destroy: destroy,
     fullCalendar: fullCalendar
   };
 

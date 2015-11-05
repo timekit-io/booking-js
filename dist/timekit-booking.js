@@ -99,7 +99,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var prepareDOM = function() {
 	    rootTarget = $(config.targetEl);
 	    if (rootTarget.length === 0) {
-	      utils.log('error', 'No target DOM element was found (' + config.targetEl + ')');
+	      utils.throwError('No target DOM element was found (' + config.targetEl + ')');
 	    }
 	    rootTarget.addClass('bookingjs');
 	    rootTarget.children(':not(script)').remove();
@@ -134,7 +134,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    }).catch(function(response){
 	      utils.doCallback('findTimeFailed', config, response);
-	      utils.log('error', 'An error with Timekit findTime occured', response);
+	      utils.throwError('An error with Timekit findTime occured', response);
 	    });
 	  };
 	
@@ -176,7 +176,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    }).catch(function(response){
 	      utils.doCallback('getUserTimezoneFailed', config, response);
-	      utils.log('error', 'An error with Timekit getUserTimezone occured', response);
+	      utils.throwError('An error with Timekit getUserTimezone occured', response);
 	    });
 	  };
 	
@@ -340,7 +340,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    }).catch(function(response){
 	      utils.doCallback('createEventFailed', config, response);
-	      utils.log('error', 'An error with Timekit createEvent occured', response);
+	      utils.throwError('An error with Timekit createEvent occured', response);
 	    });
 	  };
 	
@@ -376,7 +376,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (window.timekitBookingConfig !== undefined) {
 	        suppliedConfig = window.timekitBookingConfig;
 	      } else {
-	        utils.log('error', 'No configuration was supplied or found. Please supply a config object upon library initialization');
+	        utils.throwError('No configuration was supplied or found. Please supply a config object upon library initialization');
 	      }
 	    }
 	
@@ -397,7 +397,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    // Check for required settings
 	    if(!newConfig.email || !newConfig.apiToken || !newConfig.calendar) {
-	      utils.log('error', 'A required config setting was missing ("email", "apiToken" or "calendar")');
+	      utils.throwError('A required config setting was missing ("email", "apiToken" or "calendar")');
 	    }
 	
 	    // Set new config to instance config
@@ -463,6 +463,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  };
 	
+	  var destroy = function() {
+	    prepareDOM();
+	    config = {};
+	    return this;
+	  };
+	
 	  // The fullCalendar object for advanced puppeting
 	  var fullCalendar = function() {
 	    if (calendarTarget.fullCalendar === undefined) { return undefined; }
@@ -475,6 +481,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    getConfig: getConfig,
 	    render: render,
 	    init: init,
+	    destroy: destroy,
 	    fullCalendar: fullCalendar
 	  };
 	
@@ -18093,16 +18100,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	module.exports = {
 	
-	  log: function(type, message, context) {
-	    if (type === 'error') {
-	      if (context !== undefined) {
-	        console.log('Timekit Booking (error context):');
-	        console.log(context);
-	      }
-	      throw new Error('Timekit Booking: ' + message);
-	    } else {
-	      console.log('Timekit Booking: ' + message);
-	    }
+	  throwError: function(message, context) {
+	    throw new Error('Timekit Booking - ' + message + (context ? ' - ' + context : ''));
 	  },
 	
 	  isFunction: function(object) {

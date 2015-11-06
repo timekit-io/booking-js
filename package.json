@@ -16,10 +16,12 @@
     "sass-loader": "^3.1.1",
     "style-loader": "^0.13.0",
     "svg-inline-loader": "^0.3.0",
-    "webpack": "^1.12.2"
+    "webpack": "^1.12.2",
+    "mustache-loader": "https://github.com/laander/mustache-loader#loader-utils-as-dependency"
   },
   "dependencies": {
     "fullcalendar": "^2.4.0",
-    "moment": "^2.10.6"
+    "moment": "^2.10.6",
+    "timekit-sdk": "https://github.com/timekit-io/js-sdk#support-credentials-endpoints"
   }
 }

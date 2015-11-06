@@ -18,7 +18,6 @@ var moment = require('moment');
 
 // Internal dependencies
 var utils = require('./utils');
-var templates = require('./templates');
 var defaultConfig = require('./defaults');
 
 // Main library
@@ -86,8 +85,14 @@ function TimekitBooking() {
   var renderTimezoneHelper = function() {
 
     var localTzOffset = (new Date()).getTimezoneOffset()/60*-1;
+    var timezoneIcon = require('!svg-inline!./assets/timezone-icon.svg');
 
-    var timezoneHelperTarget = $('<div class="bookingjs-timezonehelper"><span>Loading...</span></div>');
+    var template = require('./templates/timezone-helper.html');
+    var timezoneHelperTarget = $(template({
+      timezoneIcon: timezoneIcon,
+      loading: true
+    }));
+
     rootTarget.append(timezoneHelperTarget);
 
     var args = {
@@ -101,22 +106,18 @@ function TimekitBooking() {
       utils.doCallback('getUserTimezoneSuccesful', config, response);
 
       var hostTzOffset = response.data.utc_offset;
-      var tzOffsetDiff = localTzOffset - hostTzOffset;
-      var tzOffsetDiffAbs = Math.abs(tzOffsetDiff);
+      var tzOffsetDiff = Math.abs(localTzOffset - hostTzOffset);
 
-      var aheadOfHost = true;
-      if (tzOffsetDiff < 0) {
-        aheadOfHost = false;
-      }
-
-      var template = templates.timezoneHelper({
-        tzOffsetDiff: tzOffsetDiff,
-        tzOffsetDiffAbs: tzOffsetDiffAbs,
-        aheadOfHost: aheadOfHost,
+      var template = require('./templates/timezone-helper.html');
+      var newTimezoneHelperTarget = $(template({
+        timezoneIcon: timezoneIcon,
+        timezoneDifference: (tzOffsetDiff === 0 ? false : true),
+        timezoneOffset: tzOffsetDiff,
+        timezoneDirection: (tzOffsetDiff > 0 ? 'ahead' : 'behind'),
         hostName: config.name
-      });
+      }));
 
-      timezoneHelperTarget.html(template);
+      timezoneHelperTarget.replaceWith(newTimezoneHelperTarget);
 
     }).catch(function(response){
       utils.doCallback('getUserTimezoneFailed', config, response);
@@ -188,9 +189,10 @@ function TimekitBooking() {
   // Render the avatar image
   var renderAvatarImage = function() {
 
-    var avatarTarget = templates.avatarImage({
-      avatar: config.avatar
-    });
+    var template = require('./templates/user-avatar.html');
+    var avatarTarget = $(template({
+      image: config.avatar
+    }));
 
     rootTarget.append(avatarTarget);
 
@@ -199,9 +201,10 @@ function TimekitBooking() {
   // Render the avatar image
   var renderDisplayName = function() {
 
-    var displayNameTarget = templates.displayName({
+    var template = require('./templates/user-displayname.html');
+    var displayNameTarget = $(template({
       name: config.name
-    });
+    }));
 
     rootTarget.append(displayNameTarget);
 
@@ -212,14 +215,17 @@ function TimekitBooking() {
 
     utils.doCallback('showBookingPage', config);
 
-    bookingPageTarget = templates.bookingPage({
-      chosenDate: moment(eventData.start).format('D. MMMM YYYY'),
-      chosenTime: moment(eventData.start).format('h:mma') + ' to ' + moment(eventData.end).format('h:mma'),
-      start: moment(eventData.start).format(),
-      end: moment(eventData.start).format(),
-      submitText: 'Book it',
-      loadingText: 'Wait..'
-    });
+    var template = require('./templates/booking-page.html');
+    bookingPageTarget = $(template({
+      chosenDate:     moment(eventData.start).format('D. MMMM YYYY'),
+      chosenTime:     moment(eventData.start).format('h:mma') + ' to ' + moment(eventData.end).format('h:mma'),
+      start:          moment(eventData.start).format(),
+      end:            moment(eventData.start).format(),
+      submitText:     'Book it',
+      loadingText:    'Wait..',
+      closeIcon:      require('!svg-inline!./assets/close-icon.svg'),
+      checkmarkIcon:  require('!svg-inline!./assets/checkmark-icon.svg'),
+    }));
 
     bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
       e.preventDefault();

@@ -19,6 +19,7 @@ module.exports = {
     ],
     module: {
         loaders: [
+            { test: /\.html$/, loader: 'mustache' },
             { test: /\.css$/, loaders: ['style?singleton', 'css?minimize'] },
             { test: /\.scss$/, loaders: ['style?singleton', 'css?minimize', 'sass'] },
             { test: /\.svg$/, loader: 'svg-inline' }

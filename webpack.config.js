@@ -7,7 +7,7 @@ module.exports = {
     devtool: 'source-map',
     output: {
         path: './dist',
-        filename: 'timekit-booking.js',
+        filename: 'booking.js',
         libraryTarget: 'umd',
         library: 'TimekitBooking'
     },

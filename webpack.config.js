@@ -14,9 +14,6 @@ module.exports = {
     externals: {
         'jquery': 'jQuery'
     },
-    plugins: [
-        new webpack.ContextReplacementPlugin(/moment[\/\\]locale$/, /en-gb/)
-    ],
     module: {
         loaders: [
             { test: /\.html$/, loader: 'mustache' },
@@ -24,5 +21,8 @@ module.exports = {
             { test: /\.scss$/, loaders: ['style?singleton', 'css?minimize', 'sass'] },
             { test: /\.svg$/, loader: 'svg-inline' }
         ]
-    }
+    },
+    plugins: [
+        new webpack.ContextReplacementPlugin(/moment[\/\\]locale$/, /en-gb/)
+    ]
 };

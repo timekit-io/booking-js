@@ -1244,16 +1244,44 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 	
 	  /**
+	   * Get all user auth credentials
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getCredentials = function() {
+	
+	    return TK.makeRequest({
+	      url: '/credentials',
+	      method: 'get'
+	    });
+	
+	  };
+	
+	    /**
 	   * Create a new pair of auth credentials
 	   * @type {Function}
 	   * @return {Promise}
 	   */
-	  TK.createCredentials = function(data) {
+	  TK.createCredential = function(data) {
 	
 	    return TK.makeRequest({
 	      url: '/credentials',
 	      method: 'post',
 	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Delete a pair of auth credentials
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.deleteCredential = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/credentials/' + data.id,
+	      method: 'delete'
 	    });
 	
 	  };

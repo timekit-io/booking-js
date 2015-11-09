@@ -2,7 +2,7 @@
   "name": "timekit-booking",
   "version": "1.0.0",
   "description": "Make a beautiful embeddable booking widget in minutes",
-  "main": "booking.js",
+  "main": "dist/booking.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/timekit/booking.git"
@@ -12,16 +12,16 @@
   "devDependencies": {
     "css-loader": "^0.21.0",
     "jquery": "^2.1.4",
-    "node-sass": "^3.4.0",
+    "mustache-loader": "https://github.com/laander/mustache-loader#loader-utils-as-dependency",
+    "node-sass": "^3.4.1",
     "sass-loader": "^3.1.1",
     "style-loader": "^0.13.0",
     "svg-inline-loader": "^0.3.0",
-    "webpack": "^1.12.2",
-    "mustache-loader": "https://github.com/laander/mustache-loader#loader-utils-as-dependency"
+    "webpack": "^1.12.2"
   },
   "dependencies": {
     "fullcalendar": "^2.4.0",
     "moment": "^2.10.6",
-    "timekit-sdk": "https://github.com/timekit-io/js-sdk#support-credentials-endpoints"
+    "timekit-sdk": "^1.1.0"
   }
 }

@@ -213,7 +213,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var decideCalendarSize = function() {
 	
 	    var view = 'agendaWeek';
-	    var height = 550;
+	    var height = 554;
 	    var rootWidth = rootTarget.width();
 	
 	    if (rootWidth < 480) {
@@ -276,7 +276,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      chosenDate:     moment(eventData.start).format('D. MMMM YYYY'),
 	      chosenTime:     moment(eventData.start).format('h:mma') + ' to ' + moment(eventData.end).format('h:mma'),
 	      start:          moment(eventData.start).format(),
-	      end:            moment(eventData.start).format(),
+	      end:            moment(eventData.end).format(),
 	      submitText:     'Book it',
 	      loadingText:    'Wait..',
 	      closeIcon:      __webpack_require__(47),
@@ -505,7 +505,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	
 	// Autoload if config is available on window, else export function
-	if (window && window.timekitBookingConfig && window.timekitBookingConfig.autoload === true) {
+	if (window && window.timekitBookingConfig && window.timekitBookingConfig.autoload !== false) {
 	  $(window).load(function(){
 	    var instance = new TimekitBooking();
 	    instance.init(window.timekitBookingConfig);

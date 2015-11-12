@@ -1,12 +1,8 @@
-# Booking.js
+# Booking.js - documentation is WIP :)
 
 **Latest release:**  *v1.0.0*
 
 Make a beautiful embeddable booking widget in minutes.
-
-!!!!!!  
-!!! Documentation is in progress :)  
-!!!!!!
 
 ![Booking.js Screenshot](misc/widget-screenshot.png)
 

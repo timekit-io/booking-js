@@ -4,6 +4,10 @@
 
 Make a beautiful embeddable booking widget in minutes.
 
+!!!!!
+!!! Documentation is in progress :)
+!!!!!
+
 ![Booking.js Screenshot](misc/widget-screenshot.png)
 
 Uses *FullCalendar* with a custom theme for dynamic calendar rendering with available timeslots fetched from *Timekit* (through the Javascript SDK). The shown appointment slots can be booked with automatic calendar invites sent to both host and visitor. Integrates with *Google Calendar* for automatic availability.

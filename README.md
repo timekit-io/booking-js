@@ -4,9 +4,9 @@
 
 Make a beautiful embeddable booking widget in minutes.
 
-!!!!!
-!!! Documentation is in progress :)
-!!!!!
+!!!!!!  
+!!! Documentation is in progress :)  
+!!!!!!
 
 ![Booking.js Screenshot](misc/widget-screenshot.png)
 

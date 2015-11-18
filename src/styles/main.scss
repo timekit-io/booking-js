@@ -32,7 +32,7 @@ $primaryDarkColor: darken($primaryColor, 10%);
   color: $textColor;
 
   &.show {
-    transition: opacity 300ms ease;
+    transition: opacity 0.3s ease;
     opacity: 1;
   }
 
@@ -97,7 +97,7 @@ $primaryDarkColor: darken($primaryColor, 10%);
     background-color: $bgColor;
     z-index: 30;
     opacity: 0;
-    transition: opacity 200ms ease;
+    transition: opacity 0.2s ease;
     border-radius: 4px;
 
     &.show {
@@ -161,7 +161,7 @@ $primaryDarkColor: darken($primaryColor, 10%);
     }
 
     &-input {
-      transition: box-shadow 200ms ease;
+      transition: box-shadow 0.2s ease;
       width: 100%;
       padding: 15px 25px;
       border: 0px solid $borderColor;
@@ -190,7 +190,7 @@ $primaryDarkColor: darken($primaryColor, 10%);
 
     &-button {
       position: relative;
-      transition: background-color 200ms, width 300ms;
+      transition: background-color 0.2s, width 0.3s;
       display: inline-block;
       padding: 13px 25px;
       background-color: $primaryColor;
@@ -210,7 +210,7 @@ $primaryDarkColor: darken($primaryColor, 10%);
       .inactive-text,
       .success-text,
       .loading-text {
-        transition: opacity 300ms ease;
+        transition: opacity 0.3s ease;
         position: absolute;
         top: 13px;
         left: 25px;
@@ -253,6 +253,42 @@ $primaryDarkColor: darken($primaryColor, 10%);
         background-color: $primaryDarkColor;
       }
     }
+  }
+
+  // Powered by message
+
+  &-poweredby {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    padding: 7px 10px;
+
+    a {
+      transition: color 0.2s ease;
+      color: $textLightColor;
+      text-decoration: none;
+
+      svg path {
+        transition: fill 0.2s ease;
+        fill: $textLightColor;
+      }
+
+      &:hover {
+        color: $textColor;
+
+        svg path {
+          fill: $textColor;
+        }
+      }
+    }
+  }
+
+  &-timekiticon {
+    width: 13px;
+    margin-right: 5px;
+    vertical-align: sub;
   }
 
 }

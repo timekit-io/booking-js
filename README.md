@@ -97,6 +97,7 @@ Booking.js is made for various use-cases, so it's really extensible and customiz
   avatar:                   '',   // Provide an image URL for a circular image avatar
   autoload:                 true, // Auto initialization if config object is found on window var
   includeStyles:            true, // Inject fullCalendar and library styles in <head>
+  showCredits:              true, // Display a "Powered by Timekit" attribution footer (thanks!)
 
   // Internationalization
   localization: {

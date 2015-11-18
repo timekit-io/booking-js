@@ -233,10 +233,4 @@ widget.fullCalendar(action);  // Direct access to FullCalendar's own method (for
 
 ## Roadmap/todos
 
-Generic stuff:
-
-- Add to NPM/bower  
-- Unit tests for core library code  
-- E2E tests for in-browser behaviour tests
-
 See [Issues](https://github.com/timekit-io/booking-js/issues) for feature requests, bugs etc.

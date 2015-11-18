@@ -162,7 +162,7 @@ function TimekitBooking() {
 
     if (rootWidth < 480) {
       view = 'basicDay';
-      height = 400;
+      height = 430;
       rootTarget.addClass('bookingjs-small');
     } else {
       rootTarget.removeClass('bookingjs-small');
@@ -235,6 +235,11 @@ function TimekitBooking() {
     bookingPageTarget.children('.bookingjs-form').submit(function(e) {
       submitBookingForm(this, e);
     });
+
+    // Show powered by Timekit message
+    if (config.showCredits) {
+      renderPoweredByMessage(bookingPageTarget);
+    }
 
     $(document).on('keyup', function(e) {
       // escape key maps to keycode `27`
@@ -316,6 +321,19 @@ function TimekitBooking() {
   // Render the booking completed page when booking was successful
   var renderBookingCompleted = function(form) {
     $(form).children('.bookingjs-form-button').removeClass('loading').addClass('success');
+  };
+
+  // Render the powered by Timekit message
+  var renderPoweredByMessage = function(pageTarget) {
+
+    var template = require('./templates/poweredby.html');
+    var timekitIcon = require('!svg-inline!./assets/timekit-icon.svg');
+    var poweredTarget = $(template({
+      timekitIcon: timekitIcon
+    }));
+
+    pageTarget.append(poweredTarget);
+
   };
 
   // Set configs and defaults

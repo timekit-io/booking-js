@@ -106,7 +106,8 @@ $primaryDarkColor: darken($primaryColor, 10%);
   padding: 5px;
 }
 
-.fc-unthemed .fc-divider, .fc-unthemed .fc-popover .fc-header {
+.fc-unthemed .fc-divider,
+.fc-unthemed .fc-popover .fc-header {
   background-color: transparent;
 }
 
@@ -134,10 +135,10 @@ $primaryDarkColor: darken($primaryColor, 10%);
     border-left: 3px solid $primaryColor;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   }
-}
 
-.fc-event .fc-bg {
-  opacity: 0;
+  .fc-bg {
+    opacity: 0;
+  }
 }
 
 .fc-day-grid-event {
@@ -149,22 +150,33 @@ $primaryDarkColor: darken($primaryColor, 10%);
   }
 }
 
-.fc-time-grid .fc-slats .fc-minor td {
-  border-top-style: none;
-}
+.fc-time-grid .fc-slats {
 
-.fc-time-grid .fc-slats td {
-  border-top-color: $bgColor;
+  .fc-minor td {
+    border-top-style: none;
+  }
 
-  &.fc-axis {
-    border-top-color: $borderColor;
+  td {
+    border-top-color: $bgColor;
+
+    &.fc-axis {
+      border-top-color: $borderColor;
+    }
   }
 }
 
 .fc-time-grid-event {
 
-  &.fc-short .fc-time:after {
-    content: '';
+  &.fc-short {
+
+    .fc-content {
+      font-size: 0.7em;
+      line-height:  0.2em;
+    }
+
+    .fc-time:after {
+      content: '';
+    }
   }
 
   .fc-time {

@@ -1,8 +1,8 @@
-# Booking.js - documentation is WIP :)
+# Booking.js by Timekit
 
-**Latest release:**  *v1.0.0*
+**Latest release:**  v1.0.0
 
-Make a beautiful embeddable booking widget in minutes.
+> Make a beautiful embeddable booking widget in minutes.
 
 ![Booking.js Screenshot](misc/widget-screenshot.png)
 

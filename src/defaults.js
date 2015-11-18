@@ -14,6 +14,7 @@ module.exports = {
   avatar: '',
   autoload: true,
   includeStyles: true,
+  showCredits: true,
   timekitConfig: {
     app: 'bookingjs'
   },

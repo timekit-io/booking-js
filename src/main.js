@@ -11,9 +11,9 @@
  */
 
 // External depenencies
+require('fullcalendar');
 var $ = require('jquery');
 var timekit = require('timekit-sdk');
-var fullcalendar = require('fullcalendar');
 var moment = require('moment');
 
 // Internal dependencies
@@ -35,6 +35,7 @@ function TimekitBooking() {
   var includeStyles = function() {
     require('../node_modules/fullcalendar/dist/fullcalendar.css');
     require('./styles/fullcalendar.scss');
+    require('./styles/utils.scss');
     require('./styles/main.scss');
   };
 
@@ -235,7 +236,9 @@ function TimekitBooking() {
       hideBookingPage();
     });
 
-    bookingPageTarget.children('.bookingjs-form').submit(function(e) {
+    var form = bookingPageTarget.children('.bookingjs-form');
+
+    form.submit(function(e) {
       submitBookingForm(this, e);
     });
 
@@ -275,13 +278,20 @@ function TimekitBooking() {
   var submitBookingForm = function(form, e) {
 
     e.preventDefault();
+
     var formElement = $(form);
 
-    utils.doCallback('submitBookingForm', config);
-
-    if(formElement.hasClass('loading') || formElement.hasClass('success')) {
+    if(formElement.hasClass('loading') || formElement.hasClass('success') || !e.target.checkValidity()) {
+      var submitButton = formElement.find('.bookingjs-form-button');
+      submitButton.addClass('button-shake');
+      console.log('pling!');
+      setTimeout(function() {
+        submitButton.removeClass('button-shake');
+      }, 500);
       return;
     }
+
+    utils.doCallback('submitBookingForm', config);
 
     var values = {};
     $.each(formElement.serializeArray(), function(i, field) {

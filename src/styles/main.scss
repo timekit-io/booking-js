@@ -170,10 +170,6 @@ $primaryDarkColor: darken($primaryColor, 10%);
       line-height: 0;
     }
 
-    &-fields {
-      z-index: 5;
-    }
-
     &-success-message {
       position: absolute;
       top: -999px;

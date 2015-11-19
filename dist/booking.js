@@ -273,8 +273,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    var template = __webpack_require__(46);
 	    bookingPageTarget = $(template({
-	      chosenDate:           moment(eventData.start).format('D. MMMM YYYY'),
-	      chosenTime:           moment(eventData.start).format('h:mma') + ' to ' + moment(eventData.end).format('h:mma'),
+	      chosenDate:           moment(eventData.start).format(config.localization.bookingDateFormat),
+	      chosenTime:           moment(eventData.start).format(config.localization.bookingTimeFormat) + ' to ' + moment(eventData.end).format(config.localization.bookingTimeFormat),
 	      start:                moment(eventData.start).format(),
 	      end:                  moment(eventData.end).format(),
 	      closeIcon:            __webpack_require__(47),
@@ -422,6 +422,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	              columnFormat: 'dddd D/M'
 	            }
 	          }
+	        },
+	        localization: {
+	          bookingDateFormat: 'D. MMMM YYYY',
+	          bookingTimeFormat: 'HH:mm'
 	        }
 	      };
 	    }
@@ -513,9 +517,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return {
 	    setConfig: setConfig,
 	    getConfig: getConfig,
-	    render: render,
-	    init: init,
-	    destroy: destroy,
+	    render:    render,
+	    init:      init,
+	    destroy:   destroy,
 	    fullCalendar: fullCalendar
 	  };
 	
@@ -2270,7 +2274,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process, setImmediate, global, module) {/*!
+	var __WEBPACK_AMD_DEFINE_RESULT__;var require;/* WEBPACK VAR INJECTION */(function(process, setImmediate, global, module) {/*!
 	 * @overview es6-promise - a tiny implementation of Promises/A+.
 	 * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
 	 * @license   Licensed under MIT license
@@ -18248,9 +18252,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	  localization: {
 	    showTimezoneHelper: true,
-	    timeDateFormat: '12h-mdy-sun'
-	    //dateFormat: 'D. MMMM YYYY',
-	    //timeFormat: 'h:mm a'
+	    timeDateFormat: '12h-mdy-sun',
+	    bookingDateFormat: 'MMMM D, YYYY',
+	    bookingTimeFormat: 'h:mma'
 	  },
 	  callbacks: {}
 	

@@ -217,8 +217,8 @@ function TimekitBooking() {
 
     var template = require('./templates/booking-page.html');
     bookingPageTarget = $(template({
-      chosenDate:           moment(eventData.start).format('D. MMMM YYYY'),
-      chosenTime:           moment(eventData.start).format('h:mma') + ' to ' + moment(eventData.end).format('h:mma'),
+      chosenDate:           moment(eventData.start).format(config.localization.bookingDateFormat),
+      chosenTime:           moment(eventData.start).format(config.localization.bookingTimeFormat) + ' to ' + moment(eventData.end).format(config.localization.bookingTimeFormat),
       start:                moment(eventData.start).format(),
       end:                  moment(eventData.end).format(),
       closeIcon:            require('!svg-inline!./assets/close-icon.svg'),
@@ -366,6 +366,10 @@ function TimekitBooking() {
               columnFormat: 'dddd D/M'
             }
           }
+        },
+        localization: {
+          bookingDateFormat: 'D. MMMM YYYY',
+          bookingTimeFormat: 'HH:mm'
         }
       };
     }
@@ -457,9 +461,9 @@ function TimekitBooking() {
   return {
     setConfig: setConfig,
     getConfig: getConfig,
-    render: render,
-    init: init,
-    destroy: destroy,
+    render:    render,
+    init:      init,
+    destroy:   destroy,
     fullCalendar: fullCalendar
   };
 

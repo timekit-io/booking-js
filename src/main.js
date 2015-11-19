@@ -225,6 +225,7 @@ function TimekitBooking() {
       loadingText:    'Wait..',
       closeIcon:      require('!svg-inline!./assets/close-icon.svg'),
       checkmarkIcon:  require('!svg-inline!./assets/checkmark-icon.svg'),
+      loadingIcon:    require('!svg-inline!./assets/loading-spinner.svg')
     }));
 
     bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
@@ -275,9 +276,7 @@ function TimekitBooking() {
 
     utils.doCallback('submitBookingForm', config);
 
-    var submitButton = $(form).children('.bookingjs-form-button');
-
-    if(submitButton.hasClass('loading') || submitButton.hasClass('success')) {
+    if($(form).hasClass('loading') || $(form).hasClass('success')) {
       return;
     }
 
@@ -286,7 +285,7 @@ function TimekitBooking() {
         values[field.name] = field.value;
     });
 
-    $(form).children('.bookingjs-form-button').addClass('loading');
+    $(form).addClass('loading');
 
     timekitCreateEvent(values).then(function(response){
 
@@ -320,7 +319,7 @@ function TimekitBooking() {
 
   // Render the booking completed page when booking was successful
   var renderBookingCompleted = function(form) {
-    $(form).children('.bookingjs-form-button').removeClass('loading').addClass('success');
+    $(form).removeClass('loading').addClass('success');
   };
 
   // Render the powered by Timekit message

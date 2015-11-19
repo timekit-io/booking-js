@@ -3,14 +3,22 @@
   <h2 class="bookingjs-bookpage-date">{{ chosenDate }}</h2>
   <h3 class="bookingjs-bookpage-time">{{ chosenTime }}</h3>
   <form class="bookingjs-form" action="#">
-    <input class="bookingjs-form-input hidden" type="text" name="start" value="{{ start }}" />
-    <input class="bookingjs-form-input hidden" type="text" name="end" value="{{ end }}" />
-    <input class="bookingjs-form-input first" type="text" name="name" placeholder="Your full name" required />
-    <input class="bookingjs-form-input" type="email" name="email" placeholder="Your email" required />
-    <textarea class="bookingjs-form-input last" rows="3" name="comment" placeholder="Write a comment (optional)" />
+    <div class="bookingjs-form-box">
+      <div class="bookingjs-form-success-message">
+        <span class="bold">Thanks!</span>
+        <span>Invitations have been sent to both you and Lasse.</span>
+      </div>
+      <div class="bookingjs-form-fields">
+        <input class="bookingjs-form-input hidden" type="text" name="start" value="{{ start }}" />
+        <input class="bookingjs-form-input hidden" type="text" name="end" value="{{ end }}" />
+        <input class="bookingjs-form-input input-name" type="text" name="name" placeholder="Your full name" required />
+        <input class="bookingjs-form-input input-email" type="email" name="email" placeholder="Your email" required />
+        <textarea class="bookingjs-form-input input-comment" rows="3" name="comment" placeholder="Write a comment (optional)" />
+      </div>
+    </div>
     <button class="bookingjs-form-button" type="submit">
       <span class="inactive-text">{{ submitText }}</span>
-      <span class="loading-text">{{ loadingText }}</span>
+      <span class="loading-text">{{& loadingIcon }}</span>
       <span class="success-text">{{& checkmarkIcon }}</span>
     </button>
   </form>

@@ -217,14 +217,17 @@ function TimekitBooking() {
 
     var template = require('./templates/booking-page.html');
     bookingPageTarget = $(template({
-      chosenDate:     moment(eventData.start).format('D. MMMM YYYY'),
-      chosenTime:     moment(eventData.start).format('h:mma') + ' to ' + moment(eventData.end).format('h:mma'),
-      start:          moment(eventData.start).format(),
-      end:            moment(eventData.end).format(),
-      submitText:     'Book it',
-      loadingText:    'Wait..',
-      closeIcon:      require('!svg-inline!./assets/close-icon.svg'),
-      checkmarkIcon:  require('!svg-inline!./assets/checkmark-icon.svg'),
+      chosenDate:           moment(eventData.start).format('D. MMMM YYYY'),
+      chosenTime:           moment(eventData.start).format('h:mma') + ' to ' + moment(eventData.end).format('h:mma'),
+      start:                moment(eventData.start).format(),
+      end:                  moment(eventData.end).format(),
+      closeIcon:            require('!svg-inline!./assets/close-icon.svg'),
+      checkmarkIcon:        require('!svg-inline!./assets/checkmark-icon.svg'),
+      loadingIcon:          require('!svg-inline!./assets/loading-spinner.svg'),
+      submitText:           'Book it',
+      successMessageTitle:  'Thanks!',
+      successMessagePart1:  'An invitation has been sent to',
+      successMessagePart2:  'remember to confirm the booking'
     }));
 
     bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
@@ -272,26 +275,27 @@ function TimekitBooking() {
   var submitBookingForm = function(form, e) {
 
     e.preventDefault();
+    var formElement = $(form);
 
     utils.doCallback('submitBookingForm', config);
 
-    var submitButton = $(form).children('.bookingjs-form-button');
-
-    if(submitButton.hasClass('loading') || submitButton.hasClass('success')) {
+    if(formElement.hasClass('loading') || formElement.hasClass('success')) {
       return;
     }
 
     var values = {};
-    $.each($(form).serializeArray(), function(i, field) {
+    $.each(formElement.serializeArray(), function(i, field) {
         values[field.name] = field.value;
     });
 
-    $(form).children('.bookingjs-form-button').addClass('loading');
+    formElement.addClass('loading');
 
     timekitCreateEvent(values).then(function(response){
 
       utils.doCallback('createEventSuccessful', config, response);
-      renderBookingCompleted(form);
+
+      formElement.find('.booked-email').html(values.email);
+      formElement.removeClass('loading').addClass('success');
 
     }).catch(function(response){
       utils.doCallback('createEventFailed', config, response);
@@ -316,11 +320,6 @@ function TimekitBooking() {
     utils.doCallback('createEventStarted', config, args);
 
     return timekit.createEvent(args);
-  };
-
-  // Render the booking completed page when booking was successful
-  var renderBookingCompleted = function(form) {
-    $(form).children('.bookingjs-form-button').removeClass('loading').addClass('success');
   };
 
   // Render the powered by Timekit message

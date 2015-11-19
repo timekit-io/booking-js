@@ -52,9 +52,9 @@ module.exports = {
   },
   localization: {
     showTimezoneHelper: true,
-    timeDateFormat: '12h-mdy-sun'
-    //dateFormat: 'D. MMMM YYYY',
-    //timeFormat: 'h:mm a'
+    timeDateFormat: '12h-mdy-sun',
+    bookingDateFormat: 'MMMM D, YYYY',
+    bookingTimeFormat: 'h:mm a'
   },
   callbacks: {}
 

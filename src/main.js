@@ -217,14 +217,14 @@ function TimekitBooking() {
 
     var template = require('./templates/booking-page.html');
     bookingPageTarget = $(template({
-      chosenDate:     moment(eventData.start).format('D. MMMM YYYY'),
-      chosenTime:     moment(eventData.start).format('h:mma') + ' to ' + moment(eventData.end).format('h:mma'),
-      start:          moment(eventData.start).format(),
-      end:            moment(eventData.end).format(),
-      submitText:     'Book it',
-      loadingText:    'Wait..',
-      closeIcon:      require('!svg-inline!./assets/close-icon.svg'),
-      checkmarkIcon:  require('!svg-inline!./assets/checkmark-icon.svg'),
+      chosenDate:           moment(eventData.start).format(config.localization.bookingDateFormat),
+      chosenTime:           moment(eventData.start).format(config.localization.bookingTimeFormat) + ' to ' + moment(eventData.end).format(config.localization.bookingTimeFormat),
+      start:                moment(eventData.start).format(),
+      end:                  moment(eventData.end).format(),
+      submitText:           'Book it',
+      loadingText:          'Wait..',
+      closeIcon:            require('!svg-inline!./assets/close-icon.svg'),
+      checkmarkIcon:        require('!svg-inline!./assets/checkmark-icon.svg'),
     }));
 
     bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
@@ -367,6 +367,10 @@ function TimekitBooking() {
               columnFormat: 'dddd D/M'
             }
           }
+        },
+        localization: {
+          bookingDateFormat: 'D. MMMM YYYY',
+          bookingTimeFormat: 'HH:mm'
         }
       };
     }
@@ -458,9 +462,9 @@ function TimekitBooking() {
   return {
     setConfig: setConfig,
     getConfig: getConfig,
-    render: render,
-    init: init,
-    destroy: destroy,
+    render:    render,
+    init:      init,
+    destroy:   destroy,
     fullCalendar: fullCalendar
   };
 

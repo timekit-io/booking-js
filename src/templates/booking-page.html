@@ -5,12 +5,10 @@
   <form class="bookingjs-form" action="#">
     <div class="bookingjs-form-box">
       <div class="bookingjs-form-success-message">
-        <span class="bold">{{ successMessageTitle }}</span>
-        <div>
-          <span>{{ successMessagePart1 }}</span><br />
-          <i class="booked-email"></i><br />
-          <span>{{ successMessagePart2 }}</span>
-        </div>
+        <span class="title">{{ successMessageTitle }}</span><br /><br />
+        <span>{{ successMessagePart1 }}</span><br />
+        <i class="booked-email"></i><br /><br />
+        <span>{{ successMessagePart2 }}</span>
       </div>
       <div class="bookingjs-form-fields">
         <input class="bookingjs-form-input hidden" type="text" name="start" value="{{ start }}" />

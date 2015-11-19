@@ -226,8 +226,8 @@ function TimekitBooking() {
       loadingIcon:          require('!svg-inline!./assets/loading-spinner.svg'),
       submitText:           'Book it',
       successMessageTitle:  'Thanks!',
-      successMessagePart1:  'An invitation has been sent to',
-      successMessagePart2:  'remember to confirm the booking'
+      successMessagePart1:  'An invitation has been sent to:',
+      successMessagePart2:  'Accept the invitation to confirm the booking.'
     }));
 
     bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {

@@ -152,13 +152,13 @@ $primaryDarkColor: darken($primaryColor, 10%);
   // Book page form
 
   &-form {
-    width: 50%;
+    width: 350px;
     position: relative;
     margin: 0 auto;
     text-align: center;
 
     .bookingjs-small & {
-      width: 75%;
+      width: 90%;
     }
 
     &-box {
@@ -175,20 +175,22 @@ $primaryDarkColor: darken($primaryColor, 10%);
       top: -999px;
       left: 0;
       right: 0;
-      padding: 40px 10%;
+      padding: 30px;
       background-color: white;
       opacity: 0;
       transition: opacity 0.3s ease;
       line-height: normal;
 
       .bookingjs-small & {
-        padding: 40px 10%;
+        padding: 22px 10px;
       }
 
-      .bold {
+      .title {
         font-weight: 600;
-        margin-bottom: 15px;
-        display: block;
+      }
+
+      .booked-email {
+        color: $textLightColor;
       }
     }
 

@@ -7,22 +7,22 @@
 // Imports
 
 @import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600');
-@import url('utils.scss');
 
 // Colors
 
-$bgColor:         #FBFBFB;
-$borderColor:     #ececec;
-$textColor:       #333;
-$textLightColor:  #AEAEAE;
-$primaryColor:    #689AD8;
-$primaryDarkColor: darken($primaryColor, 10%);
+$bgColor:           #FBFBFB;
+$borderColor:       #ececec;
+$textColor:         #333;
+$textLightColor:    #AEAEAE;
+$primaryColor:      #689AD8;
+$primaryDarkColor:  darken($primaryColor, 10%);
+$fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
 
 // Classes
 
 .bookingjs {
   position: relative;
-  font-family: 'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
+  font-family: $fontFamily;
   font-size: 13px;
   border-radius: 4px;
   background-color: white;
@@ -209,6 +209,8 @@ $primaryDarkColor: darken($primaryColor, 10%);
       box-shadow: inset 0px 0px 1px 1px rgba(255,255,255, 0);
       text-align: left;
       box-sizing: border-box;
+      line-height: normal;
+      font-family: $fontFamily;
 
       &:focus {
         outline: 0;
@@ -259,13 +261,8 @@ $primaryDarkColor: darken($primaryColor, 10%);
       }
 
       .loading-text svg {
-        vertical-align: middle;
         height: 19px;
         width: 19px;
-        -webkit-animation: spin 0.6s infinite linear;
-        -moz-animation: spin 0.6s infinite linear;
-        -ms-animation: spin 0.6s infinite linear;
-        -o-animation: spin 0.6s infinite linear;
         animation: spin 0.6s infinite linear;
       }
 
@@ -278,6 +275,10 @@ $primaryDarkColor: darken($primaryColor, 10%);
 
       &:hover {
         background-color: $primaryDarkColor;
+      }
+
+      &.button-shake {
+        animation: shake 0.5s 1 ease;
       }
     }
 

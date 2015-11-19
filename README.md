@@ -1,6 +1,6 @@
 # Booking.js by Timekit
 
-**Latest release:**  v1.1.0
+**Latest release:**  v1.2.0
 
 > Make a beautiful embeddable booking widget in minutes.
 

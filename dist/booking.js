@@ -337,17 +337,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    var formElement = $(form);
 	
+	    utils.doCallback('submitBookingForm', config);
+	
+	    // Abort if form is submitting, have submitted or does not validate
 	    if(formElement.hasClass('loading') || formElement.hasClass('success') || !e.target.checkValidity()) {
 	      var submitButton = formElement.find('.bookingjs-form-button');
 	      submitButton.addClass('button-shake');
-	      console.log('pling!');
 	      setTimeout(function() {
 	        submitButton.removeClass('button-shake');
 	      }, 500);
 	      return;
 	    }
-	
-	    utils.doCallback('submitBookingForm', config);
 	
 	    var values = {};
 	    $.each(formElement.serializeArray(), function(i, field) {
@@ -356,6 +356,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    formElement.addClass('loading');
 	
+	    // Call create event endpoint
 	    timekitCreateEvent(values).then(function(response){
 	
 	      utils.doCallback('createEventSuccessful', config, response);

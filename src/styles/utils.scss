@@ -1,21 +1,15 @@
 // Rotate spin animation
 
-@-webkit-keyframes spin {
-    to { -webkit-transform: rotate(360deg); }
-}
-
-@-moz-keyframes spin {
-    to { -moz-transform: rotate(360deg); }
-}
-
-@-ms-keyframes spin {
-    to { -ms-transform: rotate(360deg); }
-}
-
-@-o-keyframes spin {
-    to { -o-transform: rotate(360deg); }
-}
-
 @keyframes spin {
     to { transform: rotate(360deg); }
+}
+
+// Shake animation
+
+@keyframes shake {
+  0% { transform: translateX(0px); }
+  25% { transform: translateX(5px); }
+  50% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+  100% { transform: translateX(0px); }
 }

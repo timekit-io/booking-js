@@ -2,7 +2,7 @@
 
 /*!
  * Booking.js
- * Version: 1.0.0
+ * Version: 1.2.1
  * http://booking.timekit.io
  *
  * Copyright 2015 Timekit, Inc.
@@ -11,9 +11,9 @@
  */
 
 // External depenencies
+require('fullcalendar');
 var $ = require('jquery');
 var timekit = require('timekit-sdk');
-var fullcalendar = require('fullcalendar');
 var moment = require('moment');
 
 // Internal dependencies
@@ -35,6 +35,7 @@ function TimekitBooking() {
   var includeStyles = function() {
     require('../node_modules/fullcalendar/dist/fullcalendar.css');
     require('./styles/fullcalendar.scss');
+    require('./styles/utils.scss');
     require('./styles/main.scss');
   };
 
@@ -162,7 +163,7 @@ function TimekitBooking() {
 
     if (rootWidth < 480) {
       view = 'basicDay';
-      height = 400;
+      height = 430;
       rootTarget.addClass('bookingjs-small');
     } else {
       rootTarget.removeClass('bookingjs-small');
@@ -217,14 +218,17 @@ function TimekitBooking() {
 
     var template = require('./templates/booking-page.html');
     bookingPageTarget = $(template({
-      chosenDate:     moment(eventData.start).format('D. MMMM YYYY'),
-      chosenTime:     moment(eventData.start).format('h:mma') + ' to ' + moment(eventData.end).format('h:mma'),
-      start:          moment(eventData.start).format(),
-      end:            moment(eventData.end).format(),
-      submitText:     'Book it',
-      loadingText:    'Wait..',
-      closeIcon:      require('!svg-inline!./assets/close-icon.svg'),
-      checkmarkIcon:  require('!svg-inline!./assets/checkmark-icon.svg'),
+      chosenDate:           moment(eventData.start).format(config.localization.bookingDateFormat),
+      chosenTime:           moment(eventData.start).format(config.localization.bookingTimeFormat) + ' to ' + moment(eventData.end).format(config.localization.bookingTimeFormat),
+      start:                moment(eventData.start).format(),
+      end:                  moment(eventData.end).format(),
+      closeIcon:            require('!svg-inline!./assets/close-icon.svg'),
+      checkmarkIcon:        require('!svg-inline!./assets/checkmark-icon.svg'),
+      loadingIcon:          require('!svg-inline!./assets/loading-spinner.svg'),
+      submitText:           'Book it',
+      successMessageTitle:  'Thanks!',
+      successMessagePart1:  'An invitation has been sent to:',
+      successMessagePart2:  'Accept the invitation to confirm the booking.'
     }));
 
     bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
@@ -232,9 +236,16 @@ function TimekitBooking() {
       hideBookingPage();
     });
 
-    bookingPageTarget.children('.bookingjs-form').submit(function(e) {
+    var form = bookingPageTarget.children('.bookingjs-form');
+
+    form.submit(function(e) {
       submitBookingForm(this, e);
     });
+
+    // Show powered by Timekit message
+    if (config.showCredits) {
+      renderPoweredByMessage(bookingPageTarget);
+    }
 
     $(document).on('keyup', function(e) {
       // escape key maps to keycode `27`
@@ -268,25 +279,34 @@ function TimekitBooking() {
 
     e.preventDefault();
 
+    var formElement = $(form);
+
     utils.doCallback('submitBookingForm', config);
 
-    var submitButton = $(form).children('.bookingjs-form-button');
-
-    if(submitButton.hasClass('loading') || submitButton.hasClass('success')) {
+    // Abort if form is submitting, have submitted or does not validate
+    if(formElement.hasClass('loading') || formElement.hasClass('success') || !e.target.checkValidity()) {
+      var submitButton = formElement.find('.bookingjs-form-button');
+      submitButton.addClass('button-shake');
+      setTimeout(function() {
+        submitButton.removeClass('button-shake');
+      }, 500);
       return;
     }
 
     var values = {};
-    $.each($(form).serializeArray(), function(i, field) {
+    $.each(formElement.serializeArray(), function(i, field) {
         values[field.name] = field.value;
     });
 
-    $(form).children('.bookingjs-form-button').addClass('loading');
+    formElement.addClass('loading');
 
+    // Call create event endpoint
     timekitCreateEvent(values).then(function(response){
 
       utils.doCallback('createEventSuccessful', config, response);
-      renderBookingCompleted(form);
+
+      formElement.find('.booked-email').html(values.email);
+      formElement.removeClass('loading').addClass('success');
 
     }).catch(function(response){
       utils.doCallback('createEventFailed', config, response);
@@ -313,9 +333,17 @@ function TimekitBooking() {
     return timekit.createEvent(args);
   };
 
-  // Render the booking completed page when booking was successful
-  var renderBookingCompleted = function(form) {
-    $(form).children('.bookingjs-form-button').removeClass('loading').addClass('success');
+  // Render the powered by Timekit message
+  var renderPoweredByMessage = function(pageTarget) {
+
+    var template = require('./templates/poweredby.html');
+    var timekitIcon = require('!svg-inline!./assets/timekit-icon.svg');
+    var poweredTarget = $(template({
+      timekitIcon: timekitIcon
+    }));
+
+    pageTarget.append(poweredTarget);
+
   };
 
   // Set configs and defaults
@@ -349,6 +377,10 @@ function TimekitBooking() {
               columnFormat: 'dddd D/M'
             }
           }
+        },
+        localization: {
+          bookingDateFormat: 'D. MMMM YYYY',
+          bookingTimeFormat: 'HH:mm'
         }
       };
     }
@@ -440,9 +472,9 @@ function TimekitBooking() {
   return {
     setConfig: setConfig,
     getConfig: getConfig,
-    render: render,
-    init: init,
-    destroy: destroy,
+    render:    render,
+    init:      init,
+    destroy:   destroy,
     fullCalendar: fullCalendar
   };
 

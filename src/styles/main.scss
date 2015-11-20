@@ -4,24 +4,25 @@
  * (c) 2015 Timekit Inc.
  */
 
-// Colors
-
-$bgColor:         #FBFBFB;
-$borderColor:     #ececec;
-$textColor:       #333;
-$textLightColor:  #AEAEAE;
-$primaryColor:    #689AD8;
-$primaryDarkColor: darken($primaryColor, 10%);
-
-// Fonts
+// Imports
 
 @import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600');
+
+// Colors
+
+$bgColor:           #FBFBFB;
+$borderColor:       #ececec;
+$textColor:         #333;
+$textLightColor:    #AEAEAE;
+$primaryColor:      #689AD8;
+$primaryDarkColor:  darken($primaryColor, 10%);
+$fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
 
 // Classes
 
 .bookingjs {
   position: relative;
-  font-family: 'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
+  font-family: $fontFamily;
   font-size: 13px;
   border-radius: 4px;
   background-color: white;
@@ -32,7 +33,7 @@ $primaryDarkColor: darken($primaryColor, 10%);
   color: $textColor;
 
   &.show {
-    transition: opacity 300ms ease;
+    transition: opacity 0.3s ease;
     opacity: 1;
   }
 
@@ -97,7 +98,7 @@ $primaryDarkColor: darken($primaryColor, 10%);
     background-color: $bgColor;
     z-index: 30;
     opacity: 0;
-    transition: opacity 200ms ease;
+    transition: opacity 0.2s ease;
     border-radius: 4px;
 
     &.show {
@@ -151,36 +152,69 @@ $primaryDarkColor: darken($primaryColor, 10%);
   // Book page form
 
   &-form {
-    width: 50%;
+    width: 350px;
     position: relative;
     margin: 0 auto;
     text-align: center;
 
     .bookingjs-small & {
-      width: 75%;
+      width: 90%;
+    }
+
+    &-box {
+      position: relative;
+      box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      background-color: white;
+      line-height: 0;
+    }
+
+    &-success-message {
+      position: absolute;
+      top: -999px;
+      left: 0;
+      right: 0;
+      padding: 30px;
+      background-color: white;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      line-height: normal;
+
+      .bookingjs-small & {
+        padding: 22px 10px;
+      }
+
+      .title {
+        font-weight: 600;
+      }
+
+      .booked-email {
+        color: $textLightColor;
+      }
+    }
+
+    &.success &-success-message {
+      opacity: 1;
+      top: 0;
+      bottom: 0;
     }
 
     &-input {
-      transition: box-shadow 200ms ease;
+      transition: box-shadow 0.2s ease;
       width: 100%;
       padding: 15px 25px;
       border: 0px solid $borderColor;
       font-size: 1em;
-      box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), inset 0px 0px 1px 1px rgba(255,255,255, 0);
+      box-shadow: inset 0px 0px 1px 1px rgba(255,255,255, 0);
       text-align: left;
       box-sizing: border-box;
+      line-height: normal;
+      font-family: $fontFamily;
 
       &:focus {
         outline: 0;
-        box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), inset 0px 0px 1px 1px $primaryColor;
-      }
-
-      &.first {
-        border-radius: 4px 4px 0 0;
-      }
-
-      &.last {
-        border-radius: 0 0 4px 4px;
+        box-shadow: inset 0px 0px 1px 1px $primaryColor;
       }
 
       &.hidden {
@@ -190,7 +224,7 @@ $primaryDarkColor: darken($primaryColor, 10%);
 
     &-button {
       position: relative;
-      transition: background-color 200ms, width 300ms;
+      transition: background-color 0.2s, max-width 0.3s;
       display: inline-block;
       padding: 13px 25px;
       background-color: $primaryColor;
@@ -203,17 +237,18 @@ $primaryDarkColor: darken($primaryColor, 10%);
       font-weight: 600;
       margin-top: 30px;
       cursor: pointer;
-      width: 110px;
       height: 44px;
       outline: 0;
+      text-align: center;
+      max-width: 200px;
 
-      .inactive-text,
       .success-text,
       .loading-text {
-        transition: opacity 300ms ease;
+        transition: opacity 0.3s ease;
         position: absolute;
         top: 13px;
-        left: 25px;
+        left: 50%;
+        transform: translateX(-50%);
       }
 
       .inactive-text {
@@ -225,34 +260,86 @@ $primaryDarkColor: darken($primaryColor, 10%);
         opacity: 0;
       }
 
+      .loading-text svg {
+        height: 19px;
+        width: 19px;
+        animation: spin 0.6s infinite linear;
+      }
+
       .success-text svg {
         height: 15px;
         margin-top: 2px;
-      }
-
-      &.loading,
-      &.loading:hover {
-        width: 100px;
-        background-color: #B1B1B1;
-
-        .inactive-text { opacity: 0; }
-        .loading-text { opacity: 1; }
-      }
-
-      &.success,
-      &.success:hover {
-        width: 72px;
-        background-color: #5BAF56;
-
-        .loading-text,
-        .inactive-text { opacity: 0; }
-        .success-text { opacity: 1; }
+        transform: scale(0);
+        transition: transform 0.6s ease;
       }
 
       &:hover {
         background-color: $primaryDarkColor;
       }
+
+      &.button-shake {
+        animation: shake 0.5s 1 ease;
+      }
     }
+
+    &.loading &-button,
+    &.loading &-button:hover {
+      max-width: 80px;
+      background-color: #B1B1B1;
+
+      .inactive-text { opacity: 0; }
+      .loading-text { opacity: 1; }
+    }
+
+    &.success &-button,
+    &.success &-button:hover {
+      max-width: 80px;
+      background-color: #5BAF56;
+
+      .loading-text,
+      .inactive-text { opacity: 0; }
+      .success-text { opacity: 1; }
+
+      .success-text svg {
+        transform: scale(1);
+      }
+    }
+  }
+
+  // Powered by message
+
+  &-poweredby {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    padding: 7px 10px;
+
+    a {
+      transition: color 0.2s ease;
+      color: $textLightColor;
+      text-decoration: none;
+
+      svg path {
+        transition: fill 0.2s ease;
+        fill: $textLightColor;
+      }
+
+      &:hover {
+        color: $textColor;
+
+        svg path {
+          fill: $textColor;
+        }
+      }
+    }
+  }
+
+  &-timekiticon {
+    width: 13px;
+    margin-right: 5px;
+    vertical-align: sub;
   }
 
 }

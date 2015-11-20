@@ -360,7 +360,6 @@ function TimekitBooking() {
 
     // Reset local config
     var newConfig = {};
-    var localizationConfig = {};
 
     // Extend the default config with supplied settings
     $.extend(true, newConfig, defaultConfig, suppliedConfig);

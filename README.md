@@ -1,5 +1,7 @@
 # Booking.js by Timekit
 
+[![Codacy Badge](https://api.codacy.com/project/badge/grade/feb445801acf454a95b1690a75959893)](https://www.codacy.com/app/laander/booking-js)
+
 **Latest release:**  v1.2.1
 
 > Make a beautiful embeddable booking widget in minutes.

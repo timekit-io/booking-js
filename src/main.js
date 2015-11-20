@@ -360,33 +360,9 @@ function TimekitBooking() {
 
     // Reset local config
     var newConfig = {};
-    var localizationConfig = {};
-
-    // Handle FullCalendar shorthand localization
-    if(suppliedConfig.localization && suppliedConfig.localization.timeDateFormat === '24h-dmy-mon') {
-      localizationConfig = {
-        fullCalendar: {
-          timeFormat: 'HH:mm',
-          firstDay: 1,
-          views: {
-            agenda: {
-              columnFormat: 'ddd\n D/M',
-              slotLabelFormat: 'HH:mm'
-            },
-            basic: {
-              columnFormat: 'dddd D/M'
-            }
-          }
-        },
-        localization: {
-          bookingDateFormat: 'D. MMMM YYYY',
-          bookingTimeFormat: 'HH:mm'
-        }
-      };
-    }
 
     // Extend the default config with supplied settings
-    $.extend(true, newConfig, defaultConfig, localizationConfig, suppliedConfig);
+    $.extend(true, newConfig, defaultConfig, suppliedConfig);
 
     // Check for required settings
     if(!newConfig.email || !newConfig.apiToken || !newConfig.calendar) {

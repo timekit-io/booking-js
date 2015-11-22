@@ -194,22 +194,22 @@ You can supply and override all the [FullCalendar settings](http://fullcalendar.
 ```javascript
 fullCalendar: {
   header: {
-    left: '',
-    center: '',
-    right: 'today, prev, next'
+    left:       '',
+    center:     '',
+    right:      'today, prev, next'
   },
   views: {
     agenda: {
       displayEventEnd: false
     }
   },
-  allDaySlot: false,
-  scrollTime: '08:00:00',
-  timezone: 'local',
+  allDaySlot:   false,
+  scrollTime:   '08:00:00',
+  timezone:     'local',
   defaultView:  sizing.view,     // Inserted based on the current width of the widget
   height:       sizing.height,   // Inserted based on the current width of the widget
-  eventClick:   fn(),            // Handled internally in Booking.js (overwrite if you want to replace the booking page)
-  windowResize: fn()             // Recalculates the view and height based on the widget's width (if resized)
+  eventClick:   function(event), // Handled internally in Booking.js (overwrite if you want to replace the booking page)
+  windowResize: function(view)   // Recalculates the view and height based on the widget's width (if resized)
 }
 ```
 

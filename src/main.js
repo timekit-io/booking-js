@@ -11,10 +11,10 @@
  */
 
 // External depenencies
-var $             = require('jquery');
-var fullcalendar  = window.fullcalendar = require('fullcalendar');
-var moment        = window.moment       = require('moment');
-var timekit       = require('timekit-sdk');
+var $               = require('jquery');
+window.fullcalendar = require('fullcalendar');
+var moment          = window.moment = require('moment');
+var timekit         = require('timekit-sdk');
 
 // Internal dependencies
 var utils         = require('./utils');

@@ -189,7 +189,7 @@ timekitCreateEvent: {
 
 **FullCalendar**
 
-You can supply and overwrite all the FullCalendar settings directly here. 
+You can supply and override all the [FullCalendar settings](http://fullcalendar.io/docs/):
 
 ```javascript
 fullCalendar: {
@@ -199,23 +199,46 @@ fullCalendar: {
     right:      'today, prev, next'
   },
   views: {
-    basic: {
-      columnFormat:     'dddd M/D',
-    },
     agenda: {
-      columnFormat:     'ddd\n M/D',
-      slotLabelFormat:  'ha',
-      displayEventEnd:  false
+      displayEventEnd: false
     }
   },
-  timeFormat:   'h:mma',
   allDaySlot:   false,
   scrollTime:   '08:00:00',
   timezone:     'local',
   defaultView:  sizing.view,     // Inserted based on the current width of the widget
   height:       sizing.height,   // Inserted based on the current width of the widget
-  eventClick:   fn(),            // Handled internally in Booking.js (overwrite if you want to replace the booking page)
-  windowResize: fn()             // Recalculates the view and height based on the widget's width (if resized)
+  eventClick:   function(event), // Handled internally in Booking.js (overwrite if you want to replace the booking page)
+  windowResize: function(view)   // Recalculates the view and height based on the widget's width (if resized)
+}
+```
+
+*See below for FullCalendar language support.*
+
+**Localization**
+
+For quick localization of time/date formats, we provide a simple "preset" setting, `timeDateFormat`, that sets a range of different FullCalendar and localization settings.
+
+By default, it's set to "12-hour clock, M/D/Y date format, Sunday first day of week" (`12h-mdy-sun`). It can be changed to "24-hour clock, D/M/Y date format, Monday first day of week" (`24h-dmy-mon`).
+
+```javascript
+localization: {
+  timeDateFormat: '12h-mdy-sun', // Default, alternative mode "24h-dmy-mon",
+  bookingDateFormat: 'MMMM D, YYYY', // Override the default date format on the booking page
+  bookingTimeFormat: 'h:mma' // Override the default time format on the booking page
+},
+```
+
+For full language support, FullCalendar also takes a ["lang" option](http://fullcalendar.io/docs/text/lang/), accompanied by a language file.  
+
+Remember to set `localization.timeDateFormat` to false so it doesn't override the language file's settings. See `/examples/language.htm` for full implementation example.
+
+```javascript
+fullCalendar: {
+  lang: 'de'
+},
+localization: {
+  timeDateFormat: false
 }
 ```
 

@@ -137,9 +137,9 @@ Booking.js is made for various use-cases, so it's really extensible and customiz
     fullCalendarInitialized:  function() {},
     renderCompleted:          function() {},
 
-    showBookingPage:          function() {},
+    showBookingPage:          function(event) {},
     closeBookingPage:         function() {},
-    submitBookingForm:        function() {}
+    submitBookingForm:        function(values) {}
 
   }
 }

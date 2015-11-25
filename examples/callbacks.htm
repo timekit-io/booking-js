@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="UTF-8">
+  <title>Booking.js single instance example</title>
+  <style type="text/css">
+    body { background-color: #E6E6E6; max-width: 700px; margin: 0 auto; }
+  </style>
+ </head>
+ <body>
+
+  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <script type="text/javascript" src="../dist/booking.js"></script>
+  <div id="bookingjs">
+    <script type="text/javascript">
+      'use strict';
+      TimekitBooking().init({
+        name:     'Doc Brown',
+        email:    'marty.mcfly@timekit.io',
+        apiToken: 'XT1JO879JF1qUXXzmETD5ucgxaDwsFsd',
+        calendar: '22f86f0c-ee80-470c-95e8-dadd9d05edd2',
+        avatar:   '../misc/avatar-doc.jpg',
+        timekitConfig: {
+          app: 'bookingjs-demo'
+        },
+        callbacks: {
+          findTimeStarted:          function(args)      { console.log('findTimeStarted', args); },
+          findTimeSuccessful:       function(response)  { console.log('findTimeSuccessful', response); },
+          findTimeFailed:           function(response)  { console.log('findTimeFailed', response); },
+          createEventStarted:       function(args)      { console.log('createEventStarted', args); },
+          createEventSuccessful:    function(response)  { console.log('createEventSuccessful', response); },
+          createEventFailed:        function(response)  { console.log('createEventFailed', response); },
+          getUserTimezoneStarted:   function(args)      { console.log('getUserTimezoneStarted', args); },
+          getUserTimezoneSuccesful: function(response)  { console.log('getUserTimezoneSuccesful', response); },
+          getUserTimezoneFailed:    function(response)  { console.log('getUserTimezoneFailed', response); },
+          fullCalendarInitialized:  function()          { console.log('fullCalendarInitialized'); },
+          renderCompleted:          function()          { console.log('renderCompleted'); },
+          showBookingPage:          function(slot)      { console.log('showBookingPage', slot); },
+          closeBookingPage:         function()          { console.log('closeBookingPage'); },
+          submitBookingForm:        function(values)    { console.log('submitBookingForm', values); }
+        }
+      });
+    </script>
+  </div>
+
+</body>
+</html>

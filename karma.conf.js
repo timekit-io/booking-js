@@ -9,14 +9,17 @@ module.exports = function(config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['jasmine-jquery', 'jasmine-ajax', 'jasmine'],
+    frameworks: ['jasmine-ajax', 'jasmine'],
 
     // list of files / patterns to load in the browser
     files: [
-      'test/*.spec.js',
-      'test/fixtures/**/*.html',
-      { pattern: 'dist/booking.js',     included: false, served: true, watched: true },
-      { pattern: 'dist/booking.js.map', included: false, served: true, watched: false }
+      'node_modules/jquery/dist/jquery.js',
+      'node_modules/jasmine-jquery/lib/jasmine-jquery.js',
+      { pattern: 'test/*.spec.js',          included: true,  served: true, watched: true },
+      { pattern: 'test/fixtures/**/*.html', included: false, served: true, watched: true },
+      { pattern: 'misc/**/*.*',             included: false, served: true, watched: false },
+      { pattern: 'dist/booking.js',         included: false, served: true, watched: true },
+      { pattern: 'dist/booking.js.map',     included: false, served: true, watched: false }
     ],
 
     // list of files to exclude

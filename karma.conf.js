@@ -31,21 +31,8 @@ module.exports = function(config) {
       'test/*.spec.js': ['webpack', 'sourcemap']
     },
 
-    // optionally, configure the reporter
-    coverageReporter: {
-      type : 'html',
-      dir : 'test/coverage/'
-    },
-
     webpack: {
       devtool: 'inline-source-map',
-      module: {
-        postLoaders: [ {
-          test: /\.js$/,
-          exclude: /(dist|test|node_modules|misc|examples)\//,
-          loader: 'istanbul-instrumenter'
-        } ]
-      },
     },
 
     webpackServer: {
@@ -58,7 +45,7 @@ module.exports = function(config) {
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
     // reporters: ['coverage'],
-    reporters: ['spec', 'coverage'],
+    reporters: ['spec'],
 
     webpackMiddleware: {
         noInfo: true

@@ -7,7 +7,7 @@
 		exports["TimekitBooking"] = factory(require("jQuery"));
 	else
 		root["TimekitBooking"] = factory(root["jQuery"]);
-})(this, function(__WEBPACK_EXTERNAL_MODULE_2__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE_1__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -58,7 +58,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	/*!
 	 * Booking.js
-	 * Version: 1.2.1
+	 * Version: 1.2.2
 	 * http://booking.timekit.io
 	 *
 	 * Copyright 2015 Timekit, Inc.
@@ -67,13 +67,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	
 	// External depenencies
-	__webpack_require__(1);
-	var $ = __webpack_require__(2);
-	var timekit = __webpack_require__(7);
-	var moment = __webpack_require__(3);
+	var $               = __webpack_require__(1);
+	window.fullcalendar = __webpack_require__(2);
+	var moment          = window.moment = __webpack_require__(3);
+	var timekit         = __webpack_require__(7);
 	
 	// Internal dependencies
-	var utils = __webpack_require__(29);
+	var utils         = __webpack_require__(29);
 	var defaultConfig = __webpack_require__(30);
 	
 	// Main library
@@ -97,29 +97,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  // Make sure DOM element is ready and clean it
 	  var prepareDOM = function() {
+	
 	    rootTarget = $(config.targetEl);
 	    if (rootTarget.length === 0) {
 	      throw new Error('TimekitBooking - No target DOM element was found (' + config.targetEl + ')');
 	    }
 	    rootTarget.addClass('bookingjs');
 	    rootTarget.children(':not(script)').remove();
+	
 	  };
 	
 	  // Setup the Timekit SDK with correct credentials
 	  var timekitSetup = function() {
-	    var args = {};
 	
+	    var args = {};
 	    $.extend(true, args, config.timekitConfig);
 	
 	    timekit.configure(args);
 	    timekit.setUser(config.email, config.apiToken);
+	
 	  };
 	
 	  // Fetch availabile time through Timekit SDK
 	  var timekitFindTime = function() {
 	
 	    var args = { emails: [config.email] };
-	
 	    $.extend(args, config.timekitFindTime);
 	
 	    utils.doCallback('findTimeStarted', config, args);
@@ -136,6 +138,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      utils.doCallback('findTimeFailed', config, response);
 	      throw new Error('TimekitBooking - An error with Timekit FindTime occured, context: ' + response);
 	    });
+	
 	  };
 	
 	  // Calculate and display timezone helper
@@ -180,6 +183,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      utils.doCallback('getUserTimezoneFailed', config, response);
 	      throw new Error('TimekitBooking - An error with Timekit getUserTimezone occured, context: ' + response);
 	    });
+	
 	  };
 	
 	  // Setup and render FullCalendar
@@ -273,9 +277,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    utils.doCallback('showBookingPage', config);
 	
 	    var template = __webpack_require__(48);
+	
+	    var dateFormat = config.localization.bookingDateFormat || moment.localeData().longDateFormat('LL');
+	    var timeFormat = config.localization.bookingTimeFormat || moment.localeData().longDateFormat('LT');
+	
 	    bookingPageTarget = $(template({
-	      chosenDate:           moment(eventData.start).format(config.localization.bookingDateFormat),
-	      chosenTime:           moment(eventData.start).format(config.localization.bookingTimeFormat) + ' to ' + moment(eventData.end).format(config.localization.bookingTimeFormat),
+	      chosenDate:           moment(eventData.start).format(dateFormat),
+	      chosenTime:           moment(eventData.start).format(timeFormat) + ' - ' + moment(eventData.end).format(timeFormat),
 	      start:                moment(eventData.start).format(),
 	      end:                  moment(eventData.end).format(),
 	      closeIcon:            __webpack_require__(49),
@@ -322,6 +330,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    utils.doCallback('closeBookingPage', config);
 	
 	    bookingPageTarget.removeClass('show');
+	
 	    setTimeout(function(){
 	      bookingPageTarget.remove();
 	    }, 200);
@@ -335,9 +344,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    e.preventDefault();
 	
-	    var formElement = $(form);
-	
 	    utils.doCallback('submitBookingForm', config);
+	
+	    var formElement = $(form);
 	
 	    // Abort if form is submitting, have submitted or does not validate
 	    if(formElement.hasClass('loading') || formElement.hasClass('success') || !e.target.checkValidity()) {
@@ -368,6 +377,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      utils.doCallback('createEventFailed', config, response);
 	      throw new Error('TimekitBooking - An error with Timekit createEvent occured, context: ' + response);
 	    });
+	
 	  };
 	
 	  // Create new event through Timekit SDK
@@ -387,6 +397,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    utils.doCallback('createEventStarted', config, args);
 	
 	    return timekit.createEvent(args);
+	
 	  };
 	
 	  // Render the powered by Timekit message
@@ -418,31 +429,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var newConfig = {};
 	    var localizationConfig = {};
 	
-	    // Handle FullCalendar shorthand localization
+	    // Handle presets
 	    if(suppliedConfig.localization && suppliedConfig.localization.timeDateFormat === '24h-dmy-mon') {
-	      localizationConfig = {
-	        fullCalendar: {
-	          timeFormat: 'HH:mm',
-	          firstDay: 1,
-	          views: {
-	            agenda: {
-	              columnFormat: 'ddd\n D/M',
-	              slotLabelFormat: 'HH:mm'
-	            },
-	            basic: {
-	              columnFormat: 'dddd D/M'
-	            }
-	          }
-	        },
-	        localization: {
-	          bookingDateFormat: 'D. MMMM YYYY',
-	          bookingTimeFormat: 'HH:mm'
-	        }
-	      };
+	      localizationConfig = defaultConfig.presets.timeDateFormat24hdmymon;
+	    } else if (suppliedConfig.localization && suppliedConfig.localization.timeDateFormat === '12h-mdy-sun') {
+	       localizationConfig = defaultConfig.presets.timeDateFormat12hmdysun;
 	    }
 	
 	    // Extend the default config with supplied settings
-	    $.extend(true, newConfig, defaultConfig, localizationConfig, suppliedConfig);
+	    $.extend(true, newConfig, defaultConfig.primary, localizationConfig, suppliedConfig);
 	
 	    // Check for required settings
 	    if(!newConfig.email || !newConfig.apiToken || !newConfig.calendar) {
@@ -458,7 +453,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  // Get library config
 	  var getConfig = function() {
+	
 	    return config;
+	
 	  };
 	
 	  // Render method
@@ -513,15 +510,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 	
 	  var destroy = function() {
+	
 	    prepareDOM();
 	    config = {};
 	    return this;
+	
 	  };
 	
 	  // The fullCalendar object for advanced puppeting
 	  var fullCalendar = function() {
+	
 	    if (calendarTarget.fullCalendar === undefined) { return undefined; }
 	    return calendarTarget.fullCalendar.apply(calendarTarget, arguments);
+	
 	  };
 	
 	  // Expose methods
@@ -550,6 +551,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 1 */
+/***/ function(module, exports) {
+
+	module.exports = __WEBPACK_EXTERNAL_MODULE_1__;
+
+/***/ },
+/* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -560,7 +567,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	(function(factory) {
 		if (true) {
-			!(__WEBPACK_AMD_DEFINE_ARRAY__ = [ __webpack_require__(2), __webpack_require__(3) ], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+			!(__WEBPACK_AMD_DEFINE_ARRAY__ = [ __webpack_require__(1), __webpack_require__(3) ], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 		}
 		else if (typeof exports === 'object') { // Node/CommonJS
 			module.exports = factory(require('jquery'), require('moment'));
@@ -11724,12 +11731,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 
 /***/ },
-/* 2 */
-/***/ function(module, exports) {
-
-	module.exports = __WEBPACK_EXTERNAL_MODULE_2__;
-
-/***/ },
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -18215,7 +18216,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Default configuration for for Booking.js
 	 */
 	
-	module.exports = {
+	var primary = {
 	
 	  // email: '',
 	  // apiToken: '',
@@ -18245,16 +18246,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      right: 'today, prev, next'
 	    },
 	    views: {
-	      basic: {
-	        columnFormat: 'dddd M/D',
-	      },
 	      agenda: {
-	        columnFormat: 'ddd\n M/D',
-	        slotLabelFormat: 'ha',
 	        displayEventEnd: false
 	      }
 	    },
-	    timeFormat: 'h:mma',
 	    allDaySlot: false,
 	    scrollTime: '08:00:00',
 	    timezone: 'local',
@@ -18263,12 +18258,65 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	  localization: {
 	    showTimezoneHelper: true,
-	    timeDateFormat: '12h-mdy-sun',
-	    bookingDateFormat: 'MMMM D, YYYY',
-	    bookingTimeFormat: 'h:mma'
+	    timeDateFormat: '12h-mdy-sun'
 	  },
 	  callbacks: {}
 	
+	};
+	
+	// Preset: timeDateFormat = '24h-dmy-mon'
+	var timeDateFormat24hdmymon = {
+	
+	  fullCalendar: {
+	    timeFormat: 'HH:mm',
+	    firstDay: 1,
+	    views: {
+	      basic: {
+	        columnFormat: 'dddd D/M'
+	      },
+	      agenda: {
+	        columnFormat: 'ddd\n D/M',
+	        slotLabelFormat: 'HH:mm'
+	      }
+	    }
+	  },
+	  localization: {
+	    bookingDateFormat: 'D. MMMM YYYY',
+	    bookingTimeFormat: 'HH:mm'
+	  }
+	
+	};
+	
+	// Preset: timeDateFormat = '12h-mdy-sun'
+	var timeDateFormat12hmdysun = {
+	
+	  fullCalendar: {
+	    timeFormat: 'h:mma',
+	    firstDay: 0,
+	    views: {
+	      basic: {
+	        columnFormat: 'dddd M/D',
+	      },
+	      agenda: {
+	        columnFormat: 'ddd\n M/D',
+	        slotLabelFormat: 'ha'
+	      }
+	    },
+	  },
+	  localization: {
+	    bookingDateFormat: 'MMMM D, YYYY',
+	    bookingTimeFormat: 'h:mma'
+	  }
+	
+	};
+	
+	// Export objects
+	module.exports = {
+	  primary: primary,
+	  presets: {
+	    timeDateFormat24hdmymon: timeDateFormat24hdmymon,
+	    timeDateFormat12hmdysun: timeDateFormat12hmdysun
+	  }
 	};
 
 

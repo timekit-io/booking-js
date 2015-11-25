@@ -4,7 +4,7 @@
  * Default configuration for for Booking.js
  */
 
-module.exports = {
+var primary = {
 
   // email: '',
   // apiToken: '',
@@ -34,16 +34,10 @@ module.exports = {
       right: 'today, prev, next'
     },
     views: {
-      basic: {
-        columnFormat: 'dddd M/D',
-      },
       agenda: {
-        columnFormat: 'ddd\n M/D',
-        slotLabelFormat: 'ha',
         displayEventEnd: false
       }
     },
-    timeFormat: 'h:mma',
     allDaySlot: false,
     scrollTime: '08:00:00',
     timezone: 'local',
@@ -52,10 +46,63 @@ module.exports = {
   },
   localization: {
     showTimezoneHelper: true,
-    timeDateFormat: '12h-mdy-sun',
-    bookingDateFormat: 'MMMM D, YYYY',
-    bookingTimeFormat: 'h:mma'
+    timeDateFormat: '12h-mdy-sun'
   },
   callbacks: {}
 
+};
+
+// Preset: timeDateFormat = '24h-dmy-mon'
+var timeDateFormat24hdmymon = {
+
+  fullCalendar: {
+    timeFormat: 'HH:mm',
+    firstDay: 1,
+    views: {
+      basic: {
+        columnFormat: 'dddd D/M'
+      },
+      agenda: {
+        columnFormat: 'ddd\n D/M',
+        slotLabelFormat: 'HH:mm'
+      }
+    }
+  },
+  localization: {
+    bookingDateFormat: 'D. MMMM YYYY',
+    bookingTimeFormat: 'HH:mm'
+  }
+
+};
+
+// Preset: timeDateFormat = '12h-mdy-sun'
+var timeDateFormat12hmdysun = {
+
+  fullCalendar: {
+    timeFormat: 'h:mma',
+    firstDay: 0,
+    views: {
+      basic: {
+        columnFormat: 'dddd M/D',
+      },
+      agenda: {
+        columnFormat: 'ddd\n M/D',
+        slotLabelFormat: 'ha'
+      }
+    },
+  },
+  localization: {
+    bookingDateFormat: 'MMMM D, YYYY',
+    bookingTimeFormat: 'h:mma'
+  }
+
+};
+
+// Export objects
+module.exports = {
+  primary: primary,
+  presets: {
+    timeDateFormat24hdmymon: timeDateFormat24hdmymon,
+    timeDateFormat12hmdysun: timeDateFormat12hmdysun
+  }
 };

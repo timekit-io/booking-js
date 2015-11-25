@@ -104,7 +104,7 @@ Booking.js is made for various use-cases, so it's really extensible and customiz
   // Internationalization
   localization: {
     showTimezoneHelper:     true, // Should the timezone difference helper (bottom) be shown?
-    timeDateFormat:         '12h-mdy-sun' // For EU-style formatting, use '24h-dmy-mon'
+    timeDateFormat:         '12h-mdy-sun' // For EU-style formatting, use '24h-dmy-mon' (see below)
   }
 
   // Timekit JS SDK (see below)
@@ -221,6 +221,8 @@ For quick localization of time/date formats, we provide a simple "preset" settin
 
 By default, it's set to "12-hour clock, M/D/Y date format, Sunday first day of week" (`12h-mdy-sun`). It can be changed to "24-hour clock, D/M/Y date format, Monday first day of week" (`24h-dmy-mon`).
 
+See `/examples/local-preset.htm`
+
 ```javascript
 localization: {
   timeDateFormat: '12h-mdy-sun', // Default, alternative mode "24h-dmy-mon",
@@ -231,7 +233,9 @@ localization: {
 
 For full language support, FullCalendar also takes a ["lang" option](http://fullcalendar.io/docs/text/lang/), accompanied by a language file. Make sure to use defer attribute on a script tag loading the language file if you are deferring booking.js, language file should be loaded after booking.js, but before initialization. 
 
-Remember to set `localization.timeDateFormat` to false so it doesn't override the language file's settings. See `/examples/language.htm` for full implementation example.
+Remember to set `localization.timeDateFormat` to false so it doesn't override the language file's settings. 
+
+See `/examples/local-language.htm`
 
 ```javascript
 fullCalendar: {

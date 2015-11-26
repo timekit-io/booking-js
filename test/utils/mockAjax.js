@@ -1,5 +1,6 @@
 'use strict';
 
+// Set up the Ajax mocks for common requests
 module.exports = function() {
 
     jasmine.Ajax.install();

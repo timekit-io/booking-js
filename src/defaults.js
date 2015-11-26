@@ -15,6 +15,40 @@ var primary = {
   autoload: true,
   includeStyles: true,
   showCredits: true,
+  bookingFields: {
+    name: {
+      placeholder: 'Your full name',
+      prefilled: false
+    },
+    email: {
+      placeholder: 'Your e-mail',
+      prefilled: false
+    },
+    comment: {
+      enabled: true,
+      placeholder: 'Write a comment (optional)',
+      prefilled: false,
+      required: false
+    },
+    phone: {
+      enabled: false,
+      placeholder: 'Your phone number',
+      prefilled: false,
+      required: false
+    },
+    voip: {
+      enabled: false,
+      placeholder: 'Your Skype username',
+      prefilled: false,
+      required: false
+    },
+    location: {
+      enabled: false,
+      placeholder: 'Location',
+      prefilled: false,
+      required: false
+    }
+  },
   timekitConfig: {
     app: 'bookingjs'
   },
@@ -23,7 +57,6 @@ var primary = {
     length: '1 hour'
   },
   timekitCreateEvent: {
-    where: 'Online',
     invite: true,
     my_rsvp: 'needsAction'
   },
@@ -102,7 +135,7 @@ var timeDateFormat12hmdysun = {
 module.exports = {
   primary: primary,
   presets: {
-    timeDateFormat24hdmymon: timeDateFormat24hdmymon,
-    timeDateFormat12hmdysun: timeDateFormat12hmdysun
+    timeDateFormat24hdmymon:  timeDateFormat24hdmymon,
+    timeDateFormat12hmdysun:  timeDateFormat12hmdysun
   }
 };

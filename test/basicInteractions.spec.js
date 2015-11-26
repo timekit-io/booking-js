@@ -4,6 +4,7 @@ jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 
 var createWidget = require('./utils/createWidget');
 var mockAjax = require('./utils/mockAjax');
+var interact = require('./utils/commonInteractions');
 
 /**
  * Basic interaction of the library
@@ -28,10 +29,7 @@ describe('Basic interaction', function() {
 
     setTimeout(function() {
 
-      var calEvent = $('.fc-time-grid-event')[0];
-      var calEventStart = $(calEvent).find('.fc-time').attr('data-start');
-
-      $(calEvent).click();
+      var calEventStart = interact.clickEvent();
 
       setTimeout(function() {
 

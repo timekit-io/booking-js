@@ -58,7 +58,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	/*!
 	 * Booking.js
-	 * Version: 1.2.2
+	 * Version: 1.3.0
 	 * http://booking.timekit.io
 	 *
 	 * Copyright 2015 Timekit, Inc.
@@ -274,7 +274,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Event handler when a timeslot is clicked in FullCalendar
 	  var showBookingPage = function(eventData) {
 	
-	    utils.doCallback('showBookingPage', config);
+	    utils.doCallback('showBookingPage', config, eventData);
 	
 	    var template = __webpack_require__(48);
 	
@@ -344,7 +344,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    e.preventDefault();
 	
-	    utils.doCallback('submitBookingForm', config);
 	
 	    var formElement = $(form);
 	
@@ -364,6 +363,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    });
 	
 	    formElement.addClass('loading');
+	
+	    utils.doCallback('submitBookingForm', config, values);
 	
 	    // Call create event endpoint
 	    timekitCreateEvent(values).then(function(response){
@@ -425,27 +426,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    }
 	
-	    // Reset local config
-	    var newConfig = {};
-	    var localizationConfig = {};
+	    // Extend the default config with supplied settings
+	    var newConfig = $.extend(true, {}, defaultConfig.primary, suppliedConfig);
 	
-	    // Handle presets
-	    if(suppliedConfig.localization && suppliedConfig.localization.timeDateFormat === '24h-dmy-mon') {
-	      localizationConfig = defaultConfig.presets.timeDateFormat24hdmymon;
-	    } else if (suppliedConfig.localization && suppliedConfig.localization.timeDateFormat === '12h-mdy-sun') {
-	       localizationConfig = defaultConfig.presets.timeDateFormat12hmdysun;
+	    // Apply any presets if applicable (supplied config have presedence over preset)
+	    var presetsConfig = {};
+	    if(newConfig.localization.timeDateFormat === '24h-dmy-mon') {
+	      presetsConfig = defaultConfig.presets.timeDateFormat24hdmymon;
+	    }
+	    if(newConfig.localization.timeDateFormat === '12h-mdy-sun') {
+	      presetsConfig = defaultConfig.presets.timeDateFormat12hmdysun;
 	    }
 	
-	    // Extend the default config with supplied settings
-	    $.extend(true, newConfig, defaultConfig.primary, localizationConfig, suppliedConfig);
+	    // Extend the config with the presets
+	    var finalConfig = $.extend(true, {}, presetsConfig, newConfig);
 	
 	    // Check for required settings
-	    if(!newConfig.email || !newConfig.apiToken || !newConfig.calendar) {
+	    if(!finalConfig.email || !finalConfig.apiToken || !finalConfig.calendar) {
 	      throw new Error('TimekitBooking - A required config setting was missing ("email", "apiToken" or "calendar")');
 	    }
 	
 	    // Set new config to instance config
-	    config = newConfig;
+	    config = finalConfig;
 	
 	    return config;
 	

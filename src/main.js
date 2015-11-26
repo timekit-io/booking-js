@@ -218,7 +218,7 @@ function TimekitBooking() {
   // Event handler when a timeslot is clicked in FullCalendar
   var showBookingPage = function(eventData) {
 
-    utils.doCallback('showBookingPage', config);
+    utils.doCallback('showBookingPage', config, eventData);
 
     var template = require('./templates/booking-page.html');
 
@@ -288,7 +288,6 @@ function TimekitBooking() {
 
     e.preventDefault();
 
-    utils.doCallback('submitBookingForm', config);
 
     var formElement = $(form);
 
@@ -308,6 +307,8 @@ function TimekitBooking() {
     });
 
     formElement.addClass('loading');
+
+    utils.doCallback('submitBookingForm', config, values);
 
     // Call create event endpoint
     timekitCreateEvent(values).then(function(response){

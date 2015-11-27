@@ -92,7 +92,8 @@ function TimekitBooking() {
     var timezoneIcon = require('!svg-inline!./assets/timezone-icon.svg');
 
     var template = require('./templates/timezone-helper.html');
-    var timezoneHelperTarget = $(template({
+
+    var timezoneHelperTarget = $(template.render({
       timezoneIcon: timezoneIcon,
       loading: true
     }));
@@ -113,7 +114,7 @@ function TimekitBooking() {
       var tzOffsetDiff = Math.abs(localTzOffset - hostTzOffset);
 
       var template = require('./templates/timezone-helper.html');
-      var newTimezoneHelperTarget = $(template({
+      var newTimezoneHelperTarget = $(template.render({
         timezoneIcon: timezoneIcon,
         timezoneDifference: (tzOffsetDiff === 0 ? false : true),
         timezoneOffset: tzOffsetDiff,
@@ -162,16 +163,21 @@ function TimekitBooking() {
   var decideCalendarSize = function() {
 
     var view = 'agendaWeek';
-    var height = 554;
+    var height = 470;
     var rootWidth = rootTarget.width();
 
     if (rootWidth < 480) {
       view = 'basicDay';
-      height = 430;
+      height = 346;
       rootTarget.addClass('bookingjs-small');
     } else {
       rootTarget.removeClass('bookingjs-small');
     }
+
+    if (config.bookingFields.comment.enabled === true) { height += 84; }
+    if (config.bookingFields.phone.enabled === true) { height += 48; }
+    if (config.bookingFields.voip.enabled === true) { height += 48; }
+    if (config.bookingFields.location.enabled === true) { height += 48; }
 
     return {
       height: height,
@@ -195,7 +201,7 @@ function TimekitBooking() {
   var renderAvatarImage = function() {
 
     var template = require('./templates/user-avatar.html');
-    var avatarTarget = $(template({
+    var avatarTarget = $(template.render({
       image: config.avatar
     }));
 
@@ -207,7 +213,7 @@ function TimekitBooking() {
   var renderDisplayName = function() {
 
     var template = require('./templates/user-displayname.html');
-    var displayNameTarget = $(template({
+    var displayNameTarget = $(template.render({
       name: config.name
     }));
 
@@ -220,12 +226,13 @@ function TimekitBooking() {
 
     utils.doCallback('showBookingPage', config, eventData);
 
+    var fieldsTemplate = require('./templates/booking-fields.html');
     var template = require('./templates/booking-page.html');
 
     var dateFormat = config.localization.bookingDateFormat || moment.localeData().longDateFormat('LL');
     var timeFormat = config.localization.bookingTimeFormat || moment.localeData().longDateFormat('LT');
 
-    bookingPageTarget = $(template({
+    bookingPageTarget = $(template.render({
       chosenDate:           moment(eventData.start).format(dateFormat),
       chosenTime:           moment(eventData.start).format(timeFormat) + ' - ' + moment(eventData.end).format(timeFormat),
       start:                moment(eventData.start).format(),
@@ -236,7 +243,10 @@ function TimekitBooking() {
       submitText:           'Book it',
       successMessageTitle:  'Thanks!',
       successMessagePart1:  'An invitation has been sent to:',
-      successMessagePart2:  'Accept the invitation to confirm the booking.'
+      successMessagePart2:  'Accept the invitation to confirm the booking.',
+      fields:               config.bookingFields
+    }, {
+      formFields: fieldsTemplate
     }));
 
     bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
@@ -288,7 +298,6 @@ function TimekitBooking() {
 
     e.preventDefault();
 
-
     var formElement = $(form);
 
     // Abort if form is submitting, have submitted or does not validate
@@ -331,11 +340,17 @@ function TimekitBooking() {
     var args = {
       start: data.start,
       end: data.end,
-      what: config.name + ' x '+ data.name,
+      what: config.name + ' x ' + data.name,
+      where: 'TBD',
+      description: '',
       calendar_id: config.calendar,
-      participants: [config.email, data.email],
-      description: data.comment || ''
+      participants: [config.email, data.email]
     };
+
+    if (data.location.enabled) { args.where = data.location; }
+    if (data.phone.enabled) { args.description += 'Phone: ' + data.phone + '\n'; }
+    if (data.voip.enabled) { args.description += 'VoIP: ' + data.voip + '\n'; }
+    if (data.comment.enabled) { args.description += 'Comment: ' + data.comment + '\n'; }
 
     $.extend(true, args, config.timekitCreateEvent);
 
@@ -350,7 +365,7 @@ function TimekitBooking() {
 
     var template = require('./templates/poweredby.html');
     var timekitIcon = require('!svg-inline!./assets/timekit-icon.svg');
-    var poweredTarget = $(template({
+    var poweredTarget = $(template.render({
       timekitIcon: timekitIcon
     }));
 

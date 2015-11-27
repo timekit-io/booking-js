@@ -13,9 +13,7 @@
       <div class="bookingjs-form-fields">
         <input class="bookingjs-form-input hidden" type="text" name="start" value="{{ start }}" />
         <input class="bookingjs-form-input hidden" type="text" name="end" value="{{ end }}" />
-        <input class="bookingjs-form-input input-name" type="text" name="name" placeholder="Your full name" required />
-        <input class="bookingjs-form-input input-email" type="email" name="email" placeholder="Your email" required />
-        <textarea class="bookingjs-form-input input-comment" rows="3" name="comment" placeholder="Write a comment (optional)" />
+        {{> formFields }}
       </div>
     </div>
     <button class="bookingjs-form-button" type="submit">

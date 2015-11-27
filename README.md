@@ -106,7 +106,10 @@ Booking.js is made for various use-cases, so it's really extensible and customiz
   localization: {
     showTimezoneHelper:     true, // Should the timezone difference helper (bottom) be shown?
     timeDateFormat:         '12h-mdy-sun' // For EU-style formatting, use '24h-dmy-mon' (see below)
-  }
+  },
+
+  // Customize form fields (see below)
+  bookingFields:            { ... },
 
   // Timekit JS SDK (see below)
   timekitConfig:            { ... },
@@ -146,7 +149,7 @@ Booking.js is made for various use-cases, so it's really extensible and customiz
 }
 ```
 
-**Timekit SDK**
+### Timekit SDK
 
 You can pass any of the [Timekit JS SDK](https://github.com/timekit-io/js-sdk) settings directly to the widget. This is mostly revelant if you're building a tighter integration with Timekit and have your own app registered on the platform.
 
@@ -156,7 +159,7 @@ timekitConfig: {
 }
 ```
 
-**Timekit Find Time**
+### Timekit Find Time
 
 The Find Time algorithm is a powerful query tool for availability. Booking.js is calling the endpoint `[POST]/findtime` through the JS SDK and takes all the arguments as mentioned on the official [docs](http://developers.timekit.io/docs/findtime). The most powerful aspect are the [filters](http://developers.timekit.io/docs/find-time-filters). By default, there's no filters applied.
 
@@ -170,7 +173,7 @@ timekitFindTime: {
 },
 ```
 
-**Timekit Create Event**
+### Timekit Create Event
 
 When booking an event, the widget will call the `[POST]/events` endpoint through the JS SDK, with the following settings:
 
@@ -188,7 +191,7 @@ timekitCreateEvent: {
 },
 ```
 
-**FullCalendar**
+### FullCalendar
 
 You can supply and override all the [FullCalendar settings](http://fullcalendar.io/docs/):
 
@@ -216,7 +219,7 @@ fullCalendar: {
 
 *See below for FullCalendar language support.*
 
-**Localization**
+### Localization
 
 For quick localization of time/date formats, we provide a simple "preset" setting, `timeDateFormat`, that sets a range of different FullCalendar and localization settings.
 
@@ -244,6 +247,51 @@ fullCalendar: {
 },
 localization: {
   timeDateFormat: false
+}
+```
+
+### Booking form fields
+
+You can customize the booking form fields and their settings in this section. Only the `name`, `email` and `comment` fields are enabled by default. The `name` and `email` fields have to be enabled and is always required (for the event creation to work properly). All other fields can be enabled/disabled.
+
+If you're collecting user information before loading the widget, it can be useful to inject it into the form by setting the `prefilled` keys - just pass in the values and they will be set upon load.
+
+See `/examples/fields.htm`
+
+```javascript
+bookingFields: {
+  name: {
+    placeholder: 'Your full name',
+    prefilled: false
+  },
+  email: {
+    placeholder: 'Your e-mail',
+    prefilled: false
+  },
+  comment: {
+    enabled: true,
+    placeholder: 'Write a comment (optional)',
+    prefilled: false,
+    required: false
+  },
+  phone: {
+    enabled: false,
+    placeholder: 'Your phone number',
+    prefilled: false,
+    required: false
+  },
+  voip: {
+    enabled: false,
+    placeholder: 'Your Skype username',
+    prefilled: false,
+    required: false
+  },
+  location: {
+    enabled: false,
+    placeholder: 'Location',
+    prefilled: false,
+    required: false
+  }
 }
 ```
 

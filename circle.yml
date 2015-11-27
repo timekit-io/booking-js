@@ -5,6 +5,7 @@ machine:
 dependencies:
   override:
     - npm install
+    - npm rebuild node-sass
 
 test:
   override:

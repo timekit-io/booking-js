@@ -1,8 +1,14 @@
+machine:
+  node:
+    version: 0.12.7
+
 dependencies:
   override:
     - npm install
-    - npm install -g karma
+    - npm rebuild node-sass
 
 test:
   override:
-    - ./node_modules/karma/bin/karma start --single-run
+    - ./node_modules/.bin/webpack
+    - ./node_modules/.bin/webpack --config webpack.config.min.js
+    - ./node_modules/.bin/karma start --single-run

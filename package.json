@@ -7,6 +7,11 @@
     "type": "git",
     "url": "https://github.com/timekit/booking.git"
   },
+  "scripts": {
+    "test": "karma start --single-run",
+    "compile": "webpack",
+    "compile:production": "webpack --config webpack.config.min.js"
+  },
   "author": "Timekit Inc.",
   "license": "MIT",
   "devDependencies": {

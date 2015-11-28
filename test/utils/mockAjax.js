@@ -23,4 +23,13 @@ module.exports = function() {
       responseText: '{"data":{"timezone":"America\/Los_Angeles","utc_offset":-8}}'
     });
 
+    jasmine.Ajax.stubRequest(
+      'https://api.timekit.io/v2/events'
+    ).andReturn({
+      status: 201,
+      statusText: 'HTTP/1.1 201 Created',
+      contentType: 'application/json',
+      responseText: '{"meta":{"message":"Event created"}}'
+    });
+
 };

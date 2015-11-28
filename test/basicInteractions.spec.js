@@ -47,6 +47,33 @@ describe('Basic interaction', function() {
 
   });
 
+  it('should be able to close the booking page', function(done) {
+
+    createWidget();
+
+    setTimeout(function() {
+
+      interact.clickEvent();
+
+      setTimeout(function() {
+
+        expect($('.bookingjs-bookpage')).toBeInDOM();
+        expect($('.bookingjs-bookpage')).toBeVisible();
+
+        $('.bookingjs-bookpage-close').click();
+
+        setTimeout(function() {
+
+          expect($('.bookingjs-bookpage').length).toBe(0);
+
+          done();
+
+        }, 500);
+      }, 500);
+    }, 500);
+
+  });
+
   it('should be able to book an event', function(done) {
 
     createWidget();
@@ -79,7 +106,7 @@ describe('Basic interaction', function() {
 
           done();
 
-        }, 100);
+        }, 200);
       }, 500);
     }, 500);
 

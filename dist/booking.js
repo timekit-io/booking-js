@@ -58,7 +58,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	/*!
 	 * Booking.js
-	 * Version: 1.4.1
+	 * Version: 1.4.2
 	 * http://booking.timekit.io
 	 *
 	 * Copyright 2015 Timekit, Inc.
@@ -230,10 +230,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      rootTarget.removeClass('bookingjs-small');
 	    }
 	
-	    if (config.bookingFields.comment.enabled === true) { height += 84; }
-	    if (config.bookingFields.phone.enabled === true) { height += 48; }
-	    if (config.bookingFields.voip.enabled === true) { height += 48; }
-	    if (config.bookingFields.location.enabled === true) { height += 48; }
+	    if (config.bookingFields.comment.enabled) {  height += 84; }
+	    if (config.bookingFields.phone.enabled) {    height += 48; }
+	    if (config.bookingFields.voip.enabled) {     height += 48; }
+	    if (config.bookingFields.location.enabled) { height += 48; }
 	
 	    return {
 	      height: height,
@@ -403,10 +403,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      participants: [config.email, data.email]
 	    };
 	
-	    if (data.location.enabled) { args.where = data.location; }
-	    if (data.phone.enabled) { args.description += 'Phone: ' + data.phone + '\n'; }
-	    if (data.voip.enabled) { args.description += 'VoIP: ' + data.voip + '\n'; }
-	    if (data.comment.enabled) { args.description += 'Comment: ' + data.comment + '\n'; }
+	    if (config.bookingFields.location.enabled) { args.where = data.location; }
+	    if (config.bookingFields.phone.enabled) {    args.description += config.bookingFields.phone.placeholder + ': ' + data.phone + '\n'; }
+	    if (config.bookingFields.voip.enabled) {     args.description += config.bookingFields.voip.placeholder + ': ' + data.voip + '\n'; }
+	    if (config.bookingFields.comment.enabled) {  args.description += config.bookingFields.comment.placeholder + ': ' + data.comment + '\n'; }
 	
 	    $.extend(true, args, config.timekitCreateEvent);
 	

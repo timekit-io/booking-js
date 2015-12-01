@@ -75,6 +75,11 @@ function TimekitBooking() {
 
       utils.doCallback('findTimeSuccessful', config, response);
 
+      // Go to first event if enabled
+      if(config.goToFirstEvent && response.data.length > 0) {
+        goToDate(response.data[0].start);
+      }
+
       // Render available timeslots in FullCalendar
       renderCalendarEvents(response.data);
 
@@ -83,6 +88,11 @@ function TimekitBooking() {
       throw new Error('TimekitBooking - An error with Timekit FindTime occured, context: ' + response);
     });
 
+  };
+
+  // Tells FullCalendar to go to a specifc date
+  var goToDate = function(date) {
+    calendarTarget.fullCalendar('gotoDate', date);
   };
 
   // Calculate and display timezone helper

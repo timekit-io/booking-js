@@ -101,6 +101,7 @@ Booking.js is made for various use-cases, so it's really extensible and customiz
   autoload:                 true, // Auto initialization if config object is found on window var
   includeStyles:            true, // Inject fullCalendar and library styles in <head>
   showCredits:              true, // Display a "Powered by Timekit" attribution footer (thanks!)
+  goToFirstEvent:           true, // Display the date of first upcoming event in the calendar (to avoid showing a blank calendar)
 
   // Internationalization
   localization: {

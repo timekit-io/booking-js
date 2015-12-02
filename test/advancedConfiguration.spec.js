@@ -3,12 +3,11 @@
 jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 
 var moment = require('moment');
-
 var createWidget = require('./utils/createWidget');
 var mockAjax = require('./utils/mockAjax');
 
 /**
- * Basic configuration of the library
+ * Advanced configuration of the library
  */
 describe('Advanced configuration', function() {
 
@@ -32,12 +31,20 @@ describe('Advanced configuration', function() {
 
     setTimeout(function() {
 
-      var future = moment().add(1, 'month');
+      var future = moment().add(1, 'month').startOf('day');
 
       var calendarDate = widget.fullCalendar('getDate');
       expect(calendarDate.format('YYYY-MM-DD')).toBe(future.format('YYYY-MM-DD'));
-      done();
 
+      setTimeout(function() {
+
+        var scrollable = $('.bookingjs-calendar').find('.fc-scroller');
+        var scrollTop = scrollable.scrollTop();
+        expect(scrollTop).not.toBe(321);
+
+        done();
+
+      }, 300);
     }, 100);
 
   });
@@ -57,8 +64,16 @@ describe('Advanced configuration', function() {
 
       var calendarDate = widget.fullCalendar('getDate');
       expect(calendarDate.format('YYYY-MM-DD')).toBe(today.format('YYYY-MM-DD'));
-      done();
 
+      setTimeout(function() {
+
+        var scrollable = $('.bookingjs-calendar').find('.fc-scroller');
+        var scrollTop = scrollable.scrollTop();
+        expect(scrollTop).toBe(321);
+
+        done();
+
+      }, 300);
     }, 100);
 
   });

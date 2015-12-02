@@ -77,7 +77,10 @@ function TimekitBooking() {
 
       // Go to first event if enabled
       if(config.goToFirstEvent && response.data.length > 0) {
-        goToDate(response.data[0].start);
+        var firstEventStart = response.data[0].start;
+        var firstEventStartHour = moment(firstEventStart).format('H');
+        goToDate(firstEventStart);
+        scrollToTime(firstEventStartHour);
       }
 
       // Render available timeslots in FullCalendar
@@ -92,7 +95,36 @@ function TimekitBooking() {
 
   // Tells FullCalendar to go to a specifc date
   var goToDate = function(date) {
+
     calendarTarget.fullCalendar('gotoDate', date);
+
+  };
+
+  // Scrolls fullcalendar to the specified hour
+  var scrollToTime = function(time) {
+
+    if (calendarTarget.fullCalendar('getView').name === 'agendaWeek'){
+
+      var hours = calendarTarget.find('.fc-slats .fc-minor');
+      var hourHeight = $(hours[0]).height() * 2;
+      var scrollTo = hourHeight * time;
+      var scrollable = calendarTarget.find('.fc-scroller');
+      var scrollableHeight = scrollable.height();
+      var scrollableScrollTop = scrollable.scrollTop();
+      var maximumHeight = scrollable.find('.fc-time-grid').height();
+
+      // Only perform the scroll if the scrollTo is outside the current visible boundary
+      if (scrollTo < scrollableScrollTop || scrollTo > scrollableScrollTop + scrollableHeight) {
+
+        // If scrollTo point is past the maximum height, then scroll to maximum possible while still animating
+        if (scrollTo > maximumHeight - scrollableHeight) {
+          scrollTo = maximumHeight - scrollableHeight;
+        }
+
+        scrollable.animate({scrollTop: scrollTo});
+      }
+    }
+
   };
 
   // Calculate and display timezone helper

@@ -103,38 +103,41 @@ function TimekitBooking() {
   // Scrolls fullcalendar to the specified hour
   var scrollToTime = function(time) {
 
-    if (calendarTarget.fullCalendar('getView').name === 'agendaWeek'){
-
-      // Get height of each hour row
-      var hours = calendarTarget.find('.fc-slats .fc-minor');
-      var hourHeight = $(hours[0]).height() * 2;
-
-      // If minTime is set in fullCalendar config, subtract that from the scollTo calculationn
-      var minTimeHeight = 0;
-      if (config.fullCalendar.minTime) {
-        var minTime = moment(config.fullCalendar.minTime, 'HH:mm:ss').format('H');
-        minTimeHeight = hourHeight * minTime;
-      }
-
-      // Calculate scrolling location and container sizes
-      var scrollTo = (hourHeight * time) - minTimeHeight;
-      var scrollable = calendarTarget.find('.fc-scroller');
-      var scrollableHeight = scrollable.height();
-      var scrollableScrollTop = scrollable.scrollTop();
-      var maximumHeight = scrollable.find('.fc-time-grid').height();
-
-      // Only perform the scroll if the scrollTo is outside the current visible boundary
-      if (scrollTo < scrollableScrollTop || scrollTo > scrollableScrollTop + scrollableHeight) {
-
-        // If scrollTo point is past the maximum height, then scroll to maximum possible while still animating
-        if (scrollTo > maximumHeight - scrollableHeight) {
-          scrollTo = maximumHeight - scrollableHeight;
-        }
-
-        // Perform the scrollTo animation
-        scrollable.animate({scrollTop: scrollTo});
-      }
+    // Only proceed for agendaWeek view
+    if (calendarTarget.fullCalendar('getView').name !== 'agendaWeek'){
+      return;
     }
+
+    // Get height of each hour row
+    var hours = calendarTarget.find('.fc-slats .fc-minor');
+    var hourHeight = $(hours[0]).height() * 2;
+
+    // If minTime is set in fullCalendar config, subtract that from the scollTo calculationn
+    var minTimeHeight = 0;
+    if (config.fullCalendar.minTime) {
+      var minTime = moment(config.fullCalendar.minTime, 'HH:mm:ss').format('H');
+      minTimeHeight = hourHeight * minTime;
+    }
+
+    // Calculate scrolling location and container sizes
+    var scrollTo = (hourHeight * time) - minTimeHeight;
+    var scrollable = calendarTarget.find('.fc-scroller');
+    var scrollableHeight = scrollable.height();
+    var scrollableScrollTop = scrollable.scrollTop();
+    var maximumHeight = scrollable.find('.fc-time-grid').height();
+
+    // Only perform the scroll if the scrollTo is outside the current visible boundary
+    if (scrollTo > scrollableScrollTop && scrollTo < scrollableScrollTop + scrollableHeight) {
+      return;
+    }
+
+    // If scrollTo point is past the maximum height, then scroll to maximum possible while still animating
+    if (scrollTo > maximumHeight - scrollableHeight) {
+      scrollTo = maximumHeight - scrollableHeight;
+    }
+
+    // Perform the scrollTo animation
+    scrollable.animate({scrollTop: scrollTo});
 
   };
 

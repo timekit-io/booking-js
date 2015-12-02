@@ -105,9 +105,19 @@ function TimekitBooking() {
 
     if (calendarTarget.fullCalendar('getView').name === 'agendaWeek'){
 
+      // Get height of each hour row
       var hours = calendarTarget.find('.fc-slats .fc-minor');
       var hourHeight = $(hours[0]).height() * 2;
-      var scrollTo = hourHeight * time;
+
+      // If minTime is set in fullCalendar config, subtract that from the scollTo calculationn
+      var minTimeHeight = 0;
+      if (config.fullCalendar.minTime) {
+        var minTime = moment(config.fullCalendar.minTime, 'HH:mm:ss').format('H');
+        minTimeHeight = hourHeight * minTime;
+      }
+
+      // Calculate scrolling location and container sizes
+      var scrollTo = (hourHeight * time) - minTimeHeight;
       var scrollable = calendarTarget.find('.fc-scroller');
       var scrollableHeight = scrollable.height();
       var scrollableScrollTop = scrollable.scrollTop();
@@ -121,6 +131,7 @@ function TimekitBooking() {
           scrollTo = maximumHeight - scrollableHeight;
         }
 
+        // Perform the scrollTo animation
         scrollable.animate({scrollTop: scrollTo});
       }
     }

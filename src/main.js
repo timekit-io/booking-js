@@ -98,6 +98,7 @@ function TimekitBooking() {
       loading: true
     }));
 
+    rootTarget.addClass('has-timezonehelper');
     rootTarget.append(timezoneHelperTarget);
 
     var args = {
@@ -169,9 +170,9 @@ function TimekitBooking() {
     if (rootWidth < 480) {
       view = 'basicDay';
       height = 346;
-      rootTarget.addClass('bookingjs-small');
+      rootTarget.addClass('is-small');
     } else {
-      rootTarget.removeClass('bookingjs-small');
+      rootTarget.removeClass('is-small');
     }
 
     if (config.bookingFields.comment.enabled) {  height += 84; }
@@ -205,6 +206,7 @@ function TimekitBooking() {
       image: config.avatar
     }));
 
+    rootTarget.addClass('has-avatar');
     rootTarget.append(avatarTarget);
 
   };
@@ -217,6 +219,7 @@ function TimekitBooking() {
       name: config.name
     }));
 
+    rootTarget.addClass('has-displayname');
     rootTarget.append(displayNameTarget);
 
   };

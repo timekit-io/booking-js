@@ -58,7 +58,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	/*!
 	 * Booking.js
-	 * Version: 1.4.2
+	 * Version: 1.5.0
 	 * http://booking.timekit.io
 	 *
 	 * Copyright 2015 Timekit, Inc.
@@ -131,6 +131,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	      utils.doCallback('findTimeSuccessful', config, response);
 	
+	      // Go to first event if enabled
+	      if(config.goToFirstEvent && response.data.length > 0) {
+	        var firstEventStart = response.data[0].start;
+	        var firstEventStartHour = moment(firstEventStart).format('H');
+	        goToDate(firstEventStart);
+	        scrollToTime(firstEventStartHour);
+	      }
+	
 	      // Render available timeslots in FullCalendar
 	      renderCalendarEvents(response.data);
 	
@@ -138,6 +146,54 @@ return /******/ (function(modules) { // webpackBootstrap
 	      utils.doCallback('findTimeFailed', config, response);
 	      throw new Error('TimekitBooking - An error with Timekit FindTime occured, context: ' + response);
 	    });
+	
+	  };
+	
+	  // Tells FullCalendar to go to a specifc date
+	  var goToDate = function(date) {
+	
+	    calendarTarget.fullCalendar('gotoDate', date);
+	
+	  };
+	
+	  // Scrolls fullcalendar to the specified hour
+	  var scrollToTime = function(time) {
+	
+	    // Only proceed for agendaWeek view
+	    if (calendarTarget.fullCalendar('getView').name !== 'agendaWeek'){
+	      return;
+	    }
+	
+	    // Get height of each hour row
+	    var hours = calendarTarget.find('.fc-slats .fc-minor');
+	    var hourHeight = $(hours[0]).height() * 2;
+	
+	    // If minTime is set in fullCalendar config, subtract that from the scollTo calculationn
+	    var minTimeHeight = 0;
+	    if (config.fullCalendar.minTime) {
+	      var minTime = moment(config.fullCalendar.minTime, 'HH:mm:ss').format('H');
+	      minTimeHeight = hourHeight * minTime;
+	    }
+	
+	    // Calculate scrolling location and container sizes
+	    var scrollTo = (hourHeight * time) - minTimeHeight;
+	    var scrollable = calendarTarget.find('.fc-scroller');
+	    var scrollableHeight = scrollable.height();
+	    var scrollableScrollTop = scrollable.scrollTop();
+	    var maximumHeight = scrollable.find('.fc-time-grid').height();
+	
+	    // Only perform the scroll if the scrollTo is outside the current visible boundary
+	    if (scrollTo > scrollableScrollTop && scrollTo < scrollableScrollTop + scrollableHeight) {
+	      return;
+	    }
+	
+	    // If scrollTo point is past the maximum height, then scroll to maximum possible while still animating
+	    if (scrollTo > maximumHeight - scrollableHeight) {
+	      scrollTo = maximumHeight - scrollableHeight;
+	    }
+	
+	    // Perform the scrollTo animation
+	    scrollable.animate({scrollTop: scrollTo});
 	
 	  };
 	
@@ -154,6 +210,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      loading: true
 	    }));
 	
+	    rootTarget.addClass('has-timezonehelper');
 	    rootTarget.append(timezoneHelperTarget);
 	
 	    var args = {
@@ -225,9 +282,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (rootWidth < 480) {
 	      view = 'basicDay';
 	      height = 346;
-	      rootTarget.addClass('bookingjs-small');
+	      rootTarget.addClass('is-small');
 	    } else {
-	      rootTarget.removeClass('bookingjs-small');
+	      rootTarget.removeClass('is-small');
 	    }
 	
 	    if (config.bookingFields.comment.enabled) {  height += 84; }
@@ -261,6 +318,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      image: config.avatar
 	    }));
 	
+	    rootTarget.addClass('has-avatar');
 	    rootTarget.append(avatarTarget);
 	
 	  };
@@ -273,6 +331,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      name: config.name
 	    }));
 	
+	    rootTarget.addClass('has-displayname');
 	    rootTarget.append(displayNameTarget);
 	
 	  };
@@ -18244,6 +18303,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  autoload: true,
 	  includeStyles: true,
 	  showCredits: true,
+	  goToFirstEvent: true,
 	  bookingFields: {
 	    name: {
 	      placeholder: 'Your full name',
@@ -18835,7 +18895,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.push([module.id, "@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);", ""]);
 	
 	// module
-	exports.push([module.id, "/*!\n * Booking.js\n * http://booking.timekit.io\n * (c) 2015 Timekit Inc.\n */.bookingjs{position:relative;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;font-size:13px;border-radius:4px;background-color:#fff;box-shadow:rgba(0,0,0,.2) 0 2px 4px 0;margin:60px auto 20px;z-index:10;opacity:0;color:#333}.bookingjs.show{-webkit-transition:opacity .3s ease;transition:opacity .3s ease;opacity:1}.bookingjs-timezonehelper{color:#aeaeae;text-align:center;padding:7px 10px;background-color:#fbfbfb;border-top:1px solid #ececec;min-height:15px;z-index:20;border-radius:0 0 4px 4px}.bookingjs-timezoneicon{width:10px;margin-right:5px}.bookingjs-avatar{position:absolute;top:-50px;left:50%;-webkit-transform:translateX(-50%);-ms-transform:translateX(-50%);transform:translateX(-50%);border-radius:150px;border:3px solid #fff;box-shadow:0 1px 3px 0 rgba(0,0,0,.13);overflow:hidden;z-index:40;background-color:#fff}.bookingjs-avatar img{max-width:100%;vertical-align:middle;display:inline-block;width:80px;height:80px}.bookingjs-displayname{position:absolute;top:0;left:0;padding:15px 20px;color:#333;font-weight:600}.bookingjs-bookpage{position:absolute;height:100%;width:100%;top:0;left:0;background-color:#fbfbfb;z-index:30;opacity:0;-webkit-transition:opacity .2s ease;transition:opacity .2s ease;border-radius:4px}.bookingjs-bookpage.show{opacity:1}.bookingjs-bookpage-close{position:absolute;top:0;right:0;padding:18px;-webkit-transition:opacity .2s ease;transition:opacity .2s ease;opacity:.3}.bookingjs-bookpage-close:hover{opacity:1}.bookingjs-bookpage-date{text-align:center;font-size:34px;font-weight:400;margin-top:90px;margin-bottom:20px}.bookingjs-small .bookingjs-bookpage-date{font-size:24px;margin-top:60px;margin-bottom:15px}.bookingjs-bookpage-time{text-align:center;font-size:17px;font-weight:400;margin-bottom:70px}.bookingjs-small .bookingjs-bookpage-time{font-size:15px;margin-bottom:30px}.bookingjs-closeicon{width:15px}.bookingjs-form{width:350px;position:relative;margin:0 auto;text-align:center}.bookingjs-small .bookingjs-form{width:90%}.bookingjs-form-box{position:relative;box-shadow:0 1px 3px 0 rgba(0,0,0,.1);border-radius:4px;overflow:hidden;background-color:#fff;line-height:0}.bookingjs-form-success-message{position:absolute;top:-999px;left:0;right:0;padding:30px;background-color:#fff;opacity:0;-webkit-transition:opacity .3s ease;transition:opacity .3s ease;line-height:normal}.bookingjs-small .bookingjs-form-success-message{padding:22px 10px}.bookingjs-form-success-message .title{font-weight:600}.bookingjs-form-success-message .booked-email{color:#aeaeae}.bookingjs-form.success .bookingjs-form-success-message{opacity:1;top:0;bottom:0}.bookingjs-form-input{-webkit-transition:box-shadow .2s ease;transition:box-shadow .2s ease;width:100%;padding:15px 25px;border:0 solid #ececec;font-size:1em;box-shadow:inset 0 0 1px 1px hsla(0,0%,100%,0);text-align:left;box-sizing:border-box;line-height:normal;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif}.bookingjs-form-input:focus{outline:0;box-shadow:inset 0 0 1px 1px #689ad8}.bookingjs-form-input.hidden{display:none}.bookingjs-form-button{position:relative;-webkit-transition:background-color .2s,max-width .3s;transition:background-color .2s,max-width .3s;display:inline-block;padding:13px 25px;background-color:#689ad8;text-transform:uppercase;box-shadow:0 1px 3px 0 rgba(0,0,0,.15);color:#fff;border:0;border-radius:3px;font-size:1.1em;font-weight:600;margin-top:30px;cursor:pointer;height:44px;outline:0;text-align:center;max-width:200px}.bookingjs-form-button .loading-text,.bookingjs-form-button .success-text{-webkit-transition:opacity .3s ease;transition:opacity .3s ease;position:absolute;top:13px;left:50%;-webkit-transform:translateX(-50%);-ms-transform:translateX(-50%);transform:translateX(-50%)}.bookingjs-form-button .inactive-text{opacity:1}.bookingjs-form-button .loading-text,.bookingjs-form-button .success-text{opacity:0}.bookingjs-form-button .loading-text svg{height:19px;width:19px;-webkit-animation:spin .6s infinite linear;animation:spin .6s infinite linear}.bookingjs-form-button .success-text svg{height:15px;margin-top:2px;-webkit-transform:scale(0);-ms-transform:scale(0);transform:scale(0);-webkit-transition:-webkit-transform .6s ease;transition:-webkit-transform .6s ease;transition:transform .6s ease;transition:transform .6s ease,-webkit-transform .6s ease}.bookingjs-form-button:hover{background-color:#3f7fce}.bookingjs-form-button.button-shake{-webkit-animation:shake .5s 1 ease;animation:shake .5s 1 ease}.bookingjs-form.loading .bookingjs-form-button,.bookingjs-form.loading .bookingjs-form-button:hover{max-width:80px;background-color:#b1b1b1}.bookingjs-form.loading .bookingjs-form-button .inactive-text,.bookingjs-form.loading .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.loading .bookingjs-form-button .loading-text,.bookingjs-form.loading .bookingjs-form-button:hover .loading-text{opacity:1}.bookingjs-form.success .bookingjs-form-button,.bookingjs-form.success .bookingjs-form-button:hover{max-width:80px;background-color:#5baf56}.bookingjs-form.success .bookingjs-form-button .inactive-text,.bookingjs-form.success .bookingjs-form-button .loading-text,.bookingjs-form.success .bookingjs-form-button:hover .inactive-text,.bookingjs-form.success .bookingjs-form-button:hover .loading-text{opacity:0}.bookingjs-form.success .bookingjs-form-button .success-text,.bookingjs-form.success .bookingjs-form-button:hover .success-text{opacity:1}.bookingjs-form.success .bookingjs-form-button .success-text svg,.bookingjs-form.success .bookingjs-form-button:hover .success-text svg{-webkit-transform:scale(1);-ms-transform:scale(1);transform:scale(1)}.bookingjs-poweredby{position:absolute;bottom:0;left:0;right:0;text-align:center;padding:7px 10px}.bookingjs-poweredby a{-webkit-transition:color .2s ease;transition:color .2s ease;color:#aeaeae;text-decoration:none}.bookingjs-poweredby a svg path{-webkit-transition:fill .2s ease;transition:fill .2s ease;fill:#aeaeae}.bookingjs-poweredby a:hover{color:#333}.bookingjs-poweredby a:hover svg path{fill:#333}.bookingjs-timekiticon{width:13px;margin-right:5px;vertical-align:sub}", ""]);
+	exports.push([module.id, "/*!\n * Booking.js\n * http://booking.timekit.io\n * (c) 2015 Timekit Inc.\n */.bookingjs{position:relative;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;font-size:13px;border-radius:4px;background-color:#fff;box-shadow:rgba(0,0,0,.2) 0 2px 4px 0;margin:60px auto 20px;z-index:10;opacity:0;color:#333}.bookingjs.show{-webkit-transition:opacity .3s ease;transition:opacity .3s ease;opacity:1}.is-small.has-avatar.has-displayname .bookingjs-calendar .fc-toolbar{padding-bottom:24px}.is-small .bookingjs-calendar .fc-toolbar>.fc-right>button.fc-today-button{position:absolute;left:15px}.bookingjs-timezonehelper{color:#aeaeae;text-align:center;padding:7px 10px;background-color:#fbfbfb;border-top:1px solid #ececec;min-height:15px;z-index:20;border-radius:0 0 4px 4px}.bookingjs-timezoneicon{width:10px;margin-right:5px}.bookingjs-avatar{position:absolute;top:-50px;left:50%;-webkit-transform:translateX(-50%);-ms-transform:translateX(-50%);transform:translateX(-50%);border-radius:150px;border:3px solid #fff;box-shadow:0 1px 3px 0 rgba(0,0,0,.13);overflow:hidden;z-index:40;background-color:#fff}.is-small .bookingjs-avatar{top:-40px}.bookingjs-avatar img{max-width:100%;vertical-align:middle;display:inline-block;width:80px;height:80px}.is-small .bookingjs-avatar img{width:70px;height:70px}.bookingjs-displayname{position:absolute;top:0;left:0;padding:15px 20px;color:#333;font-weight:600}.is-small .bookingjs-displayname{text-align:center;width:100%;box-sizing:border-box}.is-small.has-avatar .bookingjs-displayname{top:28px}.bookingjs-bookpage{position:absolute;height:100%;width:100%;top:0;left:0;background-color:#fbfbfb;z-index:30;opacity:0;-webkit-transition:opacity .2s ease;transition:opacity .2s ease;border-radius:4px}.bookingjs-bookpage.show{opacity:1}.bookingjs-bookpage-close{position:absolute;top:0;right:0;padding:18px;-webkit-transition:opacity .2s ease;transition:opacity .2s ease;opacity:.3}.bookingjs-bookpage-close:hover{opacity:1}.bookingjs-bookpage-date{text-align:center;font-size:34px;font-weight:400;margin-top:90px;margin-bottom:20px}.is-small .bookingjs-bookpage-date{font-size:24px;margin-top:60px;margin-bottom:15px}.bookingjs-bookpage-time{text-align:center;font-size:17px;font-weight:400;margin-bottom:70px}.is-small .bookingjs-bookpage-time{font-size:15px;margin-bottom:30px}.bookingjs-closeicon{width:15px}.bookingjs-form{width:350px;position:relative;margin:0 auto;text-align:center}.is-small .bookingjs-form{width:90%}.bookingjs-form-box{position:relative;box-shadow:0 1px 3px 0 rgba(0,0,0,.1);border-radius:4px;overflow:hidden;background-color:#fff;line-height:0}.bookingjs-form-success-message{position:absolute;top:-999px;left:0;right:0;padding:30px;background-color:#fff;opacity:0;-webkit-transition:opacity .3s ease;transition:opacity .3s ease;line-height:normal}.is-small .bookingjs-form-success-message{padding:22px 10px}.bookingjs-form-success-message .title{font-weight:600}.bookingjs-form-success-message .booked-email{color:#aeaeae}.bookingjs-form.success .bookingjs-form-success-message{opacity:1;top:0;bottom:0}.bookingjs-form-input{-webkit-transition:box-shadow .2s ease;transition:box-shadow .2s ease;width:100%;padding:15px 25px;border:0 solid #ececec;font-size:1em;box-shadow:inset 0 0 1px 1px hsla(0,0%,100%,0);text-align:left;box-sizing:border-box;line-height:normal;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif}.bookingjs-form-input:focus{outline:0;box-shadow:inset 0 0 1px 1px #689ad8}.bookingjs-form-input.hidden{display:none}.bookingjs-form-button{position:relative;-webkit-transition:background-color .2s,max-width .3s;transition:background-color .2s,max-width .3s;display:inline-block;padding:13px 25px;background-color:#689ad8;text-transform:uppercase;box-shadow:0 1px 3px 0 rgba(0,0,0,.15);color:#fff;border:0;border-radius:3px;font-size:1.1em;font-weight:600;margin-top:30px;cursor:pointer;height:44px;outline:0;text-align:center;max-width:200px}.bookingjs-form-button .loading-text,.bookingjs-form-button .success-text{-webkit-transition:opacity .3s ease;transition:opacity .3s ease;position:absolute;top:13px;left:50%;-webkit-transform:translateX(-50%);-ms-transform:translateX(-50%);transform:translateX(-50%)}.bookingjs-form-button .inactive-text{opacity:1}.bookingjs-form-button .loading-text,.bookingjs-form-button .success-text{opacity:0}.bookingjs-form-button .loading-text svg{height:19px;width:19px;-webkit-animation:spin .6s infinite linear;animation:spin .6s infinite linear}.bookingjs-form-button .success-text svg{height:15px;margin-top:2px;-webkit-transform:scale(0);-ms-transform:scale(0);transform:scale(0);-webkit-transition:-webkit-transform .6s ease;transition:-webkit-transform .6s ease;transition:transform .6s ease;transition:transform .6s ease,-webkit-transform .6s ease}.bookingjs-form-button:hover{background-color:#3f7fce}.bookingjs-form-button.button-shake{-webkit-animation:shake .5s 1 ease;animation:shake .5s 1 ease}.bookingjs-form.loading .bookingjs-form-button,.bookingjs-form.loading .bookingjs-form-button:hover{max-width:80px;background-color:#b1b1b1}.bookingjs-form.loading .bookingjs-form-button .inactive-text,.bookingjs-form.loading .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.loading .bookingjs-form-button .loading-text,.bookingjs-form.loading .bookingjs-form-button:hover .loading-text{opacity:1}.bookingjs-form.success .bookingjs-form-button,.bookingjs-form.success .bookingjs-form-button:hover{max-width:80px;background-color:#5baf56}.bookingjs-form.success .bookingjs-form-button .inactive-text,.bookingjs-form.success .bookingjs-form-button .loading-text,.bookingjs-form.success .bookingjs-form-button:hover .inactive-text,.bookingjs-form.success .bookingjs-form-button:hover .loading-text{opacity:0}.bookingjs-form.success .bookingjs-form-button .success-text,.bookingjs-form.success .bookingjs-form-button:hover .success-text{opacity:1}.bookingjs-form.success .bookingjs-form-button .success-text svg,.bookingjs-form.success .bookingjs-form-button:hover .success-text svg{-webkit-transform:scale(1);-ms-transform:scale(1);transform:scale(1)}.bookingjs-poweredby{position:absolute;bottom:0;left:0;right:0;text-align:center;padding:7px 10px}.bookingjs-poweredby a{-webkit-transition:color .2s ease;transition:color .2s ease;color:#aeaeae;text-decoration:none}.bookingjs-poweredby a svg path{-webkit-transition:fill .2s ease;transition:fill .2s ease;fill:#aeaeae}.bookingjs-poweredby a:hover{color:#333}.bookingjs-poweredby a:hover svg path{fill:#333}.bookingjs-timekiticon{width:13px;margin-right:5px;vertical-align:sub}", ""]);
 	
 	// exports
 

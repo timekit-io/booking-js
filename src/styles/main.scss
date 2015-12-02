@@ -37,6 +37,23 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
     opacity: 1;
   }
 
+  &-calendar {
+
+    .fc-toolbar {
+
+      .is-small.has-avatar.has-displayname & {
+        padding-bottom: 24px;
+      }
+
+      > .fc-right > button.fc-today-button {
+        .is-small & {
+          position: absolute;
+          left: 15px;
+        }
+      }
+    }
+  }
+
   // Timezone Helper
 
   &-timezonehelper {
@@ -69,12 +86,21 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
     z-index: 40;
     background-color: white;
 
+    .is-small & {
+      top: -40px;
+    }
+
     img {
       max-width: 100%;
       vertical-align: middle;
       display: inline-block;
       width: 80px;
       height: 80px;
+
+      .is-small & {
+        width: 70px;
+        height: 70px;
+      }
     }
   }
 
@@ -85,6 +111,15 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
     padding: 15px 20px;
     color: $textColor;
     font-weight: 600;
+
+    .is-small & {
+      text-align: center;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .is-small.has-avatar & {
+      top: 28px;
+    }
   }
 
   // Book page
@@ -125,7 +160,7 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
       margin-top: 90px;
       margin-bottom: 20px;
 
-      .bookingjs-small & {
+      .is-small & {
         font-size: 24px;
         margin-top: 60px;
         margin-bottom: 15px;
@@ -138,7 +173,7 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
       font-weight: 400;
       margin-bottom: 70px;
 
-      .bookingjs-small & {
+      .is-small & {
         font-size: 15px;
         margin-bottom: 30px;
       }
@@ -157,7 +192,7 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
     margin: 0 auto;
     text-align: center;
 
-    .bookingjs-small & {
+    .is-small & {
       width: 90%;
     }
 
@@ -181,7 +216,7 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
       transition: opacity 0.3s ease;
       line-height: normal;
 
-      .bookingjs-small & {
+      .is-small & {
         padding: 22px 10px;
       }
 

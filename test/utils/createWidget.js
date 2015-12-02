@@ -9,6 +9,8 @@ module.exports = function(config) {
   $.extend(true, newConfig, config, baseConfig);
 
   var widget = new TimekitBooking();
-  return widget.init(newConfig);
+  widget.init(newConfig);
+
+  return widget;
 
 }

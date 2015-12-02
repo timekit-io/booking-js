@@ -15,6 +15,7 @@ var primary = {
   autoload: true,
   includeStyles: true,
   showCredits: true,
+  goToFirstEvent: true,
   bookingFields: {
     name: {
       placeholder: 'Your full name',

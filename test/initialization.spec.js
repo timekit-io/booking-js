@@ -12,7 +12,8 @@ describe('Initialization regular', function() {
 
   beforeEach(function(){
     loadFixtures('main.html');
-    mockAjax();
+    jasmine.Ajax.install();
+    mockAjax.all();
   });
 
   afterEach(function() {
@@ -56,7 +57,8 @@ describe('Initialization minified', function() {
 
   beforeEach(function(){
     loadFixtures('minified.html');
-    mockAjax();
+    jasmine.Ajax.install();
+    mockAjax.all();
   });
 
   afterEach(function() {

@@ -113,8 +113,9 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
     font-weight: 600;
 
     .is-small & {
-      left: 50%;
-      transform: translateX(-50%);
+      text-align: center;
+      width: 100%;
+      box-sizing: border-box;
     }
     .is-small.has-avatar & {
       top: 28px;

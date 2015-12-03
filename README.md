@@ -42,7 +42,7 @@ The simplest and most universally compatible usage is with autoload:
 ```html
 <div id="bookingjs">
   <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-  <script type="text/javascript" src="//cdn.timekit.io/bookingjs/1/booking.min.js" defer></script>
+  <script type="text/javascript" src="http://cdn.timekit.io/bookingjs/v1/booking.min.js" defer></script>
   <script type="text/javascript">
     window.timekitBookingConfig = {
       email:    'marty.mcfly@timekit.io',
@@ -59,7 +59,7 @@ If you intent to run multiple instances or want more control:
 ```html
 <div id="bookingjs">
   <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-  <script type="text/javascript" src="//cdn.timekit.io/bookingjs/1/booking.min.js"></script>
+  <script type="text/javascript" src="http://cdn.timekit.io/bookingjs/v1/booking.min.js"></script>
   <script type="text/javascript">
     var widget = new TimekitBooking();
     widget.init({

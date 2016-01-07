@@ -220,12 +220,12 @@ function TimekitBooking() {
   var decideCalendarSize = function() {
 
     var view = 'agendaWeek';
-    var height = 470;
+    var height = 420;
     var rootWidth = rootTarget.width();
 
     if (rootWidth < 480) {
       view = 'basicDay';
-      height = 346;
+      height = 335;
       rootTarget.addClass('is-small');
     } else {
       rootTarget.removeClass('is-small');
@@ -299,6 +299,7 @@ function TimekitBooking() {
       closeIcon:            require('!svg-inline!./assets/close-icon.svg'),
       checkmarkIcon:        require('!svg-inline!./assets/checkmark-icon.svg'),
       loadingIcon:          require('!svg-inline!./assets/loading-spinner.svg'),
+      errorIcon:            require('!svg-inline!./assets/error-icon.svg'),
       submitText:           'Book it',
       successMessageTitle:  'Thanks!',
       successMessagePart1:  'An invitation has been sent to:',
@@ -360,7 +361,7 @@ function TimekitBooking() {
     var formElement = $(form);
 
     // Abort if form is submitting, have submitted or does not validate
-    if(formElement.hasClass('loading') || formElement.hasClass('success') || !e.target.checkValidity()) {
+    if(formElement.hasClass('loading') || formElement.hasClass('success') || formElement.hasClass('error') || !e.target.checkValidity()) {
       var submitButton = formElement.find('.bookingjs-form-button');
       submitButton.addClass('button-shake');
       setTimeout(function() {
@@ -387,7 +388,20 @@ function TimekitBooking() {
       formElement.removeClass('loading').addClass('success');
 
     }).catch(function(response){
+
       utils.doCallback('createEventFailed', config, response);
+
+      var submitButton = formElement.find('.bookingjs-form-button');
+      submitButton.addClass('button-shake');
+      setTimeout(function() {
+        submitButton.removeClass('button-shake');
+      }, 500);
+
+      formElement.removeClass('loading').addClass('error');
+      setTimeout(function() {
+        formElement.removeClass('error');
+      }, 2000);
+
       throw new Error('TimekitBooking - An error with Timekit createEvent occured, context: ' + response);
     });
 

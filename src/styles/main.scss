@@ -16,6 +16,7 @@ $textColor:         #333;
 $textLightColor:    #AEAEAE;
 $primaryColor:      #689AD8;
 $primaryDarkColor:  darken($primaryColor, 10%);
+$errorColor:        #D83B46;
 $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
 
 // Classes
@@ -157,13 +158,12 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
       text-align: center;
       font-size: 34px;
       font-weight: 400;
-      margin-top: 90px;
-      margin-bottom: 20px;
+      margin-top: 70px;
+      margin-bottom: 10px;
 
       .is-small & {
-        font-size: 24px;
+        font-size: 27px;
         margin-top: 60px;
-        margin-bottom: 15px;
       }
     }
 
@@ -171,11 +171,12 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
       text-align: center;
       font-size: 17px;
       font-weight: 400;
-      margin-bottom: 70px;
+      margin-bottom: 50px;
+      margin-top: 10px;
 
       .is-small & {
         font-size: 15px;
-        margin-bottom: 30px;
+        margin-bottom: 35px;
       }
     }
   }
@@ -278,27 +279,31 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
       max-width: 200px;
 
       .success-text,
+      .error-text,
       .loading-text {
         transition: opacity 0.3s ease;
         position: absolute;
         top: 13px;
         left: 50%;
         transform: translateX(-50%);
+        opacity: 0;
       }
 
       .inactive-text {
+        white-space: nowrap;
         opacity: 1;
-      }
-
-      .loading-text,
-      .success-text {
-        opacity: 0;
       }
 
       .loading-text svg {
         height: 19px;
         width: 19px;
         animation: spin 0.6s infinite linear;
+      }
+
+      .error-text svg {
+        height: 15px;
+        width: 15px;
+        margin-top: 2px;
       }
 
       .success-text svg {
@@ -321,17 +326,28 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
     &.loading &-button:hover {
       max-width: 80px;
       background-color: #B1B1B1;
+      cursor: not-allowed;
 
       .inactive-text { opacity: 0; }
       .loading-text { opacity: 1; }
+    }
+
+    &.error &-button,
+    &.error &-button:hover {
+      max-width: 80px;
+      background-color: $errorColor;
+      cursor: not-allowed;
+
+      .inactive-text { opacity: 0; }
+      .error-text { opacity: 1; }
     }
 
     &.success &-button,
     &.success &-button:hover {
       max-width: 80px;
       background-color: #5BAF56;
+      cursor: not-allowed;
 
-      .loading-text,
       .inactive-text { opacity: 0; }
       .success-text { opacity: 1; }
 

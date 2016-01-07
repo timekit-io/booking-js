@@ -73,6 +73,13 @@ If you intent to run multiple instances or want more control:
 
 See `/examples` for more implementation examples.
 
+**Served over HTTPS**
+
+Use the following URI if you want the library served with SSL:
+`https://dbhpllgef527b.cloudfront.net/booking-js/v1/booking.min.js`  
+
+(see [this issue](https://github.com/timekit-io/booking-js/issues/19) for more info)
+
 ## Authentication
 
 The widget connects to the Timekit API behind the scenes and requires a Timekit account.

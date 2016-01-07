@@ -2,7 +2,7 @@
 
 /*!
  * Booking.js
- * Version: 1.5.0
+ * Version: 1.5.1
  * http://booking.timekit.io
  *
  * Copyright 2015 Timekit, Inc.

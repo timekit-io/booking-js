@@ -15,6 +15,7 @@ var $               = require('jquery');
 window.fullcalendar = require('fullcalendar');
 var moment          = window.moment = require('moment');
 var timekit         = require('timekit-sdk');
+require('moment-timezone/builds/moment-timezone-with-data-2010-2020.js');
 
 // Internal dependencies
 var utils         = require('./utils');
@@ -144,7 +145,7 @@ function TimekitBooking() {
   // Calculate and display timezone helper
   var renderTimezoneHelper = function() {
 
-    var localTzOffset = (new Date()).getTimezoneOffset()/60*-1;
+    var localTzOffset = (moment().utcOffset()/60);
     var timezoneIcon = require('!svg-inline!./assets/timezone-icon.svg');
 
     var template = require('./templates/timezone-helper.html');
@@ -438,7 +439,7 @@ function TimekitBooking() {
 
     var args = {
       graph: config.bookingMode
-    }
+    };
 
     $.extend(true, args, config.timekitCreateBooking);
 
@@ -446,7 +447,6 @@ function TimekitBooking() {
 
     return timekit.createBooking(args)
     .then(function(result) {
-      console.log('finished create')
       return timekitUpdateBooking(result.data.id, data);
     });
 
@@ -454,8 +454,6 @@ function TimekitBooking() {
 
   // Update the booking
   var timekitUpdateBooking = function(id, data) {
-
-    console.log('calling update')
 
     var args = {
       id: id,
@@ -471,7 +469,7 @@ function TimekitBooking() {
       customer: {
         name: data.name,
         email: data.email,
-        timezone: '' // FIX
+        timezone: moment.tz.guess()
       }
     };
 

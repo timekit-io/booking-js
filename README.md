@@ -37,12 +37,15 @@ Bundled together with the library:
 
 To ensure that we can push out updates, improvements and bugfixes to the library, you should load the library through our CDN. It's hosted on Amazon Cloudfront so it's snappy enough for production.
 
-The simplest and most universally compatible usage is with autoload:
+See `/examples` for implementation examples or use the following:
+
+**Autoload**  
+The simplest and most universally compatible usage is with autoload. This will defer the loading of the library until the whole body has loaded and then look for `window.timekitBookingConfig` - if found, the library is loaded automatically.
 
 ```html
 <div id="bookingjs">
-  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-  <script type="text/javascript" src="http://cdn.timekit.io/bookingjs/v1/booking.min.js" defer></script>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <script type="text/javascript" src="http://cdn.timekit.io/booking-js/v1/booking.min.js" defer></script>
   <script type="text/javascript">
     window.timekitBookingConfig = {
       email:    'marty.mcfly@timekit.io',
@@ -55,11 +58,13 @@ The simplest and most universally compatible usage is with autoload:
 </div>
 ```
 
-If you intent to run multiple instances or want more control:
+**Instantiation**  
+If you intent to run multiple instances or want more control, just create a new instance. This is ideal for usage in SPAs like Angular.js, where you'd like a `<div id="bookingjs">` in your template and JS in your controller or directive code.
+
 ```html
 <div id="bookingjs">
-  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-  <script type="text/javascript" src="http://cdn.timekit.io/bookingjs/v1/booking.min.js"></script>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <script type="text/javascript" src="http://cdn.timekit.io/booking-js/v1/booking.min.js"></script>
   <script type="text/javascript">
     var widget = new TimekitBooking();
     widget.init({
@@ -71,12 +76,10 @@ If you intent to run multiple instances or want more control:
 </div>
 ```
 
-See `/examples` for more implementation examples.
+**Serve over HTTPS**
 
-**Served over HTTPS**
-
-Use the following URI if you want the library served with SSL:
-`https://dbhpllgef527b.cloudfront.net/booking-js/v1/booking.min.js`  
+Use the following URI to the library if you want it served with SSL:  
+`https://dbhpllgef527b.cloudfront.net/booking-js/v1/booking.min.js`
 
 (see [this issue](https://github.com/timekit-io/booking-js/issues/19) for more info)
 
@@ -84,9 +87,10 @@ Use the following URI if you want the library served with SSL:
 
 The widget connects to the Timekit API behind the scenes and requires a Timekit account.
 
-You can either connect with a Google account (recommended) or create a plain account (you'd have to enter availability and pull out events through the API). Visit the [setup wizard here](http://booking.timekit.io/setup).
+You can either connect with a Google account (recommended) or create a plain account (you'd have to enter availability and pull out events through the API).  
+Visit the [setup wizard here](http://booking.timekit.io/setup).
 
-The `apiToken` setting is the key part here. When you specify domain and generate credentials in the [setup wizard](http://booking.timekit.io/setup), you get a special client-token with limited access. It's only capable of hitting certain endpoints so your account stays secure when using the widget in a public browser environment.
+The `email` and `apiToken` setting is the key part here. When you specify domain and generate credentials in the [setup wizard](http://booking.timekit.io/setup), you get a special client-token with limited access. It's only capable of hitting certain endpoints so your account stays secure when using the widget in a public browser environment.
 
 ## Configuration
 

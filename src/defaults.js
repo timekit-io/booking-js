@@ -59,7 +59,8 @@ var primary = {
   },
   timekitCreateEvent: {
     invite: true,
-    my_rsvp: 'needsAction'
+    my_rsvp: 'needsAction',
+    sync_provider: true
   },
   fullCalendar: {
     header: {

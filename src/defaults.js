@@ -83,7 +83,8 @@ var primary = {
     showTimezoneHelper: true,
     timeDateFormat: '12h-mdy-sun'
   },
-  callbacks: {}
+  callbacks: {},
+  hooks: {}
 
 };
 

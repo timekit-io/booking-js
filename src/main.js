@@ -285,6 +285,11 @@ function TimekitBooking() {
 
     utils.doCallback('showBookingPage', config, eventData);
 
+    if (utils.haveHook('showBookingPage', config)) {
+      utils.doHook('showBookingPage', config, eventData);
+      return;
+    }
+
     var fieldsTemplate = require('./templates/booking-fields.html');
     var template = require('./templates/booking-page.html');
 
@@ -343,6 +348,11 @@ function TimekitBooking() {
 
     utils.doCallback('closeBookingPage', config);
 
+    if (utils.haveHook('closeBookingPage', config)) {
+      utils.doHook('closeBookingPage', config);
+      return;
+    }
+
     bookingPageTarget.removeClass('show');
 
     setTimeout(function(){
@@ -361,7 +371,7 @@ function TimekitBooking() {
     var formElement = $(form);
 
     // Abort if form is submitting, have submitted or does not validate
-    if(formElement.hasClass('loading') || formElement.hasClass('success') || formElement.hasClass('error') || !e.target.checkValidity()) {
+    if(formElement.hasClass('loading') || formElement.hasClass('error') || !e.target.checkValidity()) {
       var submitButton = formElement.find('.bookingjs-form-button');
       submitButton.addClass('button-shake');
       setTimeout(function() {
@@ -375,9 +385,21 @@ function TimekitBooking() {
         values[field.name] = field.value;
     });
 
-    formElement.addClass('loading');
-
     utils.doCallback('submitBookingForm', config, values);
+
+    // Close the booking page is clicking the submit button after successful submission
+    if(formElement.hasClass('success')) {
+      if (utils.haveHook('clickCompletedBookingForm', config)) { utils.doHook('clickCompletedBookingForm', config, values); }
+      else { hideBookingPage(); }
+      return;
+    }
+
+    if (utils.haveHook('submitBookingForm', config)) {
+      utils.doHook('submitBookingForm', config, values);
+      return;
+    }
+
+    formElement.addClass('loading');
 
     // Call create event endpoint
     timekitCreateEvent(values).then(function(response){

@@ -17,6 +17,7 @@ $textLightColor:    #AEAEAE;
 $primaryColor:      #689AD8;
 $primaryDarkColor:  darken($primaryColor, 10%);
 $errorColor:        #D83B46;
+$successColor:      #5BAF56;
 $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
 
 // Classes
@@ -347,11 +348,13 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
       .error-text { opacity: 1; }
     }
 
-    &.success &-button,
-    &.success &-button:hover {
+    &.success &-button {
       max-width: 80px;
-      background-color: #5BAF56;
-      cursor: not-allowed;
+      background-color: $successColor;
+
+      &:hover {
+        background-color: darken($successColor, 7%);
+      }
 
       .inactive-text { opacity: 0; }
       .success-text { opacity: 1; }

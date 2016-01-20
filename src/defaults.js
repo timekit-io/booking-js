@@ -16,6 +16,7 @@ var primary = {
   includeStyles: true,
   showCredits: true,
   goToFirstEvent: true,
+  bookingMode: 'instant',
   bookingFields: {
     name: {
       placeholder: 'Your full name',
@@ -57,10 +58,8 @@ var primary = {
     future: '4 weeks',
     length: '1 hour'
   },
-  timekitCreateEvent: {
-    invite: true,
-    my_rsvp: 'needsAction'
-  },
+  timekitCreateBooking: { },
+  timekitUpdateBooking: { },
   fullCalendar: {
     header: {
       left: '',
@@ -83,6 +82,37 @@ var primary = {
     timeDateFormat: '12h-mdy-sun'
   },
   callbacks: {}
+
+};
+
+// Preset: bookingMode = 'instant'
+var bookingInstant = {
+
+  timekitUpdateBooking: {
+    action: 'confirm',
+    event: {
+      invite: true,
+      my_rsvp: 'accepted'
+    },
+    actions: {
+      notify_customer_by_email: {
+        enabled: false
+      }
+    }
+  }
+
+};
+
+// Preset: bookingMode = 'actionable'
+var bookingActionable = {
+
+  timekitUpdateBooking: {
+    action: 'create',
+    event: {
+      invite: false,
+      my_rsvp: 'needsAction'
+    }
+  }
 
 };
 
@@ -137,6 +167,8 @@ module.exports = {
   primary: primary,
   presets: {
     timeDateFormat24hdmymon:  timeDateFormat24hdmymon,
-    timeDateFormat12hmdysun:  timeDateFormat12hmdysun
+    timeDateFormat12hmdysun:  timeDateFormat12hmdysun,
+    bookingInstant: bookingInstant,
+    bookingActionable: bookingActionable
   }
 };

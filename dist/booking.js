@@ -55,7 +55,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	/*!
 	 * Booking.js
 	 * Version: 1.5.1
@@ -65,28 +65,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Timekit Booking.js is freely distributable under the MIT license.
 	 *
 	 */
-	
+
 	// External depenencies
 	var $               = __webpack_require__(1);
 	window.fullcalendar = __webpack_require__(2);
 	var moment          = window.moment = __webpack_require__(3);
 	var timekit         = __webpack_require__(7);
-	
+
 	// Internal dependencies
 	var utils         = __webpack_require__(29);
 	var defaultConfig = __webpack_require__(30);
-	
+
 	// Main library
 	function TimekitBooking() {
-	
+
 	  // Library config
 	  var config = {};
-	
+
 	  // DOM nodes
 	  var rootTarget;
 	  var calendarTarget;
 	  var bookingPageTarget;
-	
+
 	  // Inject style dependencies
 	  var includeStyles = function() {
 	    __webpack_require__(31);
@@ -94,43 +94,43 @@ return /******/ (function(modules) { // webpackBootstrap
 	    __webpack_require__(37);
 	    __webpack_require__(39);
 	  };
-	
+
 	  // Make sure DOM element is ready and clean it
 	  var prepareDOM = function() {
-	
+
 	    rootTarget = $(config.targetEl);
 	    if (rootTarget.length === 0) {
 	      throw new Error('TimekitBooking - No target DOM element was found (' + config.targetEl + ')');
 	    }
 	    rootTarget.addClass('bookingjs');
 	    rootTarget.children(':not(script)').remove();
-	
+
 	  };
-	
+
 	  // Setup the Timekit SDK with correct credentials
 	  var timekitSetup = function() {
-	
+
 	    var args = {};
 	    $.extend(true, args, config.timekitConfig);
-	
+
 	    timekit.configure(args);
 	    timekit.setUser(config.email, config.apiToken);
-	
+
 	  };
-	
+
 	  // Fetch availabile time through Timekit SDK
 	  var timekitFindTime = function() {
-	
+
 	    var args = { emails: [config.email] };
 	    $.extend(args, config.timekitFindTime);
-	
+
 	    utils.doCallback('findTimeStarted', config, args);
-	
+
 	    timekit.findTime(args)
 	    .then(function(response){
-	
+
 	      utils.doCallback('findTimeSuccessful', config, response);
-	
+
 	      // Go to first event if enabled
 	      if(config.goToFirstEvent && response.data.length > 0) {
 	        var firstEventStart = response.data[0].start;
@@ -138,94 +138,94 @@ return /******/ (function(modules) { // webpackBootstrap
 	        goToDate(firstEventStart);
 	        scrollToTime(firstEventStartHour);
 	      }
-	
+
 	      // Render available timeslots in FullCalendar
 	      renderCalendarEvents(response.data);
-	
+
 	    }).catch(function(response){
 	      utils.doCallback('findTimeFailed', config, response);
 	      throw new Error('TimekitBooking - An error with Timekit FindTime occured, context: ' + response);
 	    });
-	
+
 	  };
-	
+
 	  // Tells FullCalendar to go to a specifc date
 	  var goToDate = function(date) {
-	
+
 	    calendarTarget.fullCalendar('gotoDate', date);
-	
+
 	  };
-	
+
 	  // Scrolls fullcalendar to the specified hour
 	  var scrollToTime = function(time) {
-	
+
 	    // Only proceed for agendaWeek view
 	    if (calendarTarget.fullCalendar('getView').name !== 'agendaWeek'){
 	      return;
 	    }
-	
+
 	    // Get height of each hour row
 	    var hours = calendarTarget.find('.fc-slats .fc-minor');
 	    var hourHeight = $(hours[0]).height() * 2;
-	
+
 	    // If minTime is set in fullCalendar config, subtract that from the scollTo calculationn
 	    var minTimeHeight = 0;
 	    if (config.fullCalendar.minTime) {
 	      var minTime = moment(config.fullCalendar.minTime, 'HH:mm:ss').format('H');
 	      minTimeHeight = hourHeight * minTime;
 	    }
-	
+
 	    // Calculate scrolling location and container sizes
 	    var scrollTo = (hourHeight * time) - minTimeHeight;
 	    var scrollable = calendarTarget.find('.fc-scroller');
 	    var scrollableHeight = scrollable.height();
 	    var scrollableScrollTop = scrollable.scrollTop();
 	    var maximumHeight = scrollable.find('.fc-time-grid').height();
-	
+
 	    // Only perform the scroll if the scrollTo is outside the current visible boundary
 	    if (scrollTo > scrollableScrollTop && scrollTo < scrollableScrollTop + scrollableHeight) {
 	      return;
 	    }
-	
+
 	    // If scrollTo point is past the maximum height, then scroll to maximum possible while still animating
 	    if (scrollTo > maximumHeight - scrollableHeight) {
 	      scrollTo = maximumHeight - scrollableHeight;
 	    }
-	
+
 	    // Perform the scrollTo animation
 	    scrollable.animate({scrollTop: scrollTo});
-	
+
 	  };
-	
+
 	  // Calculate and display timezone helper
 	  var renderTimezoneHelper = function() {
-	
+
 	    var localTzOffset = (new Date()).getTimezoneOffset()/60*-1;
 	    var timezoneIcon = __webpack_require__(41);
-	
+
 	    var template = __webpack_require__(42);
-	
+
 	    var timezoneHelperTarget = $(template.render({
 	      timezoneIcon: timezoneIcon,
 	      loading: true
 	    }));
-	
+
 	    rootTarget.addClass('has-timezonehelper');
 	    rootTarget.append(timezoneHelperTarget);
-	
+
 	    var args = {
 	      email: config.email
 	    };
-	
+
 	    utils.doCallback('getUserTimezoneStarted', config, args);
-	
+
 	    timekit.getUserTimezone(args).then(function(response){
-	
+
 	      utils.doCallback('getUserTimezoneSuccesful', config, response);
-	
+
 	      var hostTzOffset = response.data.utc_offset;
 	      var tzOffsetDiff = Math.abs(localTzOffset - hostTzOffset);
-	
+
 	      var template = __webpack_require__(42);
 	      var newTimezoneHelperTarget = $(template.render({
 	        timezoneIcon: timezoneIcon,
@@ -234,21 +234,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	        timezoneDirection: (tzOffsetDiff > 0 ? 'ahead' : 'behind'),
 	        hostName: config.name
 	      }));
-	
+
 	      timezoneHelperTarget.replaceWith(newTimezoneHelperTarget);
-	
+
 	    }).catch(function(response){
 	      utils.doCallback('getUserTimezoneFailed', config, response);
 	      throw new Error('TimekitBooking - An error with Timekit getUserTimezone occured, context: ' + response);
 	    });
-	
+
 	  };
-	
+
 	  // Setup and render FullCalendar
 	  var initializeCalendar = function() {
-	
+
 	    var sizing = decideCalendarSize();
-	
+
 	    var args = {
 	      defaultView: sizing.view,
 	      height: sizing.height,
@@ -259,26 +259,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	        calendarTarget.fullCalendar('option', 'height', sizing.height);
 	      }
 	    };
-	
+
 	    $.extend(true, args, config.fullCalendar);
-	
+
 	    calendarTarget = $('<div class="bookingjs-calendar empty-calendar">');
 	    rootTarget.append(calendarTarget);
-	
+
 	    calendarTarget.fullCalendar(args);
 	    rootTarget.addClass('show');
-	
+
 	    utils.doCallback('fullCalendarInitialized', config);
-	
+
 	  };
-	
+
 	  // Fires when window is resized and calendar must adhere
 	  var decideCalendarSize = function() {
-	
+
 	    var view = 'agendaWeek';
 	    var height = 420;
 	    var rootWidth = rootTarget.width();
-	
+
 	    if (rootWidth < 480) {
 	      view = 'basicDay';
 	      height = 335;
@@ -286,67 +286,67 @@ return /******/ (function(modules) { // webpackBootstrap
 	    } else {
 	      rootTarget.removeClass('is-small');
 	    }
-	
+
 	    if (config.bookingFields.comment.enabled) {  height += 84; }
 	    if (config.bookingFields.phone.enabled) {    height += 48; }
 	    if (config.bookingFields.voip.enabled) {     height += 48; }
 	    if (config.bookingFields.location.enabled) { height += 48; }
-	
+
 	    return {
 	      height: height,
 	      view: view
 	    };
-	
+
 	  };
-	
+
 	  // Render the supplied calendar events in FullCalendar
 	  var renderCalendarEvents = function(eventData) {
-	
+
 	    calendarTarget.fullCalendar('addEventSource', {
 	      events: eventData
 	    });
-	
+
 	    calendarTarget.removeClass('empty-calendar');
-	
+
 	  };
-	
+
 	  // Render the avatar image
 	  var renderAvatarImage = function() {
-	
+
 	    var template = __webpack_require__(46);
 	    var avatarTarget = $(template.render({
 	      image: config.avatar
 	    }));
-	
+
 	    rootTarget.addClass('has-avatar');
 	    rootTarget.append(avatarTarget);
-	
+
 	  };
-	
+
 	  // Render the avatar image
 	  var renderDisplayName = function() {
-	
+
 	    var template = __webpack_require__(47);
 	    var displayNameTarget = $(template.render({
 	      name: config.name
 	    }));
-	
+
 	    rootTarget.addClass('has-displayname');
 	    rootTarget.append(displayNameTarget);
-	
+
 	  };
-	
+
 	  // Event handler when a timeslot is clicked in FullCalendar
 	  var showBookingPage = function(eventData) {
-	
+
 	    utils.doCallback('showBookingPage', config, eventData);
-	
+
 	    var fieldsTemplate = __webpack_require__(48);
 	    var template = __webpack_require__(49);
-	
+
 	    var dateFormat = config.localization.bookingDateFormat || moment.localeData().longDateFormat('LL');
 	    var timeFormat = config.localization.bookingTimeFormat || moment.localeData().longDateFormat('LT');
-	
+
 	    bookingPageTarget = $(template.render({
 	      chosenDate:           moment(eventData.start).format(dateFormat),
 	      chosenTime:           moment(eventData.start).format(timeFormat) + ' - ' + moment(eventData.end).format(timeFormat),
@@ -364,58 +364,58 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	      formFields: fieldsTemplate
 	    }));
-	
+
 	    bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
 	      e.preventDefault();
 	      hideBookingPage();
 	    });
-	
+
 	    var form = bookingPageTarget.children('.bookingjs-form');
-	
+
 	    form.submit(function(e) {
 	      submitBookingForm(this, e);
 	    });
-	
+
 	    // Show powered by Timekit message
 	    if (config.showCredits) {
 	      renderPoweredByMessage(bookingPageTarget);
 	    }
-	
+
 	    $(document).on('keyup', function(e) {
 	      // escape key maps to keycode `27`
 	      if (e.keyCode === 27) { hideBookingPage(); }
 	    });
-	
+
 	    rootTarget.append(bookingPageTarget);
-	
+
 	    setTimeout(function(){
 	      bookingPageTarget.addClass('show');
 	    }, 100);
-	
+
 	  };
-	
+
 	  // Remove the booking page DOM node
 	  var hideBookingPage = function() {
-	
+
 	    utils.doCallback('closeBookingPage', config);
-	
+
 	    bookingPageTarget.removeClass('show');
-	
+
 	    setTimeout(function(){
 	      bookingPageTarget.remove();
 	    }, 200);
-	
+
 	    $(document).off('keyup');
-	
+
 	  };
-	
+
 	  // Event handler on form submit
 	  var submitBookingForm = function(form, e) {
-	
+
 	    e.preventDefault();
-	
+
 	    var formElement = $(form);
-	
+
 	    // Abort if form is submitting, have submitted or does not validate
 	    if(formElement.hasClass('loading') || formElement.hasClass('success') || formElement.hasClass('error') || !e.target.checkValidity()) {
 	      var submitButton = formElement.find('.bookingjs-form-button');
@@ -425,47 +425,47 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }, 500);
 	      return;
 	    }
-	
+
 	    var values = {};
 	    $.each(formElement.serializeArray(), function(i, field) {
 	        values[field.name] = field.value;
 	    });
-	
+
 	    formElement.addClass('loading');
-	
+
 	    utils.doCallback('submitBookingForm', config, values);
-	
+
 	    // Call create event endpoint
-	    timekitCreateEvent(values).then(function(response){
-	
+	    timekitCreateBooking(values).then(function(response){
+
 	      utils.doCallback('createEventSuccessful', config, response);
-	
+
 	      formElement.find('.booked-email').html(values.email);
 	      formElement.removeClass('loading').addClass('success');
-	
+
 	    }).catch(function(response){
-	
+
 	      utils.doCallback('createEventFailed', config, response);
-	
+
 	      var submitButton = formElement.find('.bookingjs-form-button');
 	      submitButton.addClass('button-shake');
 	      setTimeout(function() {
 	        submitButton.removeClass('button-shake');
 	      }, 500);
-	
+
 	      formElement.removeClass('loading').addClass('error');
 	      setTimeout(function() {
 	        formElement.removeClass('error');
 	      }, 2000);
-	
+
 	      throw new Error('TimekitBooking - An error with Timekit createEvent occured, context: ' + response);
 	    });
-	
+
 	  };
-	
+
 	  // Create new event through Timekit SDK
 	  var timekitCreateEvent = function(data) {
-	
+
 	    var args = {
 	      start: data.start,
 	      end: data.end,
@@ -475,36 +475,90 @@ return /******/ (function(modules) { // webpackBootstrap
 	      calendar_id: config.calendar,
 	      participants: [config.email, data.email]
 	    };
-	
+
 	    if (config.bookingFields.location.enabled) { args.where = data.location; }
 	    if (config.bookingFields.phone.enabled) {    args.description += config.bookingFields.phone.placeholder + ': ' + data.phone + '\n'; }
 	    if (config.bookingFields.voip.enabled) {     args.description += config.bookingFields.voip.placeholder + ': ' + data.voip + '\n'; }
 	    if (config.bookingFields.comment.enabled) {  args.description += config.bookingFields.comment.placeholder + ': ' + data.comment + '\n'; }
-	
+
 	    $.extend(true, args, config.timekitCreateEvent);
-	
+
 	    utils.doCallback('createEventStarted', config, args);
-	
+
 	    return timekit.createEvent(args);
-	
+
 	  };
-	
+
+	  // Create new booking
+	  var timekitCreateBooking = function(data) {
+
+	    var args = {
+	      graph: config.bookingMode
+	    }
+
+	    $.extend(true, args, config.timekitCreateBooking);
+
+	    utils.doCallback('createBookingStarted', config, args);
+
+	    return timekit.createBooking(args)
+	    .then(function(result) {
+	      console.log('finished create')
+	      return timekitUpdateBooking(result.data.id, data);
+	    });
+
+	  };
+
+	  // Update the booking
+	  var timekitUpdateBooking = function(id, data) {
+
+	    console.log('calling update')
+
+	    var args = {
+	      id: id,
+	      event: {
+	        start: data.start,
+	        //end: data.end,
+	        what: config.name + ' x ' + data.name,
+	        where: 'TBD',
+	        description: '',
+	        calendar_id: config.calendar,
+	        participants: [config.email, data.email]
+	      },
+	      customer: {
+	        name: data.name,
+	        email: data.email
+	      }
+	    };
+
+	    if (config.bookingFields.location.enabled) { args.event.where = data.location; }
+	    if (config.bookingFields.comment.enabled) {  args.event.description = data.comment; }
+	    if (config.bookingFields.phone.enabled) {    args.customer.phone = data.phone; }
+	    if (config.bookingFields.voip.enabled) {     args.customer.voip = data.voip; }
+
+	    $.extend(true, args, config.timekitUpdateBooking);
+
+	    utils.doCallback('updateBookingStarted', config, args);
+
+	    return timekit.updateBooking(args);
+
+	  };
+
 	  // Render the powered by Timekit message
 	  var renderPoweredByMessage = function(pageTarget) {
-	
+
 	    var template = __webpack_require__(54);
 	    var timekitIcon = __webpack_require__(55);
 	    var poweredTarget = $(template.render({
 	      timekitIcon: timekitIcon
 	    }));
-	
+
 	    pageTarget.append(poweredTarget);
-	
+
 	  };
-	
+
 	  // Set configs and defaults
 	  var setConfig = function(suppliedConfig) {
-	
+
 	    // Check whether a config is supplied
 	    if(suppliedConfig === undefined || typeof suppliedConfig !== 'object' || $.isEmptyObject(suppliedConfig)) {
 	      if (window.timekitBookingConfig !== undefined) {
@@ -513,10 +567,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        throw new Error('TimekitBooking - No configuration was supplied or found. Please supply a config object upon library initialization');
 	      }
 	    }
-	
+
 	    // Extend the default config with supplied settings
 	    var newConfig = $.extend(true, {}, defaultConfig.primary, suppliedConfig);
-	
+
 	    // Apply any presets if applicable (supplied config have presedence over preset)
 	    var presetsConfig = {};
 	    if(newConfig.localization.timeDateFormat === '24h-dmy-mon') {
@@ -525,96 +579,102 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if(newConfig.localization.timeDateFormat === '12h-mdy-sun') {
 	      presetsConfig = defaultConfig.presets.timeDateFormat12hmdysun;
 	    }
-	
+	    if(newConfig.bookingMode === 'instabook') {
+	      presetsConfig = defaultConfig.presets.bookingInstant;
+	    }
+	    if(newConfig.bookingMode === 'actionable') {
+	      presetsConfig = defaultConfig.presets.bookingActionable;
+	    }
+
 	    // Extend the config with the presets
 	    var finalConfig = $.extend(true, {}, presetsConfig, newConfig);
-	
+
 	    // Check for required settings
 	    if(!finalConfig.email || !finalConfig.apiToken || !finalConfig.calendar) {
 	      throw new Error('TimekitBooking - A required config setting was missing ("email", "apiToken" or "calendar")');
 	    }
-	
+
 	    // Set new config to instance config
 	    config = finalConfig;
-	
+
 	    return config;
-	
+
 	  };
-	
+
 	  // Get library config
 	  var getConfig = function() {
-	
+
 	    return config;
-	
+
 	  };
-	
+
 	  // Render method
 	  var render = function() {
-	
+
 	    // Set rootTarget to the target element and clean before child nodes before continuing
 	    prepareDOM();
-	
+
 	    // Setup Timekit SDK config
 	    timekitSetup();
-	
+
 	    // Initialize FullCalendar
 	    initializeCalendar();
-	
+
 	    // Get availability through Timekit SDK
 	    timekitFindTime();
-	
+
 	    // Show timezone helper if enabled
 	    if (config.localization.showTimezoneHelper) {
 	      renderTimezoneHelper();
 	    }
-	
+
 	    // Show image avatar if set
 	    if (config.avatar) {
 	      renderAvatarImage();
 	    }
-	
+
 	    // Print out display name
 	    if (config.name) {
 	      renderDisplayName();
 	    }
-	
+
 	    utils.doCallback('renderCompleted', config);
-	
+
 	    return this;
-	
+
 	  };
-	
+
 	  // Initilization method
 	  var init = function(suppliedConfig) {
-	
+
 	    // Handle config and defaults
 	    setConfig(suppliedConfig);
-	
+
 	    // Include library styles if enabled
 	    if (config.includeStyles) {
 	      includeStyles();
 	    }
-	
+
 	    return render();
-	
+
 	  };
-	
+
 	  var destroy = function() {
-	
+
 	    prepareDOM();
 	    config = {};
 	    return this;
-	
+
 	  };
-	
+
 	  // The fullCalendar object for advanced puppeting
 	  var fullCalendar = function() {
-	
+
 	    if (calendarTarget.fullCalendar === undefined) { return undefined; }
 	    return calendarTarget.fullCalendar.apply(calendarTarget, arguments);
-	
+
 	  };
-	
+
 	  // Expose methods
 	  return {
 	    setConfig: setConfig,
@@ -624,9 +684,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    destroy:   destroy,
 	    fullCalendar: fullCalendar
 	  };
-	
+
 	}
-	
+
 	// Autoload if config is available on window, else export function
 	if (window && window.timekitBookingConfig && window.timekitBookingConfig.autoload !== false) {
 	  $(window).load(function(){
@@ -654,7 +714,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Docs & License: http://fullcalendar.io/
 	 * (c) 2015 Adam Shaw
 	 */
-	
+
 	(function(factory) {
 		if (true) {
 			!(__WEBPACK_AMD_DEFINE_ARRAY__ = [ __webpack_require__(1), __webpack_require__(3) ], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -666,22 +726,22 @@ return /******/ (function(modules) { // webpackBootstrap
 			factory(jQuery, moment);
 		}
 	})(function($, moment) {
-	
+
 	;;
-	
+
 	var fc = $.fullCalendar = { version: "2.4.0" };
 	var fcViews = fc.views = {};
-	
-	
+
+
 	$.fn.fullCalendar = function(options) {
 		var args = Array.prototype.slice.call(arguments, 1); // for a possible method call
 		var res = this; // what this function will return (this jQuery object by default)
-	
+
 		this.each(function(i, _element) { // loop each DOM element involved
 			var element = $(_element);
 			var calendar = element.data('fullCalendar'); // get the existing calendar object (if any)
 			var singleRes; // the returned value of this single method call
-	
+
 			// a method call
 			if (typeof options === 'string') {
 				if (calendar && $.isFunction(calendar[options])) {
@@ -701,35 +761,35 @@ return /******/ (function(modules) { // webpackBootstrap
 				calendar.render();
 			}
 		});
-		
+
 		return res;
 	};
-	
-	
+
+
 	var complexOptions = [ // names of options that are objects whose properties should be combined
 		'header',
 		'buttonText',
 		'buttonIcons',
 		'themeButtonIcons'
 	];
-	
-	
+
+
 	// Merges an array of option objects into a single object
 	function mergeOptions(optionObjs) {
 		return mergeProps(optionObjs, complexOptions);
 	}
-	
-	
+
+
 	// Given options specified for the calendar's constructor, massages any legacy options into a non-legacy form.
 	// Converts View-Option-Hashes into the View-Specific-Options format.
 	function massageOverrides(input) {
 		var overrides = { views: input.views || {} }; // the output. ensure a `views` hash
 		var subObj;
-	
+
 		// iterate through all option override properties (except `views`)
 		$.each(input, function(name, val) {
 			if (name != 'views') {
-	
+
 				// could the value be a legacy View-Option-Hash?
 				if (
 					$.isPlainObject(val) &&
@@ -737,10 +797,10 @@ return /******/ (function(modules) { // webpackBootstrap
 					$.inArray(name, complexOptions) == -1 // complex options aren't allowed to be View-Option-Hashes
 				) {
 					subObj = null;
-	
+
 					// iterate through the properties of this possible View-Option-Hash value
 					$.each(val, function(subName, subVal) {
-	
+
 						// is the property targeting a view?
 						if (/^(month|week|day|default|basic(Week|Day)?|agenda(Week|Day)?)$/.test(subName)) {
 							if (!overrides.views[subName]) { // ensure the view-target entry exists
@@ -755,7 +815,7 @@ return /******/ (function(modules) { // webpackBootstrap
 							subObj[subName] = subVal; // accumulate these unrelated values for later
 						}
 					});
-	
+
 					if (subObj) { // non-View-Option-Hash properties? transfer them as-is
 						overrides[name] = subObj;
 					}
@@ -765,12 +825,12 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 			}
 		});
-	
+
 		return overrides;
 	}
-	
+
 	;;
-	
+
 	// exports
 	fc.intersectionToSeg = intersectionToSeg;
 	fc.applyAll = applyAll;
@@ -780,12 +840,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	fc.cssToStr = cssToStr;
 	fc.proxy = proxy;
 	fc.capitaliseFirstLetter = capitaliseFirstLetter;
-	
-	
+
+
 	/* FullCalendar-specific DOM Utilities
 	----------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 	// Given the scrollbar widths of some other container, create borders/margins on rowEls in order to match the left
 	// and right space that was offset by the scrollbars. A 1-pixel border first, then margin beyond that.
 	function compensateScroll(rowEls, scrollbarWidths) {
@@ -802,8 +862,8 @@ return /******/ (function(modules) { // webpackBootstrap
 			});
 		}
 	}
-	
-	
+
+
 	// Undoes compensateScroll and restores all borders/margins
 	function uncompensateScroll(rowEls) {
 		rowEls.css({
@@ -813,44 +873,44 @@ return /******/ (function(modules) { // webpackBootstrap
 			'border-right-width': ''
 		});
 	}
-	
-	
+
+
 	// Make the mouse cursor express that an event is not allowed in the current area
 	function disableCursor() {
 		$('body').addClass('fc-not-allowed');
 	}
-	
-	
+
+
 	// Returns the mouse cursor to its original look
 	function enableCursor() {
 		$('body').removeClass('fc-not-allowed');
 	}
-	
-	
+
+
 	// Given a total available height to fill, have `els` (essentially child rows) expand to accomodate.
 	// By default, all elements that are shorter than the recommended height are expanded uniformly, not considering
-	// any other els that are already too tall. if `shouldRedistribute` is on, it considers these tall rows and 
+	// any other els that are already too tall. if `shouldRedistribute` is on, it considers these tall rows and
 	// reduces the available height.
 	function distributeHeight(els, availableHeight, shouldRedistribute) {
-	
+
 		// *FLOORING NOTE*: we floor in certain places because zoom can give inaccurate floating-point dimensions,
 		// and it is better to be shorter than taller, to avoid creating unnecessary scrollbars.
-	
+
 		var minOffset1 = Math.floor(availableHeight / els.length); // for non-last element
 		var minOffset2 = Math.floor(availableHeight - minOffset1 * (els.length - 1)); // for last element *FLOORING NOTE*
 		var flexEls = []; // elements that are allowed to expand. array of DOM nodes
 		var flexOffsets = []; // amount of vertical space it takes up
 		var flexHeights = []; // actual css height
 		var usedHeight = 0;
-	
+
 		undistributeHeight(els); // give all elements their natural height
-	
+
 		// find elements that are below the recommended height (expandable).
 		// important to query for heights in a single first pass (to avoid reflow oscillation).
 		els.each(function(i, el) {
 			var minOffset = i === els.length - 1 ? minOffset2 : minOffset1;
 			var naturalOffset = $(el).outerHeight(true);
-	
+
 			if (naturalOffset < minOffset) {
 				flexEls.push(el);
 				flexOffsets.push(naturalOffset);
@@ -861,85 +921,85 @@ return /******/ (function(modules) { // webpackBootstrap
 				usedHeight += naturalOffset;
 			}
 		});
-	
+
 		// readjust the recommended height to only consider the height available to non-maxed-out rows.
 		if (shouldRedistribute) {
 			availableHeight -= usedHeight;
 			minOffset1 = Math.floor(availableHeight / flexEls.length);
 			minOffset2 = Math.floor(availableHeight - minOffset1 * (flexEls.length - 1)); // *FLOORING NOTE*
 		}
-	
+
 		// assign heights to all expandable elements
 		$(flexEls).each(function(i, el) {
 			var minOffset = i === flexEls.length - 1 ? minOffset2 : minOffset1;
 			var naturalOffset = flexOffsets[i];
 			var naturalHeight = flexHeights[i];
 			var newHeight = minOffset - (naturalOffset - naturalHeight); // subtract the margin/padding
-	
+
 			if (naturalOffset < minOffset) { // we check this again because redistribution might have changed things
 				$(el).height(newHeight);
 			}
 		});
 	}
-	
-	
+
+
 	// Undoes distrubuteHeight, restoring all els to their natural height
 	function undistributeHeight(els) {
 		els.height('');
 	}
-	
-	
+
+
 	// Given `els`, a jQuery set of <td> cells, find the cell with the largest natural width and set the widths of all the
 	// cells to be that width.
 	// PREREQUISITE: if you want a cell to take up width, it needs to have a single inner element w/ display:inline
 	function matchCellWidths(els) {
 		var maxInnerWidth = 0;
-	
+
 		els.find('> *').each(function(i, innerEl) {
 			var innerWidth = $(innerEl).outerWidth();
 			if (innerWidth > maxInnerWidth) {
 				maxInnerWidth = innerWidth;
 			}
 		});
-	
+
 		maxInnerWidth++; // sometimes not accurate of width the text needs to stay on one line. insurance
-	
+
 		els.width(maxInnerWidth);
-	
+
 		return maxInnerWidth;
 	}
-	
-	
+
+
 	// Turns a container element into a scroller if its contents is taller than the allotted height.
 	// Returns true if the element is now a scroller, false otherwise.
 	// NOTE: this method is best because it takes weird zooming dimensions into account
 	function setPotentialScroller(containerEl, height) {
 		containerEl.height(height).addClass('fc-scroller');
-	
+
 		// are scrollbars needed?
 		if (containerEl[0].scrollHeight - 1 > containerEl[0].clientHeight) { // !!! -1 because IE is often off-by-one :(
 			return true;
 		}
-	
+
 		unsetScroller(containerEl); // undo
 		return false;
 	}
-	
-	
+
+
 	// Takes an element that might have been a scroller, and turns it back into a normal element.
 	function unsetScroller(containerEl) {
 		containerEl.height('').removeClass('fc-scroller');
 	}
-	
-	
+
+
 	/* General DOM Utilities
 	----------------------------------------------------------------------------------------------------------------------*/
-	
+
 	fc.getClientRect = getClientRect;
 	fc.getContentRect = getContentRect;
 	fc.getScrollbarWidths = getScrollbarWidths;
-	
-	
+
+
 	// borrowed from https://github.com/jquery/jquery-ui/blob/1.11.0/ui/core.js#L51
 	function getScrollParent(el) {
 		var position = el.css('position'),
@@ -949,16 +1009,16 @@ return /******/ (function(modules) { // webpackBootstrap
 					parent.css('overflow') + parent.css('overflow-y') + parent.css('overflow-x')
 				);
 			}).eq(0);
-	
+
 		return position === 'fixed' || !scrollParent.length ? $(el[0].ownerDocument || document) : scrollParent;
 	}
-	
-	
+
+
 	// Queries the outer bounding area of a jQuery element.
 	// Returns a rectangle with absolute coordinates: left, right (exclusive), top, bottom (exclusive).
 	function getOuterRect(el) {
 		var offset = el.offset();
-	
+
 		return {
 			left: offset.left,
 			right: offset.left + el.outerWidth(),
@@ -966,8 +1026,8 @@ return /******/ (function(modules) { // webpackBootstrap
 			bottom: offset.top + el.outerHeight()
 		};
 	}
-	
-	
+
+
 	// Queries the area within the margin/border/scrollbars of a jQuery element. Does not go within the padding.
 	// Returns a rectangle with absolute coordinates: left, right (exclusive), top, bottom (exclusive).
 	// NOTE: should use clientLeft/clientTop, but very unreliable cross-browser.
@@ -976,7 +1036,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		var scrollbarWidths = getScrollbarWidths(el);
 		var left = offset.left + getCssFloat(el, 'border-left-width') + scrollbarWidths.left;
 		var top = offset.top + getCssFloat(el, 'border-top-width') + scrollbarWidths.top;
-	
+
 		return {
 			left: left,
 			right: left + el[0].clientWidth, // clientWidth includes padding but NOT scrollbars
@@ -984,15 +1044,15 @@ return /******/ (function(modules) { // webpackBootstrap
 			bottom: top + el[0].clientHeight // clientHeight includes padding but NOT scrollbars
 		};
 	}
-	
-	
+
+
 	// Queries the area within the margin/border/padding of a jQuery element. Assumed not to have scrollbars.
 	// Returns a rectangle with absolute coordinates: left, right (exclusive), top, bottom (exclusive).
 	function getContentRect(el) {
 		var offset = el.offset(); // just outside of border, margin not included
 		var left = offset.left + getCssFloat(el, 'border-left-width') + getCssFloat(el, 'padding-left');
 		var top = offset.top + getCssFloat(el, 'border-top-width') + getCssFloat(el, 'padding-top');
-	
+
 		return {
 			left: left,
 			right: left + el.width(),
@@ -1000,8 +1060,8 @@ return /******/ (function(modules) { // webpackBootstrap
 			bottom: top + el.height()
 		};
 	}
-	
-	
+
+
 	// Returns the computed left/right/top/bottom scrollbar widths for the given jQuery element.
 	// NOTE: should use clientLeft/clientTop, but very unreliable cross-browser.
 	function getScrollbarWidths(el) {
@@ -1012,29 +1072,29 @@ return /******/ (function(modules) { // webpackBootstrap
 			top: 0,
 			bottom: el.innerHeight() - el[0].clientHeight // the paddings cancel out, leaving the bottom scrollbar
 		};
-	
+
 		if (getIsLeftRtlScrollbars() && el.css('direction') == 'rtl') { // is the scrollbar on the left side?
 			widths.left = leftRightWidth;
 		}
 		else {
 			widths.right = leftRightWidth;
 		}
-	
+
 		return widths;
 	}
-	
-	
+
+
 	// Logic for determining if, when the element is right-to-left, the scrollbar appears on the left side
-	
+
 	var _isLeftRtlScrollbars = null;
-	
+
 	function getIsLeftRtlScrollbars() { // responsible for caching the computation
 		if (_isLeftRtlScrollbars === null) {
 			_isLeftRtlScrollbars = computeIsLeftRtlScrollbars();
 		}
 		return _isLeftRtlScrollbars;
 	}
-	
+
 	function computeIsLeftRtlScrollbars() { // creates an offscreen test element, then removes it
 		var el = $('<div><div/></div>')
 			.css({
@@ -1052,26 +1112,26 @@ return /******/ (function(modules) { // webpackBootstrap
 		el.remove();
 		return res;
 	}
-	
-	
+
+
 	// Retrieves a jQuery element's computed CSS value as a floating-point number.
 	// If the queried value is non-numeric (ex: IE can return "medium" for border width), will just return zero.
 	function getCssFloat(el, prop) {
 		return parseFloat(el.css(prop)) || 0;
 	}
-	
-	
+
+
 	// Returns a boolean whether this was a left mouse click and no ctrl key (which means right click on Mac)
 	function isPrimaryMouseButton(ev) {
 		return ev.which == 1 && !ev.ctrlKey;
 	}
-	
-	
+
+
 	/* Geometry
 	----------------------------------------------------------------------------------------------------------------------*/
-	
+
 	fc.intersectRects = intersectRects;
-	
+
 	// Returns a new rectangle that is the intersection of the two rectangles. If they don't intersect, returns false
 	function intersectRects(rect1, rect2) {
 		var res = {
@@ -1080,14 +1140,14 @@ return /******/ (function(modules) { // webpackBootstrap
 			top: Math.max(rect1.top, rect2.top),
 			bottom: Math.min(rect1.bottom, rect2.bottom)
 		};
-	
+
 		if (res.left < res.right && res.top < res.bottom) {
 			return res;
 		}
 		return false;
 	}
-	
-	
+
+
 	// Returns a new point that will have been moved to reside within the given rectangle
 	function constrainPoint(point, rect) {
 		return {
@@ -1095,8 +1155,8 @@ return /******/ (function(modules) { // webpackBootstrap
 			top: Math.min(Math.max(point.top, rect.top), rect.bottom)
 		};
 	}
-	
-	
+
+
 	// Returns a point that is the center of the given rectangle
 	function getRectCenter(rect) {
 		return {
@@ -1104,8 +1164,8 @@ return /******/ (function(modules) { // webpackBootstrap
 			top: (rect.top + rect.bottom) / 2
 		};
 	}
-	
-	
+
+
 	// Subtracts point2's coordinates from point1's coordinates, returning a delta
 	function diffPoints(point1, point2) {
 		return {
@@ -1113,22 +1173,22 @@ return /******/ (function(modules) { // webpackBootstrap
 			top: point1.top - point2.top
 		};
 	}
-	
-	
+
+
 	/* Object Ordering by Field
 	----------------------------------------------------------------------------------------------------------------------*/
-	
+
 	fc.parseFieldSpecs = parseFieldSpecs;
 	fc.compareByFieldSpecs = compareByFieldSpecs;
 	fc.compareByFieldSpec = compareByFieldSpec;
 	fc.flexibleCompare = flexibleCompare;
-	
-	
+
+
 	function parseFieldSpecs(input) {
 		var specs = [];
 		var tokens = [];
 		var i, token;
-	
+
 		if (typeof input === 'string') {
 			tokens = input.split(/\s*,\s*/);
 		}
@@ -1138,10 +1198,10 @@ return /******/ (function(modules) { // webpackBootstrap
 		else if ($.isArray(input)) {
 			tokens = input;
 		}
-	
+
 		for (i = 0; i < tokens.length; i++) {
 			token = tokens[i];
-	
+
 			if (typeof token === 'string') {
 				specs.push(
 					token.charAt(0) == '-' ?
@@ -1153,26 +1213,26 @@ return /******/ (function(modules) { // webpackBootstrap
 				specs.push({ func: token });
 			}
 		}
-	
+
 		return specs;
 	}
-	
-	
+
+
 	function compareByFieldSpecs(obj1, obj2, fieldSpecs) {
 		var i;
 		var cmp;
-	
+
 		for (i = 0; i < fieldSpecs.length; i++) {
 			cmp = compareByFieldSpec(obj1, obj2, fieldSpecs[i]);
 			if (cmp) {
 				return cmp;
 			}
 		}
-	
+
 		return 0;
 	}
-	
-	
+
+
 	function compareByFieldSpec(obj1, obj2, fieldSpec) {
 		if (fieldSpec.func) {
 			return fieldSpec.func(obj1, obj2);
@@ -1180,8 +1240,8 @@ return /******/ (function(modules) { // webpackBootstrap
 		return flexibleCompare(obj1[fieldSpec.field], obj2[fieldSpec.field]) *
 			(fieldSpec.order || 1);
 	}
-	
-	
+
+
 	function flexibleCompare(a, b) {
 		if (!a && !b) {
 			return 0;
@@ -1197,12 +1257,12 @@ return /******/ (function(modules) { // webpackBootstrap
 		}
 		return a - b;
 	}
-	
-	
+
+
 	/* FullCalendar-specific Misc Utilities
 	----------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 	// Creates a basic segment with the intersection of the two ranges. Returns undefined if no intersection.
 	// Expects all dates to be normalized to the same timezone beforehand.
 	// TODO: move to date section?
@@ -1213,9 +1273,9 @@ return /******/ (function(modules) { // webpackBootstrap
 		var constraintEnd = constraintRange.end;
 		var segStart, segEnd;
 		var isStart, isEnd;
-	
+
 		if (subjectEnd > constraintStart && subjectStart < constraintEnd) { // in bounds at all?
-	
+
 			if (subjectStart >= constraintStart) {
 				segStart = subjectStart.clone();
 				isStart = true;
@@ -1224,7 +1284,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				segStart = constraintStart.clone();
 				isStart =  false;
 			}
-	
+
 			if (subjectEnd <= constraintEnd) {
 				segEnd = subjectEnd.clone();
 				isEnd = true;
@@ -1233,7 +1293,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				segEnd = constraintEnd.clone();
 				isEnd = false;
 			}
-	
+
 			return {
 				start: segStart,
 				end: segEnd,
@@ -1242,21 +1302,21 @@ return /******/ (function(modules) { // webpackBootstrap
 			};
 		}
 	}
-	
-	
+
+
 	/* Date Utilities
 	----------------------------------------------------------------------------------------------------------------------*/
-	
+
 	fc.computeIntervalUnit = computeIntervalUnit;
 	fc.divideRangeByDuration = divideRangeByDuration;
 	fc.divideDurationByDuration = divideDurationByDuration;
 	fc.multiplyDuration = multiplyDuration;
 	fc.durationHasTime = durationHasTime;
-	
+
 	var dayIDs = [ 'sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat' ];
 	var intervalUnits = [ 'year', 'month', 'week', 'day', 'hour', 'minute', 'second', 'millisecond' ];
-	
-	
+
+
 	// Diffs the two moments into a Duration where full-days are recorded first, then the remaining time.
 	// Moments will have their timezones normalized.
 	function diffDayTime(a, b) {
@@ -1265,16 +1325,16 @@ return /******/ (function(modules) { // webpackBootstrap
 			ms: a.time() - b.time() // time-of-day from day start. disregards timezone
 		});
 	}
-	
-	
+
+
 	// Diffs the two moments via their start-of-day (regardless of timezone). Produces whole-day durations.
 	function diffDay(a, b) {
 		return moment.duration({
 			days: a.clone().stripTime().diff(b.clone().stripTime(), 'days')
 		});
 	}
-	
-	
+
+
 	// Diffs two moments, producing a duration, made of a whole-unit-increment of the given unit. Uses rounding.
 	function diffByUnit(a, b, unit) {
 		return moment.duration(
@@ -1282,34 +1342,34 @@ return /******/ (function(modules) { // webpackBootstrap
 			unit
 		);
 	}
-	
-	
+
+
 	// Computes the unit name of the largest whole-unit period of time.
 	// For example, 48 hours will be "days" whereas 49 hours will be "hours".
 	// Accepts start/end, a range object, or an original duration object.
 	function computeIntervalUnit(start, end) {
 		var i, unit;
 		var val;
-	
+
 		for (i = 0; i < intervalUnits.length; i++) {
 			unit = intervalUnits[i];
 			val = computeRangeAs(unit, start, end);
-	
+
 			if (val >= 1 && isInt(val)) {
 				break;
 			}
 		}
-	
+
 		return unit; // will be "milliseconds" if nothing else matches
 	}
-	
-	
+
+
 	// Computes the number of units (like "hours") in the given range.
 	// Range can be a {start,end} object, separate start/end args, or a Duration.
 	// Results are based on Moment's .as() and .diff() methods, so results can depend on internal handling
 	// of month-diffing logic (which tends to vary from version to version).
 	function computeRangeAs(unit, start, end) {
-	
+
 		if (end != null) { // given start, end
 			return end.diff(start, unit, true);
 		}
@@ -1320,12 +1380,12 @@ return /******/ (function(modules) { // webpackBootstrap
 			return start.end.diff(start.start, unit, true);
 		}
 	}
-	
-	
+
+
 	// Intelligently divides a range (specified by a start/end params) by a duration
 	function divideRangeByDuration(start, end, dur) {
 		var months;
-	
+
 		if (durationHasTime(dur)) {
 			return (end - start) / dur;
 		}
@@ -1335,12 +1395,12 @@ return /******/ (function(modules) { // webpackBootstrap
 		}
 		return end.diff(start, 'days', true) / dur.asDays();
 	}
-	
-	
+
+
 	// Intelligently divides one duration by another
 	function divideDurationByDuration(dur1, dur2) {
 		var months1, months2;
-	
+
 		if (durationHasTime(dur1) || durationHasTime(dur2)) {
 			return dur1 / dur2;
 		}
@@ -1354,12 +1414,12 @@ return /******/ (function(modules) { // webpackBootstrap
 		}
 		return dur1.asDays() / dur2.asDays();
 	}
-	
-	
+
+
 	// Intelligently multiplies a duration by a number
 	function multiplyDuration(dur, n) {
 		var months;
-	
+
 		if (durationHasTime(dur)) {
 			return moment.duration(dur * n);
 		}
@@ -1369,39 +1429,39 @@ return /******/ (function(modules) { // webpackBootstrap
 		}
 		return moment.duration({ days: dur.asDays() * n });
 	}
-	
-	
+
+
 	// Returns a boolean about whether the given duration has any time parts (hours/minutes/seconds/ms)
 	function durationHasTime(dur) {
 		return Boolean(dur.hours() || dur.minutes() || dur.seconds() || dur.milliseconds());
 	}
-	
-	
+
+
 	function isNativeDate(input) {
 		return  Object.prototype.toString.call(input) === '[object Date]' || input instanceof Date;
 	}
-	
-	
+
+
 	// Returns a boolean about whether the given input is a time string, like "06:40:00" or "06:00"
 	function isTimeString(str) {
 		return /^\d+\:\d+(?:\:\d+\.?(?:\d{3})?)?$/.test(str);
 	}
-	
-	
+
+
 	/* Logging and Debug
 	----------------------------------------------------------------------------------------------------------------------*/
-	
+
 	fc.log = function() {
 		var console = window.console;
-	
+
 		if (console && console.log) {
 			return console.log.apply(console, arguments);
 		}
 	};
-	
+
 	fc.warn = function() {
 		var console = window.console;
-	
+
 		if (console && console.warn) {
 			return console.warn.apply(console, arguments);
 		}
@@ -1409,14 +1469,14 @@ return /******/ (function(modules) { // webpackBootstrap
 			return fc.log.apply(fc, arguments);
 		}
 	};
-	
-	
+
+
 	/* General Utilities
 	----------------------------------------------------------------------------------------------------------------------*/
-	
+
 	var hasOwnPropMethod = {}.hasOwnProperty;
-	
-	
+
+
 	// Merges an array of objects into a single object.
 	// The second argument allows for an array of property names who's object values will be merged together.
 	function mergeProps(propObjs, complexProps) {
@@ -1425,16 +1485,16 @@ return /******/ (function(modules) { // webpackBootstrap
 		var complexObjs;
 		var j, val;
 		var props;
-	
+
 		if (complexProps) {
 			for (i = 0; i < complexProps.length; i++) {
 				name = complexProps[i];
 				complexObjs = [];
-	
+
 				// collect the trailing object values, stopping when a non-object is discovered
 				for (j = propObjs.length - 1; j >= 0; j--) {
 					val = propObjs[j][name];
-	
+
 					if (typeof val === 'object') {
 						complexObjs.unshift(val);
 					}
@@ -1443,37 +1503,37 @@ return /******/ (function(modules) { // webpackBootstrap
 						break;
 					}
 				}
-	
+
 				// if the trailing values were objects, use the merged value
 				if (complexObjs.length) {
 					dest[name] = mergeProps(complexObjs);
 				}
 			}
 		}
-	
+
 		// copy values into the destination, going from last to first
 		for (i = propObjs.length - 1; i >= 0; i--) {
 			props = propObjs[i];
-	
+
 			for (name in props) {
 				if (!(name in dest)) { // if already assigned by previous props or complex props, don't reassign
 					dest[name] = props[name];
 				}
 			}
 		}
-	
+
 		return dest;
 	}
-	
-	
+
+
 	// Create an object that has the given prototype. Just like Object.create
 	function createObject(proto) {
 		var f = function() {};
 		f.prototype = proto;
 		return new f();
 	}
-	
-	
+
+
 	function copyOwnProps(src, dest) {
 		for (var name in src) {
 			if (hasOwnProp(src, name)) {
@@ -1481,35 +1541,35 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 		}
 	}
-	
-	
+
+
 	// Copies over certain methods with the same names as Object.prototype methods. Overcomes an IE<=8 bug:
 	// https://developer.mozilla.org/en-US/docs/ECMAScript_DontEnum_attribute#JScript_DontEnum_Bug
 	function copyNativeMethods(src, dest) {
 		var names = [ 'constructor', 'toString', 'valueOf' ];
 		var i, name;
-	
+
 		for (i = 0; i < names.length; i++) {
 			name = names[i];
-	
+
 			if (src[name] !== Object.prototype[name]) {
 				dest[name] = src[name];
 			}
 		}
 	}
-	
-	
+
+
 	function hasOwnProp(obj, name) {
 		return hasOwnPropMethod.call(obj, name);
 	}
-	
-	
+
+
 	// Is the given value a non-object non-function value?
 	function isAtomic(val) {
 		return /undefined|null|boolean|number|string/.test($.type(val));
 	}
-	
-	
+
+
 	function applyAll(functions, thisObj, args) {
 		if ($.isFunction(functions)) {
 			functions = [ functions ];
@@ -1523,8 +1583,8 @@ return /******/ (function(modules) { // webpackBootstrap
 			return ret;
 		}
 	}
-	
-	
+
+
 	function firstDefined() {
 		for (var i=0; i<arguments.length; i++) {
 			if (arguments[i] !== undefined) {
@@ -1532,8 +1592,8 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 		}
 	}
-	
-	
+
+
 	function htmlEscape(s) {
 		return (s + '').replace(/&/g, '&amp;')
 			.replace(/</g, '&lt;')
@@ -1542,55 +1602,55 @@ return /******/ (function(modules) { // webpackBootstrap
 			.replace(/"/g, '&quot;')
 			.replace(/\n/g, '<br />');
 	}
-	
-	
+
+
 	function stripHtmlEntities(text) {
 		return text.replace(/&.*?;/g, '');
 	}
-	
-	
+
+
 	// Given a hash of CSS properties, returns a string of CSS.
 	// Uses property names as-is (no camel-case conversion). Will not make statements for null/undefined values.
 	function cssToStr(cssProps) {
 		var statements = [];
-	
+
 		$.each(cssProps, function(name, val) {
 			if (val != null) {
 				statements.push(name + ':' + val);
 			}
 		});
-	
+
 		return statements.join(';');
 	}
-	
-	
+
+
 	function capitaliseFirstLetter(str) {
 		return str.charAt(0).toUpperCase() + str.slice(1);
 	}
-	
-	
+
+
 	function compareNumbers(a, b) { // for .sort()
 		return a - b;
 	}
-	
-	
+
+
 	function isInt(n) {
 		return n % 1 === 0;
 	}
-	
-	
+
+
 	// Returns a method bound to the given object context.
 	// Just like one of the jQuery.proxy signatures, but without the undesired behavior of treating the same method with
 	// different contexts as identical when binding/unbinding events.
 	function proxy(obj, methodName) {
 		var method = obj[methodName];
-	
+
 		return function() {
 			return method.apply(obj, arguments);
 		};
 	}
-	
-	
+
+
 	// Returns a function, that, as long as it continues to be invoked, will not
 	// be triggered. The function will be called after it stops being called for
 	// N milliseconds.
@@ -1613,7 +1673,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 			}
 		};
-	
+
 		return function() {
 			context = this;
 			args = arguments;
@@ -1623,9 +1683,9 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 		};
 	}
-	
+
 	;;
-	
+
 	var ambigDateOfMonthRegex = /^\s*\d{4}-\d\d$/;
 	var ambigTimeOrZoneRegex =
 		/^\s*\d{4}-(?:(\d\d-\d\d)|(W\d\d$)|(W\d\d-\d)|(\d\d\d))((T| )(\d\d(:\d\d(:\d\d(\.\d+)?)?)?)?)?$/;
@@ -1634,11 +1694,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	var allowValueOptimization;
 	var setUTCValues; // function defined below
 	var setLocalValues; // function defined below
-	
-	
+
+
 	// Creating
 	// -------------------------------------------------------------------------------------------------
-	
+
 	// Creates a new moment, similar to the vanilla moment(...) constructor, but with
 	// extra features (ambiguous time, enhanced formatting). When given an existing moment,
 	// it will function as a clone (and retain the zone of the moment). Anything else will
@@ -1646,26 +1706,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	fc.moment = function() {
 		return makeMoment(arguments);
 	};
-	
+
 	// Sames as fc.moment, but forces the resulting moment to be in the UTC timezone.
 	fc.moment.utc = function() {
 		var mom = makeMoment(arguments, true);
-	
+
 		// Force it into UTC because makeMoment doesn't guarantee it
 		// (if given a pre-existing moment for example)
 		if (mom.hasTime()) { // don't give ambiguously-timed moments a UTC zone
 			mom.utc();
 		}
-	
+
 		return mom;
 	};
-	
+
 	// Same as fc.moment, but when given an ISO8601 string, the timezone offset is preserved.
 	// ISO8601 strings with no timezone offset will become ambiguously zoned.
 	fc.moment.parseZone = function() {
 		return makeMoment(arguments, true, true);
 	};
-	
+
 	// Builds an enhanced moment from args. When given an existing moment, it clones. When given a
 	// native Date, or called with no arguments (the current time), the resulting moment will be local.
 	// Anything else needs to be "parsed" (a string or an array), and will be affected by:
@@ -1678,7 +1738,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		var isAmbigZone;
 		var ambigMatch;
 		var mom;
-	
+
 		if (moment.isMoment(input)) {
 			mom = moment.apply(null, args); // clone it
 			transferAmbigs(input, mom); // the ambig flags weren't transfered with the clone
@@ -1689,7 +1749,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		else { // "parsing" is required
 			isAmbigTime = false;
 			isAmbigZone = false;
-	
+
 			if (isSingleString) {
 				if (ambigDateOfMonthRegex.test(input)) {
 					// accept strings like '2014-05', but convert to the first of the month
@@ -1708,14 +1768,14 @@ return /******/ (function(modules) { // webpackBootstrap
 				isAmbigZone = true;
 			}
 			// otherwise, probably a string with a format
-	
+
 			if (parseAsUTC || isAmbigTime) {
 				mom = moment.utc.apply(moment, args);
 			}
 			else {
 				mom = moment.apply(null, args);
 			}
-	
+
 			if (isAmbigTime) {
 				mom._ambigTime = true;
 				mom._ambigZone = true; // ambiguous time always means ambiguous zone
@@ -1734,52 +1794,52 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 			}
 		}
-	
+
 		mom._fullCalendar = true; // flag for extended functionality
-	
+
 		return mom;
 	}
-	
-	
+
+
 	// A clone method that works with the flags related to our enhanced functionality.
 	// In the future, use moment.momentProperties
 	newMomentProto.clone = function() {
 		var mom = oldMomentProto.clone.apply(this, arguments);
-	
+
 		// these flags weren't transfered with the clone
 		transferAmbigs(this, mom);
 		if (this._fullCalendar) {
 			mom._fullCalendar = true;
 		}
-	
+
 		return mom;
 	};
-	
-	
+
+
 	// Week Number
 	// -------------------------------------------------------------------------------------------------
-	
-	
+
+
 	// Returns the week number, considering the locale's custom week number calcuation
 	// `weeks` is an alias for `week`
 	newMomentProto.week = newMomentProto.weeks = function(input) {
 		var weekCalc = (this._locale || this._lang) // works pre-moment-2.8
 			._fullCalendar_weekCalc;
-	
+
 		if (input == null && typeof weekCalc === 'function') { // custom function only works for getter
 			return weekCalc(this);
 		}
 		else if (weekCalc === 'ISO') {
 			return oldMomentProto.isoWeek.apply(this, arguments); // ISO getter/setter
 		}
-	
+
 		return oldMomentProto.week.apply(this, arguments); // local getter/setter
 	};
-	
-	
+
+
 	// Time-of-day
 	// -------------------------------------------------------------------------------------------------
-	
+
 	// GETTER
 	// Returns a Duration with the hours/minutes/seconds/ms values of the moment.
 	// If the moment has an ambiguous time, a duration of 00:00 will be returned.
@@ -1788,13 +1848,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	// You can supply a Duration, a Moment, or a Duration-like argument.
 	// When setting the time, and the moment has an ambiguous time, it then becomes unambiguous.
 	newMomentProto.time = function(time) {
-	
+
 		// Fallback to the original method (if there is one) if this moment wasn't created via FullCalendar.
 		// `time` is a generic enough method name where this precaution is necessary to avoid collisions w/ other plugins.
 		if (!this._fullCalendar) {
 			return oldMomentProto.time.apply(this, arguments);
 		}
-	
+
 		if (time == null) { // getter
 			return moment.duration({
 				hours: this.hours(),
@@ -1804,20 +1864,20 @@ return /******/ (function(modules) { // webpackBootstrap
 			});
 		}
 		else { // setter
-	
+
 			this._ambigTime = false; // mark that the moment now has a time
-	
+
 			if (!moment.isDuration(time) && !moment.isMoment(time)) {
 				time = moment.duration(time);
 			}
-	
+
 			// The day value should cause overflow (so 24 hours becomes 00:00:00 of next day).
 			// Only for Duration times, not Moment times.
 			var dayHours = 0;
 			if (moment.isDuration(time)) {
 				dayHours = Math.floor(time.asDays()) * 24;
 			}
-	
+
 			// We need to set the individual fields.
 			// Can't use startOf('day') then add duration. In case of DST at start of day.
 			return this.hours(dayHours + time.hours())
@@ -1826,109 +1886,109 @@ return /******/ (function(modules) { // webpackBootstrap
 				.milliseconds(time.milliseconds());
 		}
 	};
-	
+
 	// Converts the moment to UTC, stripping out its time-of-day and timezone offset,
 	// but preserving its YMD. A moment with a stripped time will display no time
 	// nor timezone offset when .format() is called.
 	newMomentProto.stripTime = function() {
 		var a;
-	
+
 		if (!this._ambigTime) {
-	
+
 			// get the values before any conversion happens
 			a = this.toArray(); // array of y/m/d/h/m/s/ms
-	
+
 			// TODO: use keepLocalTime in the future
 			this.utc(); // set the internal UTC flag (will clear the ambig flags)
 			setUTCValues(this, a.slice(0, 3)); // set the year/month/date. time will be zero
-	
+
 			// Mark the time as ambiguous. This needs to happen after the .utc() call, which might call .utcOffset(),
 			// which clears all ambig flags. Same with setUTCValues with moment-timezone.
 			this._ambigTime = true;
 			this._ambigZone = true; // if ambiguous time, also ambiguous timezone offset
 		}
-	
+
 		return this; // for chaining
 	};
-	
+
 	// Returns if the moment has a non-ambiguous time (boolean)
 	newMomentProto.hasTime = function() {
 		return !this._ambigTime;
 	};
-	
-	
+
+
 	// Timezone
 	// -------------------------------------------------------------------------------------------------
-	
+
 	// Converts the moment to UTC, stripping out its timezone offset, but preserving its
 	// YMD and time-of-day. A moment with a stripped timezone offset will display no
 	// timezone offset when .format() is called.
 	// TODO: look into Moment's keepLocalTime functionality
 	newMomentProto.stripZone = function() {
 		var a, wasAmbigTime;
-	
+
 		if (!this._ambigZone) {
-	
+
 			// get the values before any conversion happens
 			a = this.toArray(); // array of y/m/d/h/m/s/ms
 			wasAmbigTime = this._ambigTime;
-	
+
 			this.utc(); // set the internal UTC flag (might clear the ambig flags, depending on Moment internals)
 			setUTCValues(this, a); // will set the year/month/date/hours/minutes/seconds/ms
-	
+
 			// the above call to .utc()/.utcOffset() unfortunately might clear the ambig flags, so restore
 			this._ambigTime = wasAmbigTime || false;
-	
+
 			// Mark the zone as ambiguous. This needs to happen after the .utc() call, which might call .utcOffset(),
 			// which clears the ambig flags. Same with setUTCValues with moment-timezone.
 			this._ambigZone = true;
 		}
-	
+
 		return this; // for chaining
 	};
-	
+
 	// Returns of the moment has a non-ambiguous timezone offset (boolean)
 	newMomentProto.hasZone = function() {
 		return !this._ambigZone;
 	};
-	
-	
+
+
 	// this method implicitly marks a zone
 	newMomentProto.local = function() {
 		var a = this.toArray(); // year,month,date,hours,minutes,seconds,ms as an array
 		var wasAmbigZone = this._ambigZone;
-	
+
 		oldMomentProto.local.apply(this, arguments);
-	
+
 		// ensure non-ambiguous
 		// this probably already happened via local() -> utcOffset(), but don't rely on Moment's internals
 		this._ambigTime = false;
 		this._ambigZone = false;
-	
+
 		if (wasAmbigZone) {
 			// If the moment was ambiguously zoned, the date fields were stored as UTC.
 			// We want to preserve these, but in local time.
 			// TODO: look into Moment's keepLocalTime functionality
 			setLocalValues(this, a);
 		}
-	
+
 		return this; // for chaining
 	};
-	
-	
+
+
 	// implicitly marks a zone
 	newMomentProto.utc = function() {
 		oldMomentProto.utc.apply(this, arguments);
-	
+
 		// ensure non-ambiguous
 		// this probably already happened via utc() -> utcOffset(), but don't rely on Moment's internals
 		this._ambigTime = false;
 		this._ambigZone = false;
-	
+
 		return this;
 	};
-	
-	
+
+
 	// methods for arbitrarily manipulating timezone offset.
 	// should clear time/zone ambiguity when called.
 	$.each([
@@ -1936,26 +1996,26 @@ return /******/ (function(modules) { // webpackBootstrap
 		'utcOffset'
 	], function(i, name) {
 		if (oldMomentProto[name]) { // original method exists?
-	
+
 			// this method implicitly marks a zone (will probably get called upon .utc() and .local())
 			newMomentProto[name] = function(tzo) {
-	
+
 				if (tzo != null) { // setter
 					// these assignments needs to happen before the original zone method is called.
 					// I forget why, something to do with a browser crash.
 					this._ambigTime = false;
 					this._ambigZone = false;
 				}
-	
+
 				return oldMomentProto[name].apply(this, arguments);
 			};
 		}
 	});
-	
-	
+
+
 	// Formatting
 	// -------------------------------------------------------------------------------------------------
-	
+
 	newMomentProto.format = function() {
 		if (this._fullCalendar && arguments[0]) { // an enhanced moment? and a format string provided?
 			return formatDate(this, arguments[0]); // our extended formatting
@@ -1968,7 +2028,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		}
 		return oldMomentProto.format.apply(this, arguments);
 	};
-	
+
 	newMomentProto.toISOString = function() {
 		if (this._ambigTime) {
 			return oldMomentFormat(this, 'YYYY-MM-DD');
@@ -1978,28 +2038,28 @@ return /******/ (function(modules) { // webpackBootstrap
 		}
 		return oldMomentProto.toISOString.apply(this, arguments);
 	};
-	
-	
+
+
 	// Querying
 	// -------------------------------------------------------------------------------------------------
-	
+
 	// Is the moment within the specified range? `end` is exclusive.
 	// FYI, this method is not a standard Moment method, so always do our enhanced logic.
 	newMomentProto.isWithin = function(start, end) {
 		var a = commonlyAmbiguate([ this, start, end ]);
 		return a[0] >= a[1] && a[0] < a[2];
 	};
-	
+
 	// When isSame is called with units, timezone ambiguity is normalized before the comparison happens.
 	// If no units specified, the two moments must be identically the same, with matching ambig flags.
 	newMomentProto.isSame = function(input, units) {
 		var a;
-	
+
 		// only do custom logic if this is an enhanced moment
 		if (!this._fullCalendar) {
 			return oldMomentProto.isSame.apply(this, arguments);
 		}
-	
+
 		if (units) {
 			a = commonlyAmbiguate([ this, input ], true); // normalize timezones but don't erase times
 			return oldMomentProto.isSame.call(a[0], a[1], units);
@@ -2011,7 +2071,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				Boolean(this._ambigZone) === Boolean(input._ambigZone);
 		}
 	};
-	
+
 	// Make these query methods work with ambiguous moments
 	$.each([
 		'isBefore',
@@ -2019,21 +2079,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	], function(i, methodName) {
 		newMomentProto[methodName] = function(input, units) {
 			var a;
-	
+
 			// only do custom logic if this is an enhanced moment
 			if (!this._fullCalendar) {
 				return oldMomentProto[methodName].apply(this, arguments);
 			}
-	
+
 			a = commonlyAmbiguate([ this, input ]);
 			return oldMomentProto[methodName].call(a[0], a[1], units);
 		};
 	});
-	
-	
+
+
 	// Misc Internals
 	// -------------------------------------------------------------------------------------------------
-	
+
 	// given an array of moment-like inputs, return a parallel array w/ moments similarly ambiguated.
 	// for example, of one moment has ambig time, but not others, all moments will have their time stripped.
 	// set `preserveTime` to `true` to keep times, but only normalize zone ambiguity.
@@ -2044,7 +2104,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		var len = inputs.length;
 		var moms = [];
 		var i, mom;
-	
+
 		// parse inputs into real moments and query their ambig flags
 		for (i = 0; i < len; i++) {
 			mom = inputs[i];
@@ -2055,7 +2115,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			anyAmbigZone = anyAmbigZone || mom._ambigZone;
 			moms.push(mom);
 		}
-	
+
 		// strip each moment down to lowest common ambiguity
 		// use clones to avoid modifying the original moments
 		for (i = 0; i < len; i++) {
@@ -2067,10 +2127,10 @@ return /******/ (function(modules) { // webpackBootstrap
 				moms[i] = mom.clone().stripZone();
 			}
 		}
-	
+
 		return moms;
 	}
-	
+
 	// Transfers all the flags related to ambiguous time/zone from the `src` moment to the `dest` moment
 	// TODO: look into moment.momentProperties for this.
 	function transferAmbigs(src, dest) {
@@ -2080,7 +2140,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		else if (dest._ambigTime) {
 			dest._ambigTime = false;
 		}
-	
+
 		if (src._ambigZone) {
 			dest._ambigZone = true;
 		}
@@ -2088,8 +2148,8 @@ return /******/ (function(modules) { // webpackBootstrap
 			dest._ambigZone = false;
 		}
 	}
-	
-	
+
+
 	// Sets the year/month/date/etc values of the moment from the given array.
 	// Inefficient because it calls each individual setter.
 	function setMomentValues(mom, a) {
@@ -2101,10 +2161,10 @@ return /******/ (function(modules) { // webpackBootstrap
 			.seconds(a[5] || 0)
 			.milliseconds(a[6] || 0);
 	}
-	
+
 	// Can we set the moment's internal date directly?
 	allowValueOptimization = '_d' in moment() && 'updateOffset' in moment;
-	
+
 	// Utility function. Accepts a moment and an array of the UTC year/month/date/etc values to set.
 	// Assumes the given moment is already in UTC mode.
 	setUTCValues = allowValueOptimization ? function(mom, a) {
@@ -2112,7 +2172,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		mom._d.setTime(Date.UTC.apply(Date, a));
 		moment.updateOffset(mom, false); // keepTime=false
 	} : setMomentValues;
-	
+
 	// Utility function. Accepts a moment and an array of the local year/month/date/etc values to set.
 	// Assumes the given moment is already in local mode.
 	setLocalValues = allowValueOptimization ? function(mom, a) {
@@ -2128,38 +2188,38 @@ return /******/ (function(modules) { // webpackBootstrap
 		));
 		moment.updateOffset(mom, false); // keepTime=false
 	} : setMomentValues;
-	
+
 	;;
-	
+
 	// Single Date Formatting
 	// -------------------------------------------------------------------------------------------------
-	
-	
+
+
 	// call this if you want Moment's original format method to be used
 	function oldMomentFormat(mom, formatStr) {
 		return oldMomentProto.format.call(mom, formatStr); // oldMomentProto defined in moment-ext.js
 	}
-	
-	
+
+
 	// Formats `date` with a Moment formatting string, but allow our non-zero areas and
 	// additional token.
 	function formatDate(date, formatStr) {
 		return formatDateWithChunks(date, getFormatStringChunks(formatStr));
 	}
-	
-	
+
+
 	function formatDateWithChunks(date, chunks) {
 		var s = '';
 		var i;
-	
+
 		for (i=0; i<chunks.length; i++) {
 			s += formatDateWithChunk(date, chunks[i]);
 		}
-	
+
 		return s;
 	}
-	
-	
+
+
 	// addition formatting tokens we want recognized
 	var tokenOverrides = {
 		t: function(date) { // "a" or "p"
@@ -2169,12 +2229,12 @@ return /******/ (function(modules) { // webpackBootstrap
 			return oldMomentFormat(date, 'A').charAt(0);
 		}
 	};
-	
-	
+
+
 	function formatDateWithChunk(date, chunk) {
 		var token;
 		var maybeStr;
-	
+
 		if (typeof chunk === 'string') { // a literal string
 			return chunk;
 		}
@@ -2190,34 +2250,34 @@ return /******/ (function(modules) { // webpackBootstrap
 				return maybeStr;
 			}
 		}
-	
+
 		return '';
 	}
-	
-	
+
+
 	// Date Range Formatting
 	// -------------------------------------------------------------------------------------------------
 	// TODO: make it work with timezone offset
-	
+
 	// Using a formatting string meant for a single date, generate a range string, like
 	// "Sep 2 - 9 2013", that intelligently inserts a separator where the dates differ.
 	// If the dates are the same as far as the format string is concerned, just return a single
 	// rendering of one date, without any separator.
 	function formatRange(date1, date2, formatStr, separator, isRTL) {
 		var localeData;
-	
+
 		date1 = fc.moment.parseZone(date1);
 		date2 = fc.moment.parseZone(date2);
-	
+
 		localeData = (date1.localeData || date1.lang).call(date1); // works with moment-pre-2.8
-	
+
 		// Expand localized format strings, like "LL" -> "MMMM D YYYY"
 		formatStr = localeData.longDateFormat(formatStr) || formatStr;
 		// BTW, this is not important for `formatDate` because it is impossible to put custom tokens
 		// or non-zero areas in Moment's localized format strings.
-	
+
 		separator = separator || ' - ';
-	
+
 		return formatRangeWithChunks(
 			date1,
 			date2,
@@ -2227,8 +2287,8 @@ return /******/ (function(modules) { // webpackBootstrap
 		);
 	}
 	fc.formatRange = formatRange; // expose
-	
-	
+
+
 	function formatRangeWithChunks(date1, date2, chunks, separator, isRTL) {
 		var chunkStr; // the rendering of the chunk
 		var leftI;
@@ -2239,7 +2299,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		var middleStr1 = '';
 		var middleStr2 = '';
 		var middleStr = '';
-	
+
 		// Start at the leftmost side of the formatting string and continue until you hit a token
 		// that is not the same between dates.
 		for (leftI=0; leftI<chunks.length; leftI++) {
@@ -2249,7 +2309,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 			leftStr += chunkStr;
 		}
-	
+
 		// Similarly, start at the rightmost side of the formatting string and move left
 		for (rightI=chunks.length-1; rightI>leftI; rightI--) {
 			chunkStr = formatSimilarChunk(date1, date2, chunks[rightI]);
@@ -2258,14 +2318,14 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 			rightStr = chunkStr + rightStr;
 		}
-	
+
 		// The area in the middle is different for both of the dates.
 		// Collect them distinctly so we can jam them together later.
 		for (middleI=leftI; middleI<=rightI; middleI++) {
 			middleStr1 += formatDateWithChunk(date1, chunks[middleI]);
 			middleStr2 += formatDateWithChunk(date2, chunks[middleI]);
 		}
-	
+
 		if (middleStr1 || middleStr2) {
 			if (isRTL) {
 				middleStr = middleStr2 + separator + middleStr1;
@@ -2274,11 +2334,11 @@ return /******/ (function(modules) { // webpackBootstrap
 				middleStr = middleStr1 + separator + middleStr2;
 			}
 		}
-	
+
 		return leftStr + middleStr + rightStr;
 	}
-	
-	
+
+
 	var similarUnitMap = {
 		Y: 'year',
 		M: 'month',
@@ -2295,14 +2355,14 @@ return /******/ (function(modules) { // webpackBootstrap
 		s: 'second' // second
 	};
 	// TODO: week maybe?
-	
-	
+
+
 	// Given a formatting chunk, and given that both dates are similar in the regard the
 	// formatting chunk is concerned, format date1 against `chunk`. Otherwise, return `false`.
 	function formatSimilarChunk(date1, date2, chunk) {
 		var token;
 		var unit;
-	
+
 		if (typeof chunk === 'string') { // a literal string
 			return chunk;
 		}
@@ -2314,33 +2374,33 @@ return /******/ (function(modules) { // webpackBootstrap
 				// BTW, don't support custom tokens
 			}
 		}
-	
+
 		return false; // the chunk is NOT the same for the two dates
 		// BTW, don't support splitting on non-zero areas
 	}
-	
-	
+
+
 	// Chunking Utils
 	// -------------------------------------------------------------------------------------------------
-	
-	
+
+
 	var formatStringChunkCache = {};
-	
-	
+
+
 	function getFormatStringChunks(formatStr) {
 		if (formatStr in formatStringChunkCache) {
 			return formatStringChunkCache[formatStr];
 		}
 		return (formatStringChunkCache[formatStr] = chunkFormatString(formatStr));
 	}
-	
-	
+
+
 	// Break the formatting string into an array of chunks
 	function chunkFormatString(formatStr) {
 		var chunks = [];
 		var chunker = /\[([^\]]*)\]|\(([^\)]*)\)|(LTS|LT|(\w)\4*o?)|([^\w\[\(]+)/g; // TODO: more descrimination
 		var match;
-	
+
 		while ((match = chunker.exec(formatStr))) {
 			if (match[1]) { // a literal string inside [ ... ]
 				chunks.push(match[1]);
@@ -2355,24 +2415,24 @@ return /******/ (function(modules) { // webpackBootstrap
 				chunks.push(match[5]);
 			}
 		}
-	
+
 		return chunks;
 	}
-	
+
 	;;
-	
+
 	fc.Class = Class; // export
-	
+
 	// class that all other classes will inherit from
 	function Class() { }
-	
+
 	// called upon a class to create a subclass
 	Class.extend = function(members) {
 		var superClass = this;
 		var subClass;
-	
+
 		members = members || {};
-	
+
 		// ensure a constructor for the subclass, forwarding all arguments to the super-constructor if it doesn't exist
 		if (hasOwnProp(members, 'constructor')) {
 			subClass = members.constructor;
@@ -2382,80 +2442,80 @@ return /******/ (function(modules) { // webpackBootstrap
 				superClass.apply(this, arguments);
 			};
 		}
-	
+
 		// build the base prototype for the subclass, which is an new object chained to the superclass's prototype
 		subClass.prototype = createObject(superClass.prototype);
-	
+
 		// copy each member variable/method onto the the subclass's prototype
 		copyOwnProps(members, subClass.prototype);
 		copyNativeMethods(members, subClass.prototype); // hack for IE8
-	
+
 		// copy over all class variables/methods to the subclass, such as `extend` and `mixin`
 		copyOwnProps(superClass, subClass);
-	
+
 		return subClass;
 	};
-	
+
 	// adds new member variables/methods to the class's prototype.
 	// can be called with another class, or a plain object hash containing new members.
 	Class.mixin = function(members) {
 		copyOwnProps(members.prototype || members, this.prototype); // TODO: copyNativeMethods?
 	};
 	;;
-	
+
 	var Emitter = fc.Emitter = Class.extend({
-	
+
 		callbackHash: null,
-	
-	
+
+
 		on: function(name, callback) {
 			this.getCallbacks(name).add(callback);
 			return this; // for chaining
 		},
-	
-	
+
+
 		off: function(name, callback) {
 			this.getCallbacks(name).remove(callback);
 			return this; // for chaining
 		},
-	
-	
+
+
 		trigger: function(name) { // args...
 			var args = Array.prototype.slice.call(arguments, 1);
-	
+
 			this.triggerWith(name, this, args);
-	
+
 			return this; // for chaining
 		},
-	
-	
+
+
 		triggerWith: function(name, context, args) {
 			var callbacks = this.getCallbacks(name);
-	
+
 			callbacks.fireWith(context, args);
-	
+
 			return this; // for chaining
 		},
-	
-	
+
+
 		getCallbacks: function(name) {
 			var callbacks;
-	
+
 			if (!this.callbackHash) {
 				this.callbackHash = {};
 			}
-	
+
 			callbacks = this.callbackHash[name];
 			if (!callbacks) {
 				callbacks = this.callbackHash[name] = $.Callbacks();
 			}
-	
+
 			return callbacks;
 		}
-	
+
 	});
 	;;
-	
+
 	/* A rectangular panel that is absolutely positioned over other content
 	------------------------------------------------------------------------------------------------------------------------
 	Options:
@@ -2469,21 +2529,21 @@ return /******/ (function(modules) { // webpackBootstrap
 		- show (callback)
 		- hide (callback)
 	*/
-	
+
 	var Popover = Class.extend({
-	
+
 		isHidden: true,
 		options: null,
 		el: null, // the container element for the popover. generated by this object
 		documentMousedownProxy: null, // document mousedown handler bound to `this`
 		margin: 10, // the space required between the popover and the edges of the scroll container
-	
-	
+
+
 		constructor: function(options) {
 			this.options = options || {};
 		},
-	
-	
+
+
 		// Shows the popover on the specified position. Renders it if not already
 		show: function() {
 			if (this.isHidden) {
@@ -2496,8 +2556,8 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.trigger('show');
 			}
 		},
-	
-	
+
+
 		// Hides the popover, through CSS, but does not remove it from the DOM
 		hide: function() {
 			if (!this.isHidden) {
@@ -2506,13 +2566,13 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.trigger('hide');
 			}
 		},
-	
-	
+
+
 		// Creates `this.el` and renders content inside of it
 		render: function() {
 			var _this = this;
 			var options = this.options;
-	
+
 			this.el = $('<div class="fc-popover"/>')
 				.addClass(options.className || '')
 				.css({
@@ -2522,18 +2582,18 @@ return /******/ (function(modules) { // webpackBootstrap
 				})
 				.append(options.content)
 				.appendTo(options.parentEl);
-	
+
 			// when a click happens on anything inside with a 'fc-close' className, hide the popover
 			this.el.on('click', '.fc-close', function() {
 				_this.hide();
 			});
-	
+
 			if (options.autoHide) {
 				$(document).on('mousedown', this.documentMousedownProxy = proxy(this, 'documentMousedown'));
 			}
 		},
-	
-	
+
+
 		// Triggered when the user clicks *anywhere* in the document, for the autoHide feature
 		documentMousedown: function(ev) {
 			// only hide the popover if the click happened outside the popover
@@ -2541,21 +2601,21 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.hide();
 			}
 		},
-	
-	
+
+
 		// Hides and unregisters any handlers
 		removeElement: function() {
 			this.hide();
-	
+
 			if (this.el) {
 				this.el.remove();
 				this.el = null;
 			}
-	
+
 			$(document).off('mousedown', this.documentMousedownProxy);
 		},
-	
-	
+
+
 		// Positions the popover optimally, using the top/left/right options
 		position: function() {
 			var options = this.options;
@@ -2569,7 +2629,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			var viewportOffset;
 			var top; // the "position" (not "offset") values for the popover
 			var left; //
-	
+
 			// compute top and left
 			top = options.top || 0;
 			if (options.left !== undefined) {
@@ -2581,7 +2641,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			else {
 				left = 0;
 			}
-	
+
 			if (viewportEl.is(window) || viewportEl.is(document)) { // normalize getScrollParent's result
 				viewportEl = windowEl;
 				viewportTop = 0; // the window is always at the top left
@@ -2592,11 +2652,11 @@ return /******/ (function(modules) { // webpackBootstrap
 				viewportTop = viewportOffset.top;
 				viewportLeft = viewportOffset.left;
 			}
-	
+
 			// if the window is scrolled, it causes the visible area to be further down
 			viewportTop += windowEl.scrollTop();
 			viewportLeft += windowEl.scrollLeft();
-	
+
 			// constrain to the view port. if constrained by two edges, give precedence to top/left
 			if (options.viewportConstrain !== false) {
 				top = Math.min(top, viewportTop + viewportEl.outerHeight() - height - this.margin);
@@ -2604,14 +2664,14 @@ return /******/ (function(modules) { // webpackBootstrap
 				left = Math.min(left, viewportLeft + viewportEl.outerWidth() - width - this.margin);
 				left = Math.max(left, viewportLeft + this.margin);
 			}
-	
+
 			this.el.css({
 				top: top - origin.top,
 				left: left - origin.left
 			});
 		},
-	
-	
+
+
 		// Triggers a callback. Calls a function in the option hash of the same name.
 		// Arguments beyond the first `name` are forwarded on.
 		// TODO: better code reuse for this. Repeat code
@@ -2620,40 +2680,40 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.options[name].apply(this, Array.prototype.slice.call(arguments, 1));
 			}
 		}
-	
+
 	});
-	
+
 	;;
-	
+
 	/* A "coordinate map" converts pixel coordinates into an associated cell, which has an associated date
 	------------------------------------------------------------------------------------------------------------------------
 	Common interface:
-	
+
 		CoordMap.prototype = {
 			build: function() {},
 			getCell: function(x, y) {}
 		};
-	
+
 	*/
-	
+
 	/* Coordinate map for a grid component
 	----------------------------------------------------------------------------------------------------------------------*/
-	
+
 	var GridCoordMap = Class.extend({
-	
+
 		grid: null, // reference to the Grid
 		rowCoords: null, // array of {top,bottom} objects
 		colCoords: null, // array of {left,right} objects
-	
+
 		containerEl: null, // container element that all coordinates are constrained to. optionally assigned
 		bounds: null,
-	
-	
+
+
 		constructor: function(grid) {
 			this.grid = grid;
 		},
-	
-	
+
+
 		// Queries the grid for the coordinates of all the cells
 		build: function() {
 			this.grid.build();
@@ -2661,16 +2721,16 @@ return /******/ (function(modules) { // webpackBootstrap
 			this.colCoords = this.grid.computeColCoords();
 			this.computeBounds();
 		},
-	
-	
+
+
 		// Clears the coordinates data to free up memory
 		clear: function() {
 			this.grid.clear();
 			this.rowCoords = null;
 			this.colCoords = null;
 		},
-	
-	
+
+
 		// Given a coordinate of the document, gets the associated cell. If no cell is underneath, returns null
 		getCell: function(x, y) {
 			var rowCoords = this.rowCoords;
@@ -2681,9 +2741,9 @@ return /******/ (function(modules) { // webpackBootstrap
 			var hitCol = null;
 			var i, coords;
 			var cell;
-	
+
 			if (this.inBounds(x, y)) {
-	
+
 				for (i = 0; i < rowCnt; i++) {
 					coords = rowCoords[i];
 					if (y >= coords.top && y < coords.bottom) {
@@ -2691,7 +2751,7 @@ return /******/ (function(modules) { // webpackBootstrap
 						break;
 					}
 				}
-	
+
 				for (i = 0; i < colCnt; i++) {
 					coords = colCoords[i];
 					if (x >= coords.left && x < coords.right) {
@@ -2699,177 +2759,177 @@ return /******/ (function(modules) { // webpackBootstrap
 						break;
 					}
 				}
-	
+
 				if (hitRow !== null && hitCol !== null) {
-	
+
 					cell = this.grid.getCell(hitRow, hitCol); // expected to return a fresh object we can modify
 					cell.grid = this.grid; // for CellDragListener's isCellsEqual. dragging between grids
-	
+
 					// make the coordinates available on the cell object
 					$.extend(cell, rowCoords[hitRow], colCoords[hitCol]);
-	
+
 					return cell;
 				}
 			}
-	
+
 			return null;
 		},
-	
-	
+
+
 		// If there is a containerEl, compute the bounds into min/max values
 		computeBounds: function() {
 			this.bounds = this.containerEl ?
 				getClientRect(this.containerEl) : // area within scrollbars
 				null;
 		},
-	
-	
+
+
 		// Determines if the given coordinates are in bounds. If no `containerEl`, always true
 		inBounds: function(x, y) {
 			var bounds = this.bounds;
-	
+
 			if (bounds) {
 				return x >= bounds.left && x < bounds.right && y >= bounds.top && y < bounds.bottom;
 			}
-	
+
 			return true;
 		}
-	
+
 	});
-	
-	
+
+
 	/* Coordinate map that is a combination of multiple other coordinate maps
 	----------------------------------------------------------------------------------------------------------------------*/
-	
+
 	var ComboCoordMap = Class.extend({
-	
+
 		coordMaps: null, // an array of CoordMaps
-	
-	
+
+
 		constructor: function(coordMaps) {
 			this.coordMaps = coordMaps;
 		},
-	
-	
+
+
 		// Builds all coordMaps
 		build: function() {
 			var coordMaps = this.coordMaps;
 			var i;
-	
+
 			for (i = 0; i < coordMaps.length; i++) {
 				coordMaps[i].build();
 			}
 		},
-	
-	
+
+
 		// Queries all coordMaps for the cell underneath the given coordinates, returning the first result
 		getCell: function(x, y) {
 			var coordMaps = this.coordMaps;
 			var cell = null;
 			var i;
-	
+
 			for (i = 0; i < coordMaps.length && !cell; i++) {
 				cell = coordMaps[i].getCell(x, y);
 			}
-	
+
 			return cell;
 		},
-	
-	
+
+
 		// Clears all coordMaps
 		clear: function() {
 			var coordMaps = this.coordMaps;
 			var i;
-	
+
 			for (i = 0; i < coordMaps.length; i++) {
 				coordMaps[i].clear();
 			}
 		}
-	
+
 	});
-	
+
 	;;
-	
+
 	/* Tracks a drag's mouse movement, firing various handlers
 	----------------------------------------------------------------------------------------------------------------------*/
-	
+
 	var DragListener = fc.DragListener = Class.extend({
-	
+
 		options: null,
-	
+
 		isListening: false,
 		isDragging: false,
-	
+
 		// coordinates of the initial mousedown
 		originX: null,
 		originY: null,
-	
+
 		// handler attached to the document, bound to the DragListener's `this`
 		mousemoveProxy: null,
 		mouseupProxy: null,
-	
+
 		// for IE8 bug-fighting behavior, for now
 		subjectEl: null, // the element being draged. optional
 		subjectHref: null,
-	
+
 		scrollEl: null,
 		scrollBounds: null, // { top, bottom, left, right }
 		scrollTopVel: null, // pixels per second
 		scrollLeftVel: null, // pixels per second
 		scrollIntervalId: null, // ID of setTimeout for scrolling animation loop
 		scrollHandlerProxy: null, // this-scoped function for handling when scrollEl is scrolled
-	
+
 		scrollSensitivity: 30, // pixels from edge for scrolling to start
 		scrollSpeed: 200, // pixels per second, at maximum speed
 		scrollIntervalMs: 50, // millisecond wait between scroll increment
-	
-	
+
+
 		constructor: function(options) {
 			options = options || {};
 			this.options = options;
 			this.subjectEl = options.subjectEl;
 		},
-	
-	
+
+
 		// Call this when the user does a mousedown. Will probably lead to startListening
 		mousedown: function(ev) {
 			if (isPrimaryMouseButton(ev)) {
-	
+
 				ev.preventDefault(); // prevents native selection in most browsers
-	
+
 				this.startListening(ev);
-	
+
 				// start the drag immediately if there is no minimum distance for a drag start
 				if (!this.options.distance) {
 					this.startDrag(ev);
 				}
 			}
 		},
-	
-	
+
+
 		// Call this to start tracking mouse movements
 		startListening: function(ev) {
 			var scrollParent;
-	
+
 			if (!this.isListening) {
-	
+
 				// grab scroll container and attach handler
 				if (ev && this.options.scroll) {
 					scrollParent = getScrollParent($(ev.target));
 					if (!scrollParent.is(window) && !scrollParent.is(document)) {
 						this.scrollEl = scrollParent;
-	
+
 						// scope to `this`, and use `debounce` to make sure rapid calls don't happen
 						this.scrollHandlerProxy = debounce(proxy(this, 'scrollHandler'), 100);
 						this.scrollEl.on('scroll', this.scrollHandlerProxy);
 					}
 				}
-	
+
 				$(document)
 					.on('mousemove', this.mousemoveProxy = proxy(this, 'mousemove'))
 					.on('mouseup', this.mouseupProxy = proxy(this, 'mouseup'))
 					.on('selectstart', this.preventDefault); // prevents native selection in IE<=8
-	
+
 				if (ev) {
 					this.originX = ev.pageX;
 					this.originY = ev.pageY;
@@ -2880,26 +2940,26 @@ return /******/ (function(modules) { // webpackBootstrap
 					this.originX = 0;
 					this.originY = 0;
 				}
-	
+
 				this.isListening = true;
 				this.listenStart(ev);
 			}
 		},
-	
-	
+
+
 		// Called when drag listening has started (but a real drag has not necessarily began)
 		listenStart: function(ev) {
 			this.trigger('listenStart', ev);
 		},
-	
-	
+
+
 		// Called when the user moves the mouse
 		mousemove: function(ev) {
 			var dx = ev.pageX - this.originX;
 			var dy = ev.pageY - this.originY;
 			var minDistance;
 			var distanceSq; // current distance from the origin, squared
-	
+
 			if (!this.isDragging) { // if not already dragging...
 				// then start the drag if the minimum distance criteria is met
 				minDistance = this.options.distance || 1;
@@ -2908,54 +2968,54 @@ return /******/ (function(modules) { // webpackBootstrap
 					this.startDrag(ev);
 				}
 			}
-	
+
 			if (this.isDragging) {
 				this.drag(dx, dy, ev); // report a drag, even if this mousemove initiated the drag
 			}
 		},
-	
-	
+
+
 		// Call this to initiate a legitimate drag.
 		// This function is called internally from this class, but can also be called explicitly from outside
 		startDrag: function(ev) {
-	
+
 			if (!this.isListening) { // startDrag must have manually initiated
 				this.startListening();
 			}
-	
+
 			if (!this.isDragging) {
 				this.isDragging = true;
 				this.dragStart(ev);
 			}
 		},
-	
-	
+
+
 		// Called when the actual drag has started (went beyond minDistance)
 		dragStart: function(ev) {
 			var subjectEl = this.subjectEl;
-	
+
 			this.trigger('dragStart', ev);
-	
+
 			// remove a mousedown'd <a>'s href so it is not visited (IE8 bug)
 			if ((this.subjectHref = subjectEl ? subjectEl.attr('href') : null)) {
 				subjectEl.removeAttr('href');
 			}
 		},
-	
-	
+
+
 		// Called while the mouse is being moved and when we know a legitimate drag is taking place
 		drag: function(dx, dy, ev) {
 			this.trigger('drag', dx, dy, ev);
 			this.updateScroll(ev); // will possibly cause scrolling
 		},
-	
-	
+
+
 		// Called when the user does a mouseup
 		mouseup: function(ev) {
 			this.stopListening(ev);
 		},
-	
-	
+
+
 		// Called when the drag is over. Will not cause listening to stop however.
 		// A concluding 'cellOut' event will NOT be triggered.
 		stopDrag: function(ev) {
@@ -2965,14 +3025,14 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.isDragging = false;
 			}
 		},
-	
-	
+
+
 		// Called when dragging has been stopped
 		dragStop: function(ev) {
 			var _this = this;
-	
+
 			this.trigger('dragStop', ev);
-	
+
 			// restore a mousedown'd <a>'s href (for IE8 bug)
 			setTimeout(function() { // must be outside of the click's execution
 				if (_this.subjectHref) {
@@ -2980,40 +3040,40 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 			}, 0);
 		},
-	
-	
+
+
 		// Call this to stop listening to the user's mouse events
 		stopListening: function(ev) {
 			this.stopDrag(ev); // if there's a current drag, kill it
-	
+
 			if (this.isListening) {
-	
+
 				// remove the scroll handler if there is a scrollEl
 				if (this.scrollEl) {
 					this.scrollEl.off('scroll', this.scrollHandlerProxy);
 					this.scrollHandlerProxy = null;
 				}
-	
+
 				$(document)
 					.off('mousemove', this.mousemoveProxy)
 					.off('mouseup', this.mouseupProxy)
 					.off('selectstart', this.preventDefault);
-	
+
 				this.mousemoveProxy = null;
 				this.mouseupProxy = null;
-	
+
 				this.isListening = false;
 				this.listenStop(ev);
 			}
 		},
-	
-	
+
+
 		// Called when drag listening has stopped
 		listenStop: function(ev) {
 			this.trigger('listenStop', ev);
 		},
-	
-	
+
+
 		// Triggers a callback. Calls a function in the option hash of the same name.
 		// Arguments beyond the first `name` are forwarded on.
 		trigger: function(name) {
@@ -3021,27 +3081,27 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.options[name].apply(this, Array.prototype.slice.call(arguments, 1));
 			}
 		},
-	
-	
+
+
 		// Stops a given mouse event from doing it's native browser action. In our case, text selection.
 		preventDefault: function(ev) {
 			ev.preventDefault();
 		},
-	
-	
+
+
 		/* Scrolling
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Computes and stores the bounding rectangle of scrollEl
 		computeScrollBounds: function() {
 			var el = this.scrollEl;
-	
+
 			this.scrollBounds = el ? getOuterRect(el) : null;
 				// TODO: use getClientRect in future. but prevents auto scrolling when on top of scrollbars
 		},
-	
-	
+
+
 		// Called when the dragging is in progress and scrolling should be updated
 		updateScroll: function(ev) {
 			var sensitivity = this.scrollSensitivity;
@@ -3050,15 +3110,15 @@ return /******/ (function(modules) { // webpackBootstrap
 			var leftCloseness, rightCloseness;
 			var topVel = 0;
 			var leftVel = 0;
-	
+
 			if (bounds) { // only scroll if scrollEl exists
-	
+
 				// compute closeness to edges. valid range is from 0.0 - 1.0
 				topCloseness = (sensitivity - (ev.pageY - bounds.top)) / sensitivity;
 				bottomCloseness = (sensitivity - (bounds.bottom - ev.pageY)) / sensitivity;
 				leftCloseness = (sensitivity - (ev.pageX - bounds.left)) / sensitivity;
 				rightCloseness = (sensitivity - (bounds.right - ev.pageX)) / sensitivity;
-	
+
 				// translate vertical closeness into velocity.
 				// mouse must be completely in bounds for velocity to happen.
 				if (topCloseness >= 0 && topCloseness <= 1) {
@@ -3067,7 +3127,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				else if (bottomCloseness >= 0 && bottomCloseness <= 1) {
 					topVel = bottomCloseness * this.scrollSpeed;
 				}
-	
+
 				// translate horizontal closeness into velocity
 				if (leftCloseness >= 0 && leftCloseness <= 1) {
 					leftVel = leftCloseness * this.scrollSpeed * -1; // negative. for scrolling left
@@ -3076,19 +3136,19 @@ return /******/ (function(modules) { // webpackBootstrap
 					leftVel = rightCloseness * this.scrollSpeed;
 				}
 			}
-	
+
 			this.setScrollVel(topVel, leftVel);
 		},
-	
-	
+
+
 		// Sets the speed-of-scrolling for the scrollEl
 		setScrollVel: function(topVel, leftVel) {
-	
+
 			this.scrollTopVel = topVel;
 			this.scrollLeftVel = leftVel;
-	
+
 			this.constrainScrollVel(); // massages into realistic values
-	
+
 			// if there is non-zero velocity, and an animation loop hasn't already started, then START
 			if ((this.scrollTopVel || this.scrollLeftVel) && !this.scrollIntervalId) {
 				this.scrollIntervalId = setInterval(
@@ -3097,12 +3157,12 @@ return /******/ (function(modules) { // webpackBootstrap
 				);
 			}
 		},
-	
-	
+
+
 		// Forces scrollTopVel and scrollLeftVel to be zero if scrolling has already gone all the way
 		constrainScrollVel: function() {
 			var el = this.scrollEl;
-	
+
 			if (this.scrollTopVel < 0) { // scrolling up?
 				if (el.scrollTop() <= 0) { // already scrolled all the way up?
 					this.scrollTopVel = 0;
@@ -3113,7 +3173,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					this.scrollTopVel = 0;
 				}
 			}
-	
+
 			if (this.scrollLeftVel < 0) { // scrolling left?
 				if (el.scrollLeft() <= 0) { // already scrolled all the left?
 					this.scrollLeftVel = 0;
@@ -3125,13 +3185,13 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 			}
 		},
-	
-	
+
+
 		// This function gets called during every iteration of the scrolling animation loop
 		scrollIntervalFunc: function() {
 			var el = this.scrollEl;
 			var frac = this.scrollIntervalMs / 1000; // considering animation frequency, what the vel should be mult'd by
-	
+
 			// change the value of scrollEl's scroll
 			if (this.scrollTopVel) {
 				el.scrollTop(el.scrollTop() + this.scrollTopVel * frac);
@@ -3139,28 +3199,28 @@ return /******/ (function(modules) { // webpackBootstrap
 			if (this.scrollLeftVel) {
 				el.scrollLeft(el.scrollLeft() + this.scrollLeftVel * frac);
 			}
-	
+
 			this.constrainScrollVel(); // since the scroll values changed, recompute the velocities
-	
+
 			// if scrolled all the way, which causes the vels to be zero, stop the animation loop
 			if (!this.scrollTopVel && !this.scrollLeftVel) {
 				this.stopScrolling();
 			}
 		},
-	
-	
+
+
 		// Kills any existing scrolling animation loop
 		stopScrolling: function() {
 			if (this.scrollIntervalId) {
 				clearInterval(this.scrollIntervalId);
 				this.scrollIntervalId = null;
-	
+
 				// when all done with scrolling, recompute positions since they probably changed
 				this.scrollStop();
 			}
 		},
-	
-	
+
+
 		// Get called when the scrollEl is scrolled (NOTE: this is delayed via debounce)
 		scrollHandler: function() {
 			// recompute all coordinates, but *only* if this is *not* part of our scrolling animation
@@ -3168,38 +3228,38 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.scrollStop();
 			}
 		},
-	
-	
+
+
 		// Called when scrolling has stopped, whether through auto scroll, or the user scrolling
 		scrollStop: function() {
 		}
-	
+
 	});
-	
+
 	;;
-	
+
 	/* Tracks mouse movements over a CoordMap and raises events about which cell the mouse is over.
 	------------------------------------------------------------------------------------------------------------------------
 	options:
 	- subjectEl
 	- subjectCenter
 	*/
-	
+
 	var CellDragListener = DragListener.extend({
-	
+
 		coordMap: null, // converts coordinates to date cells
 		origCell: null, // the cell the mouse was over when listening started
 		cell: null, // the cell the mouse is over
 		coordAdjust: null, // delta that will be added to the mouse coordinates when computing collisions
-	
-	
+
+
 		constructor: function(coordMap, options) {
 			DragListener.prototype.constructor.call(this, options); // call the super-constructor
-	
+
 			this.coordMap = coordMap;
 		},
-	
-	
+
+
 		// Called when drag listening starts (but a real drag has not necessarily began).
 		// ev might be undefined if dragging was started manually.
 		listenStart: function(ev) {
@@ -3207,35 +3267,35 @@ return /******/ (function(modules) { // webpackBootstrap
 			var subjectRect;
 			var origPoint;
 			var point;
-	
+
 			DragListener.prototype.listenStart.apply(this, arguments); // call the super-method
-	
+
 			this.computeCoords();
-	
+
 			if (ev) {
 				origPoint = { left: ev.pageX, top: ev.pageY };
 				point = origPoint;
-	
+
 				// constrain the point to bounds of the element being dragged
 				if (subjectEl) {
 					subjectRect = getOuterRect(subjectEl); // used for centering as well
 					point = constrainPoint(point, subjectRect);
 				}
-	
+
 				this.origCell = this.getCell(point.left, point.top);
-	
+
 				// treat the center of the subject as the collision point?
 				if (subjectEl && this.options.subjectCenter) {
-	
+
 					// only consider the area the subject overlaps the cell. best for large subjects
 					if (this.origCell) {
 						subjectRect = intersectRects(this.origCell, subjectRect) ||
 							subjectRect; // in case there is no intersection
 					}
-	
+
 					point = getRectCenter(subjectRect);
 				}
-	
+
 				this.coordAdjust = diffPoints(point, origPoint); // point - origPoint
 			}
 			else {
@@ -3243,39 +3303,39 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.coordAdjust = null;
 			}
 		},
-	
-	
+
+
 		// Recomputes the drag-critical positions of elements
 		computeCoords: function() {
 			this.coordMap.build();
 			this.computeScrollBounds();
 		},
-	
-	
+
+
 		// Called when the actual drag has started
 		dragStart: function(ev) {
 			var cell;
-	
+
 			DragListener.prototype.dragStart.apply(this, arguments); // call the super-method
-	
+
 			cell = this.getCell(ev.pageX, ev.pageY); // might be different from this.origCell if the min-distance is large
-	
+
 			// report the initial cell the mouse is over
 			// especially important if no min-distance and drag starts immediately
 			if (cell) {
 				this.cellOver(cell);
 			}
 		},
-	
-	
+
+
 		// Called when the drag moves
 		drag: function(dx, dy, ev) {
 			var cell;
-	
+
 			DragListener.prototype.drag.apply(this, arguments); // call the super-method
-	
+
 			cell = this.getCell(ev.pageX, ev.pageY);
-	
+
 			if (!isCellsEqual(cell, this.cell)) { // a different cell than before?
 				if (this.cell) {
 					this.cellOut();
@@ -3285,22 +3345,22 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 			}
 		},
-	
-	
+
+
 		// Called when dragging has been stopped
 		dragStop: function() {
 			this.cellDone();
 			DragListener.prototype.dragStop.apply(this, arguments); // call the super-method
 		},
-	
-	
+
+
 		// Called when a the mouse has just moved over a new cell
 		cellOver: function(cell) {
 			this.cell = cell;
 			this.trigger('cellOver', cell, isCellsEqual(cell, this.origCell), this.origCell);
 		},
-	
-	
+
+
 		// Called when the mouse has just moved out of a cell
 		cellOut: function() {
 			if (this.cell) {
@@ -3309,144 +3369,144 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.cell = null;
 			}
 		},
-	
-	
+
+
 		// Called after a cellOut. Also called before a dragStop
 		cellDone: function() {
 			if (this.cell) {
 				this.trigger('cellDone', this.cell);
 			}
 		},
-	
-	
+
+
 		// Called when drag listening has stopped
 		listenStop: function() {
 			DragListener.prototype.listenStop.apply(this, arguments); // call the super-method
-	
+
 			this.origCell = this.cell = null;
 			this.coordMap.clear();
 		},
-	
-	
+
+
 		// Called when scrolling has stopped, whether through auto scroll, or the user scrolling
 		scrollStop: function() {
 			DragListener.prototype.scrollStop.apply(this, arguments); // call the super-method
-	
+
 			this.computeCoords(); // cells' absolute positions will be in new places. recompute
 		},
-	
-	
+
+
 		// Gets the cell underneath the coordinates for the given mouse event
 		getCell: function(left, top) {
-	
+
 			if (this.coordAdjust) {
 				left += this.coordAdjust.left;
 				top += this.coordAdjust.top;
 			}
-	
+
 			return this.coordMap.getCell(left, top);
 		}
-	
+
 	});
-	
-	
+
+
 	// Returns `true` if the cells are identically equal. `false` otherwise.
 	// They must have the same row, col, and be from the same grid.
 	// Two null values will be considered equal, as two "out of the grid" states are the same.
 	function isCellsEqual(cell1, cell2) {
-	
+
 		if (!cell1 && !cell2) {
 			return true;
 		}
-	
+
 		if (cell1 && cell2) {
 			return cell1.grid === cell2.grid &&
 				cell1.row === cell2.row &&
 				cell1.col === cell2.col;
 		}
-	
+
 		return false;
 	}
-	
+
 	;;
-	
+
 	/* Creates a clone of an element and lets it track the mouse as it moves
 	----------------------------------------------------------------------------------------------------------------------*/
-	
+
 	var MouseFollower = Class.extend({
-	
+
 		options: null,
-	
+
 		sourceEl: null, // the element that will be cloned and made to look like it is dragging
 		el: null, // the clone of `sourceEl` that will track the mouse
 		parentEl: null, // the element that `el` (the clone) will be attached to
-	
+
 		// the initial position of el, relative to the offset parent. made to match the initial offset of sourceEl
 		top0: null,
 		left0: null,
-	
+
 		// the initial position of the mouse
 		mouseY0: null,
 		mouseX0: null,
-	
+
 		// the number of pixels the mouse has moved from its initial position
 		topDelta: null,
 		leftDelta: null,
-	
+
 		mousemoveProxy: null, // document mousemove handler, bound to the MouseFollower's `this`
-	
+
 		isFollowing: false,
 		isHidden: false,
 		isAnimating: false, // doing the revert animation?
-	
+
 		constructor: function(sourceEl, options) {
 			this.options = options = options || {};
 			this.sourceEl = sourceEl;
 			this.parentEl = options.parentEl ? $(options.parentEl) : sourceEl.parent(); // default to sourceEl's parent
 		},
-	
-	
+
+
 		// Causes the element to start following the mouse
 		start: function(ev) {
 			if (!this.isFollowing) {
 				this.isFollowing = true;
-	
+
 				this.mouseY0 = ev.pageY;
 				this.mouseX0 = ev.pageX;
 				this.topDelta = 0;
 				this.leftDelta = 0;
-	
+
 				if (!this.isHidden) {
 					this.updatePosition();
 				}
-	
+
 				$(document).on('mousemove', this.mousemoveProxy = proxy(this, 'mousemove'));
 			}
 		},
-	
-	
+
+
 		// Causes the element to stop following the mouse. If shouldRevert is true, will animate back to original position.
 		// `callback` gets invoked when the animation is complete. If no animation, it is invoked immediately.
 		stop: function(shouldRevert, callback) {
 			var _this = this;
 			var revertDuration = this.options.revertDuration;
-	
+
 			function complete() {
 				this.isAnimating = false;
 				_this.removeElement();
-	
+
 				this.top0 = this.left0 = null; // reset state for future updatePosition calls
-	
+
 				if (callback) {
 					callback();
 				}
 			}
-	
+
 			if (this.isFollowing && !this.isAnimating) { // disallow more than one stop animation at a time
 				this.isFollowing = false;
-	
+
 				$(document).off('mousemove', this.mousemoveProxy);
-	
+
 				if (shouldRevert && revertDuration && !this.isHidden) { // do a revert animation?
 					this.isAnimating = true;
 					this.el.animate({
@@ -3462,12 +3522,12 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 			}
 		},
-	
-	
+
+
 		// Gets the tracking element. Create it if necessary
 		getEl: function() {
 			var el = this.el;
-	
+
 			if (!el) {
 				this.sourceEl.width(); // hack to force IE8 to compute correct bounding box
 				el = this.el = this.sourceEl.clone()
@@ -3485,11 +3545,11 @@ return /******/ (function(modules) { // webpackBootstrap
 					})
 					.appendTo(this.parentEl);
 			}
-	
+
 			return el;
 		},
-	
-	
+
+
 		// Removes the tracking element if it has already been created
 		removeElement: function() {
 			if (this.el) {
@@ -3497,15 +3557,15 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.el = null;
 			}
 		},
-	
-	
+
+
 		// Update the CSS position of the tracking element
 		updatePosition: function() {
 			var sourceOffset;
 			var origin;
-	
+
 			this.getEl(); // ensure this.el
-	
+
 			// make sure origin info was computed
 			if (this.top0 === null) {
 				this.sourceEl.width(); // hack to force IE8 to compute correct bounding box
@@ -3514,25 +3574,25 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.top0 = sourceOffset.top - origin.top;
 				this.left0 = sourceOffset.left - origin.left;
 			}
-	
+
 			this.el.css({
 				top: this.top0 + this.topDelta,
 				left: this.left0 + this.leftDelta
 			});
 		},
-	
-	
+
+
 		// Gets called when the user moves the mouse
 		mousemove: function(ev) {
 			this.topDelta = ev.pageY - this.mouseY0;
 			this.leftDelta = ev.pageX - this.mouseX0;
-	
+
 			if (!this.isHidden) {
 				this.updatePosition();
 			}
 		},
-	
-	
+
+
 		// Temporarily makes the tracking element invisible. Can be called before following starts
 		hide: function() {
 			if (!this.isHidden) {
@@ -3542,8 +3602,8 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 			}
 		},
-	
-	
+
+
 		// Show the tracking element after it has been temporarily hidden
 		show: function() {
 			if (this.isHidden) {
@@ -3552,29 +3612,29 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.getEl().show();
 			}
 		}
-	
+
 	});
-	
+
 	;;
-	
+
 	/* A utility class for rendering <tr> rows.
 	----------------------------------------------------------------------------------------------------------------------*/
 	// It leverages methods of the subclass and the View to determine custom rendering behavior for each row "type"
 	// (such as highlight rows, day rows, helper rows, etc).
-	
+
 	var RowRenderer = Class.extend({
-	
+
 		view: null, // a View object
 		isRTL: null, // shortcut to the view's isRTL option
 		cellHtml: '<td/>', // plain default HTML used for a cell when no other is available
-	
-	
+
+
 		constructor: function(view) {
 			this.view = view;
 			this.isRTL = view.opt('isRTL');
 		},
-	
-	
+
+
 		// Renders the HTML for a row, leveraging custom cell-HTML-renderers based on the `rowType`.
 		// Also applies the "intro" and "outro" cells, which are specified by the subclass and views.
 		// `row` is an optional row number.
@@ -3583,20 +3643,20 @@ return /******/ (function(modules) { // webpackBootstrap
 			var rowCellHtml = '';
 			var col;
 			var cell;
-	
+
 			row = row || 0;
-	
+
 			for (col = 0; col < this.colCnt; col++) {
 				cell = this.getCell(row, col);
 				rowCellHtml += renderCell(cell);
 			}
-	
+
 			rowCellHtml = this.bookendCells(rowCellHtml, rowType, row); // apply intro and outro
-	
+
 			return '<tr>' + rowCellHtml + '</tr>';
 		},
-	
-	
+
+
 		// Applies the "intro" and "outro" HTML to the given cells.
 		// Intro means the leftmost cell when the calendar is LTR and the rightmost cell when RTL. Vice-versa for outro.
 		// `cells` can be an HTML string of <td>'s or a jQuery <tr> element
@@ -3606,7 +3666,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			var outro = this.getHtmlRenderer('outro', rowType)(row || 0);
 			var prependHtml = this.isRTL ? outro : intro;
 			var appendHtml = this.isRTL ? intro : outro;
-	
+
 			if (typeof cells === 'string') {
 				return prependHtml + cells + appendHtml;
 			}
@@ -3614,8 +3674,8 @@ return /******/ (function(modules) { // webpackBootstrap
 				return cells.prepend(prependHtml).append(appendHtml);
 			}
 		},
-	
-	
+
+
 		// Returns an HTML-rendering function given a specific `rendererName` (like cell, intro, or outro) and a specific
 		// `rowType` (like day, eventSkeleton, helperSkeleton), which is optional.
 		// If a renderer for the specific rowType doesn't exist, it will fall back to a generic renderer.
@@ -3626,12 +3686,12 @@ return /******/ (function(modules) { // webpackBootstrap
 			var specificName; // like "dayCellHtml". based on rowType
 			var provider; // either the View or the RowRenderer subclass, whichever provided the method
 			var renderer;
-	
+
 			generalName = rendererName + 'Html';
 			if (rowType) {
 				specificName = rowType + capitaliseFirstLetter(rendererName) + 'Html';
 			}
-	
+
 			if (specificName && (renderer = view[specificName])) {
 				provider = view;
 			}
@@ -3644,161 +3704,161 @@ return /******/ (function(modules) { // webpackBootstrap
 			else if ((renderer = this[generalName])) {
 				provider = this;
 			}
-	
+
 			if (typeof renderer === 'function') {
 				return function() {
 					return renderer.apply(provider, arguments) || ''; // use correct `this` and always return a string
 				};
 			}
-	
+
 			// the rendered can be a plain string as well. if not specified, always an empty string.
 			return function() {
 				return renderer || '';
 			};
 		}
-	
+
 	});
-	
+
 	;;
-	
+
 	/* An abstract class comprised of a "grid" of cells that each represent a specific datetime
 	----------------------------------------------------------------------------------------------------------------------*/
-	
+
 	var Grid = fc.Grid = RowRenderer.extend({
-	
+
 		start: null, // the date of the first cell
 		end: null, // the date after the last cell
-	
+
 		rowCnt: 0, // number of rows
 		colCnt: 0, // number of cols
-	
+
 		el: null, // the containing element
 		coordMap: null, // a GridCoordMap that converts pixel values to datetimes
 		elsByFill: null, // a hash of jQuery element sets used for rendering each fill. Keyed by fill name.
-	
+
 		externalDragStartProxy: null, // binds the Grid's scope to externalDragStart (in DayGrid.events)
-	
+
 		// derived from options
 		colHeadFormat: null, // TODO: move to another class. not applicable to all Grids
 		eventTimeFormat: null,
 		displayEventTime: null,
 		displayEventEnd: null,
-	
+
 		// if all cells are the same length of time, the duration they all share. optional.
 		// when defined, allows the computeCellRange shortcut, as well as improved resizing behavior.
 		cellDuration: null,
-	
+
 		// if defined, holds the unit identified (ex: "year" or "month") that determines the level of granularity
 		// of the date cells. if not defined, assumes to be day and time granularity.
 		largeUnit: null,
-	
-	
+
+
 		constructor: function() {
 			RowRenderer.apply(this, arguments); // call the super-constructor
-	
+
 			this.coordMap = new GridCoordMap(this);
 			this.elsByFill = {};
 			this.externalDragStartProxy = proxy(this, 'externalDragStart');
 		},
-	
-	
+
+
 		/* Options
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Generates the format string used for the text in column headers, if not explicitly defined by 'columnFormat'
 		// TODO: move to another class. not applicable to all Grids
 		computeColHeadFormat: function() {
 			// subclasses must implement if they want to use headHtml()
 		},
-	
-	
+
+
 		// Generates the format string used for event time text, if not explicitly defined by 'timeFormat'
 		computeEventTimeFormat: function() {
 			return this.view.opt('smallTimeFormat');
 		},
-	
-	
+
+
 		// Determines whether events should have their end times displayed, if not explicitly defined by 'displayEventTime'.
 		// Only applies to non-all-day events.
 		computeDisplayEventTime: function() {
 			return true;
 		},
-	
-	
+
+
 		// Determines whether events should have their end times displayed, if not explicitly defined by 'displayEventEnd'
 		computeDisplayEventEnd: function() {
 			return true;
 		},
-	
-	
+
+
 		/* Dates
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Tells the grid about what period of time to display.
 		// Any date-related cell system internal data should be generated.
 		setRange: function(range) {
 			this.start = range.start.clone();
 			this.end = range.end.clone();
-	
+
 			this.rangeUpdated();
 			this.processRangeOptions();
 		},
-	
-	
+
+
 		// Called when internal variables that rely on the range should be updated
 		rangeUpdated: function() {
 		},
-	
-	
+
+
 		// Updates values that rely on options and also relate to range
 		processRangeOptions: function() {
 			var view = this.view;
 			var displayEventTime;
 			var displayEventEnd;
-	
+
 			// Populate option-derived settings. Look for override first, then compute if necessary.
 			this.colHeadFormat = view.opt('columnFormat') || this.computeColHeadFormat();
-	
+
 			this.eventTimeFormat =
 				view.opt('eventTimeFormat') ||
 				view.opt('timeFormat') || // deprecated
 				this.computeEventTimeFormat();
-	
+
 			displayEventTime = view.opt('displayEventTime');
 			if (displayEventTime == null) {
 				displayEventTime = this.computeDisplayEventTime(); // might be based off of range
 			}
-	
+
 			displayEventEnd = view.opt('displayEventEnd');
 			if (displayEventEnd == null) {
 				displayEventEnd = this.computeDisplayEventEnd(); // might be based off of range
 			}
-	
+
 			this.displayEventTime = displayEventTime;
 			this.displayEventEnd = displayEventEnd;
 		},
-	
-	
+
+
 		// Called before the grid's coordinates will need to be queried for cells.
 		// Any non-date-related cell system internal data should be built.
 		build: function() {
 		},
-	
-	
+
+
 		// Called after the grid's coordinates are done being relied upon.
 		// Any non-date-related cell system internal data should be cleared.
 		clear: function() {
 		},
-	
-	
+
+
 		// Converts a range with an inclusive `start` and an exclusive `end` into an array of segment objects
 		rangeToSegs: function(range) {
 			// subclasses must implement
 		},
-	
-	
+
+
 		// Diffs the two dates, returning a duration, based on granularity of the grid
 		diffDates: function(a, b) {
 			if (this.largeUnit) {
@@ -3808,18 +3868,18 @@ return /******/ (function(modules) { // webpackBootstrap
 				return diffDayTime(a, b);
 			}
 		},
-	
-	
+
+
 		/* Cells
 		------------------------------------------------------------------------------------------------------------------*/
 		// NOTE: columns are ordered left-to-right
-	
-	
+
+
 		// Gets an object containing row/col number, misc data, and range information about the cell.
 		// Accepts row/col values, an object with row/col properties, or a single-number offset from the first cell.
 		getCell: function(row, col) {
 			var cell;
-	
+
 			if (col == null) {
 				if (typeof row === 'number') { // a single-number offset
 					col = row % this.colCnt;
@@ -3830,76 +3890,76 @@ return /******/ (function(modules) { // webpackBootstrap
 					row = row.row;
 				}
 			}
-	
+
 			cell = { row: row, col: col };
-	
+
 			$.extend(cell, this.getRowData(row), this.getColData(col));
 			$.extend(cell, this.computeCellRange(cell));
-	
+
 			return cell;
 		},
-	
-	
+
+
 		// Given a cell object with index and misc data, generates a range object
 		// If the grid is leveraging cellDuration, this doesn't need to be defined. Only computeCellDate does.
 		// If being overridden, should return a range with reference-free date copies.
 		computeCellRange: function(cell) {
 			var date = this.computeCellDate(cell);
-	
+
 			return {
 				start: date,
 				end: date.clone().add(this.cellDuration)
 			};
 		},
-	
-	
+
+
 		// Given a cell, returns its start date. Should return a reference-free date copy.
 		computeCellDate: function(cell) {
 			// subclasses can implement
 		},
-	
-	
+
+
 		// Retrieves misc data about the given row
 		getRowData: function(row) {
 			return {};
 		},
-	
-	
+
+
 		// Retrieves misc data baout the given column
 		getColData: function(col) {
 			return {};
 		},
-	
-	
+
+
 		// Retrieves the element representing the given row
 		getRowEl: function(row) {
 			// subclasses should implement if leveraging the default getCellDayEl() or computeRowCoords()
 		},
-	
-	
+
+
 		// Retrieves the element representing the given column
 		getColEl: function(col) {
 			// subclasses should implement if leveraging the default getCellDayEl() or computeColCoords()
 		},
-	
-	
+
+
 		// Given a cell object, returns the element that represents the cell's whole-day
 		getCellDayEl: function(cell) {
 			return this.getColEl(cell.col) || this.getRowEl(cell.row);
 		},
-	
-	
+
+
 		/* Cell Coordinates
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Computes the top/bottom coordinates of all rows.
 		// By default, queries the dimensions of the element provided by getRowEl().
 		computeRowCoords: function() {
 			var items = [];
 			var i, el;
 			var top;
-	
+
 			for (i = 0; i < this.rowCnt; i++) {
 				el = this.getRowEl(i);
 				top = el.offset().top;
@@ -3908,18 +3968,18 @@ return /******/ (function(modules) { // webpackBootstrap
 					bottom: top + el.outerHeight()
 				});
 			}
-	
+
 			return items;
 		},
-	
-	
+
+
 		// Computes the left/right coordinates of all rows.
 		// By default, queries the dimensions of the element provided by getColEl(). Columns can be LTR or RTL.
 		computeColCoords: function() {
 			var items = [];
 			var i, el;
 			var left;
-	
+
 			for (i = 0; i < this.colCnt; i++) {
 				el = this.getColEl(i);
 				left = el.offset().left;
@@ -3928,22 +3988,22 @@ return /******/ (function(modules) { // webpackBootstrap
 					right: left + el.outerWidth()
 				});
 			}
-	
+
 			return items;
 		},
-	
-	
+
+
 		/* Rendering
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Sets the container element that the grid should render inside of.
 		// Does other DOM-related initializations.
 		setElement: function(el) {
 			var _this = this;
-	
+
 			this.el = el;
-	
+
 			// attach a handler to the grid's root element.
 			// jQuery will take care of unregistering them when removeElement gets called.
 			el.on('mousedown', function(ev) {
@@ -3954,61 +4014,61 @@ return /******/ (function(modules) { // webpackBootstrap
 					_this.dayMousedown(ev);
 				}
 			});
-	
+
 			// attach event-element-related handlers. in Grid.events
 			// same garbage collection note as above.
 			this.bindSegHandlers();
-	
+
 			this.bindGlobalHandlers();
 		},
-	
-	
+
+
 		// Removes the grid's container element from the DOM. Undoes any other DOM-related attachments.
 		// DOES NOT remove any content beforehand (doesn't clear events or call unrenderDates), unlike View
 		removeElement: function() {
 			this.unbindGlobalHandlers();
-	
+
 			this.el.remove();
-	
+
 			// NOTE: we don't null-out this.el for the same reasons we don't do it within View::removeElement
 		},
-	
-	
+
+
 		// Renders the basic structure of grid view before any content is rendered
 		renderSkeleton: function() {
 			// subclasses should implement
 		},
-	
-	
+
+
 		// Renders the grid's date-related content (like cells that represent days/times).
 		// Assumes setRange has already been called and the skeleton has already been rendered.
 		renderDates: function() {
 			// subclasses should implement
 		},
-	
-	
+
+
 		// Unrenders the grid's date-related content
 		unrenderDates: function() {
 			// subclasses should implement
 		},
-	
-	
+
+
 		/* Handlers
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Binds DOM handlers to elements that reside outside the grid, such as the document
 		bindGlobalHandlers: function() {
 			$(document).on('dragstart sortstart', this.externalDragStartProxy); // jqui
 		},
-	
-	
+
+
 		// Unbinds DOM handlers from elements that reside outside the grid
 		unbindGlobalHandlers: function() {
 			$(document).off('dragstart sortstart', this.externalDragStartProxy); // jqui
 		},
-	
-	
+
+
 		// Process a mousedown on an element that represents a day. For day clicking and selecting.
 		dayMousedown: function(ev) {
 			var _this = this;
@@ -4016,7 +4076,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			var isSelectable = view.opt('selectable');
 			var dayClickCell; // null if invalid dayClick
 			var selectionRange; // null if invalid selection
-	
+
 			// this listener tracks a mousedown on a day element, and a subsequent drag.
 			// if the drag ends on the same day, it is a 'dayClick'.
 			// if 'selectable' is enabled, this listener also detects selections.
@@ -4057,75 +4117,75 @@ return /******/ (function(modules) { // webpackBootstrap
 					enableCursor();
 				}
 			});
-	
+
 			dragListener.mousedown(ev); // start listening, which will eventually initiate a dragStart
 		},
-	
-	
+
+
 		/* Event Helper
 		------------------------------------------------------------------------------------------------------------------*/
 		// TODO: should probably move this to Grid.events, like we did event dragging / resizing
-	
-	
+
+
 		// Renders a mock event over the given range
 		renderRangeHelper: function(range, sourceSeg) {
 			var fakeEvent = this.fabricateHelperEvent(range, sourceSeg);
-	
+
 			this.renderHelper(fakeEvent, sourceSeg); // do the actual rendering
 		},
-	
-	
+
+
 		// Builds a fake event given a date range it should cover, and a segment is should be inspired from.
 		// The range's end can be null, in which case the mock event that is rendered will have a null end time.
 		// `sourceSeg` is the internal segment object involved in the drag. If null, something external is dragging.
 		fabricateHelperEvent: function(range, sourceSeg) {
 			var fakeEvent = sourceSeg ? createObject(sourceSeg.event) : {}; // mask the original event object if possible
-	
+
 			fakeEvent.start = range.start.clone();
 			fakeEvent.end = range.end ? range.end.clone() : null;
 			fakeEvent.allDay = null; // force it to be freshly computed by normalizeEventRange
 			this.view.calendar.normalizeEventRange(fakeEvent);
-	
+
 			// this extra className will be useful for differentiating real events from mock events in CSS
 			fakeEvent.className = (fakeEvent.className || []).concat('fc-helper');
-	
+
 			// if something external is being dragged in, don't render a resizer
 			if (!sourceSeg) {
 				fakeEvent.editable = false;
 			}
-	
+
 			return fakeEvent;
 		},
-	
-	
+
+
 		// Renders a mock event
 		renderHelper: function(event, sourceSeg) {
 			// subclasses must implement
 		},
-	
-	
+
+
 		// Unrenders a mock event
 		unrenderHelper: function() {
 			// subclasses must implement
 		},
-	
-	
+
+
 		/* Selection
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Renders a visual indication of a selection. Will highlight by default but can be overridden by subclasses.
 		renderSelection: function(range) {
 			this.renderHighlight(this.selectionRangeToSegs(range));
 		},
-	
-	
+
+
 		// Unrenders any visual indications of a selection. Will unrender a highlight by default.
 		unrenderSelection: function() {
 			this.unrenderHighlight();
 		},
-	
-	
+
+
 		// Given the first and last cells of a selection, returns a range object.
 		// Will return something falsy if the selection is invalid (when outside of selectionConstraint for example).
 		// Subclasses can override and provide additional data in the range object. Will be passed to renderSelection().
@@ -4137,72 +4197,72 @@ return /******/ (function(modules) { // webpackBootstrap
 				lastCell.end
 			];
 			var range;
-	
+
 			dates.sort(compareNumbers); // sorts chronologically. works with Moments
-	
+
 			range = {
 				start: dates[0].clone(),
 				end: dates[3].clone()
 			};
-	
+
 			if (!this.view.calendar.isSelectionRangeAllowed(range)) {
 				return null;
 			}
-	
+
 			return range;
 		},
-	
-	
+
+
 		selectionRangeToSegs: function(range) {
 			return this.rangeToSegs(range);
 		},
-	
-	
+
+
 		/* Highlight
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Renders an emphasis on the given date range. Given an array of segments.
 		renderHighlight: function(segs) {
 			this.renderFill('highlight', segs);
 		},
-	
-	
+
+
 		// Unrenders the emphasis on a date range
 		unrenderHighlight: function() {
 			this.unrenderFill('highlight');
 		},
-	
-	
+
+
 		// Generates an array of classNames for rendering the highlight. Used by the fill system.
 		highlightSegClasses: function() {
 			return [ 'fc-highlight' ];
 		},
-	
-	
+
+
 		/* Fill System (highlight, background events, business hours)
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Renders a set of rectangles over the given segments of time.
 		// MUST RETURN a subset of segs, the segs that were actually rendered.
 		// Responsible for populating this.elsByFill. TODO: better API for expressing this requirement
 		renderFill: function(type, segs) {
 			// subclasses must implement
 		},
-	
-	
+
+
 		// Unrenders a specific type of fill that is currently rendered on the grid
 		unrenderFill: function(type) {
 			var el = this.elsByFill[type];
-	
+
 			if (el) {
 				el.remove();
 				delete this.elsByFill[type];
 			}
 		},
-	
-	
+
+
 		// Renders and assigns an `el` property for each fill segment. Generic enough to work with different types.
 		// Only returns segments that successfully rendered.
 		// To be harnessed by renderFill (implemented by subclasses).
@@ -4213,28 +4273,28 @@ return /******/ (function(modules) { // webpackBootstrap
 			var html = '';
 			var renderedSegs = [];
 			var i;
-	
+
 			if (segs.length) {
-	
+
 				// build a large concatenation of segment HTML
 				for (i = 0; i < segs.length; i++) {
 					html += this.fillSegHtml(type, segs[i]);
 				}
-	
+
 				// Grab individual elements from the combined HTML string. Use each as the default rendering.
 				// Then, compute the 'el' for each segment.
 				$(html).each(function(i, node) {
 					var seg = segs[i];
 					var el = $(node);
-	
+
 					// allow custom filter methods per-type
 					if (segElMethod) {
 						el = segElMethod.call(_this, seg, el);
 					}
-	
+
 					if (el) { // custom filters did not cancel the render
 						el = $(el); // allow custom filter to return raw DOM node
-	
+
 						// correct element type? (would be bad if a non-TD were inserted into a table for example)
 						if (el.is(_this.fillSegTag)) {
 							seg.el = el;
@@ -4243,35 +4303,35 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				});
 			}
-	
+
 			return renderedSegs;
 		},
-	
-	
+
+
 		fillSegTag: 'div', // subclasses can override
-	
-	
+
+
 		// Builds the HTML needed for one fill segment. Generic enought o work with different types.
 		fillSegHtml: function(type, seg) {
-	
+
 			// custom hooks per-type
 			var classesMethod = this[type + 'SegClasses'];
 			var cssMethod = this[type + 'SegCss'];
-	
+
 			var classes = classesMethod ? classesMethod.call(this, seg) : [];
 			var css = cssToStr(cssMethod ? cssMethod.call(this, seg) : {});
-	
+
 			return '<' + this.fillSegTag +
 				(classes.length ? ' class="' + classes.join(' ') + '"' : '') +
 				(css ? ' style="' + css + '"' : '') +
 				' />';
 		},
-	
-	
+
+
 		/* Generic rendering utilities for subclasses
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Renders a day-of-week header row.
 		// TODO: move to another class. not applicable to all Grids
 		headHtml: function() {
@@ -4284,48 +4344,48 @@ return /******/ (function(modules) { // webpackBootstrap
 					'</table>' +
 				'</div>';
 		},
-	
-	
+
+
 		// Used by the `headHtml` method, via RowRenderer, for rendering the HTML of a day-of-week header cell
 		// TODO: move to another class. not applicable to all Grids
 		headCellHtml: function(cell) {
 			var view = this.view;
 			var date = cell.start;
-	
+
 			return '' +
 				'<th class="fc-day-header ' + view.widgetHeaderClass + ' fc-' + dayIDs[date.day()] + '">' +
 					htmlEscape(date.format(this.colHeadFormat)) +
 				'</th>';
 		},
-	
-	
+
+
 		// Renders the HTML for a single-day background cell
 		bgCellHtml: function(cell) {
 			var view = this.view;
 			var date = cell.start;
 			var classes = this.getDayClasses(date);
-	
+
 			classes.unshift('fc-day', view.widgetContentClass);
-	
+
 			return '<td class="' + classes.join(' ') + '"' +
 				' data-date="' + date.format('YYYY-MM-DD') + '"' + // if date has a time, won't format it
 				'></td>';
 		},
-	
-	
+
+
 		// Computes HTML classNames for a single-day cell
 		getDayClasses: function(date) {
 			var view = this.view;
 			var today = view.calendar.getNow().stripTime();
 			var classes = [ 'fc-' + dayIDs[date.day()] ];
-	
+
 			if (
 				view.intervalDuration.as('months') == 1 &&
 				date.month() != view.intervalStart.month()
 			) {
 				classes.push('fc-other-month');
 			}
-	
+
 			if (date.isSame(today, 'day')) {
 				classes.push(
 					'fc-today',
@@ -4338,36 +4398,36 @@ return /******/ (function(modules) { // webpackBootstrap
 			else {
 				classes.push('fc-future');
 			}
-	
+
 			return classes;
 		}
-	
+
 	});
-	
+
 	;;
-	
+
 	/* Event-rendering and event-interaction methods for the abstract Grid class
 	----------------------------------------------------------------------------------------------------------------------*/
-	
+
 	Grid.mixin({
-	
+
 		mousedOverSeg: null, // the segment object the user's mouse is over. null if over nothing
 		isDraggingSeg: false, // is a segment being dragged? boolean
 		isResizingSeg: false, // is a segment being resized? boolean
 		isDraggingExternal: false, // jqui-dragging an external element? boolean
 		segs: null, // the event segments currently rendered in the grid
-	
-	
+
+
 		// Renders the given events onto the grid
 		renderEvents: function(events) {
 			var segs = this.eventsToSegs(events);
 			var bgSegs = [];
 			var fgSegs = [];
 			var i, seg;
-	
+
 			for (i = 0; i < segs.length; i++) {
 				seg = segs[i];
-	
+
 				if (isBgEvent(seg.event)) {
 					bgSegs.push(seg);
 				}
@@ -4375,49 +4435,49 @@ return /******/ (function(modules) { // webpackBootstrap
 					fgSegs.push(seg);
 				}
 			}
-	
+
 			// Render each different type of segment.
 			// Each function may return a subset of the segs, segs that were actually rendered.
 			bgSegs = this.renderBgSegs(bgSegs) || bgSegs;
 			fgSegs = this.renderFgSegs(fgSegs) || fgSegs;
-	
+
 			this.segs = bgSegs.concat(fgSegs);
 		},
-	
-	
+
+
 		// Unrenders all events currently rendered on the grid
 		unrenderEvents: function() {
 			this.triggerSegMouseout(); // trigger an eventMouseout if user's mouse is over an event
-	
+
 			this.unrenderFgSegs();
 			this.unrenderBgSegs();
-	
+
 			this.segs = null;
 		},
-	
-	
+
+
 		// Retrieves all rendered segment objects currently rendered on the grid
 		getEventSegs: function() {
 			return this.segs || [];
 		},
-	
-	
+
+
 		/* Foreground Segment Rendering
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Renders foreground event segments onto the grid. May return a subset of segs that were rendered.
 		renderFgSegs: function(segs) {
 			// subclasses must implement
 		},
-	
-	
+
+
 		// Unrenders all currently rendered foreground segments
 		unrenderFgSegs: function() {
 			// subclasses must implement
 		},
-	
-	
+
+
 		// Renders and assigns an `el` property for each foreground event segment.
 		// Only returns segments that successfully rendered.
 		// A utility that subclasses may use.
@@ -4426,20 +4486,20 @@ return /******/ (function(modules) { // webpackBootstrap
 			var html = '';
 			var renderedSegs = [];
 			var i;
-	
+
 			if (segs.length) { // don't build an empty html string
-	
+
 				// build a large concatenation of event segment HTML
 				for (i = 0; i < segs.length; i++) {
 					html += this.fgSegHtml(segs[i], disableResizing);
 				}
-	
+
 				// Grab individual elements from the combined HTML string. Use each as the default rendering.
 				// Then, compute the 'el' for each segment. An el might be null if the eventRender callback returned false.
 				$(html).each(function(i, node) {
 					var seg = segs[i];
 					var el = view.resolveEventEl(seg.event, $(node));
-	
+
 					if (el) {
 						el.data('fc-seg', seg); // used by handlers
 						seg.el = el;
@@ -4447,53 +4507,53 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				});
 			}
-	
+
 			return renderedSegs;
 		},
-	
-	
+
+
 		// Generates the HTML for the default rendering of a foreground event segment. Used by renderFgSegEls()
 		fgSegHtml: function(seg, disableResizing) {
 			// subclasses should implement
 		},
-	
-	
+
+
 		/* Background Segment Rendering
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Renders the given background event segments onto the grid.
 		// Returns a subset of the segs that were actually rendered.
 		renderBgSegs: function(segs) {
 			return this.renderFill('bgEvent', segs);
 		},
-	
-	
+
+
 		// Unrenders all the currently rendered background event segments
 		unrenderBgSegs: function() {
 			this.unrenderFill('bgEvent');
 		},
-	
-	
+
+
 		// Renders a background event element, given the default rendering. Called by the fill system.
 		bgEventSegEl: function(seg, el) {
 			return this.view.resolveEventEl(seg.event, el); // will filter through eventRender
 		},
-	
-	
+
+
 		// Generates an array of classNames to be used for the default rendering of a background event.
 		// Called by the fill system.
 		bgEventSegClasses: function(seg) {
 			var event = seg.event;
 			var source = event.source || {};
-	
+
 			return [ 'fc-bgevent' ].concat(
 				event.className,
 				source.className || []
 			);
 		},
-	
-	
+
+
 		// Generates a semicolon-separated CSS string to be used for the default rendering of a background event.
 		// Called by the fill system.
 		// TODO: consolidate with getEventSkinCss?
@@ -4501,7 +4561,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			var view = this.view;
 			var event = seg.event;
 			var source = event.source || {};
-	
+
 			return {
 				'background-color':
 					event.backgroundColor ||
@@ -4512,23 +4572,23 @@ return /******/ (function(modules) { // webpackBootstrap
 					view.opt('eventColor')
 			};
 		},
-	
-	
+
+
 		// Generates an array of classNames to be used for the rendering business hours overlay. Called by the fill system.
 		businessHoursSegClasses: function(seg) {
 			return [ 'fc-nonbusiness', 'fc-bgevent' ];
 		},
-	
-	
+
+
 		/* Handlers
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Attaches event-element-related handlers to the container element and leverage bubbling
 		bindSegHandlers: function() {
 			var _this = this;
 			var view = this.view;
-	
+
 			$.each(
 				{
 					mouseenter: function(seg, ev) {
@@ -4553,7 +4613,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					// attach the handler to the container element and only listen for real event elements via bubbling
 					_this.el.on(name, '.fc-event-container > *', function(ev) {
 						var seg = $(this).data('fc-seg'); // grab segment data. put there by View::renderEvents
-	
+
 						// only call the handlers if there is not a drag/resize in progress
 						if (seg && !_this.isDraggingSeg && !_this.isResizingSeg) {
 							return func.call(this, seg, ev); // `this` will be the event element
@@ -4562,8 +4622,8 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 			);
 		},
-	
-	
+
+
 		// Updates internal state and triggers handlers for when an event element is moused over
 		triggerSegMouseover: function(seg, ev) {
 			if (!this.mousedOverSeg) {
@@ -4571,25 +4631,25 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.view.trigger('eventMouseover', seg.el[0], seg.event, ev);
 			}
 		},
-	
-	
+
+
 		// Updates internal state and triggers handlers for when an event element is moused out.
 		// Can be given no arguments, in which case it will mouseout the segment that was previously moused over.
 		triggerSegMouseout: function(seg, ev) {
 			ev = ev || {}; // if given no args, make a mock mouse event
-	
+
 			if (this.mousedOverSeg) {
 				seg = seg || this.mousedOverSeg; // if given no args, use the currently moused-over segment
 				this.mousedOverSeg = null;
 				this.view.trigger('eventMouseout', seg.el[0], seg.event, ev);
 			}
 		},
-	
-	
+
+
 		/* Event Dragging
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Called when the user does a mousedown on an event, which might lead to dragging.
 		// Generic enough to work with any type of Grid.
 		segDragMousedown: function(seg, ev) {
@@ -4599,7 +4659,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			var el = seg.el;
 			var event = seg.event;
 			var dropLocation;
-	
+
 			// A clone of the original element that will move with the mouse
 			var mouseFollower = new MouseFollower(seg.el, {
 				parentEl: view.el,
@@ -4607,7 +4667,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				revertDuration: view.opt('dragRevertDuration'),
 				zIndex: 2 // one above the .fc-view
 			});
-	
+
 			// Tracks mouse movement over the *view's* coordinate map. Allows dragging and dropping between subcomponents
 			// of the view.
 			var dragListener = new CellDragListener(view.coordMap, {
@@ -4625,19 +4685,19 @@ return /******/ (function(modules) { // webpackBootstrap
 					view.hideEvent(event); // hide all event segments. our mouseFollower will take over
 				},
 				cellOver: function(cell, isOrig, origCell) {
-	
+
 					// starting cell could be forced (DayGrid.limit)
 					if (seg.cell) {
 						origCell = seg.cell;
 					}
-	
+
 					dropLocation = _this.computeEventDrop(origCell, cell, event);
-	
+
 					if (dropLocation && !calendar.isEventRangeAllowed(dropLocation, event)) {
 						disableCursor();
 						dropLocation = null;
 					}
-	
+
 					// if a valid drop location, have the subclass render a visual indication
 					if (dropLocation && view.renderDrag(dropLocation, seg)) {
 						mouseFollower.hide(); // if the subclass is already using a mock event "helper", hide our own
@@ -4645,7 +4705,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					else {
 						mouseFollower.show(); // otherwise, have the helper follow the mouse (no snapping)
 					}
-	
+
 					if (isOrig) {
 						dropLocation = null; // needs to have moved cells to be a valid drop
 					}
@@ -4664,7 +4724,7 @@ return /******/ (function(modules) { // webpackBootstrap
 						view.unrenderDrag();
 						view.showEvent(event);
 						_this.segDragStop(seg, ev);
-	
+
 						if (dropLocation) {
 							view.reportEventDrop(event, dropLocation, this.largeUnit, el, ev);
 						}
@@ -4674,25 +4734,25 @@ return /******/ (function(modules) { // webpackBootstrap
 					mouseFollower.stop(); // put in listenStop in case there was a mousedown but the drag never started
 				}
 			});
-	
+
 			dragListener.mousedown(ev); // start listening, which will eventually lead to a dragStart
 		},
-	
-	
+
+
 		// Called before event segment dragging starts
 		segDragStart: function(seg, ev) {
 			this.isDraggingSeg = true;
 			this.view.trigger('eventDragStart', seg.el[0], seg.event, ev, {}); // last argument is jqui dummy
 		},
-	
-	
+
+
 		// Called after event segment dragging stops
 		segDragStop: function(seg, ev) {
 			this.isDraggingSeg = false;
 			this.view.trigger('eventDragStop', seg.el[0], seg.event, ev, {}); // last argument is jqui dummy
 		},
-	
-	
+
+
 		// Given the cell an event drag began, and the cell event was dropped, calculates the new start/end/allDay
 		// values for the event. Subclasses may override and set additional properties to be used by renderDrag.
 		// A falsy returned value indicates an invalid drop.
@@ -4702,10 +4762,10 @@ return /******/ (function(modules) { // webpackBootstrap
 			var dragEnd = endCell.start;
 			var delta;
 			var dropLocation;
-	
+
 			if (dragStart.hasTime() === dragEnd.hasTime()) {
 				delta = this.diffDates(dragEnd, dragStart);
-	
+
 				// if an all-day event was in a timed area and it was dragged to a different time,
 				// guarantee an end and adjust start/end to have times
 				if (event.allDay && durationHasTime(delta)) {
@@ -4724,7 +4784,7 @@ return /******/ (function(modules) { // webpackBootstrap
 						allDay: event.allDay // keep it the same
 					};
 				}
-	
+
 				dropLocation.start.add(delta);
 				if (dropLocation.end) {
 					dropLocation.end.add(delta);
@@ -4738,15 +4798,15 @@ return /******/ (function(modules) { // webpackBootstrap
 					allDay: !dragEnd.hasTime()
 				};
 			}
-	
+
 			return dropLocation;
 		},
-	
-	
+
+
 		// Utility for apply dragOpacity to a jQuery set
 		applyDragOpacity: function(els) {
 			var opacity = this.view.opt('dragOpacity');
-	
+
 			if (opacity != null) {
 				els.each(function(i, node) {
 					// Don't use jQuery (will set an IE filter), do it the old fashioned way.
@@ -4755,21 +4815,21 @@ return /******/ (function(modules) { // webpackBootstrap
 				});
 			}
 		},
-	
-	
+
+
 		/* External Element Dragging
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Called when a jQuery UI drag is initiated anywhere in the DOM
 		externalDragStart: function(ev, ui) {
 			var view = this.view;
 			var el;
 			var accept;
-	
+
 			if (view.opt('droppable')) { // only listen if this setting is on
 				el = $((ui ? ui.item : null) || ev.target);
-	
+
 				// Test that the dragged element passes the dropAccept selector or filter function.
 				// FYI, the default is "*" (matches all)
 				accept = view.opt('dropAccept');
@@ -4780,15 +4840,15 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 			}
 		},
-	
-	
+
+
 		// Called when a jQuery UI drag starts and it needs to be monitored for cell dropping
 		listenToExternalDrag: function(el, ev, ui) {
 			var _this = this;
 			var meta = getDraggedElMeta(el); // extra data about event drop, including possible event to create
 			var dragListener;
 			var dropLocation; // a null value signals an unsuccessful drag
-	
+
 			// listener that tracks mouse movement over date-associated pixel regions
 			dragListener = new CellDragListener(this.coordMap, {
 				listenStart: function() {
@@ -4811,7 +4871,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				dragStop: function() {
 					_this.unrenderDrag();
 					enableCursor();
-	
+
 					if (dropLocation) { // element was dropped on a valid date/time cell
 						_this.view.reportExternalDrop(meta, dropLocation, el, ev, ui);
 					}
@@ -4820,11 +4880,11 @@ return /******/ (function(modules) { // webpackBootstrap
 					_this.isDraggingExternal = false;
 				}
 			});
-	
+
 			dragListener.startDrag(ev); // start listening immediately
 		},
-	
-	
+
+
 		// Given a cell to be dropped upon, and misc data associated with the jqui drag (guaranteed to be a plain object),
 		// returns start/end dates for the event that would result from the hypothetical drop. end might be null.
 		// Returning a null value signals an invalid drop cell.
@@ -4833,29 +4893,29 @@ return /******/ (function(modules) { // webpackBootstrap
 				start: cell.start.clone(),
 				end: null
 			};
-	
+
 			// if dropped on an all-day cell, and element's metadata specified a time, set it
 			if (meta.startTime && !dropLocation.start.hasTime()) {
 				dropLocation.start.time(meta.startTime);
 			}
-	
+
 			if (meta.duration) {
 				dropLocation.end = dropLocation.start.clone().add(meta.duration);
 			}
-	
+
 			if (!this.view.calendar.isExternalDropRangeAllowed(dropLocation, meta.eventProps)) {
 				return null;
 			}
-	
+
 			return dropLocation;
 		},
-	
-	
-	
+
+
+
 		/* Drag Rendering (for both events and an external elements)
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Renders a visual indication of an event or external element being dragged.
 		// `dropLocation` contains hypothetical start/end/allDay values the event would have if dropped. end can be null.
 		// `seg` is the internal segment object that is being dragged. If dragging an external element, `seg` is null.
@@ -4863,18 +4923,18 @@ return /******/ (function(modules) { // webpackBootstrap
 		renderDrag: function(dropLocation, seg) {
 			// subclasses must implement
 		},
-	
-	
+
+
 		// Unrenders a visual indication of an event or external element being dragged
 		unrenderDrag: function() {
 			// subclasses must implement
 		},
-	
-	
+
+
 		/* Resizing
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Called when the user does a mousedown on an event's resizer, which might lead to resizing.
 		// Generic enough to work with any type of Grid.
 		segResizeMousedown: function(seg, ev, isStart) {
@@ -4886,7 +4946,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			var eventEnd = calendar.getEventEnd(event);
 			var dragListener;
 			var resizeLocation; // falsy if invalid resize
-	
+
 			// Tracks mouse movement over the *grid's* coordinate map
 			dragListener = new CellDragListener(this.coordMap, {
 				distance: 5,
@@ -4900,7 +4960,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					resizeLocation = isStart ?
 						_this.computeEventStartResize(origCell, cell, event) :
 						_this.computeEventEndResize(origCell, cell, event);
-	
+
 					if (resizeLocation) {
 						if (!calendar.isEventRangeAllowed(resizeLocation, event)) {
 							disableCursor();
@@ -4911,7 +4971,7 @@ return /******/ (function(modules) { // webpackBootstrap
 							resizeLocation = null;
 						}
 					}
-	
+
 					if (resizeLocation) {
 						view.hideEvent(event);
 						_this.renderEventResize(resizeLocation, seg);
@@ -4927,43 +4987,43 @@ return /******/ (function(modules) { // webpackBootstrap
 				},
 				dragStop: function(ev) {
 					_this.segResizeStop(seg, ev);
-	
+
 					if (resizeLocation) { // valid date to resize to?
 						view.reportEventResize(event, resizeLocation, this.largeUnit, el, ev);
 					}
 				}
 			});
-	
+
 			dragListener.mousedown(ev); // start listening, which will eventually lead to a dragStart
 		},
-	
-	
+
+
 		// Called before event segment resizing starts
 		segResizeStart: function(seg, ev) {
 			this.isResizingSeg = true;
 			this.view.trigger('eventResizeStart', seg.el[0], seg.event, ev, {}); // last argument is jqui dummy
 		},
-	
-	
+
+
 		// Called after event segment resizing stops
 		segResizeStop: function(seg, ev) {
 			this.isResizingSeg = false;
 			this.view.trigger('eventResizeStop', seg.el[0], seg.event, ev, {}); // last argument is jqui dummy
 		},
-	
-	
+
+
 		// Returns new date-information for an event segment being resized from its start
 		computeEventStartResize: function(startCell, endCell, event) {
 			return this.computeEventResize('start', startCell, endCell, event);
 		},
-	
-	
+
+
 		// Returns new date-information for an event segment being resized from its end
 		computeEventEndResize: function(startCell, endCell, event) {
 			return this.computeEventResize('end', startCell, endCell, event);
 		},
-	
-	
+
+
 		// Returns new date-information for an event segment being resized from its start OR end
 		// `type` is either 'start' or 'end'
 		computeEventResize: function(type, startCell, endCell, event) {
@@ -4971,35 +5031,35 @@ return /******/ (function(modules) { // webpackBootstrap
 			var delta = this.diffDates(endCell[type], startCell[type]);
 			var range;
 			var defaultDuration;
-	
+
 			// build original values to work from, guaranteeing a start and end
 			range = {
 				start: event.start.clone(),
 				end: calendar.getEventEnd(event),
 				allDay: event.allDay
 			};
-	
+
 			// if an all-day event was in a timed area and was resized to a time, adjust start/end to have times
 			if (range.allDay && durationHasTime(delta)) {
 				range.allDay = false;
 				calendar.normalizeEventRangeTimes(range);
 			}
-	
+
 			range[type].add(delta); // apply delta to start or end
-	
+
 			// if the event was compressed too small, find a new reasonable duration for it
 			if (!range.start.isBefore(range.end)) {
-	
+
 				defaultDuration = event.allDay ?
 					calendar.defaultAllDayEventDuration :
 					calendar.defaultTimedEventDuration;
-	
+
 				// between the cell's duration and the event's default duration, use the smaller of the two.
 				// example: if year-length slots, and compressed to one slot, we don't want the event to be a year long
 				if (this.cellDuration && this.cellDuration < defaultDuration) {
 					defaultDuration = this.cellDuration;
 				}
-	
+
 				if (type == 'start') { // resizing the start?
 					range.start = range.end.clone().subtract(defaultDuration);
 				}
@@ -5007,43 +5067,43 @@ return /******/ (function(modules) { // webpackBootstrap
 					range.end = range.start.clone().add(defaultDuration);
 				}
 			}
-	
+
 			return range;
 		},
-	
-	
+
+
 		// Renders a visual indication of an event being resized.
 		// `range` has the updated dates of the event. `seg` is the original segment object involved in the drag.
 		renderEventResize: function(range, seg) {
 			// subclasses must implement
 		},
-	
-	
+
+
 		// Unrenders a visual indication of an event being resized.
 		unrenderEventResize: function() {
 			// subclasses must implement
 		},
-	
-	
+
+
 		/* Rendering Utils
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Compute the text that should be displayed on an event's element.
 		// `range` can be the Event object itself, or something range-like, with at least a `start`.
 		// If event times are disabled, or the event has no time, will return a blank string.
 		// If not specified, formatStr will default to the eventTimeFormat setting,
 		// and displayEnd will default to the displayEventEnd setting.
 		getEventTimeText: function(range, formatStr, displayEnd) {
-	
+
 			if (formatStr == null) {
 				formatStr = this.eventTimeFormat;
 			}
-	
+
 			if (displayEnd == null) {
 				displayEnd = this.displayEventEnd;
 			}
-	
+
 			if (this.displayEventTime && range.start.hasTime()) {
 				if (displayEnd && range.end) {
 					return this.view.formatRange(range, formatStr);
@@ -5052,11 +5112,11 @@ return /******/ (function(modules) { // webpackBootstrap
 					return range.start.format(formatStr);
 				}
 			}
-	
+
 			return '';
 		},
-	
-	
+
+
 		// Generic utility for generating the HTML classNames for an event segment's element
 		getSegClasses: function(seg, isDraggable, isResizable) {
 			var event = seg.event;
@@ -5068,18 +5128,18 @@ return /******/ (function(modules) { // webpackBootstrap
 				event.className,
 				event.source ? event.source.className : []
 			);
-	
+
 			if (isDraggable) {
 				classes.push('fc-draggable');
 			}
 			if (isResizable) {
 				classes.push('fc-resizable');
 			}
-	
+
 			return classes;
 		},
-	
-	
+
+
 		// Utility for generating event skin-related CSS properties
 		getEventSkinCss: function(event) {
 			var view = this.view;
@@ -5087,7 +5147,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			var eventColor = event.color;
 			var sourceColor = source.color;
 			var optionColor = view.opt('eventColor');
-	
+
 			return {
 				'background-color':
 					event.backgroundColor ||
@@ -5109,12 +5169,12 @@ return /******/ (function(modules) { // webpackBootstrap
 					view.opt('eventTextColor')
 			};
 		},
-	
-	
+
+
 		/* Converting events -> ranges -> segs
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Converts an array of event objects into an array of event segment objects.
 		// A custom `rangeToSegsFunc` may be given for arbitrarily slicing up events.
 		// Doesn't guarantee an order for the resulting array.
@@ -5122,18 +5182,18 @@ return /******/ (function(modules) { // webpackBootstrap
 			var eventRanges = this.eventsToRanges(events);
 			var segs = [];
 			var i;
-	
+
 			for (i = 0; i < eventRanges.length; i++) {
 				segs.push.apply(
 					segs,
 					this.eventRangeToSegs(eventRanges[i], rangeToSegsFunc)
 				);
 			}
-	
+
 			return segs;
 		},
-	
-	
+
+
 		// Converts an array of events into an array of "range" objects.
 		// A "range" object is a plain object with start/end properties denoting the time it covers. Also an event property.
 		// For "normal" events, this will be identical to the event's start/end, but for "inverse-background" events,
@@ -5143,7 +5203,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			var _this = this;
 			var eventsById = groupEventsById(events);
 			var ranges = [];
-	
+
 			// group by ID so that related inverse-background events can be rendered together
 			$.each(eventsById, function(id, eventGroup) {
 				if (eventGroup.length) {
@@ -5155,25 +5215,25 @@ return /******/ (function(modules) { // webpackBootstrap
 					);
 				}
 			});
-	
+
 			return ranges;
 		},
-	
-	
+
+
 		// Converts an array of "normal" events (not inverted rendering) into a parallel array of ranges
 		eventsToNormalRanges: function(events) {
 			var calendar = this.view.calendar;
 			var ranges = [];
 			var i, event;
 			var eventStart, eventEnd;
-	
+
 			for (i = 0; i < events.length; i++) {
 				event = events[i];
-	
+
 				// make copies and normalize by stripping timezone
 				eventStart = event.start.clone().stripZone();
 				eventEnd = calendar.getEventEnd(event).stripZone();
-	
+
 				ranges.push({
 					event: event,
 					start: eventStart,
@@ -5182,11 +5242,11 @@ return /******/ (function(modules) { // webpackBootstrap
 					eventDurationMS: eventEnd - eventStart
 				});
 			}
-	
+
 			return ranges;
 		},
-	
-	
+
+
 		// Converts an array of events, with inverse-background rendering, into an array of range objects.
 		// The range objects will cover all the time NOT covered by the events.
 		eventsToInverseRanges: function(events) {
@@ -5198,13 +5258,13 @@ return /******/ (function(modules) { // webpackBootstrap
 			var event0 = events[0]; // assign this to each range's `.event`
 			var start = viewStart; // the end of the previous range. the start of the new range
 			var i, normalRange;
-	
+
 			// ranges need to be in order. required for our date-walking algorithm
 			normalRanges.sort(compareNormalRanges);
-	
+
 			for (i = 0; i < normalRanges.length; i++) {
 				normalRange = normalRanges[i];
-	
+
 				// add the span of time before the event (if there is any)
 				if (normalRange.start > start) { // compare millisecond time (skip any ambig logic)
 					inverseRanges.push({
@@ -5213,10 +5273,10 @@ return /******/ (function(modules) { // webpackBootstrap
 						end: normalRange.start
 					});
 				}
-	
+
 				start = normalRange.end;
 			}
-	
+
 			// add the span of time after the last event (if there is any)
 			if (start < viewEnd) { // compare millisecond time (skip any ambig logic)
 				inverseRanges.push({
@@ -5225,42 +5285,42 @@ return /******/ (function(modules) { // webpackBootstrap
 					end: viewEnd
 				});
 			}
-	
+
 			return inverseRanges;
 		},
-	
-	
+
+
 		// Slices the given event range into one or more segment objects.
 		// A `rangeToSegsFunc` custom slicing function can be given.
 		eventRangeToSegs: function(eventRange, rangeToSegsFunc) {
 			var segs;
 			var i, seg;
-	
+
 			eventRange = this.view.calendar.ensureVisibleEventRange(eventRange);
-	
+
 			if (rangeToSegsFunc) {
 				segs = rangeToSegsFunc(eventRange);
 			}
 			else {
 				segs = this.rangeToSegs(eventRange); // defined by the subclass
 			}
-	
+
 			for (i = 0; i < segs.length; i++) {
 				seg = segs[i];
 				seg.event = eventRange.event;
 				seg.eventStartMS = eventRange.eventStartMS;
 				seg.eventDurationMS = eventRange.eventDurationMS;
 			}
-	
+
 			return segs;
 		},
-	
-	
+
+
 		sortSegs: function(segs) {
 			segs.sort(proxy(this, 'compareSegs'));
 		},
-	
-	
+
+
 		// A cmp function for determining which segments should take visual priority
 		// DOES NOT WORK ON INVERTED BACKGROUND EVENTS because they have no eventStartMS/eventDurationMS
 		compareSegs: function(seg1, seg2) {
@@ -5269,56 +5329,56 @@ return /******/ (function(modules) { // webpackBootstrap
 				seg2.event.allDay - seg1.event.allDay || // tie? put all-day events first (booleans cast to 0/1)
 				compareByFieldSpecs(seg1.event, seg2.event, this.view.eventOrderSpecs);
 		}
-	
+
 	});
-	
-	
+
+
 	/* Utilities
 	----------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 	function isBgEvent(event) { // returns true if background OR inverse-background
 		var rendering = getEventRendering(event);
 		return rendering === 'background' || rendering === 'inverse-background';
 	}
-	
-	
+
+
 	function isInverseBgEvent(event) {
 		return getEventRendering(event) === 'inverse-background';
 	}
-	
-	
+
+
 	function getEventRendering(event) {
 		return firstDefined((event.source || {}).rendering, event.rendering);
 	}
-	
-	
+
+
 	function groupEventsById(events) {
 		var eventsById = {};
 		var i, event;
-	
+
 		for (i = 0; i < events.length; i++) {
 			event = events[i];
 			(eventsById[event._id] || (eventsById[event._id] = [])).push(event);
 		}
-	
+
 		return eventsById;
 	}
-	
-	
+
+
 	// A cmp function for determining which non-inverted "ranges" (see above) happen earlier
 	function compareNormalRanges(range1, range2) {
 		return range1.eventStartMS - range2.eventStartMS; // earlier ranges go first
 	}
-	
-	
+
+
 	/* External-Dragging-Element Data
 	----------------------------------------------------------------------------------------------------------------------*/
-	
+
 	// Require all HTML5 data-* attributes used by FullCalendar to have this prefix.
 	// A value of '' will query attributes like data-event. A value of 'fc' will query attributes like data-fc-event.
 	fc.dataAttrPrefix = '';
-	
+
 	// Given a jQuery element that might represent a dragged FullCalendar event, returns an intermediate data structure
 	// to be used for Event Object creation.
 	// A defined `.eventProps`, even when empty, indicates that an event should be created.
@@ -5328,10 +5388,10 @@ return /******/ (function(modules) { // webpackBootstrap
 		var startTime; // a Duration
 		var duration;
 		var stick;
-	
+
 		if (prefix) { prefix += '-'; }
 		eventProps = el.data(prefix + 'event') || null;
-	
+
 		if (eventProps) {
 			if (typeof eventProps === 'object') {
 				eventProps = $.extend({}, eventProps); // make a copy
@@ -5339,7 +5399,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			else { // something like 1 or true. still signal event creation
 				eventProps = {};
 			}
-	
+
 			// pluck special-cased date/time properties
 			startTime = eventProps.start;
 			if (startTime == null) { startTime = eventProps.time; } // accept 'time' as well
@@ -5350,48 +5410,48 @@ return /******/ (function(modules) { // webpackBootstrap
 			delete eventProps.duration;
 			delete eventProps.stick;
 		}
-	
+
 		// fallback to standalone attribute values for each of the date/time properties
 		if (startTime == null) { startTime = el.data(prefix + 'start'); }
 		if (startTime == null) { startTime = el.data(prefix + 'time'); } // accept 'time' as well
 		if (duration == null) { duration = el.data(prefix + 'duration'); }
 		if (stick == null) { stick = el.data(prefix + 'stick'); }
-	
+
 		// massage into correct data types
 		startTime = startTime != null ? moment.duration(startTime) : null;
 		duration = duration != null ? moment.duration(duration) : null;
 		stick = Boolean(stick);
-	
+
 		return { eventProps: eventProps, startTime: startTime, duration: duration, stick: stick };
 	}
-	
-	
+
+
 	;;
-	
+
 	/* A component that renders a grid of whole-days that runs horizontally. There can be multiple rows, one per week.
 	----------------------------------------------------------------------------------------------------------------------*/
-	
+
 	var DayGrid = Grid.extend({
-	
+
 		numbersVisible: false, // should render a row for day/week numbers? set by outside view. TODO: make internal
 		bottomCoordPadding: 0, // hack for extending the hit area for the last row of the coordinate grid
 		breakOnWeeks: null, // should create a new row for each week? set by outside view
-	
+
 		cellDates: null, // flat chronological array of each cell's dates
 		dayToCellOffsets: null, // maps days offsets from grid's start date, to cell offsets
-	
+
 		rowEls: null, // set of fake row elements
 		dayEls: null, // set of whole-day elements comprising the row's background
 		helperEls: null, // set of cell skeleton elements for rendering the mock event "helper"
-	
-	
+
+
 		constructor: function() {
 			Grid.apply(this, arguments);
-	
+
 			this.cellDuration = moment.duration(1, 'day'); // for Grid system
 		},
-	
-	
+
+
 		// Renders the rows and columns into the component's `this.el`, which should already be assigned.
 		// isRigid determins whether the individual rows should ignore the contents and be a constant height.
 		// Relies on the view's colCnt and rowCnt. In the future, this component should probably be self-sufficient.
@@ -5403,45 +5463,45 @@ return /******/ (function(modules) { // webpackBootstrap
 			var html = '';
 			var row;
 			var i, cell;
-	
+
 			for (row = 0; row < rowCnt; row++) {
 				html += this.dayRowHtml(row, isRigid);
 			}
 			this.el.html(html);
-	
+
 			this.rowEls = this.el.find('.fc-row');
 			this.dayEls = this.el.find('.fc-day');
-	
+
 			// trigger dayRender with each cell's element
 			for (i = 0; i < cellCnt; i++) {
 				cell = this.getCell(i);
 				view.trigger('dayRender', null, cell.start, this.dayEls.eq(i));
 			}
 		},
-	
-	
+
+
 		unrenderDates: function() {
 			this.removeSegPopover();
 		},
-	
-	
+
+
 		renderBusinessHours: function() {
 			var events = this.view.calendar.getBusinessHoursEvents(true); // wholeDay=true
 			var segs = this.eventsToSegs(events);
-	
+
 			this.renderFill('businessHours', segs, 'bgevent');
 		},
-	
-	
+
+
 		// Generates the HTML for a single row. `row` is the row number.
 		dayRowHtml: function(row, isRigid) {
 			var view = this.view;
 			var classes = [ 'fc-row', 'fc-week', view.widgetContentClass ];
-	
+
 			if (isRigid) {
 				classes.push('fc-rigid');
 			}
-	
+
 			return '' +
 				'<div class="' + classes.join(' ') + '">' +
 					'<div class="fc-bg">' +
@@ -5461,20 +5521,20 @@ return /******/ (function(modules) { // webpackBootstrap
 					'</div>' +
 				'</div>';
 		},
-	
-	
+
+
 		// Renders the HTML for a whole-day cell. Will eventually end up in the day-row's background.
 		// We go through a 'day' row type instead of just doing a 'bg' row type so that the View can do custom rendering
 		// specifically for whole-day rows, whereas a 'bg' might also be used for other purposes (TimeGrid bg for example).
 		dayCellHtml: function(cell) {
 			return this.bgCellHtml(cell);
 		},
-	
-	
+
+
 		/* Options
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Computes a default column header formatting string if `colFormat` is not explicitly defined
 		computeColHeadFormat: function() {
 			if (this.rowCnt > 1) { // more than one week row. day numbers will be in each cell
@@ -5487,33 +5547,33 @@ return /******/ (function(modules) { // webpackBootstrap
 				return 'dddd'; // "Saturday"
 			}
 		},
-	
-	
+
+
 		// Computes a default event time formatting string if `timeFormat` is not explicitly defined
 		computeEventTimeFormat: function() {
 			return this.view.opt('extraSmallTimeFormat'); // like "6p" or "6:30p"
 		},
-	
-	
+
+
 		// Computes a default `displayEventEnd` value if one is not expliclty defined
 		computeDisplayEventEnd: function() {
 			return this.colCnt == 1; // we'll likely have space if there's only one day
 		},
-	
-	
+
+
 		/* Cell System
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		rangeUpdated: function() {
 			var cellDates;
 			var firstDay;
 			var rowCnt;
 			var colCnt;
-	
+
 			this.updateCellDates(); // populates cellDates and dayToCellOffsets
 			cellDates = this.cellDates;
-	
+
 			if (this.breakOnWeeks) {
 				// count columns until the day-of-week repeats
 				firstDay = cellDates[0].day();
@@ -5528,12 +5588,12 @@ return /******/ (function(modules) { // webpackBootstrap
 				rowCnt = 1;
 				colCnt = cellDates.length;
 			}
-	
+
 			this.rowCnt = rowCnt;
 			this.colCnt = colCnt;
 		},
-	
-	
+
+
 		// Populates cellDates and dayToCellOffsets
 		updateCellDates: function() {
 			var view = this.view;
@@ -5541,7 +5601,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			var dates = [];
 			var offset = -1;
 			var offsets = [];
-	
+
 			while (date.isBefore(this.end)) { // loop each day from start to end
 				if (view.isHiddenDay(date)) {
 					offsets.push(offset + 0.5); // mark that it's between offsets
@@ -5553,54 +5613,54 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 				date.add(1, 'days');
 			}
-	
+
 			this.cellDates = dates;
 			this.dayToCellOffsets = offsets;
 		},
-	
-	
+
+
 		// Given a cell object, generates its start date. Returns a reference-free copy.
 		computeCellDate: function(cell) {
 			var colCnt = this.colCnt;
 			var index = cell.row * colCnt + (this.isRTL ? colCnt - cell.col - 1 : cell.col);
-	
+
 			return this.cellDates[index].clone();
 		},
-	
-	
+
+
 		// Retrieves the element representing the given row
 		getRowEl: function(row) {
 			return this.rowEls.eq(row);
 		},
-	
-	
+
+
 		// Retrieves the element representing the given column
 		getColEl: function(col) {
 			return this.dayEls.eq(col);
 		},
-	
-	
+
+
 		// Gets the whole-day element associated with the cell
 		getCellDayEl: function(cell) {
 			return this.dayEls.eq(cell.row * this.colCnt + cell.col);
 		},
-	
-	
+
+
 		// Overrides Grid's method for when row coordinates are computed
 		computeRowCoords: function() {
 			var rowCoords = Grid.prototype.computeRowCoords.call(this); // call the super-method
-	
+
 			// hack for extending last row (used by AgendaView)
 			rowCoords[rowCoords.length - 1].bottom += this.bottomCoordPadding;
-	
+
 			return rowCoords;
 		},
-	
-	
+
+
 		/* Dates
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Slices up a date range by row into an array of segments
 		rangeToSegs: function(range) {
 			var isRTL = this.isRTL;
@@ -5613,33 +5673,33 @@ return /******/ (function(modules) { // webpackBootstrap
 			var isStart, isEnd;
 			var segFirst, segLast; // inclusive cell-offset range for segment
 			var seg;
-	
+
 			range = this.view.computeDayRange(range); // make whole-day range, considering nextDayThreshold
 			first = this.dateToCellOffset(range.start);
 			last = this.dateToCellOffset(range.end.subtract(1, 'days')); // offset of inclusive end date
-	
+
 			for (row = 0; row < rowCnt; row++) {
 				rowFirst = row * colCnt;
 				rowLast = rowFirst + colCnt - 1;
-	
+
 				// intersect segment's offset range with the row's
 				segFirst = Math.max(rowFirst, first);
 				segLast = Math.min(rowLast, last);
-	
+
 				// deal with in-between indices
 				segFirst = Math.ceil(segFirst); // in-between starts round to next cell
 				segLast = Math.floor(segLast); // in-between ends round to prev cell
-	
+
 				if (segFirst <= segLast) { // was there any intersection with the current row?
-	
+
 					// must be matching integers to be the segment's start/end
 					isStart = segFirst === first;
 					isEnd = segLast === last;
-	
+
 					// translate offsets to be relative to start-of-row
 					segFirst -= rowFirst;
 					segLast -= rowFirst;
-	
+
 					seg = { row: row, isStart: isStart, isEnd: isEnd };
 					if (isRTL) {
 						seg.leftCol = colCnt - segLast - 1;
@@ -5652,11 +5712,11 @@ return /******/ (function(modules) { // webpackBootstrap
 					segs.push(seg);
 				}
 			}
-	
+
 			return segs;
 		},
-	
-	
+
+
 		// Given a date, returns its chronolocial cell-offset from the first cell of the grid.
 		// If the date lies between cells (because of hiddenDays), returns a floating-point value between offsets.
 		// If before the first offset, returns a negative number.
@@ -5665,7 +5725,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		dateToCellOffset: function(date) {
 			var offsets = this.dayToCellOffsets;
 			var day = date.diff(this.start, 'days');
-	
+
 			if (day < 0) {
 				return offsets[0] - 1;
 			}
@@ -5676,75 +5736,75 @@ return /******/ (function(modules) { // webpackBootstrap
 				return offsets[day];
 			}
 		},
-	
-	
+
+
 		/* Event Drag Visualization
 		------------------------------------------------------------------------------------------------------------------*/
 		// TODO: move to DayGrid.event, similar to what we did with Grid's drag methods
-	
-	
+
+
 		// Renders a visual indication of an event or external element being dragged.
 		// The dropLocation's end can be null. seg can be null. See Grid::renderDrag for more info.
 		renderDrag: function(dropLocation, seg) {
-	
+
 			// always render a highlight underneath
 			this.renderHighlight(this.eventRangeToSegs(dropLocation));
-	
+
 			// if a segment from the same calendar but another component is being dragged, render a helper event
 			if (seg && !seg.el.closest(this.el).length) {
-	
+
 				this.renderRangeHelper(dropLocation, seg);
 				this.applyDragOpacity(this.helperEls);
-	
+
 				return true; // a helper has been rendered
 			}
 		},
-	
-	
+
+
 		// Unrenders any visual indication of a hovering event
 		unrenderDrag: function() {
 			this.unrenderHighlight();
 			this.unrenderHelper();
 		},
-	
-	
+
+
 		/* Event Resize Visualization
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Renders a visual indication of an event being resized
 		renderEventResize: function(range, seg) {
 			this.renderHighlight(this.eventRangeToSegs(range));
 			this.renderRangeHelper(range, seg);
 		},
-	
-	
+
+
 		// Unrenders a visual indication of an event being resized
 		unrenderEventResize: function() {
 			this.unrenderHighlight();
 			this.unrenderHelper();
 		},
-	
-	
+
+
 		/* Event Helper
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Renders a mock "helper" event. `sourceSeg` is the associated internal segment object. It can be null.
 		renderHelper: function(event, sourceSeg) {
 			var helperNodes = [];
 			var segs = this.eventsToSegs([ event ]);
 			var rowStructs;
-	
+
 			segs = this.renderFgSegEls(segs); // assigns each seg's el and returns a subset of segs that were rendered
 			rowStructs = this.renderSegRows(segs);
-	
+
 			// inject each new event skeleton into each associated row
 			this.rowEls.each(function(row, rowNode) {
 				var rowEl = $(rowNode); // the .fc-row
 				var skeletonEl = $('<div class="fc-helper-skeleton"><table/></div>'); // will be absolutely positioned
 				var skeletonTop;
-	
+
 				// If there is an original segment, match the top position. Otherwise, put it at the row's top level
 				if (sourceSeg && sourceSeg.row === row) {
 					skeletonTop = sourceSeg.el.position().top;
@@ -5752,19 +5812,19 @@ return /******/ (function(modules) { // webpackBootstrap
 				else {
 					skeletonTop = rowEl.find('.fc-content-skeleton tbody').position().top;
 				}
-	
+
 				skeletonEl.css('top', skeletonTop)
 					.find('table')
 						.append(rowStructs[row].tbodyEl);
-	
+
 				rowEl.append(skeletonEl);
 				helperNodes.push(skeletonEl[0]);
 			});
-	
+
 			this.helperEls = $(helperNodes); // array -> jQuery set
 		},
-	
-	
+
+
 		// Unrenders any visual indication of a mock helper event
 		unrenderHelper: function() {
 			if (this.helperEls) {
@@ -5772,37 +5832,37 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.helperEls = null;
 			}
 		},
-	
-	
+
+
 		/* Fill System (highlight, background events, business hours)
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		fillSegTag: 'td', // override the default tag name
-	
-	
+
+
 		// Renders a set of rectangles over the given segments of days.
 		// Only returns segments that successfully rendered.
 		renderFill: function(type, segs, className) {
 			var nodes = [];
 			var i, seg;
 			var skeletonEl;
-	
+
 			segs = this.renderFillSegEls(type, segs); // assignes `.el` to each seg. returns successfully rendered segs
-	
+
 			for (i = 0; i < segs.length; i++) {
 				seg = segs[i];
 				skeletonEl = this.renderFillRow(type, seg, className);
 				this.rowEls.eq(seg.row).append(skeletonEl);
 				nodes.push(skeletonEl[0]);
 			}
-	
+
 			this.elsByFill[type] = $(nodes);
-	
+
 			return segs;
 		},
-	
-	
+
+
 		// Generates the HTML needed for one row of a fill. Requires the seg's el to be rendered.
 		renderFillRow: function(type, seg, className) {
 			var colCnt = this.colCnt;
@@ -5810,105 +5870,105 @@ return /******/ (function(modules) { // webpackBootstrap
 			var endCol = seg.rightCol + 1;
 			var skeletonEl;
 			var trEl;
-	
+
 			className = className || type.toLowerCase();
-	
+
 			skeletonEl = $(
 				'<div class="fc-' + className + '-skeleton">' +
 					'<table><tr/></table>' +
 				'</div>'
 			);
 			trEl = skeletonEl.find('tr');
-	
+
 			if (startCol > 0) {
 				trEl.append('<td colspan="' + startCol + '"/>');
 			}
-	
+
 			trEl.append(
 				seg.el.attr('colspan', endCol - startCol)
 			);
-	
+
 			if (endCol < colCnt) {
 				trEl.append('<td colspan="' + (colCnt - endCol) + '"/>');
 			}
-	
+
 			this.bookendCells(trEl, type);
-	
+
 			return skeletonEl;
 		}
-	
+
 	});
-	
+
 	;;
-	
+
 	/* Event-rendering methods for the DayGrid class
 	----------------------------------------------------------------------------------------------------------------------*/
-	
+
 	DayGrid.mixin({
-	
+
 		rowStructs: null, // an array of objects, each holding information about a row's foreground event-rendering
-	
-	
+
+
 		// Unrenders all events currently rendered on the grid
 		unrenderEvents: function() {
 			this.removeSegPopover(); // removes the "more.." events popover
 			Grid.prototype.unrenderEvents.apply(this, arguments); // calls the super-method
 		},
-	
-	
+
+
 		// Retrieves all rendered segment objects currently rendered on the grid
 		getEventSegs: function() {
 			return Grid.prototype.getEventSegs.call(this) // get the segments from the super-method
 				.concat(this.popoverSegs || []); // append the segments from the "more..." popover
 		},
-	
-	
+
+
 		// Renders the given background event segments onto the grid
 		renderBgSegs: function(segs) {
-	
+
 			// don't render timed background events
 			var allDaySegs = $.grep(segs, function(seg) {
 				return seg.event.allDay;
 			});
-	
+
 			return Grid.prototype.renderBgSegs.call(this, allDaySegs); // call the super-method
 		},
-	
-	
+
+
 		// Renders the given foreground event segments onto the grid
 		renderFgSegs: function(segs) {
 			var rowStructs;
-	
+
 			// render an `.el` on each seg
 			// returns a subset of the segs. segs that were actually rendered
 			segs = this.renderFgSegEls(segs);
-	
+
 			rowStructs = this.rowStructs = this.renderSegRows(segs);
-	
+
 			// append to each row's content skeleton
 			this.rowEls.each(function(i, rowNode) {
 				$(rowNode).find('.fc-content-skeleton > table').append(
 					rowStructs[i].tbodyEl
 				);
 			});
-	
+
 			return segs; // return only the segs that were actually rendered
 		},
-	
-	
+
+
 		// Unrenders all currently rendered foreground event segments
 		unrenderFgSegs: function() {
 			var rowStructs = this.rowStructs || [];
 			var rowStruct;
-	
+
 			while ((rowStruct = rowStructs.pop())) {
 				rowStruct.tbodyEl.remove();
 			}
-	
+
 			this.rowStructs = null;
 		},
-	
-	
+
+
 		// Uses the given events array to generate <tbody> elements that should be appended to each row's content skeleton.
 		// Returns an array of rowStruct objects (see the bottom of `renderSegRow`).
 		// PRECONDITION: each segment shoud already have a rendered and assigned `.el`
@@ -5916,20 +5976,20 @@ return /******/ (function(modules) { // webpackBootstrap
 			var rowStructs = [];
 			var segRows;
 			var row;
-	
+
 			segRows = this.groupSegRows(segs); // group into nested arrays
-	
+
 			// iterate each row of segment groupings
 			for (row = 0; row < segRows.length; row++) {
 				rowStructs.push(
 					this.renderSegRow(row, segRows[row])
 				);
 			}
-	
+
 			return rowStructs;
 		},
-	
-	
+
+
 		// Builds the HTML to be used for the default element for an individual segment
 		fgSegHtml: function(seg, disableResizing) {
 			var view = this.view;
@@ -5944,9 +6004,9 @@ return /******/ (function(modules) { // webpackBootstrap
 			var timeHtml = '';
 			var timeText;
 			var titleHtml;
-	
+
 			classes.unshift('fc-day-grid-event', 'fc-h-event');
-	
+
 			// Only display a timed events time if it is the starting segment
 			if (seg.isStart) {
 				timeText = this.getEventTimeText(event);
@@ -5954,12 +6014,12 @@ return /******/ (function(modules) { // webpackBootstrap
 					timeHtml = '<span class="fc-time">' + htmlEscape(timeText) + '</span>';
 				}
 			}
-	
+
 			titleHtml =
 				'<span class="fc-title">' +
 					(htmlEscape(event.title || '') || '&nbsp;') + // we always want one line of height
 				'</span>';
-			
+
 			return '<a class="' + classes.join(' ') + '"' +
 					(event.url ?
 						' href="' + htmlEscape(event.url) + '"' :
@@ -5986,8 +6046,8 @@ return /******/ (function(modules) { // webpackBootstrap
 						) +
 				'</a>';
 		},
-	
-	
+
+
 		// Given a row # and an array of segments all in the same row, render a <tbody> element, a skeleton that contains
 		// the segments. Returns object with a bunch of internal data about how the render was calculated.
 		// NOTE: modifies rowSegs
@@ -6004,7 +6064,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			var tr;
 			var j, seg;
 			var td;
-	
+
 			// populates empty cells from the current column (`col`) to `endCol`
 			function emptyCellsUntil(endCol) {
 				while (col < endCol) {
@@ -6025,24 +6085,24 @@ return /******/ (function(modules) { // webpackBootstrap
 					col++;
 				}
 			}
-	
+
 			for (i = 0; i < levelCnt; i++) { // iterate through all levels
 				levelSegs = segLevels[i];
 				col = 0;
 				tr = $('<tr/>');
-	
+
 				segMatrix.push([]);
 				cellMatrix.push([]);
 				loneCellMatrix.push([]);
-	
+
 				// levelCnt might be 1 even though there are no actual levels. protect against this.
 				// this single empty row is useful for styling.
 				if (levelSegs) {
 					for (j = 0; j < levelSegs.length; j++) { // iterate through segments in level
 						seg = levelSegs[j];
-	
+
 						emptyCellsUntil(seg.leftCol);
-	
+
 						// create a container that occupies or more columns. append the event element.
 						td = $('<td class="fc-event-container"/>').append(seg.el);
 						if (seg.leftCol != seg.rightCol) {
@@ -6051,22 +6111,22 @@ return /******/ (function(modules) { // webpackBootstrap
 						else { // a single-column segment
 							loneCellMatrix[i][col] = td;
 						}
-	
+
 						while (col <= seg.rightCol) {
 							cellMatrix[i][col] = td;
 							segMatrix[i][col] = seg;
 							col++;
 						}
-	
+
 						tr.append(td);
 					}
 				}
-	
+
 				emptyCellsUntil(colCnt); // finish off the row
 				this.bookendCells(tr, 'eventSkeleton');
 				tbody.append(tr);
 			}
-	
+
 			return { // a "rowStruct"
 				row: row, // the row number
 				tbodyEl: tbody,
@@ -6076,22 +6136,22 @@ return /******/ (function(modules) { // webpackBootstrap
 				segs: rowSegs
 			};
 		},
-	
-	
+
+
 		// Stacks a flat array of segments, which are all assumed to be in the same row, into subarrays of vertical levels.
 		// NOTE: modifies segs
 		buildSegLevels: function(segs) {
 			var levels = [];
 			var i, seg;
 			var j;
-	
+
 			// Give preference to elements with certain criteria, so they have
 			// a chance to be closer to the top.
 			this.sortSegs(segs);
-			
+
 			for (i = 0; i < segs.length; i++) {
 				seg = segs[i];
-	
+
 				// loop through levels, starting with the topmost, until the segment doesn't collide with other segments
 				for (j = 0; j < levels.length; j++) {
 					if (!isDaySegCollision(seg, levels[j])) {
@@ -6100,46 +6160,46 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 				// `j` now holds the desired subrow index
 				seg.level = j;
-	
+
 				// create new level array if needed and append segment
 				(levels[j] || (levels[j] = [])).push(seg);
 			}
-	
+
 			// order segments left-to-right. very important if calendar is RTL
 			for (j = 0; j < levels.length; j++) {
 				levels[j].sort(compareDaySegCols);
 			}
-	
+
 			return levels;
 		},
-	
-	
+
+
 		// Given a flat array of segments, return an array of sub-arrays, grouped by each segment's row
 		groupSegRows: function(segs) {
 			var segRows = [];
 			var i;
-	
+
 			for (i = 0; i < this.rowCnt; i++) {
 				segRows.push([]);
 			}
-	
+
 			for (i = 0; i < segs.length; i++) {
 				segRows[segs[i].row].push(segs[i]);
 			}
-	
+
 			return segRows;
 		}
-	
+
 	});
-	
-	
+
+
 	// Computes whether two segments' columns collide. They are assumed to be in the same row.
 	function isDaySegCollision(seg, otherSegs) {
 		var i, otherSeg;
-	
+
 		for (i = 0; i < otherSegs.length; i++) {
 			otherSeg = otherSegs[i];
-	
+
 			if (
 				otherSeg.leftCol <= seg.rightCol &&
 				otherSeg.rightCol >= seg.leftCol
@@ -6147,45 +6207,45 @@ return /******/ (function(modules) { // webpackBootstrap
 				return true;
 			}
 		}
-	
+
 		return false;
 	}
-	
-	
+
+
 	// A cmp function for determining the leftmost event
 	function compareDaySegCols(a, b) {
 		return a.leftCol - b.leftCol;
 	}
-	
+
 	;;
-	
+
 	/* Methods relate to limiting the number events for a given day on a DayGrid
 	----------------------------------------------------------------------------------------------------------------------*/
 	// NOTE: all the segs being passed around in here are foreground segs
-	
+
 	DayGrid.mixin({
-	
+
 		segPopover: null, // the Popover that holds events that can't fit in a cell. null when not visible
 		popoverSegs: null, // an array of segment objects that the segPopover holds. null when not visible
-	
-	
+
+
 		removeSegPopover: function() {
 			if (this.segPopover) {
 				this.segPopover.hide(); // in handler, will call segPopover's removeElement
 			}
 		},
-	
-	
+
+
 		// Limits the number of "levels" (vertically stacking layers of events) for each row of the grid.
 		// `levelLimit` can be false (don't limit), a number, or true (should be computed).
 		limitRows: function(levelLimit) {
 			var rowStructs = this.rowStructs || [];
 			var row; // row #
 			var rowLevelLimit;
-	
+
 			for (row = 0; row < rowStructs.length; row++) {
 				this.unlimitRow(row);
-	
+
 				if (!levelLimit) {
 					rowLevelLimit = false;
 				}
@@ -6195,14 +6255,14 @@ return /******/ (function(modules) { // webpackBootstrap
 				else {
 					rowLevelLimit = this.computeRowLevelLimit(row);
 				}
-	
+
 				if (rowLevelLimit !== false) {
 					this.limitRow(row, rowLevelLimit);
 				}
 			}
 		},
-	
-	
+
+
 		// Computes the number of levels a row will accomodate without going outside its bounds.
 		// Assumes the row is "rigid" (maintains a constant height regardless of what is inside).
 		// `row` is the row number.
@@ -6212,29 +6272,29 @@ return /******/ (function(modules) { // webpackBootstrap
 			var trEls = this.rowStructs[row].tbodyEl.children();
 			var i, trEl;
 			var trHeight;
-	
+
 			function iterInnerHeights(i, childNode) {
 				trHeight = Math.max(trHeight, $(childNode).outerHeight());
 			}
-	
+
 			// Reveal one level <tr> at a time and stop when we find one out of bounds
 			for (i = 0; i < trEls.length; i++) {
 				trEl = trEls.eq(i).removeClass('fc-limited'); // reset to original state (reveal)
-	
+
 				// with rowspans>1 and IE8, trEl.outerHeight() would return the height of the largest cell,
 				// so instead, find the tallest inner content element.
 				trHeight = 0;
 				trEl.find('> td > :first-child').each(iterInnerHeights);
-	
+
 				if (trEl.position().top + trHeight > rowHeight) {
 					return i;
 				}
 			}
-	
+
 			return false; // should not limit at all
 		},
-	
-	
+
+
 		// Limits the given grid row to the maximum number of levels and injects "more" links if necessary.
 		// `row` is the row number.
 		// `levelLimit` is a number for the maximum (inclusive) number of levels allowed.
@@ -6255,7 +6315,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			var segMoreNodes; // array of "more" <td> cells that will stand-in for the current seg's cell
 			var j;
 			var moreTd, moreWrap, moreLink;
-	
+
 			// Iterates through empty level cells and places "more" links inside if need be
 			function emptyCellsUntil(endCol) { // goes from current `col` to `endCol`
 				while (col < endCol) {
@@ -6271,19 +6331,19 @@ return /******/ (function(modules) { // webpackBootstrap
 					col++;
 				}
 			}
-	
+
 			if (levelLimit && levelLimit < rowStruct.segLevels.length) { // is it actually over the limit?
 				levelSegs = rowStruct.segLevels[levelLimit - 1];
 				cellMatrix = rowStruct.cellMatrix;
-	
+
 				limitedNodes = rowStruct.tbodyEl.children().slice(levelLimit) // get level <tr> elements past the limit
 					.addClass('fc-limited').get(); // hide elements and get a simple DOM-nodes array
-	
+
 				// iterate though segments in the last allowable level
 				for (i = 0; i < levelSegs.length; i++) {
 					seg = levelSegs[i];
 					emptyCellsUntil(seg.leftCol); // process empty cells before the segment
-	
+
 					// determine *all* segments below `seg` that occupy the same columns
 					colSegsBelow = [];
 					totalSegsBelow = 0;
@@ -6294,12 +6354,12 @@ return /******/ (function(modules) { // webpackBootstrap
 						totalSegsBelow += segsBelow.length;
 						col++;
 					}
-	
+
 					if (totalSegsBelow) { // do we need to replace this segment with one or many "more" links?
 						td = cellMatrix[levelLimit - 1][seg.leftCol]; // the segment's parent cell
 						rowspan = td.attr('rowspan') || 1;
 						segMoreNodes = [];
-	
+
 						// make a replacement <td> for each column the segment occupies. will be one for each colspan
 						for (j = 0; j < colSegsBelow.length; j++) {
 							moreTd = $('<td class="fc-more-cell"/>').attr('rowspan', rowspan);
@@ -6311,42 +6371,42 @@ return /******/ (function(modules) { // webpackBootstrap
 							segMoreNodes.push(moreTd[0]);
 							moreNodes.push(moreTd[0]);
 						}
-	
+
 						td.addClass('fc-limited').after($(segMoreNodes)); // hide original <td> and inject replacements
 						limitedNodes.push(td[0]);
 					}
 				}
-	
+
 				emptyCellsUntil(this.colCnt); // finish off the level
 				rowStruct.moreEls = $(moreNodes); // for easy undoing later
 				rowStruct.limitedEls = $(limitedNodes); // for easy undoing later
 			}
 		},
-	
-	
+
+
 		// Reveals all levels and removes all "more"-related elements for a grid's row.
 		// `row` is a row number.
 		unlimitRow: function(row) {
 			var rowStruct = this.rowStructs[row];
-	
+
 			if (rowStruct.moreEls) {
 				rowStruct.moreEls.remove();
 				rowStruct.moreEls = null;
 			}
-	
+
 			if (rowStruct.limitedEls) {
 				rowStruct.limitedEls.removeClass('fc-limited');
 				rowStruct.limitedEls = null;
 			}
 		},
-	
-	
+
+
 		// Renders an <a> element that represents hidden event element for a cell.
 		// Responsible for attaching click handler as well.
 		renderMoreLink: function(cell, hiddenSegs) {
 			var _this = this;
 			var view = this.view;
-	
+
 			return $('<a class="fc-more"/>')
 				.text(
 					this.getMoreLinkText(hiddenSegs.length)
@@ -6357,11 +6417,11 @@ return /******/ (function(modules) { // webpackBootstrap
 					var moreEl = $(this);
 					var dayEl = _this.getCellDayEl(cell);
 					var allSegs = _this.getCellSegs(cell);
-	
+
 					// rescope the segments to be within the cell's date
 					var reslicedAllSegs = _this.resliceDaySegs(allSegs, date);
 					var reslicedHiddenSegs = _this.resliceDaySegs(hiddenSegs, date);
-	
+
 					if (typeof clickOption === 'function') {
 						// the returned value can be an atomic option
 						clickOption = view.trigger('eventLimitClick', null, {
@@ -6372,7 +6432,7 @@ return /******/ (function(modules) { // webpackBootstrap
 							hiddenSegs: reslicedHiddenSegs
 						}, ev);
 					}
-	
+
 					if (clickOption === 'popover') {
 						_this.showSegPopover(cell, moreEl, reslicedAllSegs);
 					}
@@ -6381,8 +6441,8 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				});
 		},
-	
-	
+
+
 		// Reveals the popover that displays all events within a cell
 		showSegPopover: function(cell, moreLink, segs) {
 			var _this = this;
@@ -6390,14 +6450,14 @@ return /******/ (function(modules) { // webpackBootstrap
 			var moreWrap = moreLink.parent(); // the <div> wrapper around the <a>
 			var topEl; // the element we want to match the top coordinate of
 			var options;
-	
+
 			if (this.rowCnt == 1) {
 				topEl = view.el; // will cause the popover to cover any sort of header
 			}
 			else {
 				topEl = this.rowEls.eq(cell.row); // will align with top of row
 			}
-	
+
 			options = {
 				className: 'fc-more-popover',
 				content: this.renderSegPopoverContent(cell, segs),
@@ -6412,7 +6472,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					_this.popoverSegs = null;
 				}
 			};
-	
+
 			// Determine horizontal coordinate.
 			// We use the moreWrap instead of the <td> to avoid border confusion.
 			if (this.isRTL) {
@@ -6421,12 +6481,12 @@ return /******/ (function(modules) { // webpackBootstrap
 			else {
 				options.left = moreWrap.offset().left - 1; // -1 to be over cell border
 			}
-	
+
 			this.segPopover = new Popover(options);
 			this.segPopover.show();
 		},
-	
-	
+
+
 		// Builds the inner DOM contents of the segment popover
 		renderSegPopoverContent: function(cell, segs) {
 			var view = this.view;
@@ -6448,36 +6508,36 @@ return /******/ (function(modules) { // webpackBootstrap
 			);
 			var segContainer = content.find('.fc-event-container');
 			var i;
-	
+
 			// render each seg's `el` and only return the visible segs
 			segs = this.renderFgSegEls(segs, true); // disableResizing=true
 			this.popoverSegs = segs;
-	
+
 			for (i = 0; i < segs.length; i++) {
-	
+
 				// because segments in the popover are not part of a grid coordinate system, provide a hint to any
 				// grids that want to do drag-n-drop about which cell it came from
 				segs[i].cell = cell;
-	
+
 				segContainer.append(segs[i].el);
 			}
-	
+
 			return content;
 		},
-	
-	
+
+
 		// Given the events within an array of segment objects, reslice them to be in a single day
 		resliceDaySegs: function(segs, dayDate) {
-	
+
 			// build an array of the original events
 			var events = $.map(segs, function(seg) {
 				return seg.event;
 			});
-	
+
 			var dayStart = dayDate.clone().stripTime();
 			var dayEnd = dayStart.clone().add(1, 'days');
 			var dayRange = { start: dayStart, end: dayEnd };
-	
+
 			// slice the events with a custom slicing function
 			segs = this.eventsToSegs(
 				events,
@@ -6486,18 +6546,18 @@ return /******/ (function(modules) { // webpackBootstrap
 					return seg ? [ seg ] : []; // must return an array of segments
 				}
 			);
-	
+
 			// force an order because eventsToSegs doesn't guarantee one
 			this.sortSegs(segs);
-	
+
 			return segs;
 		},
-	
-	
+
+
 		// Generates the text that should be inside a "more" link, given the number of events it represents
 		getMoreLinkText: function(num) {
 			var opt = this.view.opt('eventLimitText');
-	
+
 			if (typeof opt === 'function') {
 				return opt(num);
 			}
@@ -6505,8 +6565,8 @@ return /******/ (function(modules) { // webpackBootstrap
 				return '+' + num + ' ' + opt;
 			}
 		},
-	
-	
+
+
 		// Returns segments within a given cell.
 		// If `startLevel` is specified, returns only events including and below that level. Otherwise returns all segs.
 		getCellSegs: function(cell, startLevel) {
@@ -6514,7 +6574,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			var level = startLevel || 0;
 			var segs = [];
 			var seg;
-	
+
 			while (level < segMatrix.length) {
 				seg = segMatrix[level][cell.col];
 				if (seg) {
@@ -6522,19 +6582,19 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 				level++;
 			}
-	
+
 			return segs;
 		}
-	
+
 	});
-	
+
 	;;
-	
+
 	/* A component that renders one or more columns of vertical time slots
 	----------------------------------------------------------------------------------------------------------------------*/
-	
+
 	var TimeGrid = Grid.extend({
-	
+
 		slotDuration: null, // duration of a "slot", a distinct time segment on given day, visualized by lines
 		snapDuration: null, // granularity of time for dragging and selecting
 		minTime: null, // Duration object that denotes the first visible time of any given day
@@ -6542,23 +6602,23 @@ return /******/ (function(modules) { // webpackBootstrap
 		colDates: null, // whole-day dates for each column. left to right
 		labelFormat: null, // formatting string for times running along vertical axis
 		labelInterval: null, // duration of how often a label should be displayed for a slot
-	
+
 		dayEls: null, // cells elements in the day-row background
 		slatEls: null, // elements running horizontally across all columns
-	
+
 		slatTops: null, // an array of top positions, relative to the container. last item holds bottom of last slot
-	
+
 		helperEl: null, // cell skeleton element for rendering the mock event "helper"
-	
+
 		businessHourSegs: null,
-	
-	
+
+
 		constructor: function() {
 			Grid.apply(this, arguments); // call the super-constructor
 			this.processOptions();
 		},
-	
-	
+
+
 		// Renders the time grid into `this.el`, which should already be assigned.
 		// Relies on the view's colCnt. In the future, this component should probably be self-sufficient.
 		renderDates: function() {
@@ -6566,14 +6626,14 @@ return /******/ (function(modules) { // webpackBootstrap
 			this.dayEls = this.el.find('.fc-day');
 			this.slatEls = this.el.find('.fc-slats tr');
 		},
-	
-	
+
+
 		renderBusinessHours: function() {
 			var events = this.view.calendar.getBusinessHoursEvents();
 			this.businessHourSegs = this.renderFill('businessHours', this.eventsToSegs(events), 'bgevent');
 		},
-	
-	
+
+
 		// Renders the basic HTML skeleton for the grid
 		renderHtml: function() {
 			return '' +
@@ -6588,15 +6648,15 @@ return /******/ (function(modules) { // webpackBootstrap
 					'</table>' +
 				'</div>';
 		},
-	
-	
+
+
 		// Renders the HTML for a vertical background cell behind the slots.
 		// This method is distinct from 'bg' because we wanted a new `rowType` so the View could customize the rendering.
 		slotBgCellHtml: function(cell) {
 			return this.bgCellHtml(cell);
 		},
-	
-	
+
+
 		// Generates the HTML for the horizontal "slats" that run width-wise. Has a time axis on a side. Depends on RTL.
 		slatRowHtml: function() {
 			var view = this.view;
@@ -6606,12 +6666,12 @@ return /******/ (function(modules) { // webpackBootstrap
 			var slotDate; // will be on the view's first day, but we only care about its time
 			var isLabeled;
 			var axisHtml;
-	
+
 			// Calculate the time for each slot
 			while (slotTime < this.maxTime) {
 				slotDate = this.start.clone().time(slotTime); // after .time() will be in UTC. but that's good, avoids DST issues
 				isLabeled = isInt(divideDurationByDuration(slotTime, this.labelInterval));
-	
+
 				axisHtml =
 					'<td class="fc-axis fc-time ' + view.widgetContentClass + '" ' + view.axisStyleAttr() + '>' +
 						(isLabeled ?
@@ -6621,67 +6681,67 @@ return /******/ (function(modules) { // webpackBootstrap
 							''
 							) +
 					'</td>';
-	
+
 				html +=
 					'<tr ' + (isLabeled ? '' : 'class="fc-minor"') + '>' +
 						(!isRTL ? axisHtml : '') +
 						'<td class="' + view.widgetContentClass + '"/>' +
 						(isRTL ? axisHtml : '') +
 					"</tr>";
-	
+
 				slotTime.add(this.slotDuration);
 			}
-	
+
 			return html;
 		},
-	
-	
+
+
 		/* Options
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Parses various options into properties of this object
 		processOptions: function() {
 			var view = this.view;
 			var slotDuration = view.opt('slotDuration');
 			var snapDuration = view.opt('snapDuration');
 			var input;
-	
+
 			slotDuration = moment.duration(slotDuration);
 			snapDuration = snapDuration ? moment.duration(snapDuration) : slotDuration;
-	
+
 			this.slotDuration = slotDuration;
 			this.snapDuration = snapDuration;
 			this.cellDuration = snapDuration; // for Grid system
-	
+
 			this.minTime = moment.duration(view.opt('minTime'));
 			this.maxTime = moment.duration(view.opt('maxTime'));
-	
+
 			// might be an array value (for TimelineView).
 			// if so, getting the most granular entry (the last one probably).
 			input = view.opt('slotLabelFormat');
 			if ($.isArray(input)) {
 				input = input[input.length - 1];
 			}
-	
+
 			this.labelFormat =
 				input ||
 				view.opt('axisFormat') || // deprecated
 				view.opt('smallTimeFormat'); // the computed default
-	
+
 			input = view.opt('slotLabelInterval');
 			this.labelInterval = input ?
 				moment.duration(input) :
 				this.computeLabelInterval(slotDuration);
 		},
-	
-	
+
+
 		// Computes an automatic value for slotLabelInterval
 		computeLabelInterval: function(slotDuration) {
 			var i;
 			var labelInterval;
 			var slotsPerLabel;
-	
+
 			// find the smallest stock label interval that results in more than one slots-per-label
 			for (i = AGENDA_STOCK_SUB_DURATIONS.length - 1; i >= 0; i--) {
 				labelInterval = moment.duration(AGENDA_STOCK_SUB_DURATIONS[i]);
@@ -6690,11 +6750,11 @@ return /******/ (function(modules) { // webpackBootstrap
 					return labelInterval;
 				}
 			}
-	
+
 			return moment.duration(slotDuration); // fall back. clone
 		},
-	
-	
+
+
 		// Computes a default column header formatting string if `colFormat` is not explicitly defined
 		computeColHeadFormat: function() {
 			if (this.colCnt > 1) { // multiple days, so full single date string WON'T be in title text
@@ -6704,74 +6764,74 @@ return /******/ (function(modules) { // webpackBootstrap
 				return 'dddd'; // "Saturday"
 			}
 		},
-	
-	
+
+
 		// Computes a default event time formatting string if `timeFormat` is not explicitly defined
 		computeEventTimeFormat: function() {
 			return this.view.opt('noMeridiemTimeFormat'); // like "6:30" (no AM/PM)
 		},
-	
-	
+
+
 		// Computes a default `displayEventEnd` value if one is not expliclty defined
 		computeDisplayEventEnd: function() {
 			return true;
 		},
-	
-	
+
+
 		/* Cell System
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		rangeUpdated: function() {
 			var view = this.view;
 			var colDates = [];
 			var date;
-	
+
 			date = this.start.clone();
 			while (date.isBefore(this.end)) {
 				colDates.push(date.clone());
 				date.add(1, 'day');
 				date = view.skipHiddenDays(date);
 			}
-	
+
 			if (this.isRTL) {
 				colDates.reverse();
 			}
-	
+
 			this.colDates = colDates;
 			this.colCnt = colDates.length;
 			this.rowCnt = Math.ceil((this.maxTime - this.minTime) / this.snapDuration); // # of vertical snaps
 		},
-	
-	
+
+
 		// Given a cell object, generates its start date. Returns a reference-free copy.
 		computeCellDate: function(cell) {
 			var date = this.colDates[cell.col];
 			var time = this.computeSnapTime(cell.row);
-	
+
 			date = this.view.calendar.rezoneDate(date); // give it a 00:00 time
 			date.time(time);
-	
+
 			return date;
 		},
-	
-	
+
+
 		// Retrieves the element representing the given column
 		getColEl: function(col) {
 			return this.dayEls.eq(col);
 		},
-	
-	
+
+
 		/* Dates
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Given a row number of the grid, representing a "snap", returns a time (Duration) from its start-of-day
 		computeSnapTime: function(row) {
 			return moment.duration(this.minTime + this.snapDuration * row);
 		},
-	
-	
+
+
 		// Slices up a date range by column into an array of segments
 		rangeToSegs: function(range) {
 			var colCnt = this.colCnt;
@@ -6780,13 +6840,13 @@ return /******/ (function(modules) { // webpackBootstrap
 			var col;
 			var colDate;
 			var colRange;
-	
+
 			// normalize :(
 			range = {
 				start: range.start.clone().stripZone(),
 				end: range.end.clone().stripZone()
 			};
-	
+
 			for (col = 0; col < colCnt; col++) {
 				colDate = this.colDates[col]; // will be ambig time/timezone
 				colRange = {
@@ -6799,31 +6859,31 @@ return /******/ (function(modules) { // webpackBootstrap
 					segs.push(seg);
 				}
 			}
-	
+
 			return segs;
 		},
-	
-	
+
+
 		/* Coordinates
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		updateSize: function(isResize) { // NOT a standard Grid method
 			this.computeSlatTops();
-	
+
 			if (isResize) {
 				this.updateSegVerticals();
 			}
 		},
-	
-	
+
+
 		// Computes the top/bottom coordinates of each "snap" rows
 		computeRowCoords: function() {
 			var originTop = this.el.offset().top;
 			var items = [];
 			var i;
 			var item;
-	
+
 			for (i = 0; i < this.rowCnt; i++) {
 				item = {
 					top: originTop + this.computeTimeTop(this.computeSnapTime(i))
@@ -6834,11 +6894,11 @@ return /******/ (function(modules) { // webpackBootstrap
 				items.push(item);
 			}
 			item.bottom = item.top + this.computeTimeTop(this.computeSnapTime(i));
-	
+
 			return items;
 		},
-	
-	
+
+
 		// Computes the top coordinate, relative to the bounds of the grid, of the given date.
 		// A `startOfDayDate` must be given for avoiding ambiguity over how to treat midnight.
 		computeDateTop: function(date, startOfDayDate) {
@@ -6848,8 +6908,8 @@ return /******/ (function(modules) { // webpackBootstrap
 				)
 			);
 		},
-	
-	
+
+
 		// Computes the top coordinate, relative to the bounds of the grid, of the given time (a Duration).
 		computeTimeTop: function(time) {
 			var slatCoverage = (time - this.minTime) / this.slotDuration; // floating-point value of # of slots covered
@@ -6857,15 +6917,15 @@ return /******/ (function(modules) { // webpackBootstrap
 			var slatRemainder;
 			var slatTop;
 			var slatBottom;
-	
+
 			// constrain. because minTime/maxTime might be customized
 			slatCoverage = Math.max(0, slatCoverage);
 			slatCoverage = Math.min(this.slatEls.length, slatCoverage);
-	
+
 			slatIndex = Math.floor(slatCoverage); // an integer index of the furthest whole slot
 			slatRemainder = slatCoverage - slatIndex;
 			slatTop = this.slatTops[slatIndex]; // the top position of the furthest whole slot
-	
+
 			if (slatRemainder) { // time spans part-way into the slot
 				slatBottom = this.slatTops[slatIndex + 1];
 				return slatTop + (slatBottom - slatTop) * slatRemainder; // part-way between slots
@@ -6874,38 +6934,38 @@ return /******/ (function(modules) { // webpackBootstrap
 				return slatTop;
 			}
 		},
-	
-	
+
+
 		// Queries each `slatEl` for its position relative to the grid's container and stores it in `slatTops`.
 		// Includes the the bottom of the last slat as the last item in the array.
 		computeSlatTops: function() {
 			var tops = [];
 			var top;
-	
+
 			this.slatEls.each(function(i, node) {
 				top = $(node).position().top;
 				tops.push(top);
 			});
-	
+
 			tops.push(top + this.slatEls.last().outerHeight()); // bottom of the last slat
-	
+
 			this.slatTops = tops;
 		},
-	
-	
+
+
 		/* Event Drag Visualization
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Renders a visual indication of an event being dragged over the specified date(s).
 		// dropLocation's end might be null, as well as `seg`. See Grid::renderDrag for more info.
 		// A returned value of `true` signals that a mock "helper" event has been rendered.
 		renderDrag: function(dropLocation, seg) {
-	
+
 			if (seg) { // if there is event information for this drag, render a helper event
 				this.renderRangeHelper(dropLocation, seg);
 				this.applyDragOpacity(this.helperEl);
-	
+
 				return true; // signal that a helper has been rendered
 			}
 			else {
@@ -6913,45 +6973,45 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.renderHighlight(this.eventRangeToSegs(dropLocation));
 			}
 		},
-	
-	
+
+
 		// Unrenders any visual indication of an event being dragged
 		unrenderDrag: function() {
 			this.unrenderHelper();
 			this.unrenderHighlight();
 		},
-	
-	
+
+
 		/* Event Resize Visualization
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Renders a visual indication of an event being resized
 		renderEventResize: function(range, seg) {
 			this.renderRangeHelper(range, seg);
 		},
-	
-	
+
+
 		// Unrenders any visual indication of an event being resized
 		unrenderEventResize: function() {
 			this.unrenderHelper();
 		},
-	
-	
+
+
 		/* Event Helper
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Renders a mock "helper" event. `sourceSeg` is the original segment object and might be null (an external drag)
 		renderHelper: function(event, sourceSeg) {
 			var segs = this.eventsToSegs([ event ]);
 			var tableEl;
 			var i, seg;
 			var sourceEl;
-	
+
 			segs = this.renderFgSegEls(segs); // assigns each seg's el and returns a subset of segs that were rendered
 			tableEl = this.renderSegTable(segs);
-	
+
 			// Try to make the segment that is in the same row as sourceSeg look the same
 			for (i = 0; i < segs.length; i++) {
 				seg = segs[i];
@@ -6965,13 +7025,13 @@ return /******/ (function(modules) { // webpackBootstrap
 					});
 				}
 			}
-	
+
 			this.helperEl = $('<div class="fc-helper-skeleton"/>')
 				.append(tableEl)
 					.appendTo(this.el);
 		},
-	
-	
+
+
 		// Unrenders any mock helper event
 		unrenderHelper: function() {
 			if (this.helperEl) {
@@ -6979,12 +7039,12 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.helperEl = null;
 			}
 		},
-	
-	
+
+
 		/* Selection
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Renders a visual indication of a selection. Overrides the default, which was to simply render a highlight.
 		renderSelection: function(range) {
 			if (this.view.opt('selectHelper')) { // this setting signals that a mock helper event should be rendered
@@ -6994,19 +7054,19 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.renderHighlight(this.selectionRangeToSegs(range));
 			}
 		},
-	
-	
+
+
 		// Unrenders any visual indication of a selection
 		unrenderSelection: function() {
 			this.unrenderHelper();
 			this.unrenderHighlight();
 		},
-	
-	
+
+
 		/* Fill System (highlight, background events, business hours)
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Renders a set of rectangles over the given time segments.
 		// Only returns segments that successfully rendered.
 		renderFill: function(type, segs, className) {
@@ -7018,12 +7078,12 @@ return /******/ (function(modules) { // webpackBootstrap
 			var containerEl;
 			var dayDate;
 			var i, seg;
-	
+
 			if (segs.length) {
-	
+
 				segs = this.renderFillSegEls(type, segs); // assignes `.el` to each seg. returns successfully rendered segs
 				segCols = this.groupSegCols(segs); // group into sub-arrays, and assigns 'col' to each seg
-	
+
 				className = className || type.toLowerCase();
 				skeletonEl = $(
 					'<div class="fc-' + className + '-skeleton">' +
@@ -7031,15 +7091,15 @@ return /******/ (function(modules) { // webpackBootstrap
 					'</div>'
 				);
 				trEl = skeletonEl.find('tr');
-	
+
 				for (col = 0; col < segCols.length; col++) {
 					colSegs = segCols[col];
 					tdEl = $('<td/>').appendTo(trEl);
-	
+
 					if (colSegs.length) {
 						containerEl = $('<div class="fc-' + className + '-container"/>').appendTo(tdEl);
 						dayDate = this.colDates[col];
-	
+
 						for (i = 0; i < colSegs.length; i++) {
 							seg = colSegs[i];
 							containerEl.append(
@@ -7051,41 +7111,41 @@ return /******/ (function(modules) { // webpackBootstrap
 						}
 					}
 				}
-	
+
 				this.bookendCells(trEl, type);
-	
+
 				this.el.append(skeletonEl);
 				this.elsByFill[type] = skeletonEl;
 			}
-	
+
 			return segs;
 		}
-	
+
 	});
-	
+
 	;;
-	
+
 	/* Event-rendering methods for the TimeGrid class
 	----------------------------------------------------------------------------------------------------------------------*/
-	
+
 	TimeGrid.mixin({
-	
+
 		eventSkeletonEl: null, // has cells with event-containers, which contain absolutely positioned event elements
-	
-	
+
+
 		// Renders the given foreground event segments onto the grid
 		renderFgSegs: function(segs) {
 			segs = this.renderFgSegEls(segs); // returns a subset of the segs. segs that were actually rendered
-	
+
 			this.el.append(
 				this.eventSkeletonEl = $('<div class="fc-content-skeleton"/>')
 					.append(this.renderSegTable(segs))
 			);
-	
+
 			return segs; // return only the segs that were actually rendered
 		},
-	
-	
+
+
 		// Unrenders all currently rendered foreground event segments
 		unrenderFgSegs: function(segs) {
 			if (this.eventSkeletonEl) {
@@ -7093,8 +7153,8 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.eventSkeletonEl = null;
 			}
 		},
-	
-	
+
+
 		// Renders and returns the <table> portion of the event-skeleton.
 		// Returns an object with properties 'tbodyEl' and 'segs'.
 		renderSegTable: function(segs) {
@@ -7104,63 +7164,63 @@ return /******/ (function(modules) { // webpackBootstrap
 			var i, seg;
 			var col, colSegs;
 			var containerEl;
-	
+
 			segCols = this.groupSegCols(segs); // group into sub-arrays, and assigns 'col' to each seg
-	
+
 			this.computeSegVerticals(segs); // compute and assign top/bottom
-	
+
 			for (col = 0; col < segCols.length; col++) { // iterate each column grouping
 				colSegs = segCols[col];
 				this.placeSlotSegs(colSegs); // compute horizontal coordinates, z-index's, and reorder the array
-	
+
 				containerEl = $('<div class="fc-event-container"/>');
-	
+
 				// assign positioning CSS and insert into container
 				for (i = 0; i < colSegs.length; i++) {
 					seg = colSegs[i];
 					seg.el.css(this.generateSegPositionCss(seg));
-	
+
 					// if the height is short, add a className for alternate styling
 					if (seg.bottom - seg.top < 30) {
 						seg.el.addClass('fc-short');
 					}
-	
+
 					containerEl.append(seg.el);
 				}
-	
+
 				trEl.append($('<td/>').append(containerEl));
 			}
-	
+
 			this.bookendCells(trEl, 'eventSkeleton');
-	
+
 			return tableEl;
 		},
-	
-	
+
+
 		// Given an array of segments that are all in the same column, sets the backwardCoord and forwardCoord on each.
 		// NOTE: Also reorders the given array by date!
 		placeSlotSegs: function(segs) {
 			var levels;
 			var level0;
 			var i;
-	
+
 			this.sortSegs(segs); // order by date
 			levels = buildSlotSegLevels(segs);
 			computeForwardSlotSegs(levels);
-	
+
 			if ((level0 = levels[0])) {
-	
+
 				for (i = 0; i < level0.length; i++) {
 					computeSlotSegPressures(level0[i]);
 				}
-	
+
 				for (i = 0; i < level0.length; i++) {
 					this.computeSlotSegCoords(level0[i], 0, 0);
 				}
 			}
 		},
-	
-	
+
+
 		// Calculate seg.forwardCoord and seg.backwardCoord for the segment, where both values range
 		// from 0 to 1. If the calendar is left-to-right, the seg.backwardCoord maps to "left" and
 		// seg.forwardCoord maps to "right" (via percentage). Vice-versa if the calendar is right-to-left.
@@ -7172,30 +7232,30 @@ return /******/ (function(modules) { // webpackBootstrap
 		computeSlotSegCoords: function(seg, seriesBackwardPressure, seriesBackwardCoord) {
 			var forwardSegs = seg.forwardSegs;
 			var i;
-	
+
 			if (seg.forwardCoord === undefined) { // not already computed
-	
+
 				if (!forwardSegs.length) {
-	
+
 					// if there are no forward segments, this segment should butt up against the edge
 					seg.forwardCoord = 1;
 				}
 				else {
-	
+
 					// sort highest pressure first
 					this.sortForwardSlotSegs(forwardSegs);
-	
+
 					// this segment's forwardCoord will be calculated from the backwardCoord of the
 					// highest-pressure forward segment.
 					this.computeSlotSegCoords(forwardSegs[0], seriesBackwardPressure + 1, seriesBackwardCoord);
 					seg.forwardCoord = forwardSegs[0].backwardCoord;
 				}
-	
+
 				// calculate the backwardCoord from the forwardCoord. consider the series
 				seg.backwardCoord = seg.forwardCoord -
 					(seg.forwardCoord - seriesBackwardCoord) / // available width for series
 					(seriesBackwardPressure + 1); // # of segments in the series
-	
+
 				// use this segment's coordinates to computed the coordinates of the less-pressurized
 				// forward segments
 				for (i=0; i<forwardSegs.length; i++) {
@@ -7203,36 +7263,36 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 			}
 		},
-	
-	
+
+
 		// Refreshes the CSS top/bottom coordinates for each segment element. Probably after a window resize/zoom.
 		// Repositions business hours segs too, so not just for events. Maybe shouldn't be here.
 		updateSegVerticals: function() {
 			var allSegs = (this.segs || []).concat(this.businessHourSegs || []);
 			var i;
-	
+
 			this.computeSegVerticals(allSegs);
-	
+
 			for (i = 0; i < allSegs.length; i++) {
 				allSegs[i].el.css(
 					this.generateSegVerticalCss(allSegs[i])
 				);
 			}
 		},
-	
-	
+
+
 		// For each segment in an array, computes and assigns its top and bottom properties
 		computeSegVerticals: function(segs) {
 			var i, seg;
-	
+
 			for (i = 0; i < segs.length; i++) {
 				seg = segs[i];
 				seg.top = this.computeDateTop(seg.start, seg.start);
 				seg.bottom = this.computeDateTop(seg.end, seg.start);
 			}
 		},
-	
-	
+
+
 		// Renders the HTML for a single event segment's default rendering
 		fgSegHtml: function(seg, disableResizing) {
 			var view = this.view;
@@ -7245,9 +7305,9 @@ return /******/ (function(modules) { // webpackBootstrap
 			var timeText;
 			var fullTimeText; // more verbose time text. for the print stylesheet
 			var startTimeText; // just the start time text
-	
+
 			classes.unshift('fc-time-grid-event', 'fc-v-event');
-	
+
 			if (view.isMultiDayEvent(event)) { // if the event appears to span more than one day...
 				// Don't display time text on segments that run entirely through a day.
 				// That would appear as midnight-midnight and would look dumb.
@@ -7263,7 +7323,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				fullTimeText = this.getEventTimeText(event, 'LT');
 				startTimeText = this.getEventTimeText(event, null, false); // displayEnd=false
 			}
-	
+
 			return '<a class="' + classes.join(' ') + '"' +
 				(event.url ?
 					' href="' + htmlEscape(event.url) + '"' :
@@ -7304,8 +7364,8 @@ return /******/ (function(modules) { // webpackBootstrap
 						) +
 				'</a>';
 		},
-	
-	
+
+
 		// Generates an object with CSS properties/values that should be applied to an event segment element.
 		// Contains important positioning-related properties that should be applied to any event element, customized or not.
 		generateSegPositionCss: function(seg) {
@@ -7315,12 +7375,12 @@ return /******/ (function(modules) { // webpackBootstrap
 			var props = this.generateSegVerticalCss(seg); // get top/bottom first
 			var left; // amount of space from left edge, a fraction of the total width
 			var right; // amount of space from right edge, a fraction of the total width
-	
+
 			if (shouldOverlap) {
 				// double the width, but don't go beyond the maximum forward coordinate (1.0)
 				forwardCoord = Math.min(1, backwardCoord + (forwardCoord - backwardCoord) * 2);
 			}
-	
+
 			if (this.isRTL) {
 				left = 1 - forwardCoord;
 				right = backwardCoord;
@@ -7329,20 +7389,20 @@ return /******/ (function(modules) { // webpackBootstrap
 				left = backwardCoord;
 				right = 1 - forwardCoord;
 			}
-	
+
 			props.zIndex = seg.level + 1; // convert from 0-base to 1-based
 			props.left = left * 100 + '%';
 			props.right = right * 100 + '%';
-	
+
 			if (shouldOverlap && seg.forwardPressure) {
 				// add padding to the edge so that forward stacked events don't cover the resizer's icon
 				props[this.isRTL ? 'marginLeft' : 'marginRight'] = 10 * 2; // 10 is a guesstimate of the icon's width
 			}
-	
+
 			return props;
 		},
-	
-	
+
+
 		// Generates an object with CSS properties for the top/bottom coordinates of a segment element
 		generateSegVerticalCss: function(seg) {
 			return {
@@ -7350,30 +7410,30 @@ return /******/ (function(modules) { // webpackBootstrap
 				bottom: -seg.bottom // flipped because needs to be space beyond bottom edge of event container
 			};
 		},
-	
-	
+
+
 		// Given a flat array of segments, return an array of sub-arrays, grouped by each segment's col
 		groupSegCols: function(segs) {
 			var segCols = [];
 			var i;
-	
+
 			for (i = 0; i < this.colCnt; i++) {
 				segCols.push([]);
 			}
-	
+
 			for (i = 0; i < segs.length; i++) {
 				segCols[segs[i].col].push(segs[i]);
 			}
-	
+
 			return segCols;
 		},
-	
-	
+
+
 		sortForwardSlotSegs: function(forwardSegs) {
 			forwardSegs.sort(proxy(this, 'compareForwardSlotSegs'));
 		},
-	
-	
+
+
 		// A cmp function for determining which forward segment to rely on more when computing coordinates.
 		compareForwardSlotSegs: function(seg1, seg2) {
 			// put higher-pressure first
@@ -7383,49 +7443,49 @@ return /******/ (function(modules) { // webpackBootstrap
 				// do normal sorting...
 				this.compareSegs(seg1, seg2);
 		}
-	
+
 	});
-	
-	
+
+
 	// Builds an array of segments "levels". The first level will be the leftmost tier of segments if the calendar is
 	// left-to-right, or the rightmost if the calendar is right-to-left. Assumes the segments are already ordered by date.
 	function buildSlotSegLevels(segs) {
 		var levels = [];
 		var i, seg;
 		var j;
-	
+
 		for (i=0; i<segs.length; i++) {
 			seg = segs[i];
-	
+
 			// go through all the levels and stop on the first level where there are no collisions
 			for (j=0; j<levels.length; j++) {
 				if (!computeSlotSegCollisions(seg, levels[j]).length) {
 					break;
 				}
 			}
-	
+
 			seg.level = j;
-	
+
 			(levels[j] || (levels[j] = [])).push(seg);
 		}
-	
+
 		return levels;
 	}
-	
-	
+
+
 	// For every segment, figure out the other segments that are in subsequent
 	// levels that also occupy the same vertical space. Accumulate in seg.forwardSegs
 	function computeForwardSlotSegs(levels) {
 		var i, level;
 		var j, seg;
 		var k;
-	
+
 		for (i=0; i<levels.length; i++) {
 			level = levels[i];
-	
+
 			for (j=0; j<level.length; j++) {
 				seg = level[j];
-	
+
 				seg.forwardSegs = [];
 				for (k=i+1; k<levels.length; k++) {
 					computeSlotSegCollisions(seg, levels[k], seg.forwardSegs);
@@ -7433,23 +7493,23 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 		}
 	}
-	
-	
+
+
 	// Figure out which path forward (via seg.forwardSegs) results in the longest path until
 	// the furthest edge is reached. The number of segments in this path will be seg.forwardPressure
 	function computeSlotSegPressures(seg) {
 		var forwardSegs = seg.forwardSegs;
 		var forwardPressure = 0;
 		var i, forwardSeg;
-	
+
 		if (seg.forwardPressure === undefined) { // not already computed
-	
+
 			for (i=0; i<forwardSegs.length; i++) {
 				forwardSeg = forwardSegs[i];
-	
+
 				// figure out the child's maximum forward path
 				computeSlotSegPressures(forwardSeg);
-	
+
 				// either use the existing maximum, or use the child's forward pressure
 				// plus one (for the forwardSeg itself)
 				forwardPressure = Math.max(
@@ -7457,121 +7517,121 @@ return /******/ (function(modules) { // webpackBootstrap
 					1 + forwardSeg.forwardPressure
 				);
 			}
-	
+
 			seg.forwardPressure = forwardPressure;
 		}
 	}
-	
-	
+
+
 	// Find all the segments in `otherSegs` that vertically collide with `seg`.
 	// Append into an optionally-supplied `results` array and return.
 	function computeSlotSegCollisions(seg, otherSegs, results) {
 		results = results || [];
-	
+
 		for (var i=0; i<otherSegs.length; i++) {
 			if (isSlotSegCollision(seg, otherSegs[i])) {
 				results.push(otherSegs[i]);
 			}
 		}
-	
+
 		return results;
 	}
-	
-	
+
+
 	// Do these segments occupy the same vertical space?
 	function isSlotSegCollision(seg1, seg2) {
 		return seg1.bottom > seg2.top && seg1.top < seg2.bottom;
 	}
-	
+
 	;;
-	
+
 	/* An abstract class from which other views inherit from
 	----------------------------------------------------------------------------------------------------------------------*/
-	
+
 	var View = fc.View = Class.extend({
-	
+
 		type: null, // subclass' view name (string)
 		name: null, // deprecated. use `type` instead
 		title: null, // the text that will be displayed in the header's title
-	
+
 		calendar: null, // owner Calendar object
 		options: null, // hash containing all options. already merged with view-specific-options
 		coordMap: null, // a CoordMap object for converting pixel regions to dates
 		el: null, // the view's containing element. set by Calendar
-	
+
 		displaying: null, // a promise representing the state of rendering. null if no render requested
 		isSkeletonRendered: false,
 		isEventsRendered: false,
-	
+
 		// range the view is actually displaying (moments)
 		start: null,
 		end: null, // exclusive
-	
+
 		// range the view is formally responsible for (moments)
 		// may be different from start/end. for example, a month view might have 1st-31st, excluding padded dates
 		intervalStart: null,
 		intervalEnd: null, // exclusive
 		intervalDuration: null,
 		intervalUnit: null, // name of largest unit being displayed, like "month" or "week"
-	
+
 		isRTL: false,
 		isSelected: false, // boolean whether a range of time is user-selected or not
-	
+
 		eventOrderSpecs: null, // criteria for ordering events when they have same date/time
-	
+
 		// subclasses can optionally use a scroll container
 		scrollerEl: null, // the element that will most likely scroll when content is too tall
 		scrollTop: null, // cached vertical scroll value
-	
+
 		// classNames styled by jqui themes
 		widgetHeaderClass: null,
 		widgetContentClass: null,
 		highlightStateClass: null,
-	
+
 		// for date utils, computed from options
 		nextDayThreshold: null,
 		isHiddenDayHash: null,
-	
+
 		// document handlers, bound to `this` object
 		documentMousedownProxy: null, // TODO: doesn't work with touch
-	
-	
+
+
 		constructor: function(calendar, type, options, intervalDuration) {
-	
+
 			this.calendar = calendar;
 			this.type = this.name = type; // .name is deprecated
 			this.options = options;
 			this.intervalDuration = intervalDuration || moment.duration(1, 'day');
-	
+
 			this.nextDayThreshold = moment.duration(this.opt('nextDayThreshold'));
 			this.initThemingProps();
 			this.initHiddenDays();
 			this.isRTL = this.opt('isRTL');
-	
+
 			this.eventOrderSpecs = parseFieldSpecs(this.opt('eventOrder'));
-	
+
 			this.documentMousedownProxy = proxy(this, 'documentMousedown');
-	
+
 			this.initialize();
 		},
-	
-	
+
+
 		// A good place for subclasses to initialize member variables
 		initialize: function() {
 			// subclasses can implement
 		},
-	
-	
+
+
 		// Retrieves an option with the given name
 		opt: function(name) {
 			return this.options[name];
 		},
-	
-	
+
+
 		// Triggers handlers that are view-related. Modifies args before passing to calendar.
 		trigger: function(name, thisObj) { // arguments beyond thisObj are passed along
 			var calendar = this.calendar;
-	
+
 			return calendar.trigger.apply(
 				calendar,
 				[name, thisObj || this].concat(
@@ -7580,26 +7640,26 @@ return /******/ (function(modules) { // webpackBootstrap
 				)
 			);
 		},
-	
-	
+
+
 		/* Dates
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Updates all internal dates to center around the given current date
 		setDate: function(date) {
 			this.setRange(this.computeRange(date));
 		},
-	
-	
+
+
 		// Updates all internal dates for displaying the given range.
 		// Expects all values to be normalized (like what computeRange does).
 		setRange: function(range) {
 			$.extend(this, range);
 			this.updateTitle();
 		},
-	
-	
+
+
 		// Given a single current date, produce information about what range to display.
 		// Subclasses can override. Must return all properties.
 		computeRange: function(date) {
@@ -7607,7 +7667,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			var intervalStart = date.clone().startOf(intervalUnit);
 			var intervalEnd = intervalStart.clone().add(this.intervalDuration);
 			var start, end;
-	
+
 			// normalize the range's time-ambiguity
 			if (/year|month|week|day/.test(intervalUnit)) { // whole-days?
 				intervalStart.stripTime();
@@ -7621,12 +7681,12 @@ return /******/ (function(modules) { // webpackBootstrap
 					intervalEnd = this.calendar.rezoneDate(intervalEnd); // convert to current timezone, with 00:00
 				}
 			}
-	
+
 			start = intervalStart.clone();
 			start = this.skipHiddenDays(start);
 			end = intervalEnd.clone();
 			end = this.skipHiddenDays(end, -1, true); // exclusively move backwards
-	
+
 			return {
 				intervalUnit: intervalUnit,
 				intervalStart: intervalStart,
@@ -7635,24 +7695,24 @@ return /******/ (function(modules) { // webpackBootstrap
 				end: end
 			};
 		},
-	
-	
+
+
 		// Computes the new date when the user hits the prev button, given the current date
 		computePrevDate: function(date) {
 			return this.massageCurrentDate(
 				date.clone().startOf(this.intervalUnit).subtract(this.intervalDuration), -1
 			);
 		},
-	
-	
+
+
 		// Computes the new date when the user hits the next button, given the current date
 		computeNextDate: function(date) {
 			return this.massageCurrentDate(
 				date.clone().startOf(this.intervalUnit).add(this.intervalDuration)
 			);
 		},
-	
-	
+
+
 		// Given an arbitrarily calculated current date of the calendar, returns a date that is ensured to be completely
 		// visible. `direction` is optional and indicates which direction the current date was being
 		// incremented or decremented (1 or -1).
@@ -7663,21 +7723,21 @@ return /******/ (function(modules) { // webpackBootstrap
 					date.startOf('day');
 				}
 			}
-	
+
 			return date;
 		},
-	
-	
+
+
 		/* Title and Date Formatting
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Sets the view's title property to the most updated computed value
 		updateTitle: function() {
 			this.title = this.computeTitle();
 		},
-	
-	
+
+
 		// Computes what the title at the top of the calendar should be for this view
 		computeTitle: function() {
 			return this.formatRange(
@@ -7686,8 +7746,8 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.opt('titleRangeSeparator')
 			);
 		},
-	
-	
+
+
 		// Generates the format string that should be used to generate the title for the current date range.
 		// Attempts to compute the most appropriate format if not explicitly specified with `titleFormat`.
 		computeTitleFormat: function() {
@@ -7704,65 +7764,65 @@ return /******/ (function(modules) { // webpackBootstrap
 				return 'LL'; // one day. longer, like "September 9 2014"
 			}
 		},
-	
-	
+
+
 		// Utility for formatting a range. Accepts a range object, formatting string, and optional separator.
 		// Displays all-day ranges naturally, with an inclusive end. Takes the current isRTL into account.
 		formatRange: function(range, formatStr, separator) {
 			var end = range.end;
-	
+
 			if (!end.hasTime()) { // all-day?
 				end = end.clone().subtract(1); // convert to inclusive. last ms of previous day
 			}
-	
+
 			return formatRange(range.start, end, formatStr, separator, this.opt('isRTL'));
 		},
-	
-	
+
+
 		/* Rendering
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Sets the container element that the view should render inside of.
 		// Does other DOM-related initializations.
 		setElement: function(el) {
 			this.el = el;
 			this.bindGlobalHandlers();
 		},
-	
-	
+
+
 		// Removes the view's container element from the DOM, clearing any content beforehand.
 		// Undoes any other DOM-related attachments.
 		removeElement: function() {
 			this.clear(); // clears all content
-	
+
 			// clean up the skeleton
 			if (this.isSkeletonRendered) {
 				this.unrenderSkeleton();
 				this.isSkeletonRendered = false;
 			}
-	
+
 			this.unbindGlobalHandlers();
-	
+
 			this.el.remove();
-	
+
 			// NOTE: don't null-out this.el in case the View was destroyed within an API callback.
 			// We don't null-out the View's other jQuery element references upon destroy,
 			//  so we shouldn't kill this.el either.
 		},
-	
-	
+
+
 		// Does everything necessary to display the view centered around the given date.
 		// Does every type of rendering EXCEPT rendering events.
 		// Is asychronous and returns a promise.
 		display: function(date) {
 			var _this = this;
 			var scrollState = null;
-	
+
 			if (this.displaying) {
 				scrollState = this.queryScroll();
 			}
-	
+
 			return this.clear().then(function() { // clear the content first (async)
 				return (
 					_this.displaying =
@@ -7774,15 +7834,15 @@ return /******/ (function(modules) { // webpackBootstrap
 				);
 			});
 		},
-	
-	
+
+
 		// Does everything necessary to clear the content of the view.
 		// Clears dates and events. Does not clear the skeleton.
 		// Is asychronous and returns a promise.
 		clear: function() {
 			var _this = this;
 			var displaying = this.displaying;
-	
+
 			if (displaying) { // previously displayed, or in the process of being displayed?
 				return displaying.then(function() { // wait for the display to finish
 					_this.displaying = null;
@@ -7794,8 +7854,8 @@ return /******/ (function(modules) { // webpackBootstrap
 				return $.when(); // an immediately-resolved promise
 			}
 		},
-	
-	
+
+
 		// Displays the view's non-event content, such as date-related content or anything required by events.
 		// Renders the view's non-content skeleton if necessary.
 		// Can be asynchronous and return a promise.
@@ -7812,8 +7872,8 @@ return /******/ (function(modules) { // webpackBootstrap
 			this.updateSize();
 			this.renderBusinessHours(); // might need coordinates, so should go after updateSize()
 		},
-	
-	
+
+
 		// Unrenders the view content that was rendered in displayView.
 		// Can be asynchronous and return a promise.
 		clearView: function() {
@@ -7825,137 +7885,137 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.destroy(); // TODO: deprecate
 			}
 		},
-	
-	
+
+
 		// Renders the basic structure of the view before any content is rendered
 		renderSkeleton: function() {
 			// subclasses should implement
 		},
-	
-	
+
+
 		// Unrenders the basic structure of the view
 		unrenderSkeleton: function() {
 			// subclasses should implement
 		},
-	
-	
+
+
 		// Renders the view's date-related content (like cells that represent days/times).
 		// Assumes setRange has already been called and the skeleton has already been rendered.
 		renderDates: function() {
 			// subclasses should implement
 		},
-	
-	
+
+
 		// Unrenders the view's date-related content
 		unrenderDates: function() {
 			// subclasses should override
 		},
-	
-	
+
+
 		// Renders business-hours onto the view. Assumes updateSize has already been called.
 		renderBusinessHours: function() {
 			// subclasses should implement
 		},
-	
-	
+
+
 		// Unrenders previously-rendered business-hours
 		unrenderBusinessHours: function() {
 			// subclasses should implement
 		},
-	
-	
+
+
 		// Signals that the view's content has been rendered
 		triggerRender: function() {
 			this.trigger('viewRender', this, this, this.el);
 		},
-	
-	
+
+
 		// Signals that the view's content is about to be unrendered
 		triggerUnrender: function() {
 			this.trigger('viewDestroy', this, this, this.el);
 		},
-	
-	
+
+
 		// Binds DOM handlers to elements that reside outside the view container, such as the document
 		bindGlobalHandlers: function() {
 			$(document).on('mousedown', this.documentMousedownProxy);
 		},
-	
-	
+
+
 		// Unbinds DOM handlers from elements that reside outside the view container
 		unbindGlobalHandlers: function() {
 			$(document).off('mousedown', this.documentMousedownProxy);
 		},
-	
-	
+
+
 		// Initializes internal variables related to theming
 		initThemingProps: function() {
 			var tm = this.opt('theme') ? 'ui' : 'fc';
-	
+
 			this.widgetHeaderClass = tm + '-widget-header';
 			this.widgetContentClass = tm + '-widget-content';
 			this.highlightStateClass = tm + '-state-highlight';
 		},
-	
-	
+
+
 		/* Dimensions
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Refreshes anything dependant upon sizing of the container element of the grid
 		updateSize: function(isResize) {
 			var scrollState;
-	
+
 			if (isResize) {
 				scrollState = this.queryScroll();
 			}
-	
+
 			this.updateHeight(isResize);
 			this.updateWidth(isResize);
-	
+
 			if (isResize) {
 				this.setScroll(scrollState);
 			}
 		},
-	
-	
+
+
 		// Refreshes the horizontal dimensions of the calendar
 		updateWidth: function(isResize) {
 			// subclasses should implement
 		},
-	
-	
+
+
 		// Refreshes the vertical dimensions of the calendar
 		updateHeight: function(isResize) {
 			var calendar = this.calendar; // we poll the calendar for height information
-	
+
 			this.setHeight(
 				calendar.getSuggestedViewHeight(),
 				calendar.isHeightAuto()
 			);
 		},
-	
-	
+
+
 		// Updates the vertical dimensions of the calendar to the specified height.
 		// if `isAuto` is set to true, height becomes merely a suggestion and the view should use its "natural" height.
 		setHeight: function(height, isAuto) {
 			// subclasses should implement
 		},
-	
-	
+
+
 		/* Scroller
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Given the total height of the view, return the number of pixels that should be used for the scroller.
 		// Utility for subclasses.
 		computeScrollerHeight: function(totalHeight) {
 			var scrollerEl = this.scrollerEl;
 			var both;
 			var otherHeight; // cumulative height of everything that is not the scrollerEl in the view (header+borders)
-	
+
 			both = this.el.add(scrollerEl);
-	
+
 			// fuckin IE8/9/10/11 sometimes returns 0 for dimensions. this weird hack was the only thing that worked
 			both.css({
 				position: 'relative', // cause a reflow, which will force fresh dimension recalculation
@@ -7963,61 +8023,61 @@ return /******/ (function(modules) { // webpackBootstrap
 			});
 			otherHeight = this.el.outerHeight() - scrollerEl.height(); // grab the dimensions
 			both.css({ position: '', left: '' }); // undo hack
-	
+
 			return totalHeight - otherHeight;
 		},
-	
-	
+
+
 		// Computes the initial pre-configured scroll state prior to allowing the user to change it.
 		// Given the scroll state from the previous rendering. If first time rendering, given null.
 		computeInitialScroll: function(previousScrollState) {
 			return 0;
 		},
-	
-	
+
+
 		// Retrieves the view's current natural scroll state. Can return an arbitrary format.
 		queryScroll: function() {
 			if (this.scrollerEl) {
 				return this.scrollerEl.scrollTop(); // operates on scrollerEl by default
 			}
 		},
-	
-	
+
+
 		// Sets the view's scroll state. Will accept the same format computeInitialScroll and queryScroll produce.
 		setScroll: function(scrollState) {
 			if (this.scrollerEl) {
 				return this.scrollerEl.scrollTop(scrollState); // operates on scrollerEl by default
 			}
 		},
-	
-	
+
+
 		// Sets the scroll state, making sure to overcome any predefined scroll value the browser has in mind
 		forceScroll: function(scrollState) {
 			var _this = this;
-	
+
 			this.setScroll(scrollState);
 			setTimeout(function() {
 				_this.setScroll(scrollState);
 			}, 0);
 		},
-	
-	
+
+
 		/* Event Elements / Segments
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Does everything necessary to display the given events onto the current view
 		displayEvents: function(events) {
 			var scrollState = this.queryScroll();
-	
+
 			this.clearEvents();
 			this.renderEvents(events);
 			this.isEventsRendered = true;
 			this.setScroll(scrollState);
 			this.triggerEventRender();
 		},
-	
-	
+
+
 		// Does everything necessary to clear the view's currently-rendered events
 		clearEvents: function() {
 			if (this.isEventsRendered) {
@@ -8029,20 +8089,20 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.isEventsRendered = false;
 			}
 		},
-	
-	
+
+
 		// Renders the events onto the view.
 		renderEvents: function(events) {
 			// subclasses should implement
 		},
-	
-	
+
+
 		// Removes event elements from the view.
 		unrenderEvents: function() {
 			// subclasses should implement
 		},
-	
-	
+
+
 		// Signals that all events have been rendered
 		triggerEventRender: function() {
 			this.renderedEventSegEach(function(seg) {
@@ -8050,55 +8110,55 @@ return /******/ (function(modules) { // webpackBootstrap
 			});
 			this.trigger('eventAfterAllRender');
 		},
-	
-	
+
+
 		// Signals that all event elements are about to be removed
 		triggerEventUnrender: function() {
 			this.renderedEventSegEach(function(seg) {
 				this.trigger('eventDestroy', seg.event, seg.event, seg.el);
 			});
 		},
-	
-	
+
+
 		// Given an event and the default element used for rendering, returns the element that should actually be used.
 		// Basically runs events and elements through the eventRender hook.
 		resolveEventEl: function(event, el) {
 			var custom = this.trigger('eventRender', event, event, el);
-	
+
 			if (custom === false) { // means don't render at all
 				el = null;
 			}
 			else if (custom && custom !== true) {
 				el = $(custom);
 			}
-	
+
 			return el;
 		},
-	
-	
+
+
 		// Hides all rendered event segments linked to the given event
 		showEvent: function(event) {
 			this.renderedEventSegEach(function(seg) {
 				seg.el.css('visibility', '');
 			}, event);
 		},
-	
-	
+
+
 		// Shows all rendered event segments linked to the given event
 		hideEvent: function(event) {
 			this.renderedEventSegEach(function(seg) {
 				seg.el.css('visibility', 'hidden');
 			}, event);
 		},
-	
-	
+
+
 		// Iterates through event segments that have been rendered (have an el). Goes through all by default.
 		// If the optional `event` argument is specified, only iterates through segments linked to that event.
 		// The `this` value of the callback function will be the view.
 		renderedEventSegEach: function(func, event) {
 			var segs = this.getEventSegs();
 			var i;
-	
+
 			for (i = 0; i < segs.length; i++) {
 				if (!event || segs[i].event._id === event._id) {
 					if (segs[i].el) {
@@ -8107,23 +8167,23 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 			}
 		},
-	
-	
+
+
 		// Retrieves all the rendered segment objects for the view
 		getEventSegs: function() {
 			// subclasses must implement
 			return [];
 		},
-	
-	
+
+
 		/* Event Drag-n-Drop
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Computes if the given event is allowed to be dragged by the user
 		isEventDraggable: function(event) {
 			var source = event.source || {};
-	
+
 			return firstDefined(
 				event.startEditable,
 				source.startEditable,
@@ -8133,8 +8193,8 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.opt('editable')
 			);
 		},
-	
-	
+
+
 		// Must be called when an event in the view is dropped onto new location.
 		// `dropLocation` is an object that contains the new start/end/allDay values for the event.
 		reportEventDrop: function(event, dropLocation, largeUnit, el, ev) {
@@ -8144,22 +8204,22 @@ return /******/ (function(modules) { // webpackBootstrap
 				mutateResult.undo();
 				calendar.reportEventChange();
 			};
-	
+
 			this.triggerEventDrop(event, mutateResult.dateDelta, undoFunc, el, ev);
 			calendar.reportEventChange(); // will rerender events
 		},
-	
-	
+
+
 		// Triggers event-drop handlers that have subscribed via the API
 		triggerEventDrop: function(event, dateDelta, undoFunc, el, ev) {
 			this.trigger('eventDrop', el[0], event, dateDelta, undoFunc, ev, {}); // {} = jqui dummy
 		},
-	
-	
+
+
 		/* External Element Drag-n-Drop
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Must be called when an external element, via jQuery UI, has been dropped onto the calendar.
 		// `meta` is the parsed data that has been embedded into the dragging event.
 		// `dropLocation` is an object that contains the new start/end/allDay values for the event.
@@ -8167,66 +8227,66 @@ return /******/ (function(modules) { // webpackBootstrap
 			var eventProps = meta.eventProps;
 			var eventInput;
 			var event;
-	
+
 			// Try to build an event object and render it. TODO: decouple the two
 			if (eventProps) {
 				eventInput = $.extend({}, eventProps, dropLocation);
 				event = this.calendar.renderEvent(eventInput, meta.stick)[0]; // renderEvent returns an array
 			}
-	
+
 			this.triggerExternalDrop(event, dropLocation, el, ev, ui);
 		},
-	
-	
+
+
 		// Triggers external-drop handlers that have subscribed via the API
 		triggerExternalDrop: function(event, dropLocation, el, ev, ui) {
-	
+
 			// trigger 'drop' regardless of whether element represents an event
 			this.trigger('drop', el[0], dropLocation.start, ev, ui);
-	
+
 			if (event) {
 				this.trigger('eventReceive', null, event); // signal an external event landed
 			}
 		},
-	
-	
+
+
 		/* Drag-n-Drop Rendering (for both events and external elements)
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Renders a visual indication of a event or external-element drag over the given drop zone.
 		// If an external-element, seg will be `null`
 		renderDrag: function(dropLocation, seg) {
 			// subclasses must implement
 		},
-	
-	
+
+
 		// Unrenders a visual indication of an event or external-element being dragged.
 		unrenderDrag: function() {
 			// subclasses must implement
 		},
-	
-	
+
+
 		/* Event Resizing
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Computes if the given event is allowed to be resized from its starting edge
 		isEventResizableFromStart: function(event) {
 			return this.opt('eventResizableFromStart') && this.isEventResizable(event);
 		},
-	
-	
+
+
 		// Computes if the given event is allowed to be resized from its ending edge
 		isEventResizableFromEnd: function(event) {
 			return this.isEventResizable(event);
 		},
-	
-	
+
+
 		// Computes if the given event is allowed to be resized by the user at all
 		isEventResizable: function(event) {
 			var source = event.source || {};
-	
+
 			return firstDefined(
 				event.durationEditable,
 				source.durationEditable,
@@ -8236,8 +8296,8 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.opt('editable')
 			);
 		},
-	
-	
+
+
 		// Must be called when an event in the view has been resized to a new length
 		reportEventResize: function(event, resizeLocation, largeUnit, el, ev) {
 			var calendar = this.calendar;
@@ -8246,22 +8306,22 @@ return /******/ (function(modules) { // webpackBootstrap
 				mutateResult.undo();
 				calendar.reportEventChange();
 			};
-	
+
 			this.triggerEventResize(event, mutateResult.durationDelta, undoFunc, el, ev);
 			calendar.reportEventChange(); // will rerender events
 		},
-	
-	
+
+
 		// Triggers event-resize handlers that have subscribed via the API
 		triggerEventResize: function(event, durationDelta, undoFunc, el, ev) {
 			this.trigger('eventResize', el[0], event, durationDelta, undoFunc, ev, {}); // {} = jqui dummy
 		},
-	
-	
+
+
 		/* Selection
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Selects a date range on the view. `start` and `end` are both Moments.
 		// `ev` is the native mouse event that begin the interaction.
 		select: function(range, ev) {
@@ -8269,27 +8329,27 @@ return /******/ (function(modules) { // webpackBootstrap
 			this.renderSelection(range);
 			this.reportSelection(range, ev);
 		},
-	
-	
+
+
 		// Renders a visual indication of the selection
 		renderSelection: function(range) {
 			// subclasses should implement
 		},
-	
-	
+
+
 		// Called when a new selection is made. Updates internal state and triggers handlers.
 		reportSelection: function(range, ev) {
 			this.isSelected = true;
 			this.triggerSelect(range, ev);
 		},
-	
-	
+
+
 		// Triggers handlers to 'select'
 		triggerSelect: function(range, ev) {
 			this.trigger('select', null, range.start, range.end, ev);
 		},
-	
-	
+
+
 		// Undoes a selection. updates in the internal state and triggers handlers.
 		// `ev` is the native mouse event that began the interaction.
 		unselect: function(ev) {
@@ -8302,21 +8362,21 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.trigger('unselect', null, ev);
 			}
 		},
-	
-	
+
+
 		// Unrenders a visual indication of selection
 		unrenderSelection: function() {
 			// subclasses should implement
 		},
-	
-	
+
+
 		// Handler for unselecting when the user clicks something and the 'unselectAuto' setting is on
 		documentMousedown: function(ev) {
 			var ignore;
-	
+
 			// is there a selection, and has the user made a proper left click?
 			if (this.isSelected && this.opt('unselectAuto') && isPrimaryMouseButton(ev)) {
-	
+
 				// only unselect if the clicked element is not identical to or inside of an 'unselectCancel' element
 				ignore = this.opt('unselectCancel');
 				if (!ignore || !$(ev.target).closest(ignore).length) {
@@ -8324,33 +8384,33 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 			}
 		},
-	
-	
+
+
 		/* Day Click
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Triggers handlers to 'dayClick'
 		triggerDayClick: function(cell, dayEl, ev) {
 			this.trigger('dayClick', dayEl, cell.start, ev);
 		},
-	
-	
+
+
 		/* Date Utils
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Initializes internal variables related to calculating hidden days-of-week
 		initHiddenDays: function() {
 			var hiddenDays = this.opt('hiddenDays') || []; // array of day-of-week indices that are hidden
 			var isHiddenDayHash = []; // is the day-of-week hidden? (hash with day-of-week-index -> bool)
 			var dayCnt = 0;
 			var i;
-	
+
 			if (this.opt('weekends') === false) {
 				hiddenDays.push(0, 6); // 0=sunday, 6=saturday
 			}
-	
+
 			for (i = 0; i < 7; i++) {
 				if (
 					!(isHiddenDayHash[i] = $.inArray(i, hiddenDays) !== -1)
@@ -8358,15 +8418,15 @@ return /******/ (function(modules) { // webpackBootstrap
 					dayCnt++;
 				}
 			}
-	
+
 			if (!dayCnt) {
 				throw 'invalid hiddenDays'; // all days were hidden? bad.
 			}
-	
+
 			this.isHiddenDayHash = isHiddenDayHash;
 		},
-	
-	
+
+
 		// Is the current day hidden?
 		// `day` is a day-of-week index (0-6), or a Moment
 		isHiddenDay: function(day) {
@@ -8375,8 +8435,8 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 			return this.isHiddenDayHash[day];
 		},
-	
-	
+
+
 		// Incrementing the current day until it is no longer a hidden day, returning a copy.
 		// If the initial value of `date` is not a hidden day, don't do anything.
 		// Pass `isExclusive` as `true` if you are dealing with an end date.
@@ -8391,8 +8451,8 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 			return out;
 		},
-	
-	
+
+
 		// Returns the date range of the full days the given range visually appears to occupy.
 		// Returns a new range object.
 		computeDayRange: function(range) {
@@ -8400,11 +8460,11 @@ return /******/ (function(modules) { // webpackBootstrap
 			var end = range.end;
 			var endDay = null;
 			var endTimeMS;
-	
+
 			if (end) {
 				endDay = end.clone().stripTime(); // the beginning of the day the range exclusively ends
 				endTimeMS = +end.time(); // # of milliseconds into `endDay`
-	
+
 				// If the end time is actually inclusively part of the next day and is equal to or
 				// beyond the next day threshold, adjust the end to be the exclusive end of `endDay`.
 				// Otherwise, leaving it as inclusive will cause it to exclude `endDay`.
@@ -8412,30 +8472,30 @@ return /******/ (function(modules) { // webpackBootstrap
 					endDay.add(1, 'days');
 				}
 			}
-	
+
 			// If no end was specified, or if it is within `startDay` but not past nextDayThreshold,
 			// assign the default duration of one day.
 			if (!end || endDay <= startDay) {
 				endDay = startDay.clone().add(1, 'days');
 			}
-	
+
 			return { start: startDay, end: endDay };
 		},
-	
-	
+
+
 		// Does the given event visually appear to occupy more than one day?
 		isMultiDayEvent: function(event) {
 			var range = this.computeDayRange(event); // event is range-ish
-	
+
 			return range.end.diff(range.start, 'days') > 1;
 		}
-	
+
 	});
-	
+
 	;;
-	
+
 	var Calendar = fc.Calendar = Class.extend({
-	
+
 		dirDefaults: null, // option defaults related to LTR or RTL
 		langDefaults: null, // option defaults related to current locale
 		overrides: null, // option overrides given to the fullCalendar constructor
@@ -8444,41 +8504,41 @@ return /******/ (function(modules) { // webpackBootstrap
 		view: null, // current View object
 		header: null,
 		loadingLevel: 0, // number of simultaneous loading tasks
-	
-	
+
+
 		// a lot of this class' OOP logic is scoped within this constructor function,
 		// but in the future, write individual methods on the prototype.
 		constructor: Calendar_constructor,
-	
-	
+
+
 		// Subclasses can override this for initialization logic after the constructor has been called
 		initialize: function() {
 		},
-	
-	
+
+
 		// Initializes `this.options` and other important options-related objects
 		initOptions: function(overrides) {
 			var lang, langDefaults;
 			var isRTL, dirDefaults;
-	
+
 			// converts legacy options into non-legacy ones.
 			// in the future, when this is removed, don't use `overrides` reference. make a copy.
 			overrides = massageOverrides(overrides);
-	
+
 			lang = overrides.lang;
 			langDefaults = langOptionHash[lang];
 			if (!langDefaults) {
 				lang = Calendar.defaults.lang;
 				langDefaults = langOptionHash[lang] || {};
 			}
-	
+
 			isRTL = firstDefined(
 				overrides.isRTL,
 				langDefaults.isRTL,
 				Calendar.defaults.isRTL
 			);
 			dirDefaults = isRTL ? Calendar.rtlDefaults : {};
-	
+
 			this.dirDefaults = dirDefaults;
 			this.langDefaults = langDefaults;
 			this.overrides = overrides;
@@ -8489,34 +8549,34 @@ return /******/ (function(modules) { // webpackBootstrap
 				overrides
 			]);
 			populateInstanceComputableOptions(this.options);
-	
+
 			this.viewSpecCache = {}; // somewhat unrelated
 		},
-	
-	
+
+
 		// Gets information about how to create a view. Will use a cache.
 		getViewSpec: function(viewType) {
 			var cache = this.viewSpecCache;
-	
+
 			return cache[viewType] || (cache[viewType] = this.buildViewSpec(viewType));
 		},
-	
-	
+
+
 		// Given a duration singular unit, like "week" or "day", finds a matching view spec.
 		// Preference is given to views that have corresponding buttons.
 		getUnitViewSpec: function(unit) {
 			var viewTypes;
 			var i;
 			var spec;
-	
+
 			if ($.inArray(unit, intervalUnits) != -1) {
-	
+
 				// put views that have buttons first. there will be duplicates, but oh well
 				viewTypes = this.header.getViewsWithButtons();
 				$.each(fc.views, function(viewType) { // all views
 					viewTypes.push(viewType);
 				});
-	
+
 				for (i = 0; i < viewTypes.length; i++) {
 					spec = this.getViewSpec(viewTypes[i]);
 					if (spec) {
@@ -8527,8 +8587,8 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 			}
 		},
-	
-	
+
+
 		// Builds an object with information on how to create a given view
 		buildViewSpec: function(requestedViewType) {
 			var viewOverrides = this.overrides.views || {};
@@ -8540,43 +8600,43 @@ return /******/ (function(modules) { // webpackBootstrap
 			var overrides; // for the view
 			var duration;
 			var unit;
-	
+
 			// iterate from the specific view definition to a more general one until we hit an actual View class
 			while (viewType) {
 				spec = fcViews[viewType];
 				overrides = viewOverrides[viewType];
 				viewType = null; // clear. might repopulate for another iteration
-	
+
 				if (typeof spec === 'function') { // TODO: deprecate
 					spec = { 'class': spec };
 				}
-	
+
 				if (spec) {
 					specChain.unshift(spec);
 					defaultsChain.unshift(spec.defaults || {});
 					duration = duration || spec.duration;
 					viewType = viewType || spec.type;
 				}
-	
+
 				if (overrides) {
 					overridesChain.unshift(overrides); // view-specific option hashes have options at zero-level
 					duration = duration || overrides.duration;
 					viewType = viewType || overrides.type;
 				}
 			}
-	
+
 			spec = mergeProps(specChain);
 			spec.type = requestedViewType;
 			if (!spec['class']) {
 				return false;
 			}
-	
+
 			if (duration) {
 				duration = moment.duration(duration);
 				if (duration.valueOf()) { // valid?
 					spec.duration = duration;
 					unit = computeIntervalUnit(duration);
-	
+
 					// view is a single-unit duration, like "week" or "day"
 					// incorporate options for this. lowest priority
 					if (duration.as(unit) === 1) {
@@ -8585,17 +8645,17 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				}
 			}
-	
+
 			spec.defaults = mergeOptions(defaultsChain);
 			spec.overrides = mergeOptions(overridesChain);
-	
+
 			this.buildViewSpecOptions(spec);
 			this.buildViewSpecButtonText(spec, requestedViewType);
-	
+
 			return spec;
 		},
-	
-	
+
+
 		// Builds and assigns a view spec's options object from its already-assigned defaults and overrides
 		buildViewSpecOptions: function(spec) {
 			spec.options = mergeOptions([ // lowest to highest priority
@@ -8608,11 +8668,11 @@ return /******/ (function(modules) { // webpackBootstrap
 			]);
 			populateInstanceComputableOptions(spec.options);
 		},
-	
-	
+
+
 		// Computes and assigns a view spec's buttonText-related options
 		buildViewSpecButtonText: function(spec, requestedViewType) {
-	
+
 			// given an options object with a possible `buttonText` hash, lookup the buttonText for the
 			// requested view, falling back to a generic unit entry like "week" or "day"
 			function queryButtonText(options) {
@@ -8620,12 +8680,12 @@ return /******/ (function(modules) { // webpackBootstrap
 				return buttonText[requestedViewType] ||
 					(spec.singleUnit ? buttonText[spec.singleUnit] : null);
 			}
-	
+
 			// highest to lowest priority
 			spec.buttonTextOverride =
 				queryButtonText(this.overrides) || // constructor-specified buttonText lookup hash takes precedence
 				spec.overrides.buttonText; // `buttonText` for view-specific options is a string
-	
+
 			// highest to lowest priority. mirrors buildViewSpecOptions
 			spec.buttonTextDefault =
 				queryButtonText(this.langDefaults) ||
@@ -8635,41 +8695,41 @@ return /******/ (function(modules) { // webpackBootstrap
 				(spec.duration ? this.humanizeDuration(spec.duration) : null) || // like "3 days"
 				requestedViewType; // fall back to given view name
 		},
-	
-	
+
+
 		// Given a view name for a custom view or a standard view, creates a ready-to-go View object
 		instantiateView: function(viewType) {
 			var spec = this.getViewSpec(viewType);
-	
+
 			return new spec['class'](this, viewType, spec.options, spec.duration);
 		},
-	
-	
+
+
 		// Returns a boolean about whether the view is okay to instantiate at some point
 		isValidViewType: function(viewType) {
 			return Boolean(this.getViewSpec(viewType));
 		},
-	
-	
+
+
 		// Should be called when any type of async data fetching begins
 		pushLoading: function() {
 			if (!(this.loadingLevel++)) {
 				this.trigger('loading', null, true, this.view);
 			}
 		},
-	
-	
+
+
 		// Should be called when any type of async data fetching completes
 		popLoading: function() {
 			if (!(--this.loadingLevel)) {
 				this.trigger('loading', null, false, this.view);
 			}
 		},
-	
-	
+
+
 		// Given arguments to the select method in the API, returns a range
 		buildSelectRange: function(start, end) {
-	
+
 			start = this.moment(start);
 			if (end) {
 				end = this.moment(end);
@@ -8680,27 +8740,27 @@ return /******/ (function(modules) { // webpackBootstrap
 			else {
 				end = start.clone().add(this.defaultAllDayEventDuration);
 			}
-	
+
 			return { start: start, end: end };
 		}
-	
+
 	});
-	
-	
+
+
 	Calendar.mixin(Emitter);
-	
-	
+
+
 	function Calendar_constructor(element, overrides) {
 		var t = this;
-	
-	
+
+
 		t.initOptions(overrides || {});
 		var options = this.options;
-	
-		
+
+
 		// Exports
 		// -----------------------------------------------------------------------------------
-	
+
 		t.render = render;
 		t.destroy = destroy;
 		t.refetchEvents = refetchEvents;
@@ -8723,18 +8783,18 @@ return /******/ (function(modules) { // webpackBootstrap
 		t.getView = getView;
 		t.option = option;
 		t.trigger = trigger;
-	
-	
-	
+
+
+
 		// Language-data Internals
 		// -----------------------------------------------------------------------------------
 		// Apply overrides to the current language's data
-	
-	
+
+
 		var localeData = createObject( // make a cheap copy
 			getMomentLocaleData(options.lang) // will fall back to en
 		);
-	
+
 		if (options.monthNames) {
 			localeData._months = options.monthNames;
 		}
@@ -8752,7 +8812,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			_week.dow = options.firstDay;
 			localeData._week = _week;
 		}
-	
+
 		// assign a normalized value, to be used by our .week() moment extension
 		localeData._fullCalendar_weekCalc = (function(weekCalc) {
 			if (typeof weekCalc === 'function') {
@@ -8765,25 +8825,25 @@ return /******/ (function(modules) { // webpackBootstrap
 				return 'ISO';
 			}
 		})(options.weekNumberCalculation);
-	
-	
-	
+
+
+
 		// Calendar-specific Date Utilities
 		// -----------------------------------------------------------------------------------
-	
-	
+
+
 		t.defaultAllDayEventDuration = moment.duration(options.defaultAllDayEventDuration);
 		t.defaultTimedEventDuration = moment.duration(options.defaultTimedEventDuration);
-	
-	
+
+
 		// Builds a moment using the settings of the current calendar: timezone and language.
 		// Accepts anything the vanilla moment() constructor accepts.
 		t.moment = function() {
 			var mom;
-	
+
 			if (options.timezone === 'local') {
 				mom = fc.moment.apply(null, arguments);
-	
+
 				// Force the moment to be local, because fc.moment doesn't guarantee it.
 				if (mom.hasTime()) { // don't give ambiguously-timed moments a local zone
 					mom.local();
@@ -8795,32 +8855,32 @@ return /******/ (function(modules) { // webpackBootstrap
 			else {
 				mom = fc.moment.parseZone.apply(null, arguments); // let the input decide the zone
 			}
-	
+
 			if ('_locale' in mom) { // moment 2.8 and above
 				mom._locale = localeData;
 			}
 			else { // pre-moment-2.8
 				mom._lang = localeData;
 			}
-	
+
 			return mom;
 		};
-	
-	
+
+
 		// Returns a boolean about whether or not the calendar knows how to calculate
 		// the timezone offset of arbitrary dates in the current timezone.
 		t.getIsAmbigTimezone = function() {
 			return options.timezone !== 'local' && options.timezone !== 'UTC';
 		};
-	
-	
+
+
 		// Returns a copy of the given date in the current timezone of it is ambiguously zoned.
 		// This will also give the date an unambiguous time.
 		t.rezoneDate = function(date) {
 			return t.moment(date.toArray());
 		};
-	
-	
+
+
 		// Returns a moment for the current date, as defined by the client's computer,
 		// or overridden by the `now` option.
 		t.getNow = function() {
@@ -8830,8 +8890,8 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 			return t.moment(now);
 		};
-	
-	
+
+
 		// Get an event's normalized end date. If not present, calculate it from the defaults.
 		t.getEventEnd = function(event) {
 			if (event.end) {
@@ -8841,50 +8901,50 @@ return /******/ (function(modules) { // webpackBootstrap
 				return t.getDefaultEventEnd(event.allDay, event.start);
 			}
 		};
-	
-	
+
+
 		// Given an event's allDay status and start date, return swhat its fallback end date should be.
 		t.getDefaultEventEnd = function(allDay, start) { // TODO: rename to computeDefaultEventEnd
 			var end = start.clone();
-	
+
 			if (allDay) {
 				end.stripTime().add(t.defaultAllDayEventDuration);
 			}
 			else {
 				end.add(t.defaultTimedEventDuration);
 			}
-	
+
 			if (t.getIsAmbigTimezone()) {
 				end.stripZone(); // we don't know what the tzo should be
 			}
-	
+
 			return end;
 		};
-	
-	
+
+
 		// Produces a human-readable string for the given duration.
 		// Side-effect: changes the locale of the given duration.
 		t.humanizeDuration = function(duration) {
 			return (duration.locale || duration.lang).call(duration, options.lang) // works moment-pre-2.8
 				.humanize();
 		};
-	
-	
-		
+
+
+
 		// Imports
 		// -----------------------------------------------------------------------------------
-	
-	
+
+
 		EventManager.call(t, options);
 		var isFetchNeeded = t.isFetchNeeded;
 		var fetchEvents = t.fetchEvents;
-	
-	
-	
+
+
+
 		// Locals
 		// -----------------------------------------------------------------------------------
-	
-	
+
+
 		var _element = element[0];
 		var header;
 		var headerElement;
@@ -8897,21 +8957,21 @@ return /******/ (function(modules) { // webpackBootstrap
 		var ignoreWindowResize = 0;
 		var date;
 		var events = [];
-		
-		
-		
+
+
+
 		// Main Rendering
 		// -----------------------------------------------------------------------------------
-	
-	
+
+
 		if (options.defaultDate != null) {
 			date = t.moment(options.defaultDate);
 		}
 		else {
 			date = t.getNow();
 		}
-		
-		
+
+
 		function render() {
 			if (!content) {
 				initialRender();
@@ -8922,77 +8982,77 @@ return /******/ (function(modules) { // webpackBootstrap
 				renderView();
 			}
 		}
-		
-		
+
+
 		function initialRender() {
 			tm = options.theme ? 'ui' : 'fc';
 			element.addClass('fc');
-	
+
 			if (options.isRTL) {
 				element.addClass('fc-rtl');
 			}
 			else {
 				element.addClass('fc-ltr');
 			}
-	
+
 			if (options.theme) {
 				element.addClass('ui-widget');
 			}
 			else {
 				element.addClass('fc-unthemed');
 			}
-	
+
 			content = $("<div class='fc-view-container'/>").prependTo(element);
-	
+
 			header = t.header = new Header(t, options);
 			headerElement = header.render();
 			if (headerElement) {
 				element.prepend(headerElement);
 			}
-	
+
 			renderView(options.defaultView);
-	
+
 			if (options.handleWindowResize) {
 				windowResizeProxy = debounce(windowResize, options.windowResizeDelay); // prevents rapid calls
 				$(window).resize(windowResizeProxy);
 			}
 		}
-		
-		
+
+
 		function destroy() {
-	
+
 			if (currentView) {
 				currentView.removeElement();
-	
+
 				// NOTE: don't null-out currentView/t.view in case API methods are called after destroy.
 				// It is still the "current" view, just not rendered.
 			}
-	
+
 			header.removeElement();
 			content.remove();
 			element.removeClass('fc fc-ltr fc-rtl fc-unthemed ui-widget');
-	
+
 			if (windowResizeProxy) {
 				$(window).unbind('resize', windowResizeProxy);
 			}
 		}
-		
-		
+
+
 		function elementVisible() {
 			return element.is(':visible');
 		}
-		
-		
-	
+
+
+
 		// View Rendering
 		// -----------------------------------------------------------------------------------
-	
-	
+
+
 		// Renders a view because of a date change, view-type change, or for the first time.
 		// If not given a viewType, keep the current view but render different dates.
 		function renderView(viewType) {
 			ignoreWindowResize++;
-	
+
 			// if viewType is changing, remove the old view's rendering
 			if (currentView && viewType && currentView.type !== viewType) {
 				header.deactivateButton(currentView.type);
@@ -9000,90 +9060,90 @@ return /******/ (function(modules) { // webpackBootstrap
 				currentView.removeElement();
 				currentView = t.view = null;
 			}
-	
+
 			// if viewType changed, or the view was never created, create a fresh view
 			if (!currentView && viewType) {
 				currentView = t.view =
 					viewsByType[viewType] ||
 					(viewsByType[viewType] = t.instantiateView(viewType));
-	
+
 				currentView.setElement(
 					$("<div class='fc-view fc-" + viewType + "-view' />").appendTo(content)
 				);
 				header.activateButton(viewType);
 			}
-	
+
 			if (currentView) {
-	
+
 				// in case the view should render a period of time that is completely hidden
 				date = currentView.massageCurrentDate(date);
-	
+
 				// render or rerender the view
 				if (
 					!currentView.displaying ||
 					!date.isWithin(currentView.intervalStart, currentView.intervalEnd) // implicit date window change
 				) {
 					if (elementVisible()) {
-	
+
 						freezeContentHeight();
 						currentView.display(date);
 						unfreezeContentHeight(); // immediately unfreeze regardless of whether display is async
-	
+
 						// need to do this after View::render, so dates are calculated
 						updateHeaderTitle();
 						updateTodayButton();
-	
+
 						getAndRenderEvents();
 					}
 				}
 			}
-	
+
 			unfreezeContentHeight(); // undo any lone freezeContentHeight calls
 			ignoreWindowResize--;
 		}
-	
-		
-	
+
+
+
 		// Resizing
 		// -----------------------------------------------------------------------------------
-	
-	
+
+
 		t.getSuggestedViewHeight = function() {
 			if (suggestedViewHeight === undefined) {
 				calcSize();
 			}
 			return suggestedViewHeight;
 		};
-	
-	
+
+
 		t.isHeightAuto = function() {
 			return options.contentHeight === 'auto' || options.height === 'auto';
 		};
-		
-		
+
+
 		function updateSize(shouldRecalc) {
 			if (elementVisible()) {
-	
+
 				if (shouldRecalc) {
 					_calcSize();
 				}
-	
+
 				ignoreWindowResize++;
 				currentView.updateSize(true); // isResize=true. will poll getSuggestedViewHeight() and isHeightAuto()
 				ignoreWindowResize--;
-	
+
 				return true; // signal success
 			}
 		}
-	
-	
+
+
 		function calcSize() {
 			if (elementVisible()) {
 				_calcSize();
 			}
 		}
-		
-		
+
+
 		function _calcSize() { // assumes elementVisible
 			if (typeof options.contentHeight === 'number') { // exists and not 'auto'
 				suggestedViewHeight = options.contentHeight;
@@ -9095,8 +9155,8 @@ return /******/ (function(modules) { // webpackBootstrap
 				suggestedViewHeight = Math.round(content.width() / Math.max(options.aspectRatio, .5));
 			}
 		}
-		
-		
+
+
 		function windowResize(ev) {
 			if (
 				!ignoreWindowResize &&
@@ -9108,20 +9168,20 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 			}
 		}
-		
-		
-		
+
+
+
 		/* Event Fetching/Rendering
 		-----------------------------------------------------------------------------*/
 		// TODO: going forward, most of this stuff should be directly handled by the view
-	
-	
+
+
 		function refetchEvents() { // can be called as an API method
 			destroyEvents(); // so that events are cleared before user starts waiting for AJAX
 			fetchAndRenderEvents();
 		}
-	
-	
+
+
 		function renderEvents() { // destroys old events if previously rendered
 			if (elementVisible()) {
 				freezeContentHeight();
@@ -9129,15 +9189,15 @@ return /******/ (function(modules) { // webpackBootstrap
 				unfreezeContentHeight();
 			}
 		}
-	
-	
+
+
 		function destroyEvents() {
 			freezeContentHeight();
 			currentView.clearEvents();
 			unfreezeContentHeight();
 		}
-		
-	
+
+
 		function getAndRenderEvents() {
 			if (!options.lazyFetching || isFetchNeeded(currentView.start, currentView.end)) {
 				fetchAndRenderEvents();
@@ -9146,38 +9206,38 @@ return /******/ (function(modules) { // webpackBootstrap
 				renderEvents();
 			}
 		}
-	
-	
+
+
 		function fetchAndRenderEvents() {
 			fetchEvents(currentView.start, currentView.end);
 				// ... will call reportEvents
 				// ... which will call renderEvents
 		}
-	
-		
+
+
 		// called when event data arrives
 		function reportEvents(_events) {
 			events = _events;
 			renderEvents();
 		}
-	
-	
+
+
 		// called when a single event's data has been changed
 		function reportEventChange() {
 			renderEvents();
 		}
-	
-	
-	
+
+
+
 		/* Header Updating
 		-----------------------------------------------------------------------------*/
-	
-	
+
+
 		function updateHeaderTitle() {
 			header.updateTitle(currentView.title);
 		}
-	
-	
+
+
 		function updateTodayButton() {
 			var now = t.getNow();
 			if (now.isWithin(currentView.intervalStart, currentView.intervalEnd)) {
@@ -9187,98 +9247,98 @@ return /******/ (function(modules) { // webpackBootstrap
 				header.enableButton('today');
 			}
 		}
-		
-	
-	
+
+
+
 		/* Selection
 		-----------------------------------------------------------------------------*/
-		
-	
+
+
 		function select(start, end) {
 			currentView.select(
 				t.buildSelectRange.apply(t, arguments)
 			);
 		}
-		
-	
+
+
 		function unselect() { // safe to be called before renderView
 			if (currentView) {
 				currentView.unselect();
 			}
 		}
-		
-		
-		
+
+
+
 		/* Date
 		-----------------------------------------------------------------------------*/
-		
-		
+
+
 		function prev() {
 			date = currentView.computePrevDate(date);
 			renderView();
 		}
-		
-		
+
+
 		function next() {
 			date = currentView.computeNextDate(date);
 			renderView();
 		}
-		
-		
+
+
 		function prevYear() {
 			date.add(-1, 'years');
 			renderView();
 		}
-		
-		
+
+
 		function nextYear() {
 			date.add(1, 'years');
 			renderView();
 		}
-		
-		
+
+
 		function today() {
 			date = t.getNow();
 			renderView();
 		}
-		
-		
+
+
 		function gotoDate(dateInput) {
 			date = t.moment(dateInput);
 			renderView();
 		}
-		
-		
+
+
 		function incrementDate(delta) {
 			date.add(moment.duration(delta));
 			renderView();
 		}
-	
-	
+
+
 		// Forces navigation to a view for the given date.
 		// `viewType` can be a specific view name or a generic one like "week" or "day".
 		function zoomTo(newDate, viewType) {
 			var spec;
-	
+
 			viewType = viewType || 'day'; // day is default zoom
 			spec = t.getViewSpec(viewType) || t.getUnitViewSpec(viewType);
-	
+
 			date = newDate;
 			renderView(spec ? spec.type : null);
 		}
-		
-		
+
+
 		function getDate() {
 			return date.clone();
 		}
-	
-	
-	
+
+
+
 		/* Height "Freezing"
 		-----------------------------------------------------------------------------*/
 		// TODO: move this into the view
-	
-	
+
+
 		function freezeContentHeight() {
 			content.css({
 				width: '100%',
@@ -9286,8 +9346,8 @@ return /******/ (function(modules) { // webpackBootstrap
 				overflow: 'hidden'
 			});
 		}
-	
-	
+
+
 		function unfreezeContentHeight() {
 			content.css({
 				width: '',
@@ -9295,23 +9355,23 @@ return /******/ (function(modules) { // webpackBootstrap
 				overflow: ''
 			});
 		}
-		
-		
-		
+
+
+
 		/* Misc
 		-----------------------------------------------------------------------------*/
-		
-	
+
+
 		function getCalendar() {
 			return t;
 		}
-	
-		
+
+
 		function getView() {
 			return currentView;
 		}
-		
-		
+
+
 		function option(name, value) {
 			if (value === undefined) {
 				return options[name];
@@ -9321,34 +9381,34 @@ return /******/ (function(modules) { // webpackBootstrap
 				updateSize(true); // true = allow recalculation of height
 			}
 		}
-		
-		
+
+
 		function trigger(name, thisObj) { // overrides the Emitter's trigger method :(
 			var args = Array.prototype.slice.call(arguments, 2);
-	
+
 			thisObj = thisObj || _element;
 			this.triggerWith(name, thisObj, args); // Emitter's method
-	
+
 			if (options[name]) {
 				return options[name].apply(thisObj, args);
 			}
 		}
-	
+
 		t.initialize();
 	}
-	
+
 	;;
-	
+
 	Calendar.defaults = {
-	
+
 		titleRangeSeparator: ' \u2014 ', // emphasized dash
 		monthYearFormat: 'MMMM YYYY', // required for en. other languages rely on datepicker computable option
-	
+
 		defaultTimedEventDuration: '02:00:00',
 		defaultAllDayEventDuration: { days: 1 },
 		forceEventDuration: false,
 		nextDayThreshold: '09:00:00', // 9am
-	
+
 		// display
 		defaultView: 'month',
 		aspectRatio: 1.35,
@@ -9359,24 +9419,24 @@ return /******/ (function(modules) { // webpackBootstrap
 		},
 		weekends: true,
 		weekNumbers: false,
-	
+
 		weekNumberTitle: 'W',
 		weekNumberCalculation: 'local',
-		
+
 		//editable: false,
-	
+
 		scrollTime: '06:00:00',
-		
+
 		// event ajax
 		lazyFetching: true,
 		startParam: 'start',
 		endParam: 'end',
 		timezoneParam: 'timezone',
-	
+
 		timezone: false,
-	
+
 		//allDayDefault: undefined,
-	
+
 		// locale
 		isRTL: false,
 		buttonText: {
@@ -9390,14 +9450,14 @@ return /******/ (function(modules) { // webpackBootstrap
 			week: 'week',
 			day: 'day'
 		},
-	
+
 		buttonIcons: {
 			prev: 'left-single-arrow',
 			next: 'right-single-arrow',
 			prevYear: 'left-double-arrow',
 			nextYear: 'right-double-arrow'
 		},
-		
+
 		// jquery-ui theming
 		theme: false,
 		themeButtonIcons: {
@@ -9406,35 +9466,35 @@ return /******/ (function(modules) { // webpackBootstrap
 			prevYear: 'seek-prev',
 			nextYear: 'seek-next'
 		},
-	
+
 		//eventResizableFromStart: false,
 		dragOpacity: .75,
 		dragRevertDuration: 500,
 		dragScroll: true,
-		
+
 		//selectable: false,
 		unselectAuto: true,
-		
+
 		dropAccept: '*',
-	
+
 		eventOrder: 'title',
-	
+
 		eventLimit: false,
 		eventLimitText: 'more',
 		eventLimitClick: 'popover',
 		dayPopoverFormat: 'LL',
-		
+
 		handleWindowResize: true,
 		windowResizeDelay: 200 // milliseconds before an updateSize happens
-		
+
 	};
-	
-	
+
+
 	Calendar.englishDefaults = { // used by lang.js
 		dayPopoverFormat: 'dddd, MMMM D'
 	};
-	
-	
+
+
 	Calendar.rtlDefaults = { // right-to-left defaults
 		header: { // TODO: smarter solution (first/center/last ?)
 			left: 'next,prev today',
@@ -9454,35 +9514,35 @@ return /******/ (function(modules) { // webpackBootstrap
 			prevYear: 'seek-next'
 		}
 	};
-	
+
 	;;
-	
+
 	var langOptionHash = fc.langs = {}; // initialize and expose
-	
-	
+
+
 	// TODO: document the structure and ordering of a FullCalendar lang file
 	// TODO: rename everything "lang" to "locale", like what the moment project did
-	
-	
+
+
 	// Initialize jQuery UI datepicker translations while using some of the translations
 	// Will set this as the default language for datepicker.
 	fc.datepickerLang = function(langCode, dpLangCode, dpOptions) {
-	
+
 		// get the FullCalendar internal option hash for this language. create if necessary
 		var fcOptions = langOptionHash[langCode] || (langOptionHash[langCode] = {});
-	
+
 		// transfer some simple options from datepicker to fc
 		fcOptions.isRTL = dpOptions.isRTL;
 		fcOptions.weekNumberTitle = dpOptions.weekHeader;
-	
+
 		// compute some more complex options from datepicker
 		$.each(dpComputableOptions, function(name, func) {
 			fcOptions[name] = func(dpOptions);
 		});
-	
+
 		// is jQuery UI Datepicker is on the page?
 		if ($.datepicker) {
-	
+
 			// Register the language data.
 			// FullCalendar and MomentJS use language codes like "pt-br" but Datepicker
 			// does it like "pt-BR" or if it doesn't have the language, maybe just "pt".
@@ -9490,29 +9550,29 @@ return /******/ (function(modules) { // webpackBootstrap
 			$.datepicker.regional[dpLangCode] =
 				$.datepicker.regional[langCode] = // alias
 					dpOptions;
-	
+
 			// Alias 'en' to the default language data. Do this every time.
 			$.datepicker.regional.en = $.datepicker.regional[''];
-	
+
 			// Set as Datepicker's global defaults.
 			$.datepicker.setDefaults(dpOptions);
 		}
 	};
-	
-	
+
+
 	// Sets FullCalendar-specific translations. Will set the language as the global default.
 	fc.lang = function(langCode, newFcOptions) {
 		var fcOptions;
 		var momOptions;
-	
+
 		// get the FullCalendar internal option hash for this language. create if necessary
 		fcOptions = langOptionHash[langCode] || (langOptionHash[langCode] = {});
-	
+
 		// provided new options for this language? merge them in
 		if (newFcOptions) {
 			fcOptions = langOptionHash[langCode] = mergeOptions([ fcOptions, newFcOptions ]);
 		}
-	
+
 		// compute language options that weren't defined.
 		// always do this. newFcOptions can be undefined when initializing from i18n file,
 		// so no way to tell if this is an initialization or a default-setting.
@@ -9522,16 +9582,16 @@ return /******/ (function(modules) { // webpackBootstrap
 				fcOptions[name] = func(momOptions, fcOptions);
 			}
 		});
-	
+
 		// set it as the default language for FullCalendar
 		Calendar.defaults.lang = langCode;
 	};
-	
-	
+
+
 	// NOTE: can't guarantee any of these computations will run because not every language has datepicker
 	// configs, so make sure there are English fallbacks for these in the defaults file.
 	var dpComputableOptions = {
-	
+
 		buttonText: function(dpOptions) {
 			return {
 				// the translations sometimes wrongly contain HTML entities
@@ -9540,25 +9600,25 @@ return /******/ (function(modules) { // webpackBootstrap
 				today: stripHtmlEntities(dpOptions.currentText)
 			};
 		},
-	
+
 		// Produces format strings like "MMMM YYYY" -> "September 2014"
 		monthYearFormat: function(dpOptions) {
 			return dpOptions.showMonthAfterYear ?
 				'YYYY[' + dpOptions.yearSuffix + '] MMMM' :
 				'MMMM YYYY[' + dpOptions.yearSuffix + ']';
 		}
-	
+
 	};
-	
+
 	var momComputableOptions = {
-	
+
 		// Produces format strings like "ddd M/D" -> "Fri 9/15"
 		dayOfMonthFormat: function(momOptions, fcOptions) {
 			var format = momOptions.longDateFormat('l'); // for the format like "M/D/YYYY"
-	
+
 			// strip the year off the edge, as well as other misc non-whitespace chars
 			format = format.replace(/^Y+[^\w\s]*|[^\w\s]*Y+$/g, '');
-	
+
 			if (fcOptions.isRTL) {
 				format += ' ddd'; // for RTL, add day-of-week to end
 			}
@@ -9567,13 +9627,13 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 			return format;
 		},
-	
+
 		// Produces format strings like "h:mma" -> "6:00pm"
 		mediumTimeFormat: function(momOptions) { // can't be called `timeFormat` because collides with option
 			return momOptions.longDateFormat('LT')
 				.replace(/\s*a$/i, 'a'); // convert AM/PM/am/pm to lowercase. remove any spaces beforehand
 		},
-	
+
 		// Produces format strings like "h(:mm)a" -> "6pm" / "6:30pm"
 		smallTimeFormat: function(momOptions) {
 			return momOptions.longDateFormat('LT')
@@ -9581,7 +9641,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				.replace(/(\Wmm)$/, '($1)') // like above, but for foreign langs
 				.replace(/\s*a$/i, 'a'); // convert AM/PM/am/pm to lowercase. remove any spaces beforehand
 		},
-	
+
 		// Produces format strings like "h(:mm)t" -> "6p" / "6:30p"
 		extraSmallTimeFormat: function(momOptions) {
 			return momOptions.longDateFormat('LT')
@@ -9589,7 +9649,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				.replace(/(\Wmm)$/, '($1)') // like above, but for foreign langs
 				.replace(/\s*a$/i, 't'); // convert to AM/PM/am/pm to lowercase one-letter. remove any spaces beforehand
 		},
-	
+
 		// Produces format strings like "ha" / "H" -> "6pm" / "18"
 		hourFormat: function(momOptions) {
 			return momOptions.longDateFormat('LT')
@@ -9597,42 +9657,42 @@ return /******/ (function(modules) { // webpackBootstrap
 				.replace(/(\Wmm)$/, '') // like above, but for foreign langs
 				.replace(/\s*a$/i, 'a'); // convert AM/PM/am/pm to lowercase. remove any spaces beforehand
 		},
-	
+
 		// Produces format strings like "h:mm" -> "6:30" (with no AM/PM)
 		noMeridiemTimeFormat: function(momOptions) {
 			return momOptions.longDateFormat('LT')
 				.replace(/\s*a$/i, ''); // remove trailing AM/PM
 		}
-	
+
 	};
-	
-	
+
+
 	// options that should be computed off live calendar options (considers override options)
 	var instanceComputableOptions = { // TODO: best place for this? related to lang?
-	
+
 		// Produces format strings for results like "Mo 16"
 		smallDayDateFormat: function(options) {
 			return options.isRTL ?
 				'D dd' :
 				'dd D';
 		},
-	
+
 		// Produces format strings for results like "Wk 5"
 		weekFormat: function(options) {
 			return options.isRTL ?
 				'w[ ' + options.weekNumberTitle + ']' :
 				'[' + options.weekNumberTitle + ' ]w';
 		},
-	
+
 		// Produces format strings for results like "Wk5"
 		smallWeekFormat: function(options) {
 			return options.isRTL ?
 				'w[' + options.weekNumberTitle + ']' :
 				'[' + options.weekNumberTitle + ']w';
 		}
-	
+
 	};
-	
+
 	function populateInstanceComputableOptions(options) {
 		$.each(instanceComputableOptions, function(name, func) {
 			if (options[name] == null) {
@@ -9640,8 +9700,8 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 		});
 	}
-	
-	
+
+
 	// Returns moment's internal locale data. If doesn't exist, returns English.
 	// Works with moment-pre-2.8
 	function getMomentLocaleData(langCode) {
@@ -9649,21 +9709,21 @@ return /******/ (function(modules) { // webpackBootstrap
 		return func.call(moment, langCode) ||
 			func.call(moment, 'en'); // the newer localData could return null, so fall back to en
 	}
-	
-	
+
+
 	// Initialize English by forcing computation of moment-derived options.
 	// Also, sets it as the default.
 	fc.lang('en', Calendar.englishDefaults);
-	
+
 	;;
-	
+
 	/* Top toolbar area with buttons and title
 	----------------------------------------------------------------------------------------------------------------------*/
 	// TODO: rename all header-related things to "toolbar"
-	
+
 	function Header(calendar, options) {
 		var t = this;
-		
+
 		// exports
 		t.render = render;
 		t.removeElement = removeElement;
@@ -9673,46 +9733,46 @@ return /******/ (function(modules) { // webpackBootstrap
 		t.disableButton = disableButton;
 		t.enableButton = enableButton;
 		t.getViewsWithButtons = getViewsWithButtons;
-		
+
 		// locals
 		var el = $();
 		var viewsWithButtons = [];
 		var tm;
-	
-	
+
+
 		function render() {
 			var sections = options.header;
-	
+
 			tm = options.theme ? 'ui' : 'fc';
-	
+
 			if (sections) {
 				el = $("<div class='fc-toolbar'/>")
 					.append(renderSection('left'))
 					.append(renderSection('right'))
 					.append(renderSection('center'))
 					.append('<div class="fc-clear"/>');
-	
+
 				return el;
 			}
 		}
-		
-		
+
+
 		function removeElement() {
 			el.remove();
 			el = $();
 		}
-		
-		
+
+
 		function renderSection(position) {
 			var sectionEl = $('<div class="fc-' + position + '"/>');
 			var buttonStr = options.header[position];
-	
+
 			if (buttonStr) {
 				$.each(buttonStr.split(' '), function(i) {
 					var groupChildren = $();
 					var isOnlyButtons = true;
 					var groupEl;
-	
+
 					$.each(this.split(','), function(j, buttonName) {
 						var customButtonProps;
 						var viewSpec;
@@ -9724,7 +9784,7 @@ return /******/ (function(modules) { // webpackBootstrap
 						var innerHtml;
 						var classes;
 						var button; // the element
-	
+
 						if (buttonName == 'title') {
 							groupChildren = groupChildren.add($('<h2>&nbsp;</h2>')); // we always want it to take up height
 							isOnlyButtons = false;
@@ -9754,19 +9814,19 @@ return /******/ (function(modules) { // webpackBootstrap
 								overrideText = (calendar.overrides.buttonText || {})[buttonName];
 								defaultText = options.buttonText[buttonName]; // everything else is considered default
 							}
-	
+
 							if (buttonClick) {
-	
+
 								themeIcon =
 									customButtonProps ?
 										customButtonProps.themeIcon :
 										options.themeButtonIcons[buttonName];
-	
+
 								normalIcon =
 									customButtonProps ?
 										customButtonProps.icon :
 										options.buttonIcons[buttonName];
-	
+
 								if (overrideText) {
 									innerHtml = htmlEscape(overrideText);
 								}
@@ -9779,13 +9839,13 @@ return /******/ (function(modules) { // webpackBootstrap
 								else {
 									innerHtml = htmlEscape(defaultText);
 								}
-	
+
 								classes = [
 									'fc-' + buttonName + '-button',
 									tm + '-button',
 									tm + '-state-default'
 								];
-	
+
 								button = $( // type="button" so that it doesn't submit a form
 									'<button type="button" class="' + classes.join(' ') + '">' +
 										innerHtml +
@@ -9794,9 +9854,9 @@ return /******/ (function(modules) { // webpackBootstrap
 									.click(function(ev) {
 										// don't process clicks for disabled buttons
 										if (!button.hasClass(tm + '-state-disabled')) {
-	
+
 											buttonClick(ev);
-	
+
 											// after the click action, if the button becomes the "active" tab, or disabled,
 											// it should never have a hover class, so remove it now.
 											if (
@@ -9835,18 +9895,18 @@ return /******/ (function(modules) { // webpackBootstrap
 												.removeClass(tm + '-state-down'); // if mouseleave happens before mouseup
 										}
 									);
-	
+
 								groupChildren = groupChildren.add(button);
 							}
 						}
 					});
-	
+
 					if (isOnlyButtons) {
 						groupChildren
 							.first().addClass(tm + '-corner-left').end()
 							.last().addClass(tm + '-corner-right').end();
 					}
-	
+
 					if (groupChildren.length > 1) {
 						groupEl = $('<div/>');
 						if (isOnlyButtons) {
@@ -9860,65 +9920,65 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				});
 			}
-	
+
 			return sectionEl;
 		}
-		
-		
+
+
 		function updateTitle(text) {
 			el.find('h2').text(text);
 		}
-		
-		
+
+
 		function activateButton(buttonName) {
 			el.find('.fc-' + buttonName + '-button')
 				.addClass(tm + '-state-active');
 		}
-		
-		
+
+
 		function deactivateButton(buttonName) {
 			el.find('.fc-' + buttonName + '-button')
 				.removeClass(tm + '-state-active');
 		}
-		
-		
+
+
 		function disableButton(buttonName) {
 			el.find('.fc-' + buttonName + '-button')
 				.attr('disabled', 'disabled')
 				.addClass(tm + '-state-disabled');
 		}
-		
-		
+
+
 		function enableButton(buttonName) {
 			el.find('.fc-' + buttonName + '-button')
 				.removeAttr('disabled')
 				.removeClass(tm + '-state-disabled');
 		}
-	
-	
+
+
 		function getViewsWithButtons() {
 			return viewsWithButtons;
 		}
-	
+
 	}
-	
+
 	;;
-	
+
 	fc.sourceNormalizers = [];
 	fc.sourceFetchers = [];
-	
+
 	var ajaxDefaults = {
 		dataType: 'json',
 		cache: false
 	};
-	
+
 	var eventGUID = 1;
-	
-	
+
+
 	function EventManager(options) { // assumed to be a calendar
 		var t = this;
-		
-		
+
+
 		// exports
 		t.isFetchNeeded = isFetchNeeded;
 		t.fetchEvents = fetchEvents;
@@ -9932,12 +9992,12 @@ return /******/ (function(modules) { // webpackBootstrap
 		t.normalizeEventRange = normalizeEventRange;
 		t.normalizeEventRangeTimes = normalizeEventRangeTimes;
 		t.ensureVisibleEventRange = ensureVisibleEventRange;
-		
-		
+
+
 		// imports
 		var reportEvents = t.reportEvents;
-		
-		
+
+
 		// locals
 		var stickySource = { events: [] };
 		var sources = [ stickySource ];
@@ -9945,8 +10005,8 @@ return /******/ (function(modules) { // webpackBootstrap
 		var currentFetchID = 0;
 		var pendingSourceCnt = 0;
 		var cache = []; // holds events that have already been expanded
-	
-	
+
+
 		$.each(
 			(options.events ? [ options.events ] : []).concat(options.eventSources || []),
 			function(i, sourceInput) {
@@ -9956,21 +10016,21 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 			}
 		);
-		
-		
-		
+
+
+
 		/* Fetching
 		-----------------------------------------------------------------------------*/
-		
-		
+
+
 		function isFetchNeeded(start, end) {
 			return !rangeStart || // nothing has been fetched yet?
 				// or, a part of the new range is outside of the old range? (after normalizing)
 				start.clone().stripZone() < rangeStart.clone().stripZone() ||
 				end.clone().stripZone() > rangeEnd.clone().stripZone();
 		}
-		
-		
+
+
 		function fetchEvents(start, end) {
 			rangeStart = start;
 			rangeEnd = end;
@@ -9982,27 +10042,27 @@ return /******/ (function(modules) { // webpackBootstrap
 				fetchEventSource(sources[i], fetchID);
 			}
 		}
-		
-		
+
+
 		function fetchEventSource(source, fetchID) {
 			_fetchEventSource(source, function(eventInputs) {
 				var isArraySource = $.isArray(source.events);
 				var i, eventInput;
 				var abstractEvent;
-	
+
 				if (fetchID == currentFetchID) {
-	
+
 					if (eventInputs) {
 						for (i = 0; i < eventInputs.length; i++) {
 							eventInput = eventInputs[i];
-	
+
 							if (isArraySource) { // array sources have already been convert to Event Objects
 								abstractEvent = eventInput;
 							}
 							else {
 								abstractEvent = buildEventFromInput(eventInput, source);
 							}
-	
+
 							if (abstractEvent) { // not false (an invalid event)
 								cache.push.apply(
 									cache,
@@ -10011,7 +10071,7 @@ return /******/ (function(modules) { // webpackBootstrap
 							}
 						}
 					}
-	
+
 					pendingSourceCnt--;
 					if (!pendingSourceCnt) {
 						reportEvents(cache);
@@ -10019,13 +10079,13 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 			});
 		}
-		
-		
+
+
 		function _fetchEventSource(source, callback) {
 			var i;
 			var fetchers = fc.sourceFetchers;
 			var res;
-	
+
 			for (i=0; i<fetchers.length; i++) {
 				res = fetchers[i].call(
 					t, // this, the Calendar object
@@ -10035,7 +10095,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					options.timezone,
 					callback
 				);
-	
+
 				if (res === true) {
 					// the fetcher is in charge. made its own async request
 					return;
@@ -10046,7 +10106,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					return;
 				}
 			}
-	
+
 			var events = source.events;
 			if (events) {
 				if ($.isFunction(events)) {
@@ -10074,7 +10134,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					var success = source.success;
 					var error = source.error;
 					var complete = source.complete;
-	
+
 					// retrieve any outbound GET/POST $.ajax data from the options
 					var customData;
 					if ($.isFunction(source.data)) {
@@ -10085,15 +10145,15 @@ return /******/ (function(modules) { // webpackBootstrap
 						// supplied as a straight key/value object
 						customData = source.data;
 					}
-	
+
 					// use a copy of the custom data so we can modify the parameters
 					// and not affect the passed-in object.
 					var data = $.extend({}, customData || {});
-	
+
 					var startParam = firstDefined(source.startParam, options.startParam);
 					var endParam = firstDefined(source.endParam, options.endParam);
 					var timezoneParam = firstDefined(source.timezoneParam, options.timezoneParam);
-	
+
 					if (startParam) {
 						data[startParam] = rangeStart.format();
 					}
@@ -10103,7 +10163,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					if (options.timezone && options.timezone != 'local') {
 						data[timezoneParam] = options.timezone;
 					}
-	
+
 					t.pushLoading();
 					$.ajax($.extend({}, ajaxDefaults, source, {
 						data: data,
@@ -10129,13 +10189,13 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 			}
 		}
-		
-		
-		
+
+
+
 		/* Sources
 		-----------------------------------------------------------------------------*/
-		
-	
+
+
 		function addEventSource(sourceInput) {
 			var source = buildEventSource(sourceInput);
 			if (source) {
@@ -10144,13 +10204,13 @@ return /******/ (function(modules) { // webpackBootstrap
 				fetchEventSource(source, currentFetchID); // will eventually call reportEvents
 			}
 		}
-	
-	
+
+
 		function buildEventSource(sourceInput) { // will return undefined if invalid source
 			var normalizers = fc.sourceNormalizers;
 			var source;
 			var i;
-	
+
 			if ($.isFunction(sourceInput) || $.isArray(sourceInput)) {
 				source = { events: sourceInput };
 			}
@@ -10160,9 +10220,9 @@ return /******/ (function(modules) { // webpackBootstrap
 			else if (typeof sourceInput === 'object') {
 				source = $.extend({}, sourceInput); // shallow copy
 			}
-	
+
 			if (source) {
-	
+
 				// TODO: repeat code, same code for event classNames
 				if (source.className) {
 					if (typeof source.className === 'string') {
@@ -10173,7 +10233,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				else {
 					source.className = [];
 				}
-	
+
 				// for array sources, we convert to standard Event Objects up front
 				if ($.isArray(source.events)) {
 					source.origArray = source.events; // for removeEventSource
@@ -10181,16 +10241,16 @@ return /******/ (function(modules) { // webpackBootstrap
 						return buildEventFromInput(eventInput, source);
 					});
 				}
-	
+
 				for (i=0; i<normalizers.length; i++) {
 					normalizers[i].call(t, source);
 				}
-	
+
 				return source;
 			}
 		}
-	
-	
+
+
 		function removeEventSource(source) {
 			sources = $.grep(sources, function(src) {
 				return !isSourcesEqual(src, source);
@@ -10201,13 +10261,13 @@ return /******/ (function(modules) { // webpackBootstrap
 			});
 			reportEvents(cache);
 		}
-	
-	
+
+
 		function isSourcesEqual(source1, source2) {
 			return source1 && source2 && getSourcePrimitive(source1) == getSourcePrimitive(source2);
 		}
-	
-	
+
+
 		function getSourcePrimitive(source) {
 			return (
 				(typeof source === 'object') ? // a normalized event source?
@@ -10216,16 +10276,16 @@ return /******/ (function(modules) { // webpackBootstrap
 			) ||
 			source; // the given argument *is* the primitive
 		}
-		
-		
-		
+
+
+
 		/* Manipulation
 		-----------------------------------------------------------------------------*/
-	
-	
+
+
 		// Only ever called from the externally-facing API
 		function updateEvent(event) {
-	
+
 			// massage start/end values, even if date string values
 			event.start = t.moment(event.start);
 			if (event.end) {
@@ -10234,16 +10294,16 @@ return /******/ (function(modules) { // webpackBootstrap
 			else {
 				event.end = null;
 			}
-	
+
 			mutateEvent(event, getMiscEventProps(event)); // will handle start/end/allDay normalization
 			reportEvents(cache); // reports event modifications (so we can redraw)
 		}
-	
-	
+
+
 		// Returns a hash of misc event properties that should be copied over to related events.
 		function getMiscEventProps(event) {
 			var props = {};
-	
+
 			$.each(event, function(name, val) {
 				if (isMiscEventPropName(name)) {
 					if (val !== undefined && isAtomic(val)) { // a defined non-object
@@ -10251,28 +10311,28 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				}
 			});
-	
+
 			return props;
 		}
-	
+
 		// non-date-related, non-id-related, non-secret
 		function isMiscEventPropName(name) {
 			return !/^_|^(id|allDay|start|end)$/.test(name);
 		}
-	
-		
+
+
 		// returns the expanded events that were created
 		function renderEvent(eventInput, stick) {
 			var abstractEvent = buildEventFromInput(eventInput);
 			var events;
 			var i, event;
-	
+
 			if (abstractEvent) { // not false (a valid input)
 				events = expandEvent(abstractEvent);
-	
+
 				for (i = 0; i < events.length; i++) {
 					event = events[i];
-	
+
 					if (!event.source) {
 						if (stick) {
 							stickySource.events.push(event);
@@ -10281,20 +10341,20 @@ return /******/ (function(modules) { // webpackBootstrap
 						cache.push(event);
 					}
 				}
-	
+
 				reportEvents(cache);
-	
+
 				return events;
 			}
-	
+
 			return [];
 		}
-		
-		
+
+
 		function removeEvents(filter) {
 			var eventID;
 			var i;
-	
+
 			if (filter == null) { // null or undefined. remove all events
 				filter = function() { return true; }; // will always match
 			}
@@ -10304,10 +10364,10 @@ return /******/ (function(modules) { // webpackBootstrap
 					return event._id == eventID;
 				};
 			}
-	
+
 			// Purge event(s) from our local cache
 			cache = $.grep(cache, filter, true); // inverse=true
-	
+
 			// Remove events from array sources.
 			// This works because they have been converted to official Event Objects up front.
 			// (and as a result, event._id has been calculated).
@@ -10316,11 +10376,11 @@ return /******/ (function(modules) { // webpackBootstrap
 					sources[i].events = $.grep(sources[i].events, filter, true);
 				}
 			}
-	
+
 			reportEvents(cache);
 		}
-		
-		
+
+
 		function clientEvents(filter) {
 			if ($.isFunction(filter)) {
 				return $.grep(cache, filter);
@@ -10333,13 +10393,13 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 			return cache; // else, return all
 		}
-		
-		
-		
+
+
+
 		/* Event Normalization
 		-----------------------------------------------------------------------------*/
-	
-	
+
+
 		// Given a raw object with key/value properties, returns an "abstract" Event object.
 		// An "abstract" event is an event that, if recurring, will not have been expanded yet.
 		// Will return `false` when input is invalid.
@@ -10348,24 +10408,24 @@ return /******/ (function(modules) { // webpackBootstrap
 			var out = {};
 			var start, end;
 			var allDay;
-	
+
 			if (options.eventDataTransform) {
 				input = options.eventDataTransform(input);
 			}
 			if (source && source.eventDataTransform) {
 				input = source.eventDataTransform(input);
 			}
-	
+
 			// Copy all properties over to the resulting object.
 			// The special-case properties will be copied over afterwards.
 			$.extend(out, input);
-	
+
 			if (source) {
 				out.source = source;
 			}
-	
+
 			out._id = input._id || (input.id === undefined ? '_fc' + eventGUID++ : input.id + '');
-	
+
 			if (input.className) {
 				if (typeof input.className == 'string') {
 					out.className = input.className.split(/\s+/);
@@ -10377,10 +10437,10 @@ return /******/ (function(modules) { // webpackBootstrap
 			else {
 				out.className = [];
 			}
-	
+
 			start = input.start || input.date; // "date" is an alias for "start"
 			end = input.end;
-	
+
 			// parse as a time (Duration) if applicable
 			if (isTimeString(start)) {
 				start = moment.duration(start);
@@ -10388,30 +10448,30 @@ return /******/ (function(modules) { // webpackBootstrap
 			if (isTimeString(end)) {
 				end = moment.duration(end);
 			}
-	
+
 			if (input.dow || moment.isDuration(start) || moment.isDuration(end)) {
-	
+
 				// the event is "abstract" (recurring) so don't calculate exact start/end dates just yet
 				out.start = start ? moment.duration(start) : null; // will be a Duration or null
 				out.end = end ? moment.duration(end) : null; // will be a Duration or null
 				out._recurring = true; // our internal marker
 			}
 			else {
-	
+
 				if (start) {
 					start = t.moment(start);
 					if (!start.isValid()) {
 						return false;
 					}
 				}
-	
+
 				if (end) {
 					end = t.moment(end);
 					if (!end.isValid()) {
 						end = null; // let defaults take over
 					}
 				}
-	
+
 				allDay = input.allDay;
 				if (allDay === undefined) { // still undefined? fallback to default
 					allDay = firstDefined(
@@ -10420,14 +10480,14 @@ return /******/ (function(modules) { // webpackBootstrap
 					);
 					// still undefined? normalizeEventRange will calculate it
 				}
-	
+
 				assignDatesToEvent(start, end, allDay, out);
 			}
-	
+
 			return out;
 		}
-	
-	
+
+
 		// Normalizes and assigns the given dates to the given partially-formed event object.
 		// NOTE: mutates the given start/end moments. does not make a copy.
 		function assignDatesToEvent(start, end, allDay, event) {
@@ -10437,18 +10497,18 @@ return /******/ (function(modules) { // webpackBootstrap
 			normalizeEventRange(event);
 			backupEventDates(event);
 		}
-	
-	
+
+
 		// Ensures proper values for allDay/start/end. Accepts an Event object, or a plain object with event-ish properties.
 		// NOTE: Will modify the given object.
 		function normalizeEventRange(props) {
-	
+
 			normalizeEventRangeTimes(props);
-	
+
 			if (props.end && !props.end.isAfter(props.start)) {
 				props.end = null;
 			}
-	
+
 			if (!props.end) {
 				if (options.forceEventDuration) {
 					props.end = t.getDefaultEventEnd(props.allDay, props.start);
@@ -10458,14 +10518,14 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 			}
 		}
-	
-	
+
+
 		// Ensures the allDay property exists and the timeliness of the start/end dates are consistent
 		function normalizeEventRangeTimes(range) {
 			if (range.allDay == null) {
 				range.allDay = !(range.start.hasTime() || (range.end && range.end.hasTime()));
 			}
-	
+
 			if (range.allDay) {
 				range.start.stripTime();
 				if (range.end) {
@@ -10482,28 +10542,28 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 			}
 		}
-	
-	
+
+
 		// If `range` is a proper range with a start and end, returns the original object.
 		// If missing an end, computes a new range with an end, computing it as if it were an event.
 		// TODO: make this a part of the event -> eventRange system
 		function ensureVisibleEventRange(range) {
 			var allDay;
-	
+
 			if (!range.end) {
-	
+
 				allDay = range.allDay; // range might be more event-ish than we think
 				if (allDay == null) {
 					allDay = !range.start.hasTime();
 				}
-	
+
 				range = $.extend({}, range); // make a copy, copying over other misc properties
 				range.end = t.getDefaultEventEnd(allDay, range.start);
 			}
 			return range;
 		}
-	
-	
+
+
 		// If the given event is a recurring event, break it down into an array of individual instances.
 		// If not a recurring event, return an array with the single original event.
 		// If given a falsy input (probably because of a failed buildEventFromInput call), returns an empty array.
@@ -10517,13 +10577,13 @@ return /******/ (function(modules) { // webpackBootstrap
 			var startTime, endTime;
 			var start, end;
 			var event;
-	
+
 			_rangeStart = _rangeStart || rangeStart;
 			_rangeEnd = _rangeEnd || rangeEnd;
-	
+
 			if (abstractEvent) {
 				if (abstractEvent._recurring) {
-	
+
 					// make a boolean hash as to whether the event occurs on each day-of-week
 					if ((dow = abstractEvent.dow)) {
 						dowHash = {};
@@ -10531,25 +10591,25 @@ return /******/ (function(modules) { // webpackBootstrap
 							dowHash[dow[i]] = true;
 						}
 					}
-	
+
 					// iterate through every day in the current range
 					date = _rangeStart.clone().stripTime(); // holds the date of the current day
 					while (date.isBefore(_rangeEnd)) {
-	
+
 						if (!dowHash || dowHash[date.day()]) { // if everyday, or this particular day-of-week
-	
+
 							startTime = abstractEvent.start; // the stored start and end properties are times (Durations)
 							endTime = abstractEvent.end; // "
 							start = date.clone();
 							end = null;
-	
+
 							if (startTime) {
 								start = start.time(startTime);
 							}
 							if (endTime) {
 								end = date.clone().time(endTime);
 							}
-	
+
 							event = $.extend({}, abstractEvent); // make a copy of the original
 							assignDatesToEvent(
 								start, end,
@@ -10558,7 +10618,7 @@ return /******/ (function(modules) { // webpackBootstrap
 							);
 							events.push(event);
 						}
-	
+
 						date.add(1, 'days');
 					}
 				}
@@ -10566,16 +10626,16 @@ return /******/ (function(modules) { // webpackBootstrap
 					events.push(abstractEvent); // return the original event. will be a one-item array
 				}
 			}
-	
+
 			return events;
 		}
-	
-	
-	
+
+
+
 		/* Event Modification Math
 		-----------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Modifies an event and all related events by applying the given properties.
 		// Special date-diffing logic is used for manipulation of dates.
 		// If `props` does not contain start/end dates, the updated values are assumed to be the event's current start/end.
@@ -10591,7 +10651,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			var endDelta;
 			var durationDelta;
 			var undoFunc;
-	
+
 			// diffs the dates in the appropriate way, returning a duration
 			function diffDates(date1, date0) { // date1 - date0
 				if (largeUnit) {
@@ -10604,9 +10664,9 @@ return /******/ (function(modules) { // webpackBootstrap
 					return diffDayTime(date1, date0);
 				}
 			}
-	
+
 			newProps = newProps || {};
-	
+
 			// normalize new date-related properties
 			if (!newProps.start) {
 				newProps.start = event.start.clone();
@@ -10618,7 +10678,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				newProps.allDay = event.allDay;
 			}
 			normalizeEventRange(newProps);
-	
+
 			// create normalized versions of the original props to compare against
 			// need a real end value, for diffing
 			oldProps = {
@@ -10627,13 +10687,13 @@ return /******/ (function(modules) { // webpackBootstrap
 				allDay: newProps.allDay // normalize the dates in the same regard as the new properties
 			};
 			normalizeEventRange(oldProps);
-	
+
 			// need to clear the end date if explicitly changed to null
 			clearEnd = event._end !== null && newProps.end === null;
-	
+
 			// compute the delta for moving the start date
 			startDelta = diffDates(newProps.start, oldProps.start);
-	
+
 			// compute the delta for moving the end date
 			if (newProps.end) {
 				endDelta = diffDates(newProps.end, oldProps.end);
@@ -10642,7 +10702,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			else {
 				durationDelta = null;
 			}
-	
+
 			// gather all non-date-related properties
 			$.each(newProps, function(name, val) {
 				if (isMiscEventPropName(name)) {
@@ -10651,7 +10711,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				}
 			});
-	
+
 			// apply the operations to the event and all related events
 			undoFunc = mutateEvents(
 				clientEvents(event._id), // get events with this ID
@@ -10661,15 +10721,15 @@ return /******/ (function(modules) { // webpackBootstrap
 				durationDelta,
 				miscProps
 			);
-	
+
 			return {
 				dateDelta: startDelta,
 				durationDelta: durationDelta,
 				undo: undoFunc
 			};
 		}
-	
-	
+
+
 		// Modifies an array of events in the following ways (operations are in order):
 		// - clear the event's `end`
 		// - convert the event to allDay
@@ -10684,15 +10744,15 @@ return /******/ (function(modules) { // webpackBootstrap
 		function mutateEvents(events, clearEnd, allDay, dateDelta, durationDelta, miscProps) {
 			var isAmbigTimezone = t.getIsAmbigTimezone();
 			var undoFunctions = [];
-	
+
 			// normalize zero-length deltas to be null
 			if (dateDelta && !dateDelta.valueOf()) { dateDelta = null; }
 			if (durationDelta && !durationDelta.valueOf()) { durationDelta = null; }
-	
+
 			$.each(events, function(i, event) {
 				var oldProps;
 				var newProps;
-	
+
 				// build an object holding all the old values, both date-related and misc.
 				// for the undo function.
 				oldProps = {
@@ -10703,7 +10763,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				$.each(miscProps, function(name) {
 					oldProps[name] = event[name];
 				});
-	
+
 				// new date-related properties. work off the original date snapshot.
 				// ok to use references because they will be thrown away when backupEventDates is called.
 				newProps = {
@@ -10712,7 +10772,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					allDay: allDay // normalize the dates in the same regard as the new properties
 				};
 				normalizeEventRange(newProps); // massages start/end/allDay
-	
+
 				// strip or ensure the end date
 				if (clearEnd) {
 					newProps.end = null;
@@ -10720,18 +10780,18 @@ return /******/ (function(modules) { // webpackBootstrap
 				else if (durationDelta && !newProps.end) { // the duration translation requires an end date
 					newProps.end = t.getDefaultEventEnd(newProps.allDay, newProps.start);
 				}
-	
+
 				if (dateDelta) {
 					newProps.start.add(dateDelta);
 					if (newProps.end) {
 						newProps.end.add(dateDelta);
 					}
 				}
-	
+
 				if (durationDelta) {
 					newProps.end.add(durationDelta); // end already ensured above
 				}
-	
+
 				// if the dates have changed, and we know it is impossible to recompute the
 				// timezone offsets, strip the zone.
 				if (
@@ -10744,30 +10804,30 @@ return /******/ (function(modules) { // webpackBootstrap
 						newProps.end.stripZone();
 					}
 				}
-	
+
 				$.extend(event, miscProps, newProps); // copy over misc props, then date-related props
 				backupEventDates(event); // regenerate internal _start/_end/_allDay
-	
+
 				undoFunctions.push(function() {
 					$.extend(event, oldProps);
 					backupEventDates(event); // regenerate internal _start/_end/_allDay
 				});
 			});
-	
+
 			return function() {
 				for (var i = 0; i < undoFunctions.length; i++) {
 					undoFunctions[i]();
 				}
 			};
 		}
-	
-	
+
+
 		/* Business Hours
 		-----------------------------------------------------------------------------------------*/
-	
+
 		t.getBusinessHoursEvents = getBusinessHoursEvents;
-	
-	
+
+
 		// Returns an array of events as to when the business hours occur in the given view.
 		// Abuse of our event system :(
 		function getBusinessHoursEvents(wholeDay) {
@@ -10781,7 +10841,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			};
 			var view = t.getView();
 			var eventInput;
-	
+
 			if (optionVal) { // `true` (which means "use the defaults") or an override object
 				eventInput = $.extend(
 					{}, // copy to a new object in either case
@@ -10789,34 +10849,34 @@ return /******/ (function(modules) { // webpackBootstrap
 					typeof optionVal === 'object' ? optionVal : {} // override the defaults
 				);
 			}
-	
+
 			if (eventInput) {
-	
+
 				// if a whole-day series is requested, clear the start/end times
 				if (wholeDay) {
 					eventInput.start = null;
 					eventInput.end = null;
 				}
-	
+
 				return expandEvent(
 					buildEventFromInput(eventInput),
 					view.start,
 					view.end
 				);
 			}
-	
+
 			return [];
 		}
-	
-	
+
+
 		/* Overlapping / Constraining
 		-----------------------------------------------------------------------------------------*/
-	
+
 		t.isEventRangeAllowed = isEventRangeAllowed;
 		t.isSelectionRangeAllowed = isSelectionRangeAllowed;
 		t.isExternalDropRangeAllowed = isExternalDropRangeAllowed;
-	
-	
+
+
 		function isEventRangeAllowed(range, event) {
 			var source = event.source || {};
 			var constraint = firstDefined(
@@ -10829,42 +10889,42 @@ return /******/ (function(modules) { // webpackBootstrap
 				source.overlap,
 				options.eventOverlap
 			);
-	
+
 			range = ensureVisibleEventRange(range); // ensure a proper range with an end for isRangeAllowed
-	
+
 			return isRangeAllowed(range, constraint, overlap, event);
 		}
-	
-	
+
+
 		function isSelectionRangeAllowed(range) {
 			return isRangeAllowed(range, options.selectConstraint, options.selectOverlap);
 		}
-	
-	
+
+
 		// when `eventProps` is defined, consider this an event.
 		// `eventProps` can contain misc non-date-related info about the event.
 		function isExternalDropRangeAllowed(range, eventProps) {
 			var eventInput;
 			var event;
-	
+
 			// note: very similar logic is in View's reportExternalDrop
 			if (eventProps) {
 				eventInput = $.extend({}, eventProps, range);
 				event = expandEvent(buildEventFromInput(eventInput))[0];
 			}
-	
+
 			if (event) {
 				return isEventRangeAllowed(range, event);
 			}
 			else { // treat it as a selection
-	
+
 				range = ensureVisibleEventRange(range); // ensure a proper range with an end for isSelectionRangeAllowed
-	
+
 				return isSelectionRangeAllowed(range);
 			}
 		}
-	
-	
+
+
 		// Returns true if the given range (caused by an event drop/resize or a selection) is allowed to exist
 		// according to the constraint/overlap settings.
 		// `event` is not required if checking a selection.
@@ -10874,19 +10934,19 @@ return /******/ (function(modules) { // webpackBootstrap
 			var peerEvents;
 			var i, peerEvent;
 			var peerOverlap;
-	
+
 			// normalize. fyi, we're normalizing in too many places :(
 			range = $.extend({}, range); // copy all properties in case there are misc non-date properties
 			range.start = range.start.clone().stripZone();
 			range.end = range.end.clone().stripZone();
-	
+
 			// the range must be fully contained by at least one of produced constraint events
 			if (constraint != null) {
-	
+
 				// not treated as an event! intermediate data structure
 				// TODO: use ranges in the future
 				constraintEvents = constraintToEvents(constraint);
-	
+
 				anyContainment = false;
 				for (i = 0; i < constraintEvents.length; i++) {
 					if (eventContainsRange(constraintEvents[i], range)) {
@@ -10894,20 +10954,20 @@ return /******/ (function(modules) { // webpackBootstrap
 						break;
 					}
 				}
-	
+
 				if (!anyContainment) {
 					return false;
 				}
 			}
-	
+
 			peerEvents = t.getPeerEvents(event, range);
-	
+
 			for (i = 0; i < peerEvents.length; i++)  {
 				peerEvent = peerEvents[i];
-	
+
 				// there needs to be an actual intersection before disallowing anything
 				if (eventIntersectsRange(peerEvent, range)) {
-	
+
 					// evaluate overlap for the given range and short-circuit if necessary
 					if (overlap === false) {
 						return false;
@@ -10916,7 +10976,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					else if (typeof overlap === 'function' && !overlap(peerEvent, event)) {
 						return false;
 					}
-	
+
 					// if we are computing if the given range is allowable for an event, consider the other event's
 					// EventObject-specific or Source-specific `overlap` property
 					if (event) {
@@ -10935,63 +10995,63 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				}
 			}
-	
+
 			return true;
 		}
-	
-	
+
+
 		// Given an event input from the API, produces an array of event objects. Possible event inputs:
 		// 'businessHours'
 		// An event ID (number or string)
 		// An object with specific start/end dates or a recurring event (like what businessHours accepts)
 		function constraintToEvents(constraintInput) {
-	
+
 			if (constraintInput === 'businessHours') {
 				return getBusinessHoursEvents();
 			}
-	
+
 			if (typeof constraintInput === 'object') {
 				return expandEvent(buildEventFromInput(constraintInput));
 			}
-	
+
 			return clientEvents(constraintInput); // probably an ID
 		}
-	
-	
+
+
 		// Does the event's date range fully contain the given range?
 		// start/end already assumed to have stripped zones :(
 		function eventContainsRange(event, range) {
 			var eventStart = event.start.clone().stripZone();
 			var eventEnd = t.getEventEnd(event).stripZone();
-	
+
 			return range.start >= eventStart && range.end <= eventEnd;
 		}
-	
-	
+
+
 		// Does the event's date range intersect with the given range?
 		// start/end already assumed to have stripped zones :(
 		function eventIntersectsRange(event, range) {
 			var eventStart = event.start.clone().stripZone();
 			var eventEnd = t.getEventEnd(event).stripZone();
-	
+
 			return range.start < eventEnd && range.end > eventStart;
 		}
-	
-	
+
+
 		t.getEventCache = function() {
 			return cache;
 		};
-	
+
 	}
-	
-	
+
+
 	// Returns a list of events that the given event should be compared against when being considered for a move to
 	// the specified range. Attached to the Calendar's prototype because EventManager is a mixin for a Calendar.
 	Calendar.prototype.getPeerEvents = function(event, range) {
 		var cache = this.getEventCache();
 		var peerEvents = [];
 		var i, otherEvent;
-	
+
 		for (i = 0; i < cache.length; i++) {
 			otherEvent = cache[i];
 			if (
@@ -11001,104 +11061,104 @@ return /******/ (function(modules) { // webpackBootstrap
 				peerEvents.push(otherEvent);
 			}
 		}
-	
+
 		return peerEvents;
 	};
-	
-	
+
+
 	// updates the "backup" properties, which are preserved in order to compute diffs later on.
 	function backupEventDates(event) {
 		event._allDay = event.allDay;
 		event._start = event.start.clone();
 		event._end = event.end ? event.end.clone() : null;
 	}
-	
+
 	;;
-	
+
 	/* An abstract class for the "basic" views, as well as month view. Renders one or more rows of day cells.
 	----------------------------------------------------------------------------------------------------------------------*/
 	// It is a manager for a DayGrid subcomponent, which does most of the heavy lifting.
 	// It is responsible for managing width/height.
-	
+
 	var BasicView = View.extend({
-	
+
 		dayGrid: null, // the main subcomponent that does most of the heavy lifting
-	
+
 		dayNumbersVisible: false, // display day numbers on each day cell?
 		weekNumbersVisible: false, // display week numbers along the side?
-	
+
 		weekNumberWidth: null, // width of all the week-number cells running down the side
-	
+
 		headRowEl: null, // the fake row element of the day-of-week header
-	
-	
+
+
 		initialize: function() {
 			this.dayGrid = new DayGrid(this);
 			this.coordMap = this.dayGrid.coordMap; // the view's date-to-cell mapping is identical to the subcomponent's
 		},
-	
-	
+
+
 		// Sets the display range and computes all necessary dates
 		setRange: function(range) {
 			View.prototype.setRange.call(this, range); // call the super-method
-	
+
 			this.dayGrid.breakOnWeeks = /year|month|week/.test(this.intervalUnit); // do before setRange
 			this.dayGrid.setRange(range);
 		},
-	
-	
+
+
 		// Compute the value to feed into setRange. Overrides superclass.
 		computeRange: function(date) {
 			var range = View.prototype.computeRange.call(this, date); // get value from the super-method
-	
+
 			// year and month views should be aligned with weeks. this is already done for week
 			if (/year|month/.test(range.intervalUnit)) {
 				range.start.startOf('week');
 				range.start = this.skipHiddenDays(range.start);
-	
+
 				// make end-of-week if not already
 				if (range.end.weekday()) {
 					range.end.add(1, 'week').startOf('week');
 					range.end = this.skipHiddenDays(range.end, -1, true); // exclusively move backwards
 				}
 			}
-	
+
 			return range;
 		},
-	
-	
+
+
 		// Renders the view into `this.el`, which should already be assigned
 		renderDates: function() {
-	
+
 			this.dayNumbersVisible = this.dayGrid.rowCnt > 1; // TODO: make grid responsible
 			this.weekNumbersVisible = this.opt('weekNumbers');
 			this.dayGrid.numbersVisible = this.dayNumbersVisible || this.weekNumbersVisible;
-	
+
 			this.el.addClass('fc-basic-view').html(this.renderHtml());
-	
+
 			this.headRowEl = this.el.find('thead .fc-row');
-	
+
 			this.scrollerEl = this.el.find('.fc-day-grid-container');
 			this.dayGrid.coordMap.containerEl = this.scrollerEl; // constrain clicks/etc to the dimensions of the scroller
-	
+
 			this.dayGrid.setElement(this.el.find('.fc-day-grid'));
 			this.dayGrid.renderDates(this.hasRigidRows());
 		},
-	
-	
+
+
 		// Unrenders the content of the view. Since we haven't separated skeleton rendering from date rendering,
 		// always completely kill the dayGrid's rendering.
 		unrenderDates: function() {
 			this.dayGrid.unrenderDates();
 			this.dayGrid.removeElement();
 		},
-	
-	
+
+
 		renderBusinessHours: function() {
 			this.dayGrid.renderBusinessHours();
 		},
-	
-	
+
+
 		// Builds the HTML skeleton for the view.
 		// The day-grid component will render inside of a container defined by this HTML.
 		renderHtml: function() {
@@ -11122,8 +11182,8 @@ return /******/ (function(modules) { // webpackBootstrap
 					'</tbody>' +
 				'</table>';
 		},
-	
-	
+
+
 		// Generates the HTML that will go before the day-of week header cells.
 		// Queried by the DayGrid subcomponent when generating rows. Ordering depends on isRTL.
 		headIntroHtml: function() {
@@ -11136,8 +11196,8 @@ return /******/ (function(modules) { // webpackBootstrap
 					'</th>';
 			}
 		},
-	
-	
+
+
 		// Generates the HTML that will go before content-skeleton cells that display the day/week numbers.
 		// Queried by the DayGrid subcomponent. Ordering depends on isRTL.
 		numberIntroHtml: function(row) {
@@ -11150,8 +11210,8 @@ return /******/ (function(modules) { // webpackBootstrap
 					'</td>';
 			}
 		},
-	
-	
+
+
 		// Generates the HTML that goes before the day bg cells for each day-row.
 		// Queried by the DayGrid subcomponent. Ordering depends on isRTL.
 		dayIntroHtml: function() {
@@ -11160,8 +11220,8 @@ return /******/ (function(modules) { // webpackBootstrap
 					this.weekNumberStyleAttr() + '></td>';
 			}
 		},
-	
-	
+
+
 		// Generates the HTML that goes before every other type of row generated by DayGrid. Ordering depends on isRTL.
 		// Affects helper-skeleton and highlight-skeleton rows.
 		introHtml: function() {
@@ -11169,28 +11229,28 @@ return /******/ (function(modules) { // webpackBootstrap
 				return '<td class="fc-week-number" ' + this.weekNumberStyleAttr() + '></td>';
 			}
 		},
-	
-	
+
+
 		// Generates the HTML for the <td>s of the "number" row in the DayGrid's content skeleton.
 		// The number row will only exist if either day numbers or week numbers are turned on.
 		numberCellHtml: function(cell) {
 			var date = cell.start;
 			var classes;
-	
+
 			if (!this.dayNumbersVisible) { // if there are week numbers but not day numbers
 				return '<td/>'; //  will create an empty space above events :(
 			}
-	
+
 			classes = this.dayGrid.getDayClasses(date);
 			classes.unshift('fc-day-number');
-	
+
 			return '' +
 				'<td class="' + classes.join(' ') + '" data-date="' + date.format() + '">' +
 					date.date() +
 				'</td>';
 		},
-	
-	
+
+
 		// Generates an HTML attribute string for setting the width of the week number column, if it is known
 		weekNumberStyleAttr: function() {
 			if (this.weekNumberWidth !== null) {
@@ -11198,19 +11258,19 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 			return '';
 		},
-	
-	
+
+
 		// Determines whether each row should have a constant height
 		hasRigidRows: function() {
 			var eventLimit = this.opt('eventLimit');
 			return eventLimit && typeof eventLimit !== 'number';
 		},
-	
-	
+
+
 		/* Dimensions
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Refreshes the horizontal dimensions of the view
 		updateWidth: function() {
 			if (this.weekNumbersVisible) {
@@ -11221,43 +11281,43 @@ return /******/ (function(modules) { // webpackBootstrap
 				);
 			}
 		},
-	
-	
+
+
 		// Adjusts the vertical dimensions of the view to the specified values
 		setHeight: function(totalHeight, isAuto) {
 			var eventLimit = this.opt('eventLimit');
 			var scrollerHeight;
-	
+
 			// reset all heights to be natural
 			unsetScroller(this.scrollerEl);
 			uncompensateScroll(this.headRowEl);
-	
+
 			this.dayGrid.removeSegPopover(); // kill the "more" popover if displayed
-	
+
 			// is the event limit a constant level number?
 			if (eventLimit && typeof eventLimit === 'number') {
 				this.dayGrid.limitRows(eventLimit); // limit the levels first so the height can redistribute after
 			}
-	
+
 			scrollerHeight = this.computeScrollerHeight(totalHeight);
 			this.setGridHeight(scrollerHeight, isAuto);
-	
+
 			// is the event limit dynamically calculated?
 			if (eventLimit && typeof eventLimit !== 'number') {
 				this.dayGrid.limitRows(eventLimit); // limit the levels after the grid's row heights have been set
 			}
-	
+
 			if (!isAuto && setPotentialScroller(this.scrollerEl, scrollerHeight)) { // using scrollbars?
-	
+
 				compensateScroll(this.headRowEl, getScrollbarWidths(this.scrollerEl));
-	
+
 				// doing the scrollbar compensation might have created text overflow which created more height. redo
 				scrollerHeight = this.computeScrollerHeight(totalHeight);
 				this.scrollerEl.height(scrollerHeight);
 			}
 		},
-	
-	
+
+
 		// Sets the height of just the DayGrid component in this view
 		setGridHeight: function(height, isAuto) {
 			if (isAuto) {
@@ -11267,131 +11327,131 @@ return /******/ (function(modules) { // webpackBootstrap
 				distributeHeight(this.dayGrid.rowEls, height, true); // true = compensate for height-hogging rows
 			}
 		},
-	
-	
+
+
 		/* Events
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Renders the given events onto the view and populates the segments array
 		renderEvents: function(events) {
 			this.dayGrid.renderEvents(events);
-	
+
 			this.updateHeight(); // must compensate for events that overflow the row
 		},
-	
-	
+
+
 		// Retrieves all segment objects that are rendered in the view
 		getEventSegs: function() {
 			return this.dayGrid.getEventSegs();
 		},
-	
-	
+
+
 		// Unrenders all event elements and clears internal segment data
 		unrenderEvents: function() {
 			this.dayGrid.unrenderEvents();
-	
+
 			// we DON'T need to call updateHeight() because:
 			// A) a renderEvents() call always happens after this, which will eventually call updateHeight()
 			// B) in IE8, this causes a flash whenever events are rerendered
 		},
-	
-	
+
+
 		/* Dragging (for both events and external elements)
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// A returned value of `true` signals that a mock "helper" event has been rendered.
 		renderDrag: function(dropLocation, seg) {
 			return this.dayGrid.renderDrag(dropLocation, seg);
 		},
-	
-	
+
+
 		unrenderDrag: function() {
 			this.dayGrid.unrenderDrag();
 		},
-	
-	
+
+
 		/* Selection
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Renders a visual indication of a selection
 		renderSelection: function(range) {
 			this.dayGrid.renderSelection(range);
 		},
-	
-	
+
+
 		// Unrenders a visual indications of a selection
 		unrenderSelection: function() {
 			this.dayGrid.unrenderSelection();
 		}
-	
+
 	});
-	
+
 	;;
-	
+
 	/* A month view with day cells running in rows (one-per-week) and columns
 	----------------------------------------------------------------------------------------------------------------------*/
-	
+
 	var MonthView = BasicView.extend({
-	
+
 		// Produces information about what range to display
 		computeRange: function(date) {
 			var range = BasicView.prototype.computeRange.call(this, date); // get value from super-method
 			var rowCnt;
-	
+
 			// ensure 6 weeks
 			if (this.isFixedWeeks()) {
 				rowCnt = Math.ceil(range.end.diff(range.start, 'weeks', true)); // could be partial weeks due to hiddenDays
 				range.end.add(6 - rowCnt, 'weeks');
 			}
-	
+
 			return range;
 		},
-	
-	
+
+
 		// Overrides the default BasicView behavior to have special multi-week auto-height logic
 		setGridHeight: function(height, isAuto) {
-	
+
 			isAuto = isAuto || this.opt('weekMode') === 'variable'; // LEGACY: weekMode is deprecated
-	
+
 			// if auto, make the height of each row the height that it would be if there were 6 weeks
 			if (isAuto) {
 				height *= this.rowCnt / 6;
 			}
-	
+
 			distributeHeight(this.dayGrid.rowEls, height, !isAuto); // if auto, don't compensate for height-hogging rows
 		},
-	
-	
+
+
 		isFixedWeeks: function() {
 			var weekMode = this.opt('weekMode'); // LEGACY: weekMode is deprecated
 			if (weekMode) {
 				return weekMode === 'fixed'; // if any other type of weekMode, assume NOT fixed
 			}
-	
+
 			return this.opt('fixedWeekCount');
 		}
-	
+
 	});
-	
+
 	;;
-	
+
 	fcViews.basic = {
 		'class': BasicView
 	};
-	
+
 	fcViews.basicDay = {
 		type: 'basic',
 		duration: { days: 1 }
 	};
-	
+
 	fcViews.basicWeek = {
 		type: 'basic',
 		duration: { weeks: 1 }
 	};
-	
+
 	fcViews.month = {
 		'class': MonthView,
 		duration: { months: 1 }, // important for prev/next
@@ -11400,32 +11460,32 @@ return /******/ (function(modules) { // webpackBootstrap
 		}
 	};
 	;;
-	
+
 	/* An abstract class for all agenda-related views. Displays one more columns with time slots running vertically.
 	----------------------------------------------------------------------------------------------------------------------*/
 	// Is a manager for the TimeGrid subcomponent and possibly the DayGrid subcomponent (if allDaySlot is on).
 	// Responsible for managing width/height.
-	
+
 	var AgendaView = View.extend({
-	
+
 		timeGrid: null, // the main time-grid subcomponent of this view
 		dayGrid: null, // the "all-day" subcomponent. if all-day is turned off, this will be null
-	
+
 		axisWidth: null, // the width of the time axis running down the side
-	
+
 		noScrollRowEls: null, // set of fake row elements that must compensate when scrollerEl has scrollbars
-	
+
 		// when the time-grid isn't tall enough to occupy the given height, we render an <hr> underneath
 		bottomRuleEl: null,
 		bottomRuleHeight: null,
-	
-	
+
+
 		initialize: function() {
 			this.timeGrid = new TimeGrid(this);
-	
+
 			if (this.opt('allDaySlot')) { // should we display the "all-day" area?
 				this.dayGrid = new DayGrid(this); // the all-day subcomponent of this view
-	
+
 				// the coordinate grid will be a combination of both subcomponents' grids
 				this.coordMap = new ComboCoordMap([
 					this.dayGrid.coordMap,
@@ -11436,73 +11496,73 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.coordMap = this.timeGrid.coordMap;
 			}
 		},
-	
-	
+
+
 		/* Rendering
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Sets the display range and computes all necessary dates
 		setRange: function(range) {
 			View.prototype.setRange.call(this, range); // call the super-method
-	
+
 			this.timeGrid.setRange(range);
 			if (this.dayGrid) {
 				this.dayGrid.setRange(range);
 			}
 		},
-	
-	
+
+
 		// Renders the view into `this.el`, which has already been assigned
 		renderDates: function() {
-	
+
 			this.el.addClass('fc-agenda-view').html(this.renderHtml());
-	
+
 			// the element that wraps the time-grid that will probably scroll
 			this.scrollerEl = this.el.find('.fc-time-grid-container');
 			this.timeGrid.coordMap.containerEl = this.scrollerEl; // don't accept clicks/etc outside of this
-	
+
 			this.timeGrid.setElement(this.el.find('.fc-time-grid'));
 			this.timeGrid.renderDates();
-	
+
 			// the <hr> that sometimes displays under the time-grid
 			this.bottomRuleEl = $('<hr class="fc-divider ' + this.widgetHeaderClass + '"/>')
 				.appendTo(this.timeGrid.el); // inject it into the time-grid
-	
+
 			if (this.dayGrid) {
 				this.dayGrid.setElement(this.el.find('.fc-day-grid'));
 				this.dayGrid.renderDates();
-	
+
 				// have the day-grid extend it's coordinate area over the <hr> dividing the two grids
 				this.dayGrid.bottomCoordPadding = this.dayGrid.el.next('hr').outerHeight();
 			}
-	
+
 			this.noScrollRowEls = this.el.find('.fc-row:not(.fc-scroller *)'); // fake rows not within the scroller
 		},
-	
-	
+
+
 		// Unrenders the content of the view. Since we haven't separated skeleton rendering from date rendering,
 		// always completely kill each grid's rendering.
 		unrenderDates: function() {
 			this.timeGrid.unrenderDates();
 			this.timeGrid.removeElement();
-	
+
 			if (this.dayGrid) {
 				this.dayGrid.unrenderDates();
 				this.dayGrid.removeElement();
 			}
 		},
-	
-	
+
+
 		renderBusinessHours: function() {
 			this.timeGrid.renderBusinessHours();
-	
+
 			if (this.dayGrid) {
 				this.dayGrid.renderBusinessHours();
 			}
 		},
-	
-	
+
+
 		// Builds the HTML skeleton for the view.
 		// The day-grid and time-grid components will render inside containers defined by this HTML.
 		renderHtml: function() {
@@ -11531,18 +11591,18 @@ return /******/ (function(modules) { // webpackBootstrap
 					'</tbody>' +
 				'</table>';
 		},
-	
-	
+
+
 		// Generates the HTML that will go before the day-of week header cells.
 		// Queried by the TimeGrid subcomponent when generating rows. Ordering depends on isRTL.
 		headIntroHtml: function() {
 			var date;
 			var weekText;
-	
+
 			if (this.opt('weekNumbers')) {
 				date = this.timeGrid.getCell(0).start;
 				weekText = date.format(this.opt('smallWeekFormat'));
-	
+
 				return '' +
 					'<th class="fc-axis fc-week-number ' + this.widgetHeaderClass + '" ' + this.axisStyleAttr() + '>' +
 						'<span>' + // needed for matchCellWidths
@@ -11554,8 +11614,8 @@ return /******/ (function(modules) { // webpackBootstrap
 				return '<th class="fc-axis ' + this.widgetHeaderClass + '" ' + this.axisStyleAttr() + '></th>';
 			}
 		},
-	
-	
+
+
 		// Generates the HTML that goes before the all-day cells.
 		// Queried by the DayGrid subcomponent when generating rows. Ordering depends on isRTL.
 		dayIntroHtml: function() {
@@ -11566,22 +11626,22 @@ return /******/ (function(modules) { // webpackBootstrap
 					'</span>' +
 				'</td>';
 		},
-	
-	
+
+
 		// Generates the HTML that goes before the bg of the TimeGrid slot area. Long vertical column.
 		slotBgIntroHtml: function() {
 			return '<td class="fc-axis ' + this.widgetContentClass + '" ' + this.axisStyleAttr() + '></td>';
 		},
-	
-	
+
+
 		// Generates the HTML that goes before all other types of cells.
 		// Affects content-skeleton, helper-skeleton, highlight-skeleton for both the time-grid and day-grid.
 		// Queried by the TimeGrid and DayGrid subcomponents when generating rows. Ordering depends on isRTL.
 		introHtml: function() {
 			return '<td class="fc-axis" ' + this.axisStyleAttr() + '></td>';
 		},
-	
-	
+
+
 		// Generates an HTML attribute string for setting the width of the axis, if it is known
 		axisStyleAttr: function() {
 			if (this.axisWidth !== null) {
@@ -11589,46 +11649,46 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 			return '';
 		},
-	
-	
+
+
 		/* Dimensions
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		updateSize: function(isResize) {
 			this.timeGrid.updateSize(isResize);
-	
+
 			View.prototype.updateSize.call(this, isResize); // call the super-method
 		},
-	
-	
+
+
 		// Refreshes the horizontal dimensions of the view
 		updateWidth: function() {
 			// make all axis cells line up, and record the width so newly created axis cells will have it
 			this.axisWidth = matchCellWidths(this.el.find('.fc-axis'));
 		},
-	
-	
+
+
 		// Adjusts the vertical dimensions of the view to the specified values
 		setHeight: function(totalHeight, isAuto) {
 			var eventLimit;
 			var scrollerHeight;
-	
+
 			if (this.bottomRuleHeight === null) {
 				// calculate the height of the rule the very first time
 				this.bottomRuleHeight = this.bottomRuleEl.outerHeight();
 			}
 			this.bottomRuleEl.hide(); // .show() will be called later if this <hr> is necessary
-	
+
 			// reset all dimensions back to the original state
 			this.scrollerEl.css('overflow', '');
 			unsetScroller(this.scrollerEl);
 			uncompensateScroll(this.noScrollRowEls);
-	
+
 			// limit number of events in the all-day area
 			if (this.dayGrid) {
 				this.dayGrid.removeSegPopover(); // kill the "more" popover if displayed
-	
+
 				eventLimit = this.opt('eventLimit');
 				if (eventLimit && typeof eventLimit !== 'number') {
 					eventLimit = AGENDA_ALL_DAY_EVENT_LIMIT; // make sure "auto" goes to a real number
@@ -11637,15 +11697,15 @@ return /******/ (function(modules) { // webpackBootstrap
 					this.dayGrid.limitRows(eventLimit);
 				}
 			}
-	
+
 			if (!isAuto) { // should we force dimensions of the scroll container, or let the contents be natural height?
-	
+
 				scrollerHeight = this.computeScrollerHeight(totalHeight);
 				if (setPotentialScroller(this.scrollerEl, scrollerHeight)) { // using scrollbars?
-	
+
 					// make the all-day and header rows lines up
 					compensateScroll(this.noScrollRowEls, getScrollbarWidths(this.scrollerEl));
-	
+
 					// the scrollbar compensation might have changed text flow, which might affect height, so recalculate
 					// and reapply the desired height to the scroller.
 					scrollerHeight = this.computeScrollerHeight(totalHeight);
@@ -11658,28 +11718,28 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 			}
 		},
-	
-	
+
+
 		// Computes the initial pre-configured scroll state prior to allowing the user to change it
 		computeInitialScroll: function() {
 			var scrollTime = moment.duration(this.opt('scrollTime'));
 			var top = this.timeGrid.computeTimeTop(scrollTime);
-	
+
 			// zoom can give weird floating-point values. rather scroll a little bit further
 			top = Math.ceil(top);
-	
+
 			if (top) {
 				top++; // to overcome top border that slots beyond the first have. looks better
 			}
-	
+
 			return top;
 		},
-	
-	
+
+
 		/* Events
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Renders events onto the view and populates the View's segment array
 		renderEvents: function(events) {
 			var dayEvents = [];
@@ -11687,7 +11747,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			var daySegs = [];
 			var timedSegs;
 			var i;
-	
+
 			// separate the events into all-day and timed
 			for (i = 0; i < events.length; i++) {
 				if (events[i].allDay) {
@@ -11697,45 +11757,45 @@ return /******/ (function(modules) { // webpackBootstrap
 					timedEvents.push(events[i]);
 				}
 			}
-	
+
 			// render the events in the subcomponents
 			timedSegs = this.timeGrid.renderEvents(timedEvents);
 			if (this.dayGrid) {
 				daySegs = this.dayGrid.renderEvents(dayEvents);
 			}
-	
+
 			// the all-day area is flexible and might have a lot of events, so shift the height
 			this.updateHeight();
 		},
-	
-	
+
+
 		// Retrieves all segment objects that are rendered in the view
 		getEventSegs: function() {
 			return this.timeGrid.getEventSegs().concat(
 				this.dayGrid ? this.dayGrid.getEventSegs() : []
 			);
 		},
-	
-	
+
+
 		// Unrenders all event elements and clears internal segment data
 		unrenderEvents: function() {
-	
+
 			// unrender the events in the subcomponents
 			this.timeGrid.unrenderEvents();
 			if (this.dayGrid) {
 				this.dayGrid.unrenderEvents();
 			}
-	
+
 			// we DON'T need to call updateHeight() because:
 			// A) a renderEvents() call always happens after this, which will eventually call updateHeight()
 			// B) in IE8, this causes a flash whenever events are rerendered
 		},
-	
-	
+
+
 		/* Dragging (for events and external elements)
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// A returned value of `true` signals that a mock "helper" event has been rendered.
 		renderDrag: function(dropLocation, seg) {
 			if (dropLocation.start.hasTime()) {
@@ -11745,20 +11805,20 @@ return /******/ (function(modules) { // webpackBootstrap
 				return this.dayGrid.renderDrag(dropLocation, seg);
 			}
 		},
-	
-	
+
+
 		unrenderDrag: function() {
 			this.timeGrid.unrenderDrag();
 			if (this.dayGrid) {
 				this.dayGrid.unrenderDrag();
 			}
 		},
-	
-	
+
+
 		/* Selection
 		------------------------------------------------------------------------------------------------------------------*/
-	
-	
+
+
 		// Renders a visual indication of a selection
 		renderSelection: function(range) {
 			if (range.start.hasTime() || range.end.hasTime()) {
@@ -11768,8 +11828,8 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.dayGrid.renderSelection(range);
 			}
 		},
-	
-	
+
+
 		// Unrenders a visual indications of a selection
 		unrenderSelection: function() {
 			this.timeGrid.unrenderSelection();
@@ -11777,13 +11837,13 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.dayGrid.unrenderSelection();
 			}
 		}
-	
+
 	});
-	
+
 	;;
-	
+
 	var AGENDA_ALL_DAY_EVENT_LIMIT = 5;
-	
+
 	// potential nice values for the slot-duration and interval-duration
 	// from largest to smallest
 	var AGENDA_STOCK_SUB_DURATIONS = [
@@ -11793,7 +11853,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		{ seconds: 30 },
 		{ seconds: 15 }
 	];
-	
+
 	fcViews.agenda = {
 		'class': AgendaView,
 		defaults: {
@@ -11805,18 +11865,18 @@ return /******/ (function(modules) { // webpackBootstrap
 			slotEventOverlap: true // a bad name. confused with overlap/constraint system
 		}
 	};
-	
+
 	fcViews.agendaDay = {
 		type: 'agenda',
 		duration: { days: 1 }
 	};
-	
+
 	fcViews.agendaWeek = {
 		type: 'agenda',
 		duration: { weeks: 1 }
 	};
 	;;
-	
+
 	return fc; // export for Node/CommonJS
 	});
 
@@ -11829,33 +11889,33 @@ return /******/ (function(modules) { // webpackBootstrap
 	//! authors : Tim Wood, Iskren Chernev, Moment.js contributors
 	//! license : MIT
 	//! momentjs.com
-	
+
 	(function (global, factory) {
 	     true ? module.exports = factory() :
 	    typeof define === 'function' && define.amd ? define(factory) :
 	    global.moment = factory()
 	}(this, function () { 'use strict';
-	
+
 	    var hookCallback;
-	
+
 	    function utils_hooks__hooks () {
 	        return hookCallback.apply(null, arguments);
 	    }
-	
+
 	    // This is done to register the method called with moment()
 	    // without creating circular dependencies.
 	    function setHookCallback (callback) {
 	        hookCallback = callback;
 	    }
-	
+
 	    function isArray(input) {
 	        return Object.prototype.toString.call(input) === '[object Array]';
 	    }
-	
+
 	    function isDate(input) {
 	        return input instanceof Date || Object.prototype.toString.call(input) === '[object Date]';
 	    }
-	
+
 	    function map(arr, fn) {
 	        var res = [], i;
 	        for (i = 0; i < arr.length; ++i) {
@@ -11863,33 +11923,33 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return res;
 	    }
-	
+
 	    function hasOwnProp(a, b) {
 	        return Object.prototype.hasOwnProperty.call(a, b);
 	    }
-	
+
 	    function extend(a, b) {
 	        for (var i in b) {
 	            if (hasOwnProp(b, i)) {
 	                a[i] = b[i];
 	            }
 	        }
-	
+
 	        if (hasOwnProp(b, 'toString')) {
 	            a.toString = b.toString;
 	        }
-	
+
 	        if (hasOwnProp(b, 'valueOf')) {
 	            a.valueOf = b.valueOf;
 	        }
-	
+
 	        return a;
 	    }
-	
+
 	    function create_utc__createUTC (input, format, locale, strict) {
 	        return createLocalOrUTC(input, format, locale, strict, true).utc();
 	    }
-	
+
 	    function defaultParsingFlags() {
 	        // We need to deep clone this object.
 	        return {
@@ -11905,14 +11965,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	            iso             : false
 	        };
 	    }
-	
+
 	    function getParsingFlags(m) {
 	        if (m._pf == null) {
 	            m._pf = defaultParsingFlags();
 	        }
 	        return m._pf;
 	    }
-	
+
 	    function valid__isValid(m) {
 	        if (m._isValid == null) {
 	            var flags = getParsingFlags(m);
@@ -11924,7 +11984,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                !flags.nullInput &&
 	                !flags.invalidFormat &&
 	                !flags.userInvalidated;
-	
+
 	            if (m._strict) {
 	                m._isValid = m._isValid &&
 	                    flags.charsLeftOver === 0 &&
@@ -11934,7 +11994,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return m._isValid;
 	    }
-	
+
 	    function valid__createInvalid (flags) {
 	        var m = create_utc__createUTC(NaN);
 	        if (flags != null) {
@@ -11943,15 +12003,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        else {
 	            getParsingFlags(m).userInvalidated = true;
 	        }
-	
+
 	        return m;
 	    }
-	
+
 	    var momentProperties = utils_hooks__hooks.momentProperties = [];
-	
+
 	    function copyConfig(to, from) {
 	        var i, prop, val;
-	
+
 	        if (typeof from._isAMomentObject !== 'undefined') {
 	            to._isAMomentObject = from._isAMomentObject;
 	        }
@@ -11982,7 +12042,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (typeof from._locale !== 'undefined') {
 	            to._locale = from._locale;
 	        }
-	
+
 	        if (momentProperties.length > 0) {
 	            for (i in momentProperties) {
 	                prop = momentProperties[i];
@@ -11992,12 +12052,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }
 	            }
 	        }
-	
+
 	        return to;
 	    }
-	
+
 	    var updateInProgress = false;
-	
+
 	    // Moment prototype object
 	    function Moment(config) {
 	        copyConfig(this, config);
@@ -12010,11 +12070,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            updateInProgress = false;
 	        }
 	    }
-	
+
 	    function isMoment (obj) {
 	        return obj instanceof Moment || (obj != null && obj._isAMomentObject != null);
 	    }
-	
+
 	    function absFloor (number) {
 	        if (number < 0) {
 	            return Math.ceil(number);
@@ -12022,18 +12082,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return Math.floor(number);
 	        }
 	    }
-	
+
 	    function toInt(argumentForCoercion) {
 	        var coercedNumber = +argumentForCoercion,
 	            value = 0;
-	
+
 	        if (coercedNumber !== 0 && isFinite(coercedNumber)) {
 	            value = absFloor(coercedNumber);
 	        }
-	
+
 	        return value;
 	    }
-	
+
 	    function compareArrays(array1, array2, dontConvert) {
 	        var len = Math.min(array1.length, array2.length),
 	            lengthDiff = Math.abs(array1.length - array2.length),
@@ -12047,23 +12107,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return diffs + lengthDiff;
 	    }
-	
+
 	    function Locale() {
 	    }
-	
+
 	    var locales = {};
 	    var globalLocale;
-	
+
 	    function normalizeLocale(key) {
 	        return key ? key.toLowerCase().replace('_', '-') : key;
 	    }
-	
+
 	    // pick the locale from the array
 	    // try ['en-au', 'en-gb'] as 'en-au', 'en-gb', 'en', as in move through the list trying each
 	    // substring from most specific to least, but move to the next array item if it's a more specific variant than the current root
 	    function chooseLocale(names) {
 	        var i = 0, j, next, locale, split;
-	
+
 	        while (i < names.length) {
 	            split = normalizeLocale(names[i]).split('-');
 	            j = split.length;
@@ -12084,7 +12144,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return null;
 	    }
-	
+
 	    function loadLocale(name) {
 	        var oldLocale = null;
 	        // TODO: Find a better way to register and load all the locales in Node
@@ -12100,7 +12160,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return locales[name];
 	    }
-	
+
 	    // This function will load locale and then set the global locale.  If
 	    // no arguments are passed in, it will simply return the current global
 	    // locale key.
@@ -12113,25 +12173,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	            else {
 	                data = defineLocale(key, values);
 	            }
-	
+
 	            if (data) {
 	                // moment.duration._locale = moment._locale = data;
 	                globalLocale = data;
 	            }
 	        }
-	
+
 	        return globalLocale._abbr;
 	    }
-	
+
 	    function defineLocale (name, values) {
 	        if (values !== null) {
 	            values.abbr = name;
 	            locales[name] = locales[name] || new Locale();
 	            locales[name].set(values);
-	
+
 	            // backwards compat for now: also set the locale
 	            locale_locales__getSetGlobalLocale(name);
-	
+
 	            return locales[name];
 	        } else {
 	            // useful for testing
@@ -12139,19 +12199,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return null;
 	        }
 	    }
-	
+
 	    // returns locale data
 	    function locale_locales__getLocale (key) {
 	        var locale;
-	
+
 	        if (key && key._locale && key._locale._abbr) {
 	            key = key._locale._abbr;
 	        }
-	
+
 	        if (!key) {
 	            return globalLocale;
 	        }
-	
+
 	        if (!isArray(key)) {
 	            //short-circuit everything else
 	            locale = loadLocale(key);
@@ -12160,26 +12220,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	            key = [key];
 	        }
-	
+
 	        return chooseLocale(key);
 	    }
-	
+
 	    var aliases = {};
-	
+
 	    function addUnitAlias (unit, shorthand) {
 	        var lowerCase = unit.toLowerCase();
 	        aliases[lowerCase] = aliases[lowerCase + 's'] = aliases[shorthand] = unit;
 	    }
-	
+
 	    function normalizeUnits(units) {
 	        return typeof units === 'string' ? aliases[units] || aliases[units.toLowerCase()] : undefined;
 	    }
-	
+
 	    function normalizeObjectUnits(inputObject) {
 	        var normalizedInput = {},
 	            normalizedProp,
 	            prop;
-	
+
 	        for (prop in inputObject) {
 	            if (hasOwnProp(inputObject, prop)) {
 	                normalizedProp = normalizeUnits(prop);
@@ -12188,10 +12248,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }
 	            }
 	        }
-	
+
 	        return normalizedInput;
 	    }
-	
+
 	    function makeGetSet (unit, keepTime) {
 	        return function (value) {
 	            if (value != null) {
@@ -12203,17 +12263,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        };
 	    }
-	
+
 	    function get_set__get (mom, unit) {
 	        return mom._d['get' + (mom._isUTC ? 'UTC' : '') + unit]();
 	    }
-	
+
 	    function get_set__set (mom, unit, value) {
 	        return mom._d['set' + (mom._isUTC ? 'UTC' : '') + unit](value);
 	    }
-	
+
 	    // MOMENTS
-	
+
 	    function getSet (units, value) {
 	        var unit;
 	        if (typeof units === 'object') {
@@ -12228,7 +12288,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return this;
 	    }
-	
+
 	    function zeroFill(number, targetLength, forceSign) {
 	        var absNumber = '' + Math.abs(number),
 	            zerosToFill = targetLength - absNumber.length,
@@ -12236,15 +12296,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return (sign ? (forceSign ? '+' : '') : '-') +
 	            Math.pow(10, Math.max(0, zerosToFill)).toString().substr(1) + absNumber;
 	    }
-	
+
 	    var formattingTokens = /(\[[^\[]*\])|(\\)?(Mo|MM?M?M?|Do|DDDo|DD?D?D?|ddd?d?|do?|w[o|w]?|W[o|W]?|Q|YYYYYY|YYYYY|YYYY|YY|gg(ggg?)?|GG(GGG?)?|e|E|a|A|hh?|HH?|mm?|ss?|S{1,9}|x|X|zz?|ZZ?|.)/g;
-	
+
 	    var localFormattingTokens = /(\[[^\[]*\])|(\\)?(LTS|LT|LL?L?L?|l{1,4})/g;
-	
+
 	    var formatFunctions = {};
-	
+
 	    var formatTokenFunctions = {};
-	
+
 	    // token:    'M'
 	    // padded:   ['MM', 2]
 	    // ordinal:  'Mo'
@@ -12270,17 +12330,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	            };
 	        }
 	    }
-	
+
 	    function removeFormattingTokens(input) {
 	        if (input.match(/\[[\s\S]/)) {
 	            return input.replace(/^\[|\]$/g, '');
 	        }
 	        return input.replace(/\\/g, '');
 	    }
-	
+
 	    function makeFormatFunction(format) {
 	        var array = format.match(formattingTokens), i, length;
-	
+
 	        for (i = 0, length = array.length; i < length; i++) {
 	            if (formatTokenFunctions[array[i]]) {
 	                array[i] = formatTokenFunctions[array[i]];
@@ -12288,7 +12348,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                array[i] = removeFormattingTokens(array[i]);
 	            }
 	        }
-	
+
 	        return function (mom) {
 	            var output = '';
 	            for (i = 0; i < length; i++) {
@@ -12297,36 +12357,36 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return output;
 	        };
 	    }
-	
+
 	    // format date using native date object
 	    function formatMoment(m, format) {
 	        if (!m.isValid()) {
 	            return m.localeData().invalidDate();
 	        }
-	
+
 	        format = expandFormat(format, m.localeData());
 	        formatFunctions[format] = formatFunctions[format] || makeFormatFunction(format);
-	
+
 	        return formatFunctions[format](m);
 	    }
-	
+
 	    function expandFormat(format, locale) {
 	        var i = 5;
-	
+
 	        function replaceLongDateFormatTokens(input) {
 	            return locale.longDateFormat(input) || input;
 	        }
-	
+
 	        localFormattingTokens.lastIndex = 0;
 	        while (i >= 0 && localFormattingTokens.test(format)) {
 	            format = format.replace(localFormattingTokens, replaceLongDateFormatTokens);
 	            localFormattingTokens.lastIndex = 0;
 	            i -= 1;
 	        }
-	
+
 	        return format;
 	    }
-	
+
 	    var match1         = /\d/;            //       0 - 9
 	    var match2         = /\d\d/;          //      00 - 99
 	    var match3         = /\d{3}/;         //     000 - 999
@@ -12336,49 +12396,49 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var match1to3      = /\d{1,3}/;       //       0 - 999
 	    var match1to4      = /\d{1,4}/;       //       0 - 9999
 	    var match1to6      = /[+-]?\d{1,6}/;  // -999999 - 999999
-	
+
 	    var matchUnsigned  = /\d+/;           //       0 - inf
 	    var matchSigned    = /[+-]?\d+/;      //    -inf - inf
-	
+
 	    var matchOffset    = /Z|[+-]\d\d:?\d\d/gi; // +00:00 -00:00 +0000 -0000 or Z
-	
+
 	    var matchTimestamp = /[+-]?\d+(\.\d{1,3})?/; // 123456789 123456789.123
-	
+
 	    // any word (or two) characters or numbers including two/three word month in arabic.
 	    var matchWord = /[0-9]*['a-z\u00A0-\u05FF\u0700-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+|[\u0600-\u06FF\/]+(\s*?[\u0600-\u06FF]+){1,2}/i;
-	
+
 	    var regexes = {};
-	
+
 	    function isFunction (sth) {
 	        // https://github.com/moment/moment/issues/2325
 	        return typeof sth === 'function' &&
 	            Object.prototype.toString.call(sth) === '[object Function]';
 	    }
-	
-	
+
+
 	    function addRegexToken (token, regex, strictRegex) {
 	        regexes[token] = isFunction(regex) ? regex : function (isStrict) {
 	            return (isStrict && strictRegex) ? strictRegex : regex;
 	        };
 	    }
-	
+
 	    function getParseRegexForToken (token, config) {
 	        if (!hasOwnProp(regexes, token)) {
 	            return new RegExp(unescapeFormat(token));
 	        }
-	
+
 	        return regexes[token](config._strict, config._locale);
 	    }
-	
+
 	    // Code from http://stackoverflow.com/questions/3561493/is-there-a-regexp-escape-function-in-javascript
 	    function unescapeFormat(s) {
 	        return s.replace('\\', '').replace(/\\(\[)|\\(\])|\[([^\]\[]*)\]|\\(.)/g, function (matched, p1, p2, p3, p4) {
 	            return p1 || p2 || p3 || p4;
 	        }).replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 	    }
-	
+
 	    var tokens = {};
-	
+
 	    function addParseToken (token, callback) {
 	        var i, func = callback;
 	        if (typeof token === 'string') {
@@ -12393,20 +12453,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	            tokens[token[i]] = func;
 	        }
 	    }
-	
+
 	    function addWeekParseToken (token, callback) {
 	        addParseToken(token, function (input, array, config, token) {
 	            config._w = config._w || {};
 	            callback(input, config._w, config, token);
 	        });
 	    }
-	
+
 	    function addTimeToArrayFromToken(token, input, config) {
 	        if (input != null && hasOwnProp(tokens, token)) {
 	            tokens[token](input, config._a, config, token);
 	        }
 	    }
-	
+
 	    var YEAR = 0;
 	    var MONTH = 1;
 	    var DATE = 2;
@@ -12414,40 +12474,40 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var MINUTE = 4;
 	    var SECOND = 5;
 	    var MILLISECOND = 6;
-	
+
 	    function daysInMonth(year, month) {
 	        return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
 	    }
-	
+
 	    // FORMATTING
-	
+
 	    addFormatToken('M', ['MM', 2], 'Mo', function () {
 	        return this.month() + 1;
 	    });
-	
+
 	    addFormatToken('MMM', 0, 0, function (format) {
 	        return this.localeData().monthsShort(this, format);
 	    });
-	
+
 	    addFormatToken('MMMM', 0, 0, function (format) {
 	        return this.localeData().months(this, format);
 	    });
-	
+
 	    // ALIASES
-	
+
 	    addUnitAlias('month', 'M');
-	
+
 	    // PARSING
-	
+
 	    addRegexToken('M',    match1to2);
 	    addRegexToken('MM',   match1to2, match2);
 	    addRegexToken('MMM',  matchWord);
 	    addRegexToken('MMMM', matchWord);
-	
+
 	    addParseToken(['M', 'MM'], function (input, array) {
 	        array[MONTH] = toInt(input) - 1;
 	    });
-	
+
 	    addParseToken(['MMM', 'MMMM'], function (input, array, config, token) {
 	        var month = config._locale.monthsParse(input, token, config._strict);
 	        // if we didn't find a month name, mark the date as invalid.
@@ -12457,28 +12517,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	            getParsingFlags(config).invalidMonth = input;
 	        }
 	    });
-	
+
 	    // LOCALES
-	
+
 	    var defaultLocaleMonths = 'January_February_March_April_May_June_July_August_September_October_November_December'.split('_');
 	    function localeMonths (m) {
 	        return this._months[m.month()];
 	    }
-	
+
 	    var defaultLocaleMonthsShort = 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_');
 	    function localeMonthsShort (m) {
 	        return this._monthsShort[m.month()];
 	    }
-	
+
 	    function localeMonthsParse (monthName, format, strict) {
 	        var i, mom, regex;
-	
+
 	        if (!this._monthsParse) {
 	            this._monthsParse = [];
 	            this._longMonthsParse = [];
 	            this._shortMonthsParse = [];
 	        }
-	
+
 	        for (i = 0; i < 12; i++) {
 	            // make the regex if we don't have it already
 	            mom = create_utc__createUTC([2000, i]);
@@ -12500,12 +12560,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        }
 	    }
-	
+
 	    // MOMENTS
-	
+
 	    function setMonth (mom, value) {
 	        var dayOfMonth;
-	
+
 	        // TODO: Move this out of here!
 	        if (typeof value === 'string') {
 	            value = mom.localeData().monthsParse(value);
@@ -12514,12 +12574,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return mom;
 	            }
 	        }
-	
+
 	        dayOfMonth = Math.min(mom.date(), daysInMonth(mom.year(), value));
 	        mom._d['set' + (mom._isUTC ? 'UTC' : '') + 'Month'](value, dayOfMonth);
 	        return mom;
 	    }
-	
+
 	    function getSetMonth (value) {
 	        if (value != null) {
 	            setMonth(this, value);
@@ -12529,15 +12589,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return get_set__get(this, 'Month');
 	        }
 	    }
-	
+
 	    function getDaysInMonth () {
 	        return daysInMonth(this.year(), this.month());
 	    }
-	
+
 	    function checkOverflow (m) {
 	        var overflow;
 	        var a = m._a;
-	
+
 	        if (a && getParsingFlags(m).overflow === -2) {
 	            overflow =
 	                a[MONTH]       < 0 || a[MONTH]       > 11  ? MONTH :
@@ -12547,26 +12607,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	                a[SECOND]      < 0 || a[SECOND]      > 59  ? SECOND :
 	                a[MILLISECOND] < 0 || a[MILLISECOND] > 999 ? MILLISECOND :
 	                -1;
-	
+
 	            if (getParsingFlags(m)._overflowDayOfYear && (overflow < YEAR || overflow > DATE)) {
 	                overflow = DATE;
 	            }
-	
+
 	            getParsingFlags(m).overflow = overflow;
 	        }
-	
+
 	        return m;
 	    }
-	
+
 	    function warn(msg) {
 	        if (utils_hooks__hooks.suppressDeprecationWarnings === false && typeof console !== 'undefined' && console.warn) {
 	            console.warn('Deprecation warning: ' + msg);
 	        }
 	    }
-	
+
 	    function deprecate(msg, fn) {
 	        var firstTime = true;
-	
+
 	        return extend(function () {
 	            if (firstTime) {
 	                warn(msg + '\n' + (new Error()).stack);
@@ -12575,20 +12635,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return fn.apply(this, arguments);
 	        }, fn);
 	    }
-	
+
 	    var deprecations = {};
-	
+
 	    function deprecateSimple(name, msg) {
 	        if (!deprecations[name]) {
 	            warn(msg);
 	            deprecations[name] = true;
 	        }
 	    }
-	
+
 	    utils_hooks__hooks.suppressDeprecationWarnings = false;
-	
+
 	    var from_string__isoRegex = /^\s*(?:[+-]\d{6}|\d{4})-(?:(\d\d-\d\d)|(W\d\d$)|(W\d\d-\d)|(\d\d\d))((T| )(\d\d(:\d\d(:\d\d(\.\d+)?)?)?)?([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?$/;
-	
+
 	    var isoDates = [
 	        ['YYYYYY-MM-DD', /[+-]\d{6}-\d{2}-\d{2}/],
 	        ['YYYY-MM-DD', /\d{4}-\d{2}-\d{2}/],
@@ -12596,7 +12656,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        ['GGGG-[W]WW', /\d{4}-W\d{2}/],
 	        ['YYYY-DDD', /\d{4}-\d{3}/]
 	    ];
-	
+
 	    // iso time formats and regexes
 	    var isoTimes = [
 	        ['HH:mm:ss.SSSS', /(T| )\d\d:\d\d:\d\d\.\d+/],
@@ -12604,15 +12664,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        ['HH:mm', /(T| )\d\d:\d\d/],
 	        ['HH', /(T| )\d\d/]
 	    ];
-	
+
 	    var aspNetJsonRegex = /^\/?Date\((\-?\d+)/i;
-	
+
 	    // date from iso format
 	    function configFromISO(config) {
 	        var i, l,
 	            string = config._i,
 	            match = from_string__isoRegex.exec(string);
-	
+
 	        if (match) {
 	            getParsingFlags(config).iso = true;
 	            for (i = 0, l = isoDates.length; i < l; i++) {
@@ -12636,23 +12696,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	            config._isValid = false;
 	        }
 	    }
-	
+
 	    // date from iso format or fallback
 	    function configFromString(config) {
 	        var matched = aspNetJsonRegex.exec(config._i);
-	
+
 	        if (matched !== null) {
 	            config._d = new Date(+matched[1]);
 	            return;
 	        }
-	
+
 	        configFromISO(config);
 	        if (config._isValid === false) {
 	            delete config._isValid;
 	            utils_hooks__hooks.createFromInputFallback(config);
 	        }
 	    }
-	
+
 	    utils_hooks__hooks.createFromInputFallback = deprecate(
 	        'moment construction falls back to js Date. This is ' +
 	        'discouraged and will be removed in upcoming major ' +
@@ -12662,19 +12722,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	            config._d = new Date(config._i + (config._useUTC ? ' UTC' : ''));
 	        }
 	    );
-	
+
 	    function createDate (y, m, d, h, M, s, ms) {
 	        //can't just apply() to create a date:
 	        //http://stackoverflow.com/questions/181348/instantiating-a-javascript-object-by-calling-prototype-constructor-apply
 	        var date = new Date(y, m, d, h, M, s, ms);
-	
+
 	        //the date constructor doesn't accept years < 1970
 	        if (y < 1970) {
 	            date.setFullYear(y);
 	        }
 	        return date;
 	    }
-	
+
 	    function createUTCDate (y) {
 	        var date = new Date(Date.UTC.apply(null, arguments));
 	        if (y < 1970) {
@@ -12682,27 +12742,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return date;
 	    }
-	
+
 	    addFormatToken(0, ['YY', 2], 0, function () {
 	        return this.year() % 100;
 	    });
-	
+
 	    addFormatToken(0, ['YYYY',   4],       0, 'year');
 	    addFormatToken(0, ['YYYYY',  5],       0, 'year');
 	    addFormatToken(0, ['YYYYYY', 6, true], 0, 'year');
-	
+
 	    // ALIASES
-	
+
 	    addUnitAlias('year', 'y');
-	
+
 	    // PARSING
-	
+
 	    addRegexToken('Y',      matchSigned);
 	    addRegexToken('YY',     match1to2, match2);
 	    addRegexToken('YYYY',   match1to4, match4);
 	    addRegexToken('YYYYY',  match1to6, match6);
 	    addRegexToken('YYYYYY', match1to6, match6);
-	
+
 	    addParseToken(['YYYYY', 'YYYYYY'], YEAR);
 	    addParseToken('YYYY', function (input, array) {
 	        array[YEAR] = input.length === 2 ? utils_hooks__hooks.parseTwoDigitYear(input) : toInt(input);
@@ -12710,52 +12770,52 @@ return /******/ (function(modules) { // webpackBootstrap
 	    addParseToken('YY', function (input, array) {
 	        array[YEAR] = utils_hooks__hooks.parseTwoDigitYear(input);
 	    });
-	
+
 	    // HELPERS
-	
+
 	    function daysInYear(year) {
 	        return isLeapYear(year) ? 366 : 365;
 	    }
-	
+
 	    function isLeapYear(year) {
 	        return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
 	    }
-	
+
 	    // HOOKS
-	
+
 	    utils_hooks__hooks.parseTwoDigitYear = function (input) {
 	        return toInt(input) + (toInt(input) > 68 ? 1900 : 2000);
 	    };
-	
+
 	    // MOMENTS
-	
+
 	    var getSetYear = makeGetSet('FullYear', false);
-	
+
 	    function getIsLeapYear () {
 	        return isLeapYear(this.year());
 	    }
-	
+
 	    addFormatToken('w', ['ww', 2], 'wo', 'week');
 	    addFormatToken('W', ['WW', 2], 'Wo', 'isoWeek');
-	
+
 	    // ALIASES
-	
+
 	    addUnitAlias('week', 'w');
 	    addUnitAlias('isoWeek', 'W');
-	
+
 	    // PARSING
-	
+
 	    addRegexToken('w',  match1to2);
 	    addRegexToken('ww', match1to2, match2);
 	    addRegexToken('W',  match1to2);
 	    addRegexToken('WW', match1to2, match2);
-	
+
 	    addWeekParseToken(['w', 'ww', 'W', 'WW'], function (input, week, config, token) {
 	        week[token.substr(0, 1)] = toInt(input);
 	    });
-	
+
 	    // HELPERS
-	
+
 	    // firstDayOfWeek       0 = sun, 6 = sat
 	    //                      the day of the week that starts the week
 	    //                      (usually sunday or monday)
@@ -12767,94 +12827,94 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var end = firstDayOfWeekOfYear - firstDayOfWeek,
 	            daysToDayOfWeek = firstDayOfWeekOfYear - mom.day(),
 	            adjustedMoment;
-	
-	
+
+
 	        if (daysToDayOfWeek > end) {
 	            daysToDayOfWeek -= 7;
 	        }
-	
+
 	        if (daysToDayOfWeek < end - 7) {
 	            daysToDayOfWeek += 7;
 	        }
-	
+
 	        adjustedMoment = local__createLocal(mom).add(daysToDayOfWeek, 'd');
 	        return {
 	            week: Math.ceil(adjustedMoment.dayOfYear() / 7),
 	            year: adjustedMoment.year()
 	        };
 	    }
-	
+
 	    // LOCALES
-	
+
 	    function localeWeek (mom) {
 	        return weekOfYear(mom, this._week.dow, this._week.doy).week;
 	    }
-	
+
 	    var defaultLocaleWeek = {
 	        dow : 0, // Sunday is the first day of the week.
 	        doy : 6  // The week that contains Jan 1st is the first week of the year.
 	    };
-	
+
 	    function localeFirstDayOfWeek () {
 	        return this._week.dow;
 	    }
-	
+
 	    function localeFirstDayOfYear () {
 	        return this._week.doy;
 	    }
-	
+
 	    // MOMENTS
-	
+
 	    function getSetWeek (input) {
 	        var week = this.localeData().week(this);
 	        return input == null ? week : this.add((input - week) * 7, 'd');
 	    }
-	
+
 	    function getSetISOWeek (input) {
 	        var week = weekOfYear(this, 1, 4).week;
 	        return input == null ? week : this.add((input - week) * 7, 'd');
 	    }
-	
+
 	    addFormatToken('DDD', ['DDDD', 3], 'DDDo', 'dayOfYear');
-	
+
 	    // ALIASES
-	
+
 	    addUnitAlias('dayOfYear', 'DDD');
-	
+
 	    // PARSING
-	
+
 	    addRegexToken('DDD',  match1to3);
 	    addRegexToken('DDDD', match3);
 	    addParseToken(['DDD', 'DDDD'], function (input, array, config) {
 	        config._dayOfYear = toInt(input);
 	    });
-	
+
 	    // HELPERS
-	
+
 	    //http://en.wikipedia.org/wiki/ISO_week_date#Calculating_a_date_given_the_year.2C_week_number_and_weekday
 	    function dayOfYearFromWeeks(year, week, weekday, firstDayOfWeekOfYear, firstDayOfWeek) {
 	        var week1Jan = 6 + firstDayOfWeek - firstDayOfWeekOfYear, janX = createUTCDate(year, 0, 1 + week1Jan), d = janX.getUTCDay(), dayOfYear;
 	        if (d < firstDayOfWeek) {
 	            d += 7;
 	        }
-	
+
 	        weekday = weekday != null ? 1 * weekday : firstDayOfWeek;
-	
+
 	        dayOfYear = 1 + week1Jan + 7 * (week - 1) - d + weekday;
-	
+
 	        return {
 	            year: dayOfYear > 0 ? year : year - 1,
 	            dayOfYear: dayOfYear > 0 ?  dayOfYear : daysInYear(year - 1) + dayOfYear
 	        };
 	    }
-	
+
 	    // MOMENTS
-	
+
 	    function getSetDayOfYear (input) {
 	        var dayOfYear = Math.round((this.clone().startOf('day') - this.clone().startOf('year')) / 864e5) + 1;
 	        return input == null ? dayOfYear : this.add((input - dayOfYear), 'd');
 	    }
-	
+
 	    // Pick the first defined of two or three arguments.
 	    function defaults(a, b, c) {
 	        if (a != null) {
@@ -12865,7 +12925,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return c;
 	    }
-	
+
 	    function currentDateArray(config) {
 	        var now = new Date();
 	        if (config._useUTC) {
@@ -12873,38 +12933,38 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return [now.getFullYear(), now.getMonth(), now.getDate()];
 	    }
-	
+
 	    // convert an array to a date.
 	    // the array should mirror the parameters below
 	    // note: all values past the year are optional and will default to the lowest possible value.
 	    // [year, month, day , hour, minute, second, millisecond]
 	    function configFromArray (config) {
 	        var i, date, input = [], currentDate, yearToUse;
-	
+
 	        if (config._d) {
 	            return;
 	        }
-	
+
 	        currentDate = currentDateArray(config);
-	
+
 	        //compute day of the year from weeks and weekdays
 	        if (config._w && config._a[DATE] == null && config._a[MONTH] == null) {
 	            dayOfYearFromWeekInfo(config);
 	        }
-	
+
 	        //if the day of the year is set, figure out what it is
 	        if (config._dayOfYear) {
 	            yearToUse = defaults(config._a[YEAR], currentDate[YEAR]);
-	
+
 	            if (config._dayOfYear > daysInYear(yearToUse)) {
 	                getParsingFlags(config)._overflowDayOfYear = true;
 	            }
-	
+
 	            date = createUTCDate(yearToUse, 0, config._dayOfYear);
 	            config._a[MONTH] = date.getUTCMonth();
 	            config._a[DATE] = date.getUTCDate();
 	        }
-	
+
 	        // Default to current date.
 	        // * if no year, month, day of month are given, default to today
 	        // * if day of month is given, default month and year
@@ -12913,12 +12973,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        for (i = 0; i < 3 && config._a[i] == null; ++i) {
 	            config._a[i] = input[i] = currentDate[i];
 	        }
-	
+
 	        // Zero out whatever was not defaulted, including time
 	        for (; i < 7; i++) {
 	            config._a[i] = input[i] = (config._a[i] == null) ? (i === 2 ? 1 : 0) : config._a[i];
 	        }
-	
+
 	        // Check for 24:00:00.000
 	        if (config._a[HOUR] === 24 &&
 	                config._a[MINUTE] === 0 &&
@@ -12927,27 +12987,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	            config._nextDay = true;
 	            config._a[HOUR] = 0;
 	        }
-	
+
 	        config._d = (config._useUTC ? createUTCDate : createDate).apply(null, input);
 	        // Apply timezone offset from input. The actual utcOffset can be changed
 	        // with parseZone.
 	        if (config._tzm != null) {
 	            config._d.setUTCMinutes(config._d.getUTCMinutes() - config._tzm);
 	        }
-	
+
 	        if (config._nextDay) {
 	            config._a[HOUR] = 24;
 	        }
 	    }
-	
+
 	    function dayOfYearFromWeekInfo(config) {
 	        var w, weekYear, week, weekday, dow, doy, temp;
-	
+
 	        w = config._w;
 	        if (w.GG != null || w.W != null || w.E != null) {
 	            dow = 1;
 	            doy = 4;
-	
+
 	            // TODO: We need to take the current isoWeekYear, but that depends on
 	            // how we interpret now (local, utc, fixed offset). So create
 	            // a now version of current config (take local/utc/offset flags, and
@@ -12958,10 +13018,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        } else {
 	            dow = config._locale._week.dow;
 	            doy = config._locale._week.doy;
-	
+
 	            weekYear = defaults(w.gg, config._a[YEAR], weekOfYear(local__createLocal(), dow, doy).year);
 	            week = defaults(w.w, 1);
-	
+
 	            if (w.d != null) {
 	                // weekday -- low day numbers are considered next week
 	                weekday = w.d;
@@ -12977,13 +13037,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        }
 	        temp = dayOfYearFromWeeks(weekYear, week, weekday, doy, dow);
-	
+
 	        config._a[YEAR] = temp.year;
 	        config._dayOfYear = temp.dayOfYear;
 	    }
-	
+
 	    utils_hooks__hooks.ISO_8601 = function () {};
-	
+
 	    // date from string and format string
 	    function configFromStringAndFormat(config) {
 	        // TODO: Move this to another part of the creation flow to prevent circular deps
@@ -12991,18 +13051,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	            configFromISO(config);
 	            return;
 	        }
-	
+
 	        config._a = [];
 	        getParsingFlags(config).empty = true;
-	
+
 	        // This array is used to make a Date, either with `new Date` or `Date.UTC`
 	        var string = '' + config._i,
 	            i, parsedInput, tokens, token, skipped,
 	            stringLength = string.length,
 	            totalParsedInputLength = 0;
-	
+
 	        tokens = expandFormat(config._f, config._locale).match(formattingTokens) || [];
-	
+
 	        for (i = 0; i < tokens.length; i++) {
 	            token = tokens[i];
 	            parsedInput = (string.match(getParseRegexForToken(token, config)) || [])[0];
@@ -13028,13 +13088,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                getParsingFlags(config).unusedTokens.push(token);
 	            }
 	        }
-	
+
 	        // add remaining unparsed input length to the string
 	        getParsingFlags(config).charsLeftOver = stringLength - totalParsedInputLength;
 	        if (string.length > 0) {
 	            getParsingFlags(config).unusedInput.push(string);
 	        }
-	
+
 	        // clear _12h flag if hour is <= 12
 	        if (getParsingFlags(config).bigHour === true &&
 	                config._a[HOUR] <= 12 &&
@@ -13043,15 +13103,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        // handle meridiem
 	        config._a[HOUR] = meridiemFixWrap(config._locale, config._a[HOUR], config._meridiem);
-	
+
 	        configFromArray(config);
 	        checkOverflow(config);
 	    }
-	
-	
+
+
 	    function meridiemFixWrap (locale, hour, meridiem) {
 	        var isPm;
-	
+
 	        if (meridiem == null) {
 	            // nothing to do
 	            return hour;
@@ -13073,21 +13133,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return hour;
 	        }
 	    }
-	
+
 	    function configFromStringAndArray(config) {
 	        var tempConfig,
 	            bestMoment,
-	
+
 	            scoreToBeat,
 	            i,
 	            currentScore;
-	
+
 	        if (config._f.length === 0) {
 	            getParsingFlags(config).invalidFormat = true;
 	            config._d = new Date(NaN);
 	            return;
 	        }
-	
+
 	        for (i = 0; i < config._f.length; i++) {
 	            currentScore = 0;
 	            tempConfig = copyConfig({}, config);
@@ -13096,39 +13156,39 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	            tempConfig._f = config._f[i];
 	            configFromStringAndFormat(tempConfig);
-	
+
 	            if (!valid__isValid(tempConfig)) {
 	                continue;
 	            }
-	
+
 	            // if there is any input that was not parsed add a penalty for that format
 	            currentScore += getParsingFlags(tempConfig).charsLeftOver;
-	
+
 	            //or tokens
 	            currentScore += getParsingFlags(tempConfig).unusedTokens.length * 10;
-	
+
 	            getParsingFlags(tempConfig).score = currentScore;
-	
+
 	            if (scoreToBeat == null || currentScore < scoreToBeat) {
 	                scoreToBeat = currentScore;
 	                bestMoment = tempConfig;
 	            }
 	        }
-	
+
 	        extend(config, bestMoment || tempConfig);
 	    }
-	
+
 	    function configFromObject(config) {
 	        if (config._d) {
 	            return;
 	        }
-	
+
 	        var i = normalizeObjectUnits(config._i);
 	        config._a = [i.year, i.month, i.day || i.date, i.hour, i.minute, i.second, i.millisecond];
-	
+
 	        configFromArray(config);
 	    }
-	
+
 	    function createFromConfig (config) {
 	        var res = new Moment(checkOverflow(prepareConfig(config)));
 	        if (res._nextDay) {
@@ -13136,24 +13196,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	            res.add(1, 'd');
 	            res._nextDay = undefined;
 	        }
-	
+
 	        return res;
 	    }
-	
+
 	    function prepareConfig (config) {
 	        var input = config._i,
 	            format = config._f;
-	
+
 	        config._locale = config._locale || locale_locales__getLocale(config._l);
-	
+
 	        if (input === null || (format === undefined && input === '')) {
 	            return valid__createInvalid({nullInput: true});
 	        }
-	
+
 	        if (typeof input === 'string') {
 	            config._i = input = config._locale.preparse(input);
 	        }
-	
+
 	        if (isMoment(input)) {
 	            return new Moment(checkOverflow(input));
 	        } else if (isArray(format)) {
@@ -13165,10 +13225,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        } else {
 	            configFromInput(config);
 	        }
-	
+
 	        return config;
 	    }
-	
+
 	    function configFromInput(config) {
 	        var input = config._i;
 	        if (input === undefined) {
@@ -13191,10 +13251,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            utils_hooks__hooks.createFromInputFallback(config);
 	        }
 	    }
-	
+
 	    function createLocalOrUTC (input, format, locale, strict, isUTC) {
 	        var c = {};
-	
+
 	        if (typeof(locale) === 'boolean') {
 	            strict = locale;
 	            locale = undefined;
@@ -13207,14 +13267,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	        c._i = input;
 	        c._f = format;
 	        c._strict = strict;
-	
+
 	        return createFromConfig(c);
 	    }
-	
+
 	    function local__createLocal (input, format, locale, strict) {
 	        return createLocalOrUTC(input, format, locale, strict, false);
 	    }
-	
+
 	    var prototypeMin = deprecate(
 	         'moment().min is deprecated, use moment.min instead. https://github.com/moment/moment/issues/1548',
 	         function () {
@@ -13222,7 +13282,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	             return other < this ? this : other;
 	         }
 	     );
-	
+
 	    var prototypeMax = deprecate(
 	        'moment().max is deprecated, use moment.max instead. https://github.com/moment/moment/issues/1548',
 	        function () {
@@ -13230,7 +13290,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return other > this ? this : other;
 	        }
 	    );
-	
+
 	    // Pick a moment m from moments so that m[fn](other) is true for all
 	    // other. This relies on the function fn to be transitive.
 	    //
@@ -13252,20 +13312,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return res;
 	    }
-	
+
 	    // TODO: Use [].sort instead?
 	    function min () {
 	        var args = [].slice.call(arguments, 0);
-	
+
 	        return pickBy('isBefore', args);
 	    }
-	
+
 	    function max () {
 	        var args = [].slice.call(arguments, 0);
-	
+
 	        return pickBy('isAfter', args);
 	    }
-	
+
 	    function Duration (duration) {
 	        var normalizedInput = normalizeObjectUnits(duration),
 	            years = normalizedInput.year || 0,
@@ -13277,7 +13337,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            minutes = normalizedInput.minute || 0,
 	            seconds = normalizedInput.second || 0,
 	            milliseconds = normalizedInput.millisecond || 0;
-	
+
 	        // representation for dateAddRemove
 	        this._milliseconds = +milliseconds +
 	            seconds * 1e3 + // 1000
@@ -13293,18 +13353,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this._months = +months +
 	            quarters * 3 +
 	            years * 12;
-	
+
 	        this._data = {};
-	
+
 	        this._locale = locale_locales__getLocale();
-	
+
 	        this._bubble();
 	    }
-	
+
 	    function isDuration (obj) {
 	        return obj instanceof Duration;
 	    }
-	
+
 	    function offset (token, separator) {
 	        addFormatToken(token, 0, 0, function () {
 	            var offset = this.utcOffset();
@@ -13316,35 +13376,35 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return sign + zeroFill(~~(offset / 60), 2) + separator + zeroFill(~~(offset) % 60, 2);
 	        });
 	    }
-	
+
 	    offset('Z', ':');
 	    offset('ZZ', '');
-	
+
 	    // PARSING
-	
+
 	    addRegexToken('Z',  matchOffset);
 	    addRegexToken('ZZ', matchOffset);
 	    addParseToken(['Z', 'ZZ'], function (input, array, config) {
 	        config._useUTC = true;
 	        config._tzm = offsetFromString(input);
 	    });
-	
+
 	    // HELPERS
-	
+
 	    // timezone chunker
 	    // '+10:00' > ['10',  '00']
 	    // '-1530'  > ['-15', '30']
 	    var chunkOffset = /([\+\-]|\d\d)/gi;
-	
+
 	    function offsetFromString(string) {
 	        var matches = ((string || '').match(matchOffset) || []);
 	        var chunk   = matches[matches.length - 1] || [];
 	        var parts   = (chunk + '').match(chunkOffset) || ['-', 0, 0];
 	        var minutes = +(parts[1] * 60) + toInt(parts[2]);
-	
+
 	        return parts[0] === '+' ? minutes : -minutes;
 	    }
-	
+
 	    // Return a moment from input, that is local/utc/zone equivalent to model.
 	    function cloneWithOffset(input, model) {
 	        var res, diff;
@@ -13359,21 +13419,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return local__createLocal(input).local();
 	        }
 	    }
-	
+
 	    function getDateOffset (m) {
 	        // On Firefox.24 Date#getTimezoneOffset returns a floating point.
 	        // https://github.com/moment/moment/pull/1871
 	        return -Math.round(m._d.getTimezoneOffset() / 15) * 15;
 	    }
-	
+
 	    // HOOKS
-	
+
 	    // This function will be called whenever a moment is mutated.
 	    // It is intended to keep the offset in sync with the timezone.
 	    utils_hooks__hooks.updateOffset = function () {};
-	
+
 	    // MOMENTS
-	
+
 	    // keepLocalTime = true means only change the timezone, without
 	    // affecting the local hour. So 5:31:26 +0300 --[utcOffset(2, true)]-->
 	    // 5:31:26 +0200 It is possible that 5:31:26 doesn't exist with offset
@@ -13416,37 +13476,37 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return this._isUTC ? offset : getDateOffset(this);
 	        }
 	    }
-	
+
 	    function getSetZone (input, keepLocalTime) {
 	        if (input != null) {
 	            if (typeof input !== 'string') {
 	                input = -input;
 	            }
-	
+
 	            this.utcOffset(input, keepLocalTime);
-	
+
 	            return this;
 	        } else {
 	            return -this.utcOffset();
 	        }
 	    }
-	
+
 	    function setOffsetToUTC (keepLocalTime) {
 	        return this.utcOffset(0, keepLocalTime);
 	    }
-	
+
 	    function setOffsetToLocal (keepLocalTime) {
 	        if (this._isUTC) {
 	            this.utcOffset(0, keepLocalTime);
 	            this._isUTC = false;
-	
+
 	            if (keepLocalTime) {
 	                this.subtract(getDateOffset(this), 'm');
 	            }
 	        }
 	        return this;
 	    }
-	
+
 	    function setOffsetToParsedOffset () {
 	        if (this._tzm) {
 	            this.utcOffset(this._tzm);
@@ -13455,30 +13515,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return this;
 	    }
-	
+
 	    function hasAlignedHourOffset (input) {
 	        input = input ? local__createLocal(input).utcOffset() : 0;
-	
+
 	        return (this.utcOffset() - input) % 60 === 0;
 	    }
-	
+
 	    function isDaylightSavingTime () {
 	        return (
 	            this.utcOffset() > this.clone().month(0).utcOffset() ||
 	            this.utcOffset() > this.clone().month(5).utcOffset()
 	        );
 	    }
-	
+
 	    function isDaylightSavingTimeShifted () {
 	        if (typeof this._isDSTShifted !== 'undefined') {
 	            return this._isDSTShifted;
 	        }
-	
+
 	        var c = {};
-	
+
 	        copyConfig(c, this);
 	        c = prepareConfig(c);
-	
+
 	        if (c._a) {
 	            var other = c._isUTC ? create_utc__createUTC(c._a) : local__createLocal(c._a);
 	            this._isDSTShifted = this.isValid() &&
@@ -13486,28 +13546,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	        } else {
 	            this._isDSTShifted = false;
 	        }
-	
+
 	        return this._isDSTShifted;
 	    }
-	
+
 	    function isLocal () {
 	        return !this._isUTC;
 	    }
-	
+
 	    function isUtcOffset () {
 	        return this._isUTC;
 	    }
-	
+
 	    function isUtc () {
 	        return this._isUTC && this._offset === 0;
 	    }
-	
+
 	    var aspNetRegex = /(\-)?(?:(\d*)\.)?(\d+)\:(\d+)(?:\:(\d+)\.?(\d{3})?)?/;
-	
+
 	    // from http://docs.closure-library.googlecode.com/git/closure_goog_date_date.js.source.html
 	    // somewhat more in line with 4.4.3.2 2004 spec, but allows decimal anywhere
 	    var create__isoRegex = /^(-)?P(?:(?:([0-9,.]*)Y)?(?:([0-9,.]*)M)?(?:([0-9,.]*)D)?(?:T(?:([0-9,.]*)H)?(?:([0-9,.]*)M)?(?:([0-9,.]*)S)?)?|([0-9,.]*)W)$/;
-	
+
 	    function create__createDuration (input, key) {
 	        var duration = input,
 	            // matching against regexp is expensive, do it on demand
@@ -13515,7 +13575,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            sign,
 	            ret,
 	            diffRes;
-	
+
 	        if (isDuration(input)) {
 	            duration = {
 	                ms : input._milliseconds,
@@ -13554,23 +13614,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	            duration = {};
 	        } else if (typeof duration === 'object' && ('from' in duration || 'to' in duration)) {
 	            diffRes = momentsDifference(local__createLocal(duration.from), local__createLocal(duration.to));
-	
+
 	            duration = {};
 	            duration.ms = diffRes.milliseconds;
 	            duration.M = diffRes.months;
 	        }
-	
+
 	        ret = new Duration(duration);
-	
+
 	        if (isDuration(input) && hasOwnProp(input, '_locale')) {
 	            ret._locale = input._locale;
 	        }
-	
+
 	        return ret;
 	    }
-	
+
 	    create__createDuration.fn = Duration.prototype;
-	
+
 	    function parseIso (inp, sign) {
 	        // We'd normally use ~~inp for this, but unfortunately it also
 	        // converts floats to ints.
@@ -13579,21 +13639,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // apply sign while we're at it
 	        return (isNaN(res) ? 0 : res) * sign;
 	    }
-	
+
 	    function positiveMomentsDifference(base, other) {
 	        var res = {milliseconds: 0, months: 0};
-	
+
 	        res.months = other.month() - base.month() +
 	            (other.year() - base.year()) * 12;
 	        if (base.clone().add(res.months, 'M').isAfter(other)) {
 	            --res.months;
 	        }
-	
+
 	        res.milliseconds = +other - +(base.clone().add(res.months, 'M'));
-	
+
 	        return res;
 	    }
-	
+
 	    function momentsDifference(base, other) {
 	        var res;
 	        other = cloneWithOffset(other, base);
@@ -13604,10 +13664,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            res.milliseconds = -res.milliseconds;
 	            res.months = -res.months;
 	        }
-	
+
 	        return res;
 	    }
-	
+
 	    function createAdder(direction, name) {
 	        return function (val, period) {
 	            var dur, tmp;
@@ -13616,20 +13676,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	                deprecateSimple(name, 'moment().' + name  + '(period, number) is deprecated. Please use moment().' + name + '(number, period).');
 	                tmp = val; val = period; period = tmp;
 	            }
-	
+
 	            val = typeof val === 'string' ? +val : val;
 	            dur = create__createDuration(val, period);
 	            add_subtract__addSubtract(this, dur, direction);
 	            return this;
 	        };
 	    }
-	
+
 	    function add_subtract__addSubtract (mom, duration, isAdding, updateOffset) {
 	        var milliseconds = duration._milliseconds,
 	            days = duration._days,
 	            months = duration._months;
 	        updateOffset = updateOffset == null ? true : updateOffset;
-	
+
 	        if (milliseconds) {
 	            mom._d.setTime(+mom._d + milliseconds * isAdding);
 	        }
@@ -13643,10 +13703,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            utils_hooks__hooks.updateOffset(mom, days || months);
 	        }
 	    }
-	
+
 	    var add_subtract__add      = createAdder(1, 'add');
 	    var add_subtract__subtract = createAdder(-1, 'subtract');
-	
+
 	    function moment_calendar__calendar (time, formats) {
 	        // We want to compare the start of today, vs this.
 	        // Getting start-of-today depends on whether we're local/utc/offset or not.
@@ -13661,11 +13721,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	                diff < 7 ? 'nextWeek' : 'sameElse';
 	        return this.format(formats && formats[format] || this.localeData().calendar(format, this, local__createLocal(now)));
 	    }
-	
+
 	    function clone () {
 	        return new Moment(this);
 	    }
-	
+
 	    function isAfter (input, units) {
 	        var inputMs;
 	        units = normalizeUnits(typeof units !== 'undefined' ? units : 'millisecond');
@@ -13677,7 +13737,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return inputMs < +this.clone().startOf(units);
 	        }
 	    }
-	
+
 	    function isBefore (input, units) {
 	        var inputMs;
 	        units = normalizeUnits(typeof units !== 'undefined' ? units : 'millisecond');
@@ -13689,11 +13749,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return +this.clone().endOf(units) < inputMs;
 	        }
 	    }
-	
+
 	    function isBetween (from, to, units) {
 	        return this.isAfter(from, units) && this.isBefore(to, units);
 	    }
-	
+
 	    function isSame (input, units) {
 	        var inputMs;
 	        units = normalizeUnits(units || 'millisecond');
@@ -13705,14 +13765,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return +(this.clone().startOf(units)) <= inputMs && inputMs <= +(this.clone().endOf(units));
 	        }
 	    }
-	
+
 	    function diff (input, units, asFloat) {
 	        var that = cloneWithOffset(input, this),
 	            zoneDelta = (that.utcOffset() - this.utcOffset()) * 6e4,
 	            delta, output;
-	
+
 	        units = normalizeUnits(units);
-	
+
 	        if (units === 'year' || units === 'month' || units === 'quarter') {
 	            output = monthDiff(this, that);
 	            if (units === 'quarter') {
@@ -13731,14 +13791,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return asFloat ? output : absFloor(output);
 	    }
-	
+
 	    function monthDiff (a, b) {
 	        // difference in months
 	        var wholeMonthDiff = ((b.year() - a.year()) * 12) + (b.month() - a.month()),
 	            // b is in (anchor - 1 month, anchor + 1 month)
 	            anchor = a.clone().add(wholeMonthDiff, 'months'),
 	            anchor2, adjust;
-	
+
 	        if (b - anchor < 0) {
 	            anchor2 = a.clone().add(wholeMonthDiff - 1, 'months');
 	            // linear across the month
@@ -13748,16 +13808,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	            // linear across the month
 	            adjust = (b - anchor) / (anchor2 - anchor);
 	        }
-	
+
 	        return -(wholeMonthDiff + adjust);
 	    }
-	
+
 	    utils_hooks__hooks.defaultFormat = 'YYYY-MM-DDTHH:mm:ssZ';
-	
+
 	    function toString () {
 	        return this.clone().locale('en').format('ddd MMM DD YYYY HH:mm:ss [GMT]ZZ');
 	    }
-	
+
 	    function moment_format__toISOString () {
 	        var m = this.clone().utc();
 	        if (0 < m.year() && m.year() <= 9999) {
@@ -13771,37 +13831,37 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return formatMoment(m, 'YYYYYY-MM-DD[T]HH:mm:ss.SSS[Z]');
 	        }
 	    }
-	
+
 	    function format (inputString) {
 	        var output = formatMoment(this, inputString || utils_hooks__hooks.defaultFormat);
 	        return this.localeData().postformat(output);
 	    }
-	
+
 	    function from (time, withoutSuffix) {
 	        if (!this.isValid()) {
 	            return this.localeData().invalidDate();
 	        }
 	        return create__createDuration({to: this, from: time}).locale(this.locale()).humanize(!withoutSuffix);
 	    }
-	
+
 	    function fromNow (withoutSuffix) {
 	        return this.from(local__createLocal(), withoutSuffix);
 	    }
-	
+
 	    function to (time, withoutSuffix) {
 	        if (!this.isValid()) {
 	            return this.localeData().invalidDate();
 	        }
 	        return create__createDuration({from: this, to: time}).locale(this.locale()).humanize(!withoutSuffix);
 	    }
-	
+
 	    function toNow (withoutSuffix) {
 	        return this.to(local__createLocal(), withoutSuffix);
 	    }
-	
+
 	    function locale (key) {
 	        var newLocaleData;
-	
+
 	        if (key === undefined) {
 	            return this._locale._abbr;
 	        } else {
@@ -13812,7 +13872,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return this;
 	        }
 	    }
-	
+
 	    var lang = deprecate(
 	        'moment().lang() is deprecated. Instead, use moment().localeData() to get the language configuration. Use moment().locale() to change languages.',
 	        function (key) {
@@ -13823,11 +13883,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        }
 	    );
-	
+
 	    function localeData () {
 	        return this._locale;
 	    }
-	
+
 	    function startOf (units) {
 	        units = normalizeUnits(units);
 	        // the following switch intentionally omits break keywords
@@ -13854,7 +13914,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        case 'second':
 	            this.milliseconds(0);
 	        }
-	
+
 	        // weeks are a special case
 	        if (units === 'week') {
 	            this.weekday(0);
@@ -13862,15 +13922,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (units === 'isoWeek') {
 	            this.isoWeekday(1);
 	        }
-	
+
 	        // quarters are also special
 	        if (units === 'quarter') {
 	            this.month(Math.floor(this.month() / 3) * 3);
 	        }
-	
+
 	        return this;
 	    }
-	
+
 	    function endOf (units) {
 	        units = normalizeUnits(units);
 	        if (units === undefined || units === 'millisecond') {
@@ -13878,24 +13938,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return this.startOf(units).add(1, (units === 'isoWeek' ? 'week' : units)).subtract(1, 'ms');
 	    }
-	
+
 	    function to_type__valueOf () {
 	        return +this._d - ((this._offset || 0) * 60000);
 	    }
-	
+
 	    function unix () {
 	        return Math.floor(+this / 1000);
 	    }
-	
+
 	    function toDate () {
 	        return this._offset ? new Date(+this) : this._d;
 	    }
-	
+
 	    function toArray () {
 	        var m = this;
 	        return [m.year(), m.month(), m.date(), m.hour(), m.minute(), m.second(), m.millisecond()];
 	    }
-	
+
 	    function toObject () {
 	        var m = this;
 	        return {
@@ -13908,43 +13968,43 @@ return /******/ (function(modules) { // webpackBootstrap
 	            milliseconds: m.milliseconds()
 	        };
 	    }
-	
+
 	    function moment_valid__isValid () {
 	        return valid__isValid(this);
 	    }
-	
+
 	    function parsingFlags () {
 	        return extend({}, getParsingFlags(this));
 	    }
-	
+
 	    function invalidAt () {
 	        return getParsingFlags(this).overflow;
 	    }
-	
+
 	    addFormatToken(0, ['gg', 2], 0, function () {
 	        return this.weekYear() % 100;
 	    });
-	
+
 	    addFormatToken(0, ['GG', 2], 0, function () {
 	        return this.isoWeekYear() % 100;
 	    });
-	
+
 	    function addWeekYearFormatToken (token, getter) {
 	        addFormatToken(0, [token, token.length], 0, getter);
 	    }
-	
+
 	    addWeekYearFormatToken('gggg',     'weekYear');
 	    addWeekYearFormatToken('ggggg',    'weekYear');
 	    addWeekYearFormatToken('GGGG',  'isoWeekYear');
 	    addWeekYearFormatToken('GGGGG', 'isoWeekYear');
-	
+
 	    // ALIASES
-	
+
 	    addUnitAlias('weekYear', 'gg');
 	    addUnitAlias('isoWeekYear', 'GG');
-	
+
 	    // PARSING
-	
+
 	    addRegexToken('G',      matchSigned);
 	    addRegexToken('g',      matchSigned);
 	    addRegexToken('GG',     match1to2, match2);
@@ -13953,116 +14013,116 @@ return /******/ (function(modules) { // webpackBootstrap
 	    addRegexToken('gggg',   match1to4, match4);
 	    addRegexToken('GGGGG',  match1to6, match6);
 	    addRegexToken('ggggg',  match1to6, match6);
-	
+
 	    addWeekParseToken(['gggg', 'ggggg', 'GGGG', 'GGGGG'], function (input, week, config, token) {
 	        week[token.substr(0, 2)] = toInt(input);
 	    });
-	
+
 	    addWeekParseToken(['gg', 'GG'], function (input, week, config, token) {
 	        week[token] = utils_hooks__hooks.parseTwoDigitYear(input);
 	    });
-	
+
 	    // HELPERS
-	
+
 	    function weeksInYear(year, dow, doy) {
 	        return weekOfYear(local__createLocal([year, 11, 31 + dow - doy]), dow, doy).week;
 	    }
-	
+
 	    // MOMENTS
-	
+
 	    function getSetWeekYear (input) {
 	        var year = weekOfYear(this, this.localeData()._week.dow, this.localeData()._week.doy).year;
 	        return input == null ? year : this.add((input - year), 'y');
 	    }
-	
+
 	    function getSetISOWeekYear (input) {
 	        var year = weekOfYear(this, 1, 4).year;
 	        return input == null ? year : this.add((input - year), 'y');
 	    }
-	
+
 	    function getISOWeeksInYear () {
 	        return weeksInYear(this.year(), 1, 4);
 	    }
-	
+
 	    function getWeeksInYear () {
 	        var weekInfo = this.localeData()._week;
 	        return weeksInYear(this.year(), weekInfo.dow, weekInfo.doy);
 	    }
-	
+
 	    addFormatToken('Q', 0, 0, 'quarter');
-	
+
 	    // ALIASES
-	
+
 	    addUnitAlias('quarter', 'Q');
-	
+
 	    // PARSING
-	
+
 	    addRegexToken('Q', match1);
 	    addParseToken('Q', function (input, array) {
 	        array[MONTH] = (toInt(input) - 1) * 3;
 	    });
-	
+
 	    // MOMENTS
-	
+
 	    function getSetQuarter (input) {
 	        return input == null ? Math.ceil((this.month() + 1) / 3) : this.month((input - 1) * 3 + this.month() % 3);
 	    }
-	
+
 	    addFormatToken('D', ['DD', 2], 'Do', 'date');
-	
+
 	    // ALIASES
-	
+
 	    addUnitAlias('date', 'D');
-	
+
 	    // PARSING
-	
+
 	    addRegexToken('D',  match1to2);
 	    addRegexToken('DD', match1to2, match2);
 	    addRegexToken('Do', function (isStrict, locale) {
 	        return isStrict ? locale._ordinalParse : locale._ordinalParseLenient;
 	    });
-	
+
 	    addParseToken(['D', 'DD'], DATE);
 	    addParseToken('Do', function (input, array) {
 	        array[DATE] = toInt(input.match(match1to2)[0], 10);
 	    });
-	
+
 	    // MOMENTS
-	
+
 	    var getSetDayOfMonth = makeGetSet('Date', true);
-	
+
 	    addFormatToken('d', 0, 'do', 'day');
-	
+
 	    addFormatToken('dd', 0, 0, function (format) {
 	        return this.localeData().weekdaysMin(this, format);
 	    });
-	
+
 	    addFormatToken('ddd', 0, 0, function (format) {
 	        return this.localeData().weekdaysShort(this, format);
 	    });
-	
+
 	    addFormatToken('dddd', 0, 0, function (format) {
 	        return this.localeData().weekdays(this, format);
 	    });
-	
+
 	    addFormatToken('e', 0, 0, 'weekday');
 	    addFormatToken('E', 0, 0, 'isoWeekday');
-	
+
 	    // ALIASES
-	
+
 	    addUnitAlias('day', 'd');
 	    addUnitAlias('weekday', 'e');
 	    addUnitAlias('isoWeekday', 'E');
-	
+
 	    // PARSING
-	
+
 	    addRegexToken('d',    match1to2);
 	    addRegexToken('e',    match1to2);
 	    addRegexToken('E',    match1to2);
 	    addRegexToken('dd',   matchWord);
 	    addRegexToken('ddd',  matchWord);
 	    addRegexToken('dddd', matchWord);
-	
+
 	    addWeekParseToken(['dd', 'ddd', 'dddd'], function (input, week, config) {
 	        var weekday = config._locale.weekdaysParse(input);
 	        // if we didn't get a weekday name, mark the date as invalid
@@ -14072,52 +14132,52 @@ return /******/ (function(modules) { // webpackBootstrap
 	            getParsingFlags(config).invalidWeekday = input;
 	        }
 	    });
-	
+
 	    addWeekParseToken(['d', 'e', 'E'], function (input, week, config, token) {
 	        week[token] = toInt(input);
 	    });
-	
+
 	    // HELPERS
-	
+
 	    function parseWeekday(input, locale) {
 	        if (typeof input !== 'string') {
 	            return input;
 	        }
-	
+
 	        if (!isNaN(input)) {
 	            return parseInt(input, 10);
 	        }
-	
+
 	        input = locale.weekdaysParse(input);
 	        if (typeof input === 'number') {
 	            return input;
 	        }
-	
+
 	        return null;
 	    }
-	
+
 	    // LOCALES
-	
+
 	    var defaultLocaleWeekdays = 'Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday'.split('_');
 	    function localeWeekdays (m) {
 	        return this._weekdays[m.day()];
 	    }
-	
+
 	    var defaultLocaleWeekdaysShort = 'Sun_Mon_Tue_Wed_Thu_Fri_Sat'.split('_');
 	    function localeWeekdaysShort (m) {
 	        return this._weekdaysShort[m.day()];
 	    }
-	
+
 	    var defaultLocaleWeekdaysMin = 'Su_Mo_Tu_We_Th_Fr_Sa'.split('_');
 	    function localeWeekdaysMin (m) {
 	        return this._weekdaysMin[m.day()];
 	    }
-	
+
 	    function localeWeekdaysParse (weekdayName) {
 	        var i, mom, regex;
-	
+
 	        this._weekdaysParse = this._weekdaysParse || [];
-	
+
 	        for (i = 0; i < 7; i++) {
 	            // make the regex if we don't have it already
 	            if (!this._weekdaysParse[i]) {
@@ -14131,9 +14191,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        }
 	    }
-	
+
 	    // MOMENTS
-	
+
 	    function getSetDayOfWeek (input) {
 	        var day = this._isUTC ? this._d.getUTCDay() : this._d.getDay();
 	        if (input != null) {
@@ -14143,50 +14203,50 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return day;
 	        }
 	    }
-	
+
 	    function getSetLocaleDayOfWeek (input) {
 	        var weekday = (this.day() + 7 - this.localeData()._week.dow) % 7;
 	        return input == null ? weekday : this.add(input - weekday, 'd');
 	    }
-	
+
 	    function getSetISODayOfWeek (input) {
 	        // behaves the same as moment#day except
 	        // as a getter, returns 7 instead of 0 (1-7 range instead of 0-6)
 	        // as a setter, sunday should belong to the previous week.
 	        return input == null ? this.day() || 7 : this.day(this.day() % 7 ? input : input - 7);
 	    }
-	
+
 	    addFormatToken('H', ['HH', 2], 0, 'hour');
 	    addFormatToken('h', ['hh', 2], 0, function () {
 	        return this.hours() % 12 || 12;
 	    });
-	
+
 	    function meridiem (token, lowercase) {
 	        addFormatToken(token, 0, 0, function () {
 	            return this.localeData().meridiem(this.hours(), this.minutes(), lowercase);
 	        });
 	    }
-	
+
 	    meridiem('a', true);
 	    meridiem('A', false);
-	
+
 	    // ALIASES
-	
+
 	    addUnitAlias('hour', 'h');
-	
+
 	    // PARSING
-	
+
 	    function matchMeridiem (isStrict, locale) {
 	        return locale._meridiemParse;
 	    }
-	
+
 	    addRegexToken('a',  matchMeridiem);
 	    addRegexToken('A',  matchMeridiem);
 	    addRegexToken('H',  match1to2);
 	    addRegexToken('h',  match1to2);
 	    addRegexToken('HH', match1to2, match2);
 	    addRegexToken('hh', match1to2, match2);
-	
+
 	    addParseToken(['H', 'HH'], HOUR);
 	    addParseToken(['a', 'A'], function (input, array, config) {
 	        config._isPm = config._locale.isPM(input);
@@ -14196,15 +14256,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        array[HOUR] = toInt(input);
 	        getParsingFlags(config).bigHour = true;
 	    });
-	
+
 	    // LOCALES
-	
+
 	    function localeIsPM (input) {
 	        // IE8 Quirks Mode & IE7 Standards Mode do not allow accessing strings like arrays
 	        // Using charAt should be more compatible.
 	        return ((input + '').toLowerCase().charAt(0) === 'p');
 	    }
-	
+
 	    var defaultLocaleMeridiemParse = /[ap]\.?m?\.?/i;
 	    function localeMeridiem (hours, minutes, isLower) {
 	        if (hours > 11) {
@@ -14213,56 +14273,56 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return isLower ? 'am' : 'AM';
 	        }
 	    }
-	
-	
+
+
 	    // MOMENTS
-	
+
 	    // Setting the hour should keep the time, because the user explicitly
 	    // specified which hour he wants. So trying to maintain the same hour (in
 	    // a new timezone) makes sense. Adding/subtracting hours does not follow
 	    // this rule.
 	    var getSetHour = makeGetSet('Hours', true);
-	
+
 	    addFormatToken('m', ['mm', 2], 0, 'minute');
-	
+
 	    // ALIASES
-	
+
 	    addUnitAlias('minute', 'm');
-	
+
 	    // PARSING
-	
+
 	    addRegexToken('m',  match1to2);
 	    addRegexToken('mm', match1to2, match2);
 	    addParseToken(['m', 'mm'], MINUTE);
-	
+
 	    // MOMENTS
-	
+
 	    var getSetMinute = makeGetSet('Minutes', false);
-	
+
 	    addFormatToken('s', ['ss', 2], 0, 'second');
-	
+
 	    // ALIASES
-	
+
 	    addUnitAlias('second', 's');
-	
+
 	    // PARSING
-	
+
 	    addRegexToken('s',  match1to2);
 	    addRegexToken('ss', match1to2, match2);
 	    addParseToken(['s', 'ss'], SECOND);
-	
+
 	    // MOMENTS
-	
+
 	    var getSetSecond = makeGetSet('Seconds', false);
-	
+
 	    addFormatToken('S', 0, 0, function () {
 	        return ~~(this.millisecond() / 100);
 	    });
-	
+
 	    addFormatToken(0, ['SS', 2], 0, function () {
 	        return ~~(this.millisecond() / 10);
 	    });
-	
+
 	    addFormatToken(0, ['SSS', 3], 0, 'millisecond');
 	    addFormatToken(0, ['SSSS', 4], 0, function () {
 	        return this.millisecond() * 10;
@@ -14282,49 +14342,49 @@ return /******/ (function(modules) { // webpackBootstrap
 	    addFormatToken(0, ['SSSSSSSSS', 9], 0, function () {
 	        return this.millisecond() * 1000000;
 	    });
-	
-	
+
+
 	    // ALIASES
-	
+
 	    addUnitAlias('millisecond', 'ms');
-	
+
 	    // PARSING
-	
+
 	    addRegexToken('S',    match1to3, match1);
 	    addRegexToken('SS',   match1to3, match2);
 	    addRegexToken('SSS',  match1to3, match3);
-	
+
 	    var token;
 	    for (token = 'SSSS'; token.length <= 9; token += 'S') {
 	        addRegexToken(token, matchUnsigned);
 	    }
-	
+
 	    function parseMs(input, array) {
 	        array[MILLISECOND] = toInt(('0.' + input) * 1000);
 	    }
-	
+
 	    for (token = 'S'; token.length <= 9; token += 'S') {
 	        addParseToken(token, parseMs);
 	    }
 	    // MOMENTS
-	
+
 	    var getSetMillisecond = makeGetSet('Milliseconds', false);
-	
+
 	    addFormatToken('z',  0, 0, 'zoneAbbr');
 	    addFormatToken('zz', 0, 0, 'zoneName');
-	
+
 	    // MOMENTS
-	
+
 	    function getZoneAbbr () {
 	        return this._isUTC ? 'UTC' : '';
 	    }
-	
+
 	    function getZoneName () {
 	        return this._isUTC ? 'Coordinated Universal Time' : '';
 	    }
-	
+
 	    var momentPrototype__proto = Moment.prototype;
-	
+
 	    momentPrototype__proto.add          = add_subtract__add;
 	    momentPrototype__proto.calendar     = moment_calendar__calendar;
 	    momentPrototype__proto.clone        = clone;
@@ -14359,47 +14419,47 @@ return /******/ (function(modules) { // webpackBootstrap
 	    momentPrototype__proto.toString     = toString;
 	    momentPrototype__proto.unix         = unix;
 	    momentPrototype__proto.valueOf      = to_type__valueOf;
-	
+
 	    // Year
 	    momentPrototype__proto.year       = getSetYear;
 	    momentPrototype__proto.isLeapYear = getIsLeapYear;
-	
+
 	    // Week Year
 	    momentPrototype__proto.weekYear    = getSetWeekYear;
 	    momentPrototype__proto.isoWeekYear = getSetISOWeekYear;
-	
+
 	    // Quarter
 	    momentPrototype__proto.quarter = momentPrototype__proto.quarters = getSetQuarter;
-	
+
 	    // Month
 	    momentPrototype__proto.month       = getSetMonth;
 	    momentPrototype__proto.daysInMonth = getDaysInMonth;
-	
+
 	    // Week
 	    momentPrototype__proto.week           = momentPrototype__proto.weeks        = getSetWeek;
 	    momentPrototype__proto.isoWeek        = momentPrototype__proto.isoWeeks     = getSetISOWeek;
 	    momentPrototype__proto.weeksInYear    = getWeeksInYear;
 	    momentPrototype__proto.isoWeeksInYear = getISOWeeksInYear;
-	
+
 	    // Day
 	    momentPrototype__proto.date       = getSetDayOfMonth;
 	    momentPrototype__proto.day        = momentPrototype__proto.days             = getSetDayOfWeek;
 	    momentPrototype__proto.weekday    = getSetLocaleDayOfWeek;
 	    momentPrototype__proto.isoWeekday = getSetISODayOfWeek;
 	    momentPrototype__proto.dayOfYear  = getSetDayOfYear;
-	
+
 	    // Hour
 	    momentPrototype__proto.hour = momentPrototype__proto.hours = getSetHour;
-	
+
 	    // Minute
 	    momentPrototype__proto.minute = momentPrototype__proto.minutes = getSetMinute;
-	
+
 	    // Second
 	    momentPrototype__proto.second = momentPrototype__proto.seconds = getSetSecond;
-	
+
 	    // Millisecond
 	    momentPrototype__proto.millisecond = momentPrototype__proto.milliseconds = getSetMillisecond;
-	
+
 	    // Offset
 	    momentPrototype__proto.utcOffset            = getSetOffset;
 	    momentPrototype__proto.utc                  = setOffsetToUTC;
@@ -14412,27 +14472,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	    momentPrototype__proto.isUtcOffset          = isUtcOffset;
 	    momentPrototype__proto.isUtc                = isUtc;
 	    momentPrototype__proto.isUTC                = isUtc;
-	
+
 	    // Timezone
 	    momentPrototype__proto.zoneAbbr = getZoneAbbr;
 	    momentPrototype__proto.zoneName = getZoneName;
-	
+
 	    // Deprecations
 	    momentPrototype__proto.dates  = deprecate('dates accessor is deprecated. Use date instead.', getSetDayOfMonth);
 	    momentPrototype__proto.months = deprecate('months accessor is deprecated. Use month instead', getSetMonth);
 	    momentPrototype__proto.years  = deprecate('years accessor is deprecated. Use year instead', getSetYear);
 	    momentPrototype__proto.zone   = deprecate('moment().zone is deprecated, use moment().utcOffset instead. https://github.com/moment/moment/issues/1779', getSetZone);
-	
+
 	    var momentPrototype = momentPrototype__proto;
-	
+
 	    function moment__createUnix (input) {
 	        return local__createLocal(input * 1000);
 	    }
-	
+
 	    function moment__createInZone () {
 	        return local__createLocal.apply(null, arguments).parseZone();
 	    }
-	
+
 	    var defaultCalendar = {
 	        sameDay : '[Today at] LT',
 	        nextDay : '[Tomorrow at] LT',
@@ -14441,12 +14501,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        lastWeek : '[Last] dddd [at] LT',
 	        sameElse : 'L'
 	    };
-	
+
 	    function locale_calendar__calendar (key, mom, now) {
 	        var output = this._calendar[key];
 	        return typeof output === 'function' ? output.call(mom, now) : output;
 	    }
-	
+
 	    var defaultLongDateFormat = {
 	        LTS  : 'h:mm:ss A',
 	        LT   : 'h:mm A',
@@ -14455,39 +14515,39 @@ return /******/ (function(modules) { // webpackBootstrap
 	        LLL  : 'MMMM D, YYYY h:mm A',
 	        LLLL : 'dddd, MMMM D, YYYY h:mm A'
 	    };
-	
+
 	    function longDateFormat (key) {
 	        var format = this._longDateFormat[key],
 	            formatUpper = this._longDateFormat[key.toUpperCase()];
-	
+
 	        if (format || !formatUpper) {
 	            return format;
 	        }
-	
+
 	        this._longDateFormat[key] = formatUpper.replace(/MMMM|MM|DD|dddd/g, function (val) {
 	            return val.slice(1);
 	        });
-	
+
 	        return this._longDateFormat[key];
 	    }
-	
+
 	    var defaultInvalidDate = 'Invalid date';
-	
+
 	    function invalidDate () {
 	        return this._invalidDate;
 	    }
-	
+
 	    var defaultOrdinal = '%d';
 	    var defaultOrdinalParse = /\d{1,2}/;
-	
+
 	    function ordinal (number) {
 	        return this._ordinal.replace('%d', number);
 	    }
-	
+
 	    function preParsePostFormat (string) {
 	        return string;
 	    }
-	
+
 	    var defaultRelativeTime = {
 	        future : 'in %s',
 	        past   : '%s ago',
@@ -14503,19 +14563,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	        y  : 'a year',
 	        yy : '%d years'
 	    };
-	
+
 	    function relative__relativeTime (number, withoutSuffix, string, isFuture) {
 	        var output = this._relativeTime[string];
 	        return (typeof output === 'function') ?
 	            output(number, withoutSuffix, string, isFuture) :
 	            output.replace(/%d/i, number);
 	    }
-	
+
 	    function pastFuture (diff, output) {
 	        var format = this._relativeTime[diff > 0 ? 'future' : 'past'];
 	        return typeof format === 'function' ? format(output) : format.replace(/%s/i, output);
 	    }
-	
+
 	    function locale_set__set (config) {
 	        var prop, i;
 	        for (i in config) {
@@ -14530,9 +14590,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // number + (possibly) stuff coming from _ordinalParseLenient.
 	        this._ordinalParseLenient = new RegExp(this._ordinalParse.source + '|' + (/\d{1,2}/).source);
 	    }
-	
+
 	    var prototype__proto = Locale.prototype;
-	
+
 	    prototype__proto._calendar       = defaultCalendar;
 	    prototype__proto.calendar        = locale_calendar__calendar;
 	    prototype__proto._longDateFormat = defaultLongDateFormat;
@@ -14548,20 +14608,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	    prototype__proto.relativeTime    = relative__relativeTime;
 	    prototype__proto.pastFuture      = pastFuture;
 	    prototype__proto.set             = locale_set__set;
-	
+
 	    // Month
 	    prototype__proto.months       =        localeMonths;
 	    prototype__proto._months      = defaultLocaleMonths;
 	    prototype__proto.monthsShort  =        localeMonthsShort;
 	    prototype__proto._monthsShort = defaultLocaleMonthsShort;
 	    prototype__proto.monthsParse  =        localeMonthsParse;
-	
+
 	    // Week
 	    prototype__proto.week = localeWeek;
 	    prototype__proto._week = defaultLocaleWeek;
 	    prototype__proto.firstDayOfYear = localeFirstDayOfYear;
 	    prototype__proto.firstDayOfWeek = localeFirstDayOfWeek;
-	
+
 	    // Day of Week
 	    prototype__proto.weekdays       =        localeWeekdays;
 	    prototype__proto._weekdays      = defaultLocaleWeekdays;
@@ -14570,30 +14630,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	    prototype__proto.weekdaysShort  =        localeWeekdaysShort;
 	    prototype__proto._weekdaysShort = defaultLocaleWeekdaysShort;
 	    prototype__proto.weekdaysParse  =        localeWeekdaysParse;
-	
+
 	    // Hours
 	    prototype__proto.isPM = localeIsPM;
 	    prototype__proto._meridiemParse = defaultLocaleMeridiemParse;
 	    prototype__proto.meridiem = localeMeridiem;
-	
+
 	    function lists__get (format, index, field, setter) {
 	        var locale = locale_locales__getLocale();
 	        var utc = create_utc__createUTC().set(setter, index);
 	        return locale[field](utc, format);
 	    }
-	
+
 	    function list (format, index, field, count, setter) {
 	        if (typeof format === 'number') {
 	            index = format;
 	            format = undefined;
 	        }
-	
+
 	        format = format || '';
-	
+
 	        if (index != null) {
 	            return lists__get(format, index, field, setter);
 	        }
-	
+
 	        var i;
 	        var out = [];
 	        for (i = 0; i < count; i++) {
@@ -14601,27 +14661,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return out;
 	    }
-	
+
 	    function lists__listMonths (format, index) {
 	        return list(format, index, 'months', 12, 'month');
 	    }
-	
+
 	    function lists__listMonthsShort (format, index) {
 	        return list(format, index, 'monthsShort', 12, 'month');
 	    }
-	
+
 	    function lists__listWeekdays (format, index) {
 	        return list(format, index, 'weekdays', 7, 'day');
 	    }
-	
+
 	    function lists__listWeekdaysShort (format, index) {
 	        return list(format, index, 'weekdaysShort', 7, 'day');
 	    }
-	
+
 	    function lists__listWeekdaysMin (format, index) {
 	        return list(format, index, 'weekdaysMin', 7, 'day');
 	    }
-	
+
 	    locale_locales__getSetGlobalLocale('en', {
 	        ordinalParse: /\d{1,2}(th|st|nd|rd)/,
 	        ordinal : function (number) {
@@ -14633,50 +14693,50 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return number + output;
 	        }
 	    });
-	
+
 	    // Side effect imports
 	    utils_hooks__hooks.lang = deprecate('moment.lang is deprecated. Use moment.locale instead.', locale_locales__getSetGlobalLocale);
 	    utils_hooks__hooks.langData = deprecate('moment.langData is deprecated. Use moment.localeData instead.', locale_locales__getLocale);
-	
+
 	    var mathAbs = Math.abs;
-	
+
 	    function duration_abs__abs () {
 	        var data           = this._data;
-	
+
 	        this._milliseconds = mathAbs(this._milliseconds);
 	        this._days         = mathAbs(this._days);
 	        this._months       = mathAbs(this._months);
-	
+
 	        data.milliseconds  = mathAbs(data.milliseconds);
 	        data.seconds       = mathAbs(data.seconds);
 	        data.minutes       = mathAbs(data.minutes);
 	        data.hours         = mathAbs(data.hours);
 	        data.months        = mathAbs(data.months);
 	        data.years         = mathAbs(data.years);
-	
+
 	        return this;
 	    }
-	
+
 	    function duration_add_subtract__addSubtract (duration, input, value, direction) {
 	        var other = create__createDuration(input, value);
-	
+
 	        duration._milliseconds += direction * other._milliseconds;
 	        duration._days         += direction * other._days;
 	        duration._months       += direction * other._months;
-	
+
 	        return duration._bubble();
 	    }
-	
+
 	    // supports only 2.0-style add(1, 's') or add(duration)
 	    function duration_add_subtract__add (input, value) {
 	        return duration_add_subtract__addSubtract(this, input, value, 1);
 	    }
-	
+
 	    // supports only 2.0-style subtract(1, 's') or subtract(duration)
 	    function duration_add_subtract__subtract (input, value) {
 	        return duration_add_subtract__addSubtract(this, input, value, -1);
 	    }
-	
+
 	    function absCeil (number) {
 	        if (number < 0) {
 	            return Math.floor(number);
@@ -14684,14 +14744,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return Math.ceil(number);
 	        }
 	    }
-	
+
 	    function bubble () {
 	        var milliseconds = this._milliseconds;
 	        var days         = this._days;
 	        var months       = this._months;
 	        var data         = this._data;
 	        var seconds, minutes, hours, years, monthsFromDays;
-	
+
 	        // if we have a mix of positive and negative values, bubble down first
 	        // check: https://github.com/moment/moment/issues/2166
 	        if (!((milliseconds >= 0 && days >= 0 && months >= 0) ||
@@ -14700,56 +14760,56 @@ return /******/ (function(modules) { // webpackBootstrap
 	            days = 0;
 	            months = 0;
 	        }
-	
+
 	        // The following code bubbles up values, see the tests for
 	        // examples of what that means.
 	        data.milliseconds = milliseconds % 1000;
-	
+
 	        seconds           = absFloor(milliseconds / 1000);
 	        data.seconds      = seconds % 60;
-	
+
 	        minutes           = absFloor(seconds / 60);
 	        data.minutes      = minutes % 60;
-	
+
 	        hours             = absFloor(minutes / 60);
 	        data.hours        = hours % 24;
-	
+
 	        days += absFloor(hours / 24);
-	
+
 	        // convert days to months
 	        monthsFromDays = absFloor(daysToMonths(days));
 	        months += monthsFromDays;
 	        days -= absCeil(monthsToDays(monthsFromDays));
-	
+
 	        // 12 months -> 1 year
 	        years = absFloor(months / 12);
 	        months %= 12;
-	
+
 	        data.days   = days;
 	        data.months = months;
 	        data.years  = years;
-	
+
 	        return this;
 	    }
-	
+
 	    function daysToMonths (days) {
 	        // 400 years have 146097 days (taking into account leap year rules)
 	        // 400 years have 12 months === 4800
 	        return days * 4800 / 146097;
 	    }
-	
+
 	    function monthsToDays (months) {
 	        // the reverse of daysToMonths
 	        return months * 146097 / 4800;
 	    }
-	
+
 	    function as (units) {
 	        var days;
 	        var months;
 	        var milliseconds = this._milliseconds;
-	
+
 	        units = normalizeUnits(units);
-	
+
 	        if (units === 'month' || units === 'year') {
 	            days   = this._days   + milliseconds / 864e5;
 	            months = this._months + daysToMonths(days);
@@ -14769,7 +14829,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        }
 	    }
-	
+
 	    // TODO: Use this.as('ms')?
 	    function duration_as__valueOf () {
 	        return (
@@ -14779,13 +14839,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	            toInt(this._months / 12) * 31536e6
 	        );
 	    }
-	
+
 	    function makeAs (alias) {
 	        return function () {
 	            return this.as(alias);
 	        };
 	    }
-	
+
 	    var asMilliseconds = makeAs('ms');
 	    var asSeconds      = makeAs('s');
 	    var asMinutes      = makeAs('m');
@@ -14794,18 +14854,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var asWeeks        = makeAs('w');
 	    var asMonths       = makeAs('M');
 	    var asYears        = makeAs('y');
-	
+
 	    function duration_get__get (units) {
 	        units = normalizeUnits(units);
 	        return this[units + 's']();
 	    }
-	
+
 	    function makeGetter(name) {
 	        return function () {
 	            return this._data[name];
 	        };
 	    }
-	
+
 	    var milliseconds = makeGetter('milliseconds');
 	    var seconds      = makeGetter('seconds');
 	    var minutes      = makeGetter('minutes');
@@ -14813,11 +14873,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var days         = makeGetter('days');
 	    var months       = makeGetter('months');
 	    var years        = makeGetter('years');
-	
+
 	    function weeks () {
 	        return absFloor(this.days() / 7);
 	    }
-	
+
 	    var round = Math.round;
 	    var thresholds = {
 	        s: 45,  // seconds to minute
@@ -14826,12 +14886,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        d: 26,  // days to month
 	        M: 11   // months to year
 	    };
-	
+
 	    // helper function for moment.fn.from, moment.fn.fromNow, and moment.duration.fn.humanize
 	    function substituteTimeAgo(string, number, withoutSuffix, isFuture, locale) {
 	        return locale.relativeTime(number || 1, !!withoutSuffix, string, isFuture);
 	    }
-	
+
 	    function duration_humanize__relativeTime (posNegDuration, withoutSuffix, locale) {
 	        var duration = create__createDuration(posNegDuration).abs();
 	        var seconds  = round(duration.as('s'));
@@ -14840,7 +14900,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var days     = round(duration.as('d'));
 	        var months   = round(duration.as('M'));
 	        var years    = round(duration.as('y'));
-	
+
 	        var a = seconds < thresholds.s && ['s', seconds]  ||
 	                minutes === 1          && ['m']           ||
 	                minutes < thresholds.m && ['mm', minutes] ||
@@ -14851,13 +14911,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                months  === 1          && ['M']           ||
 	                months  < thresholds.M && ['MM', months]  ||
 	                years   === 1          && ['y']           || ['yy', years];
-	
+
 	        a[2] = withoutSuffix;
 	        a[3] = +posNegDuration > 0;
 	        a[4] = locale;
 	        return substituteTimeAgo.apply(null, a);
 	    }
-	
+
 	    // This function allows you to set a threshold for relative time strings
 	    function duration_humanize__getSetRelativeTimeThreshold (threshold, limit) {
 	        if (thresholds[threshold] === undefined) {
@@ -14869,20 +14929,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	        thresholds[threshold] = limit;
 	        return true;
 	    }
-	
+
 	    function humanize (withSuffix) {
 	        var locale = this.localeData();
 	        var output = duration_humanize__relativeTime(this, !withSuffix, locale);
-	
+
 	        if (withSuffix) {
 	            output = locale.pastFuture(+this, output);
 	        }
-	
+
 	        return locale.postformat(output);
 	    }
-	
+
 	    var iso_string__abs = Math.abs;
-	
+
 	    function iso_string__toISOString() {
 	        // for ISO strings we do not use the normal bubbling rules:
 	        //  * milliseconds bubble up until they become hours
@@ -14895,18 +14955,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var days         = iso_string__abs(this._days);
 	        var months       = iso_string__abs(this._months);
 	        var minutes, hours, years;
-	
+
 	        // 3600 seconds -> 60 minutes -> 1 hour
 	        minutes           = absFloor(seconds / 60);
 	        hours             = absFloor(minutes / 60);
 	        seconds %= 60;
 	        minutes %= 60;
-	
+
 	        // 12 months -> 1 year
 	        years  = absFloor(months / 12);
 	        months %= 12;
-	
-	
+
+
 	        // inspired by https://github.com/dordille/moment-isoduration/blob/master/moment.isoduration.js
 	        var Y = years;
 	        var M = months;
@@ -14915,13 +14975,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var m = minutes;
 	        var s = seconds;
 	        var total = this.asSeconds();
-	
+
 	        if (!total) {
 	            // this is the same as C#'s (Noda) and python (isodate)...
 	            // but not other JS (goog.date)
 	            return 'P0D';
 	        }
-	
+
 	        return (total < 0 ? '-' : '') +
 	            'P' +
 	            (Y ? Y + 'Y' : '') +
@@ -14932,9 +14992,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            (m ? m + 'M' : '') +
 	            (s ? s + 'S' : '');
 	    }
-	
+
 	    var duration_prototype__proto = Duration.prototype;
-	
+
 	    duration_prototype__proto.abs            = duration_abs__abs;
 	    duration_prototype__proto.add            = duration_add_subtract__add;
 	    duration_prototype__proto.subtract       = duration_add_subtract__subtract;
@@ -14964,18 +15024,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	    duration_prototype__proto.toJSON         = iso_string__toISOString;
 	    duration_prototype__proto.locale         = locale;
 	    duration_prototype__proto.localeData     = localeData;
-	
+
 	    // Deprecations
 	    duration_prototype__proto.toIsoString = deprecate('toIsoString() is deprecated. Please use toISOString() instead (notice the capitals)', iso_string__toISOString);
 	    duration_prototype__proto.lang = lang;
-	
+
 	    // Side effect imports
-	
+
 	    addFormatToken('X', 0, 0, 'unix');
 	    addFormatToken('x', 0, 0, 'valueOf');
-	
+
 	    // PARSING
-	
+
 	    addRegexToken('x', matchSigned);
 	    addRegexToken('X', matchTimestamp);
 	    addParseToken('X', function (input, array, config) {
@@ -14984,14 +15044,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    addParseToken('x', function (input, array, config) {
 	        config._d = new Date(toInt(input));
 	    });
-	
+
 	    // Side effect imports
-	
-	
+
+
 	    utils_hooks__hooks.version = '2.10.6';
-	
+
 	    setHookCallback(local__createLocal);
-	
+
 	    utils_hooks__hooks.fn                    = momentPrototype;
 	    utils_hooks__hooks.min                   = min;
 	    utils_hooks__hooks.max                   = max;
@@ -15013,11 +15073,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    utils_hooks__hooks.weekdaysShort         = lists__listWeekdaysShort;
 	    utils_hooks__hooks.normalizeUnits        = normalizeUnits;
 	    utils_hooks__hooks.relativeTimeThreshold = duration_humanize__getSetRelativeTimeThreshold;
-	
+
 	    var _moment = utils_hooks__hooks;
-	
+
 	    return _moment;
-	
+
 	}));
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)(module)))
 
@@ -15066,14 +15126,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	//! moment.js locale configuration
 	//! locale : great britain english (en-gb)
 	//! author : Chris Gedrim : https://github.com/chrisgedrim
-	
+
 	(function (global, factory) {
 	    true ? factory(__webpack_require__(3)) :
 	   typeof define === 'function' && define.amd ? define(['moment'], factory) :
 	   factory(global.moment)
 	}(this, function (moment) { 'use strict';
-	
-	
+
+
 	    var en_gb = moment.defineLocale('en-gb', {
 	        months : 'January_February_March_April_May_June_July_August_September_October_November_December'.split('_'),
 	        monthsShort : 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_'),
@@ -15125,9 +15185,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-	
+
 	    return en_gb;
-	
+
 	}));
 
 /***/ },
@@ -15135,7 +15195,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	/*!
 	 * Timekit JavaScript SDK
 	 * Version: 1.1.0
@@ -15148,9 +15208,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	var axios = __webpack_require__(8);
 	var base64 = __webpack_require__(27);
 	var humps = __webpack_require__(28);
-	
+
 	function Timekit() {
-	
+
 	  /**
 	   * Auth variables for login gated API methods
 	   * @type {String}
@@ -15158,7 +15218,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var userEmail;
 	  var userApiToken;
 	  var includes;
-	
+
 	  /**
 	   * Default config
 	   * @type {Object}
@@ -15169,17 +15229,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    apiVersion: 'v2',
 	    convertResponseToCamelcase: false
 	  };
-	
+
 	  /**
 	   * Generate base64 string for basic auth purposes
 	   * @type {Function}
 	   * @return {String}
 	   */
-	
+
 	  var encodeAuthHeader = function() {
 	    return base64.encode(userEmail + ':' + userApiToken);
 	  };
-	
+
 	  /**
 	   * Build absolute URL for API call
 	   * @type {Function}
@@ -15188,41 +15248,41 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var buildUrl = function(endpoint) {
 	    return config.apiBaseUrl + config.apiVersion + endpoint;
 	  };
-	
+
 	  /**
 	   * Root Object that holds methods to expose for API consumption
 	   * @type {Object}
 	   */
 	  var TK = {};
-	
-	
+
+
 	  /**
 	   * Prepare and make HTTP request to API
 	   * @type {Object}
 	   * @return {Promise}
 	   */
 	  TK.makeRequest = function(args) {
-	
+
 	    // construct URL with base, version and endpoint
 	    args.url = buildUrl(args.url);
-	
+
 	    // add http headers if applicable
 	    args.headers = { 'Timekit-App': config.app };
 	    if (userEmail && userApiToken) { args.headers.Authorization = 'Basic ' + encodeAuthHeader(); }
 	    if (config.inputTimestampFormat) { args.headers['Timekit-InputTimestampFormat'] = config.inputTimestampFormat; }
 	    if (config.outputTimestampFormat) { args.headers['Timekit-OutputTimestampFormat'] = config.outputTimestampFormat; }
 	    if (config.timezone) { args.headers['Timekit-Timezone'] = config.timezone; }
-	
+
 	    // add dynamic includes if applicable
 	    if (includes && includes.length > 0) {
 	      if (args.params === undefined) { args.params = {}; }
 	      args.params.include = includes.join();
 	      includes = [];
 	    }
-	
+
 	    // decamelize keys in data objects
 	    if (args.data) { args.data = humps.decamelizeKeys(args.data); }
-	
+
 	    // register response interceptor for data manipulation
 	    var interceptor = axios.interceptors.response.use(function (response) {
 	      if(response.data && response.data.data) {
@@ -15235,16 +15295,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, function (error) {
 	      return Promise.reject(error);
 	    });
-	
+
 	    // execute request!
 	    var request = axios(args);
-	
+
 	    // deregister response interceptor
 	    axios.interceptors.response.eject(interceptor);
-	
+
 	    return request;
 	  };
-	
+
 	  /**
 	   * Overwrite default config with supplied settings
 	   * @type {Function}
@@ -15254,7 +15314,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    for (var attr in custom) { config[attr] = custom[attr]; }
 	    return config;
 	  };
-	
+
 	  /**
 	   * Returns the current config
 	   * @type {Function}
@@ -15263,7 +15323,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  TK.getConfig = function() {
 	    return config;
 	  };
-	
+
 	  /**
 	   * Set the active user manuallt (happens automatically on timekit.auth())
 	   * @type {Function}
@@ -15272,7 +15332,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    userEmail = email;
 	    userApiToken = apiToken;
 	  };
-	
+
 	  /**
 	   * Returns the current active user
 	   * @type {Function}
@@ -15284,7 +15344,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      apiToken: userApiToken
 	    };
 	  };
-	
+
 	  /**
 	   * Add supplied dynamic includes to the next request (fluent/chainable return)
 	   * @type {Function}
@@ -15294,610 +15354,646 @@ return /******/ (function(modules) { // webpackBootstrap
 	    includes = Array.prototype.slice.call(arguments);
 	    return this;
 	  };
-	
+
 	  /**
 	   * Get user's connected accounts
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.getAccounts = function() {
-	
+
 	    return TK.makeRequest({
 	      url: '/accounts',
 	      method: 'get'
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Redirect to the Google signup/login page
 	   * @type {Function}
 	   * @return {String}
 	   */
 	  TK.accountGoogleSignup = function(data, shouldAutoRedirect) {
-	
+
 	    var url = buildUrl('/accounts/google/signup') + '?Timekit-App=' + config.app + (data && data.callback ? '&callback=' + data.callback : '');
-	
+
 	    if(shouldAutoRedirect && window) {
 	      window.location.href = url;
 	    } else {
 	      return url;
 	    }
-	
+
 	  };
-	
+
 	  /**
 	   * Get user's Google calendars
 	   * @type {Function
 	   * @return {Promise}
 	   */
 	  TK.getAccountGoogleCalendars = function() {
-	
+
 	    return TK.makeRequest({
 	      url: '/accounts/google/calendars',
 	      method: 'get'
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Initiate a server sync on all the users accounts
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.accountSync = function() {
-	
+
 	    return TK.makeRequest({
 	      url: '/accounts/sync',
 	      method: 'get'
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Authenticate a user to retrive API token for future calls
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.auth = function(data) {
-	
+
 	    var r = TK.makeRequest({
 	      url: '/auth',
 	      method: 'post',
 	      data: data
 	    });
-	
+
 	    r.then(function(response) {
 	      TK.setUser(response.data.email, response.data.api_token);
 	    }).catch(function(){
 	      TK.setUser('','');
 	    });
-	
+
 	    return r;
-	
+
 	  };
-	
+
 	  /**
 	   * Get list of apps
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.getApps = function() {
-	
+
 	    return TK.makeRequest({
 	      url: '/apps',
 	      method: 'get'
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Get settings for a specific app
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.getApp = function(data) {
-	
+
 	    return TK.makeRequest({
 	      url: '/apps/' + data.slug,
 	      method: 'get'
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Create a new Timekit app
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.createApp = function(data) {
-	
+
 	    return TK.makeRequest({
 	      url: '/apps',
 	      method: 'post',
 	      data: data
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Update settings for a specific app
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.updateApp = function(data) {
-	
+
 	    var slug = data.slug;
 	    delete data.slug;
-	
+
 	    return TK.makeRequest({
 	      url: '/apps/' + slug,
 	      method: 'put',
 	      data: data
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Delete an app
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.deleteApp = function(data) {
-	
+
 	    return TK.makeRequest({
 	      url: '/apps/' + data.slug,
 	      method: 'delete'
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Get users calendars that are present on Timekit (synced from providers)
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.getCalendars = function() {
-	
+
 	    return TK.makeRequest({
 	      url: '/calendars',
 	      method: 'get'
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Get users calendars that are present on Timekit (synced from providers)
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.getCalendar = function(data) {
-	
+
 	    return TK.makeRequest({
 	      url: '/calendars/' + data.id,
 	      method: 'get'
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Create a new calendar for current user
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.createCalendar = function(data) {
-	
+
 	    return TK.makeRequest({
 	      url: '/calendars/',
 	      method: 'post',
 	      data: data
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Delete a calendar
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.deleteCalendar = function(data) {
-	
+
 	    return TK.makeRequest({
 	      url: '/calendars/' + data.id,
 	      method: 'delete'
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Get users contacts that are present on Timekit (synced from providers)
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.getContacts = function() {
-	
+
 	    return TK.makeRequest({
 	      url: '/contacts/',
 	      method: 'get'
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Get all user's events
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.getEvents = function(data) {
-	
+
 	    return TK.makeRequest({
 	      url: '/events',
 	      method: 'get',
 	      params: data
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Get a user's event by ID
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.getEvent = function(data) {
-	
+
 	    return TK.makeRequest({
 	      url: '/events/' + data.id,
 	      method: 'get'
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Create a new event
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.createEvent = function(data) {
-	
+
 	    return TK.makeRequest({
 	      url: '/events',
 	      method: 'post',
 	      data: data
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Delete a user's event by ID
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.deleteEvent = function(data) {
-	
+
 	    return TK.makeRequest({
 	      url: '/events/' + data.id,
 	      method: 'delete'
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Get a user's anonymized availability (other user's on Timekit can be queryied by supplying their email)
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.getAvailability = function(data) {
-	
+
 	    return TK.makeRequest({
 	      url: '/events/availability',
 	      method: 'get',
 	      params: data
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Find mutual availability across multiple users/calendars
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.findTime = function(data) {
-	
+
 	    return TK.makeRequest({
 	      url: '/findtime',
 	      method: 'post',
 	      data: data
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Find mutual availability across multiple users/calendars
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.findTimeBulk = function(data) {
-	
+
 	    return TK.makeRequest({
 	      url: '/findtime/bulk',
 	      method: 'post',
 	      data: data
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Get a user's meetings
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.getMeetings = function() {
-	
+
 	    return TK.makeRequest({
 	      url: '/meetings',
 	      method: 'get'
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Get a user's specific meeting
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.getMeeting = function(data) {
-	
+
 	    return TK.makeRequest({
 	      url: '/meetings/' + data.id,
 	      method: 'get'
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Get a user's specific meeting
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.createMeeting = function(data) {
-	
+
 	    return TK.makeRequest({
 	      url: '/meetings',
 	      method: 'post',
 	      data: data
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Get a user's specific meeting
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.updateMeeting = function(data) {
-	
+
 	    var id = data.id;
 	    delete data.id;
-	
+
 	    return TK.makeRequest({
 	      url: '/meetings/' + id,
 	      method: 'put',
 	      data: data
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Set availability (true/faalse) on a meeting's suggestion
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.setMeetingAvailability = function(data) {
-	
+
 	    return TK.makeRequest({
 	      url: '/meetings/availability',
 	      method: 'post',
 	      data: data
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Book/finalize the meeting, sending out meeting invites to all participants
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.bookMeeting = function(data) {
-	
+
 	    return TK.makeRequest({
 	      url: '/meetings/book',
 	      method: 'post',
 	      data: data
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Invite users/emails to a meeting, sending out invite emails to the supplied addresses
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.inviteToMeeting = function(data) {
-	
+
 	    var id = data.id;
 	    delete data.id;
-	
+
 	    return TK.makeRequest({
 	      url: '/meetings/' + id + '/invite',
 	      method: 'post',
 	      data: data
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Create a new user with the given properties
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.createUser = function(data) {
-	
+
 	    return TK.makeRequest({
 	      url: '/users',
 	      method: 'post',
 	      data: data
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Fetch current user data from server
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.getUserInfo = function() {
-	
+
 	    return TK.makeRequest({
 	      url: '/users/me',
 	      method: 'get'
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Fetch current user data from server
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.updateUser = function(data) {
-	
+
 	    return TK.makeRequest({
 	      url: '/users/me',
 	      method: 'put',
 	      data: data
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Reset password for a user
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.resetUserPassword = function(data) {
-	
+
 	    return TK.makeRequest({
 	      url: '/users/resetpassword',
 	      method: 'post',
 	      data: data
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Get a specific users' timezone
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.getUserTimezone = function(data) {
-	
+
 	    return TK.makeRequest({
 	      url: '/users/timezone/' + data.email,
 	      method: 'get'
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Get a user property by key
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.getUserProperties = function() {
-	
+
 	    return TK.makeRequest({
 	      url: '/properties',
 	      method: 'get'
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Get a user property by key
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.getUserProperty = function(data) {
-	
+
 	    return TK.makeRequest({
 	      url: '/properties/' + data.key,
 	      method: 'get'
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Set or update user properties
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.setUserProperties = function(data) {
-	
+
 	    return TK.makeRequest({
 	      url: '/properties',
 	      method: 'put',
 	      data: data
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Get all user auth credentials
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.getCredentials = function() {
-	
+
 	    return TK.makeRequest({
 	      url: '/credentials',
 	      method: 'get'
 	    });
-	
+
 	  };
-	
-	    /**
+
+	  /**
 	   * Create a new pair of auth credentials
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.createCredential = function(data) {
-	
+
 	    return TK.makeRequest({
 	      url: '/credentials',
 	      method: 'post',
 	      data: data
 	    });
-	
+
 	  };
-	
+
 	  /**
 	   * Delete a pair of auth credentials
 	   * @type {Function}
 	   * @return {Promise}
 	   */
 	  TK.deleteCredential = function(data) {
-	
+
 	    return TK.makeRequest({
 	      url: '/credentials/' + data.id,
 	      method: 'delete'
 	    });
-	
+
 	  };
-	
+
+	  /**
+	   * Create a new booking
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.createBooking = function(data) {
+
+	    return TK.makeRequest({
+	      url: '/bookings',
+	      method: 'post',
+	      data: data
+	    });
+
+	  };
+
+	  /**
+	   * Update an existing booking
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.updateBooking = function(data) {
+
+	    var id = data.id;
+	    delete data.id;
+
+	    var action = data.action;
+	    delete data.action;
+
+	    return TK.makeRequest({
+	      url: '/bookings/' + id + '/' + action,
+	      method: 'put',
+	      data: data
+	    });
+
+	  };
+
 	  return TK;
-	
+
 	}
-	
+
 	module.exports = new Timekit();
 
 
@@ -15912,13 +16008,13 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	var defaults = __webpack_require__(10);
 	var utils = __webpack_require__(11);
 	var deprecatedMethod = __webpack_require__(12);
 	var dispatchRequest = __webpack_require__(13);
 	var InterceptorManager = __webpack_require__(21);
-	
+
 	// Polyfill ES6 Promise if needed
 	(function () {
 	  // webpack is being used to set es6-promise to the native Promise
@@ -15928,7 +16024,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    P.polyfill();
 	  }
 	})();
-	
+
 	var axios = module.exports = function axios(config) {
 	  config = utils.merge({
 	    method: 'get',
@@ -15936,64 +16032,64 @@ return /******/ (function(modules) { // webpackBootstrap
 	    transformRequest: defaults.transformRequest,
 	    transformResponse: defaults.transformResponse
 	  }, config);
-	
+
 	  // Don't allow overriding defaults.withCredentials
 	  config.withCredentials = config.withCredentials || defaults.withCredentials;
-	
+
 	  // Hook up interceptors middleware
 	  var chain = [dispatchRequest, undefined];
 	  var promise = Promise.resolve(config);
-	
+
 	  axios.interceptors.request.forEach(function (interceptor) {
 	    chain.unshift(interceptor.fulfilled, interceptor.rejected);
 	  });
-	
+
 	  axios.interceptors.response.forEach(function (interceptor) {
 	    chain.push(interceptor.fulfilled, interceptor.rejected);
 	  });
-	
+
 	  while (chain.length) {
 	    promise = promise.then(chain.shift(), chain.shift());
 	  }
-	
+
 	  // Provide alias for success
 	  promise.success = function success(fn) {
 	    deprecatedMethod('success', 'then', 'https://github.com/mzabriskie/axios/blob/master/README.md#response-api');
-	
+
 	    promise.then(function(response) {
 	      fn(response.data, response.status, response.headers, response.config);
 	    });
 	    return promise;
 	  };
-	
+
 	  // Provide alias for error
 	  promise.error = function error(fn) {
 	    deprecatedMethod('error', 'catch', 'https://github.com/mzabriskie/axios/blob/master/README.md#response-api');
-	
+
 	    promise.then(null, function(response) {
 	      fn(response.data, response.status, response.headers, response.config);
 	    });
 	    return promise;
 	  };
-	
+
 	  return promise;
 	};
-	
+
 	// Expose defaults
 	axios.defaults = defaults;
-	
+
 	// Expose all/spread
 	axios.all = function (promises) {
 	  return Promise.all(promises);
 	};
 	axios.spread = __webpack_require__(26);
-	
+
 	// Expose interceptors
 	axios.interceptors = {
 	  request: new InterceptorManager(),
 	  response: new InterceptorManager()
 	};
-	
+
 	// Provide aliases for supported request methods
 	(function () {
 	  function createShortMethods() {
@@ -16006,7 +16102,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      };
 	    });
 	  }
-	
+
 	  function createShortMethodsWithData() {
 	    utils.forEach(arguments, function (method) {
 	      axios[method] = function (url, data, config) {
@@ -16018,7 +16114,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      };
 	    });
 	  }
-	
+
 	  createShortMethods('delete', 'get', 'head');
 	  createShortMethodsWithData('post', 'put', 'patch');
 	})();
@@ -16029,14 +16125,14 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	var utils = __webpack_require__(11);
-	
+
 	var PROTECTION_PREFIX = /^\)\]\}',?\n/;
 	var DEFAULT_CONTENT_TYPE = {
 	  'Content-Type': 'application/x-www-form-urlencoded'
 	};
-	
+
 	module.exports = {
 	  transformRequest: [function (data, headers) {
 	    if(utils.isFormData(data)) {
@@ -16057,7 +16153,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    return data;
 	  }],
-	
+
 	  transformResponse: [function (data) {
 	    if (typeof data === 'string') {
 	      data = data.replace(PROTECTION_PREFIX, '');
@@ -16067,7 +16163,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    return data;
 	  }],
-	
+
 	  headers: {
 	    common: {
 	      'Accept': 'application/json, text/plain, */*'
@@ -16076,7 +16172,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    post: utils.merge(DEFAULT_CONTENT_TYPE),
 	    put: utils.merge(DEFAULT_CONTENT_TYPE)
 	  },
-	
+
 	  xsrfCookieName: 'XSRF-TOKEN',
 	  xsrfHeaderName: 'X-XSRF-TOKEN'
 	};
@@ -16087,13 +16183,13 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports) {
 
 	'use strict';
-	
+
 	/*global toString:true*/
-	
+
 	// utils is a library of generic helper functions non-specific to axios
-	
+
 	var toString = Object.prototype.toString;
-	
+
 	/**
 	 * Determine if a value is an Array
 	 *
@@ -16103,7 +16199,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	function isArray(val) {
 	  return toString.call(val) === '[object Array]';
 	}
-	
+
 	/**
 	 * Determine if a value is an ArrayBuffer
 	 *
@@ -16113,7 +16209,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	function isArrayBuffer(val) {
 	  return toString.call(val) === '[object ArrayBuffer]';
 	}
-	
+
 	/**
 	 * Determine if a value is a FormData
 	 *
@@ -16123,7 +16219,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	function isFormData(val) {
 	  return toString.call(val) === '[object FormData]';
 	}
-	
+
 	/**
 	 * Determine if a value is a view on an ArrayBuffer
 	 *
@@ -16137,7 +16233,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return (val) && (val.buffer) && (val.buffer instanceof ArrayBuffer);
 	  }
 	}
-	
+
 	/**
 	 * Determine if a value is a String
 	 *
@@ -16147,7 +16243,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	function isString(val) {
 	  return typeof val === 'string';
 	}
-	
+
 	/**
 	 * Determine if a value is a Number
 	 *
@@ -16157,7 +16253,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	function isNumber(val) {
 	  return typeof val === 'number';
 	}
-	
+
 	/**
 	 * Determine if a value is undefined
 	 *
@@ -16167,7 +16263,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	function isUndefined(val) {
 	  return typeof val === 'undefined';
 	}
-	
+
 	/**
 	 * Determine if a value is an Object
 	 *
@@ -16177,7 +16273,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	function isObject(val) {
 	  return val !== null && typeof val === 'object';
 	}
-	
+
 	/**
 	 * Determine if a value is a Date
 	 *
@@ -16187,7 +16283,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	function isDate(val) {
 	  return toString.call(val) === '[object Date]';
 	}
-	
+
 	/**
 	 * Determine if a value is a File
 	 *
@@ -16197,7 +16293,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	function isFile(val) {
 	  return toString.call(val) === '[object File]';
 	}
-	
+
 	/**
 	 * Determine if a value is a Blob
 	 *
@@ -16207,7 +16303,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	function isBlob(val) {
 	  return toString.call(val) === '[object Blob]';
 	}
-	
+
 	/**
 	 * Trim excess whitespace off the beginning and end of a string
 	 *
@@ -16217,7 +16313,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	function trim(str) {
 	  return str.replace(/^\s*/, '').replace(/\s*$/, '');
 	}
-	
+
 	/**
 	 * Iterate over an Array or an Object invoking a function for each item.
 	 *
@@ -16235,15 +16331,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (obj === null || typeof obj === 'undefined') {
 	    return;
 	  }
-	
+
 	  // Check if obj is array-like
 	  var isArrayLike = isArray(obj) || (typeof obj === 'object' && !isNaN(obj.length));
-	
+
 	  // Force an array if not already something iterable
 	  if (typeof obj !== 'object' && !isArrayLike) {
 	    obj = [obj];
 	  }
-	
+
 	  // Iterate over array values
 	  if (isArrayLike) {
 	    for (var i = 0, l = obj.length; i < l; i++) {
@@ -16259,7 +16355,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  }
 	}
-	
+
 	/**
 	 * Accepts varargs expecting each argument to be an object, then
 	 * immutably merges the properties of each object and returns result.
@@ -16286,7 +16382,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  });
 	  return result;
 	}
-	
+
 	module.exports = {
 	  isArray: isArray,
 	  isArrayBuffer: isArrayBuffer,
@@ -16310,7 +16406,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports) {
 
 	'use strict';
-	
+
 	/**
 	 * Supply a warning to the developer that a method they are using
 	 * has been deprecated.
@@ -16325,7 +16421,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      'DEPRECATED method `' + method + '`.' +
 	      (instead ? ' Use `' + instead + '` instead.' : '') +
 	      ' This method will be removed in a future release.');
-	
+
 	    if (docs) {
 	      console.warn('For more information about usage see ' + docs);
 	    }
@@ -16338,7 +16434,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
-	
+
 	/**
 	 * Dispatch a request to the server using whichever adapter
 	 * is supported by the current environment.
@@ -16362,8 +16458,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  });
 	};
-	
-	
+
+
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14)))
 
 /***/ },
@@ -16371,13 +16467,13 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports) {
 
 	// shim for using process in browser
-	
+
 	var process = module.exports = {};
 	var queue = [];
 	var draining = false;
 	var currentQueue;
 	var queueIndex = -1;
-	
+
 	function cleanUpNextTick() {
 	    draining = false;
 	    if (currentQueue.length) {
@@ -16389,14 +16485,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	        drainQueue();
 	    }
 	}
-	
+
 	function drainQueue() {
 	    if (draining) {
 	        return;
 	    }
 	    var timeout = setTimeout(cleanUpNextTick);
 	    draining = true;
-	
+
 	    var len = queue.length;
 	    while(len) {
 	        currentQueue = queue;
@@ -16413,7 +16509,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    draining = false;
 	    clearTimeout(timeout);
 	}
-	
+
 	process.nextTick = function (fun) {
 	    var args = new Array(arguments.length - 1);
 	    if (arguments.length > 1) {
@@ -16426,7 +16522,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        setTimeout(drainQueue, 0);
 	    }
 	};
-	
+
 	// v8 likes predictible objects
 	function Item(fun, array) {
 	    this.fun = fun;
@@ -16441,9 +16537,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	process.argv = [];
 	process.version = ''; // empty string to avoid regexp issues
 	process.versions = {};
-	
+
 	function noop() {}
-	
+
 	process.on = noop;
 	process.addListener = noop;
 	process.once = noop;
@@ -16451,11 +16547,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	process.removeListener = noop;
 	process.removeAllListeners = noop;
 	process.emit = noop;
-	
+
 	process.binding = function (name) {
 	    throw new Error('process.binding is not supported');
 	};
-	
+
 	process.cwd = function () { return '/' };
 	process.chdir = function (dir) {
 	    throw new Error('process.chdir is not supported');
@@ -16468,9 +16564,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	/*global ActiveXObject:true*/
-	
+
 	var defaults = __webpack_require__(10);
 	var utils = __webpack_require__(11);
 	var buildUrl = __webpack_require__(16);
@@ -16478,7 +16574,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var parseHeaders = __webpack_require__(18);
 	var transformData = __webpack_require__(19);
 	var urlIsSameOrigin = __webpack_require__(20);
-	
+
 	module.exports = function xhrAdapter(resolve, reject, config) {
 	  // Transform request data
 	  var data = transformData(
@@ -16486,22 +16582,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	    config.headers,
 	    config.transformRequest
 	  );
-	
+
 	  // Merge headers
 	  var requestHeaders = utils.merge(
 	    defaults.headers.common,
 	    defaults.headers[config.method] || {},
 	    config.headers || {}
 	  );
-	
+
 	  if (utils.isFormData(data)) {
 	    delete requestHeaders['Content-Type']; // Let the browser set it
 	  }
-	
+
 	  // Create the request
 	  var request = new (XMLHttpRequest || ActiveXObject)('Microsoft.XMLHTTP');
 	  request.open(config.method.toUpperCase(), buildUrl(config.url, config.params), true);
-	
+
 	  // Listen for ready state
 	  request.onreadystatechange = function () {
 	    if (request && request.readyState === 4) {
@@ -16519,17 +16615,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	        headers: responseHeaders,
 	        config: config
 	      };
-	
+
 	      // Resolve or reject the Promise based on the status
 	      (request.status >= 200 && request.status < 300 ?
 	        resolve :
 	        reject)(response);
-	
+
 	      // Clean up request
 	      request = null;
 	    }
 	  };
-	
+
 	  // Add xsrf header
 	  var xsrfValue = urlIsSameOrigin(config.url) ?
 	      cookies.read(config.xsrfCookieName || defaults.xsrfCookieName) :
@@ -16537,7 +16633,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (xsrfValue) {
 	    requestHeaders[config.xsrfHeaderName || defaults.xsrfHeaderName] = xsrfValue;
 	  }
-	
+
 	  // Add headers to the request
 	  utils.forEach(requestHeaders, function (val, key) {
 	    // Remove Content-Type if data is undefined
@@ -16549,12 +16645,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	      request.setRequestHeader(key, val);
 	    }
 	  });
-	
+
 	  // Add withCredentials to request if needed
 	  if (config.withCredentials) {
 	    request.withCredentials = true;
 	  }
-	
+
 	  // Add responseType to request if needed
 	  if (config.responseType) {
 	    try {
@@ -16565,11 +16661,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    }
 	  }
-	
+
 	  if (utils.isArrayBuffer(data)) {
 	    data = new DataView(data);
 	  }
-	
+
 	  // Send the request
 	  request.send(data);
 	};
@@ -16580,9 +16676,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	var utils = __webpack_require__(11);
-	
+
 	function encode(val) {
 	  return encodeURIComponent(val).
 	    replace(/%40/gi, '@').
@@ -16591,7 +16687,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    replace(/%2C/gi, ',').
 	    replace(/%20/g, '+');
 	}
-	
+
 	/**
 	 * Build a URL by appending params to the end
 	 *
@@ -16603,9 +16699,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (!params) {
 	    return url;
 	  }
-	
+
 	  var parts = [];
-	
+
 	  utils.forEach(params, function (val, key) {
 	    if (val === null || typeof val === 'undefined') {
 	      return;
@@ -16613,7 +16709,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (!utils.isArray(val)) {
 	      val = [val];
 	    }
-	
+
 	    utils.forEach(val, function (v) {
 	      if (utils.isDate(v)) {
 	        v = v.toISOString();
@@ -16624,11 +16720,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	      parts.push(encode(key) + '=' + encode(v));
 	    });
 	  });
-	
+
 	  if (parts.length > 0) {
 	    url += (url.indexOf('?') === -1 ? '?' : '&') + parts.join('&');
 	  }
-	
+
 	  return url;
 	};
 
@@ -16638,38 +16734,38 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	var utils = __webpack_require__(11);
-	
+
 	module.exports = {
 	  write: function write(name, value, expires, path, domain, secure) {
 	    var cookie = [];
 	    cookie.push(name + '=' + encodeURIComponent(value));
-	
+
 	    if (utils.isNumber(expires)) {
 	      cookie.push('expires=' + new Date(expires).toGMTString());
 	    }
-	
+
 	    if (utils.isString(path)) {
 	      cookie.push('path=' + path);
 	    }
-	
+
 	    if (utils.isString(domain)) {
 	      cookie.push('domain=' + domain);
 	    }
-	
+
 	    if (secure === true) {
 	      cookie.push('secure');
 	    }
-	
+
 	    document.cookie = cookie.join('; ');
 	  },
-	
+
 	  read: function read(name) {
 	    var match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
 	    return (match ? decodeURIComponent(match[3]) : null);
 	  },
-	
+
 	  remove: function remove(name) {
 	    this.write(name, '', Date.now() - 86400000);
 	  }
@@ -16681,9 +16777,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	var utils = __webpack_require__(11);
-	
+
 	/**
 	 * Parse headers into an object
 	 *
@@ -16699,19 +16795,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	module.exports = function parseHeaders(headers) {
 	  var parsed = {}, key, val, i;
-	
+
 	  if (!headers) { return parsed; }
-	
+
 	  utils.forEach(headers.split('\n'), function(line) {
 	    i = line.indexOf(':');
 	    key = utils.trim(line.substr(0, i)).toLowerCase();
 	    val = utils.trim(line.substr(i + 1));
-	
+
 	    if (key) {
 	      parsed[key] = parsed[key] ? parsed[key] + ', ' + val : val;
 	    }
 	  });
-	
+
 	  return parsed;
 	};
 
@@ -16721,9 +16817,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	var utils = __webpack_require__(11);
-	
+
 	/**
 	 * Transform the data for a request or a response
 	 *
@@ -16736,7 +16832,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  utils.forEach(fns, function (fn) {
 	    data = fn(data, headers);
 	  });
-	
+
 	  return data;
 	};
 
@@ -16746,12 +16842,12 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	var utils = __webpack_require__(11);
 	var msie = /(msie|trident)/i.test(navigator.userAgent);
 	var urlParsingNode = document.createElement('a');
 	var originUrl;
-	
+
 	/**
 	 * Parse a URL to discover it's components
 	 *
@@ -16760,15 +16856,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	function urlResolve(url) {
 	  var href = url;
-	
+
 	  if (msie) {
 	    // IE needs attribute set twice to normalize properties
 	    urlParsingNode.setAttribute('href', href);
 	    href = urlParsingNode.href;
 	  }
-	
+
 	  urlParsingNode.setAttribute('href', href);
-	
+
 	  // urlParsingNode provides the UrlUtils interface - http://url.spec.whatwg.org/#urlutils
 	  return {
 	    href: urlParsingNode.href,
@@ -16783,9 +16879,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	              '/' + urlParsingNode.pathname
 	  };
 	}
-	
+
 	originUrl = urlResolve(window.location.href);
-	
+
 	/**
 	 * Determine if a URL shares the same origin as the current location
 	 *
@@ -16804,13 +16900,13 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	var utils = __webpack_require__(11);
-	
+
 	function InterceptorManager() {
 	  this.handlers = [];
 	}
-	
+
 	/**
 	 * Add a new interceptor to the stack
 	 *
@@ -16826,7 +16922,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  });
 	  return this.handlers.length - 1;
 	};
-	
+
 	/**
 	 * Remove an interceptor from the stack
 	 *
@@ -16837,7 +16933,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.handlers[id] = null;
 	  }
 	};
-	
+
 	/**
 	 * Iterate over all the registered interceptors
 	 *
@@ -16853,7 +16949,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  });
 	};
-	
+
 	module.exports = InterceptorManager;
 
 
@@ -16868,21 +16964,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *            See https://raw.githubusercontent.com/jakearchibald/es6-promise/master/LICENSE
 	 * @version   2.3.0
 	 */
-	
+
 	(function() {
 	    "use strict";
 	    function lib$es6$promise$utils$$objectOrFunction(x) {
 	      return typeof x === 'function' || (typeof x === 'object' && x !== null);
 	    }
-	
+
 	    function lib$es6$promise$utils$$isFunction(x) {
 	      return typeof x === 'function';
 	    }
-	
+
 	    function lib$es6$promise$utils$$isMaybeThenable(x) {
 	      return typeof x === 'object' && x !== null;
 	    }
-	
+
 	    var lib$es6$promise$utils$$_isArray;
 	    if (!Array.isArray) {
 	      lib$es6$promise$utils$$_isArray = function (x) {
@@ -16891,13 +16987,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    } else {
 	      lib$es6$promise$utils$$_isArray = Array.isArray;
 	    }
-	
+
 	    var lib$es6$promise$utils$$isArray = lib$es6$promise$utils$$_isArray;
 	    var lib$es6$promise$asap$$len = 0;
 	    var lib$es6$promise$asap$$toString = {}.toString;
 	    var lib$es6$promise$asap$$vertxNext;
 	    var lib$es6$promise$asap$$customSchedulerFn;
-	
+
 	    var lib$es6$promise$asap$$asap = function asap(callback, arg) {
 	      lib$es6$promise$asap$$queue[lib$es6$promise$asap$$len] = callback;
 	      lib$es6$promise$asap$$queue[lib$es6$promise$asap$$len + 1] = arg;
@@ -16913,25 +17009,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	      }
 	    }
-	
+
 	    function lib$es6$promise$asap$$setScheduler(scheduleFn) {
 	      lib$es6$promise$asap$$customSchedulerFn = scheduleFn;
 	    }
-	
+
 	    function lib$es6$promise$asap$$setAsap(asapFn) {
 	      lib$es6$promise$asap$$asap = asapFn;
 	    }
-	
+
 	    var lib$es6$promise$asap$$browserWindow = (typeof window !== 'undefined') ? window : undefined;
 	    var lib$es6$promise$asap$$browserGlobal = lib$es6$promise$asap$$browserWindow || {};
 	    var lib$es6$promise$asap$$BrowserMutationObserver = lib$es6$promise$asap$$browserGlobal.MutationObserver || lib$es6$promise$asap$$browserGlobal.WebKitMutationObserver;
 	    var lib$es6$promise$asap$$isNode = typeof process !== 'undefined' && {}.toString.call(process) === '[object process]';
-	
+
 	    // test for web worker but not in IE10
 	    var lib$es6$promise$asap$$isWorker = typeof Uint8ClampedArray !== 'undefined' &&
 	      typeof importScripts !== 'undefined' &&
 	      typeof MessageChannel !== 'undefined';
-	
+
 	    // node
 	    function lib$es6$promise$asap$$useNextTick() {
 	      var nextTick = process.nextTick;
@@ -16945,25 +17041,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	        nextTick(lib$es6$promise$asap$$flush);
 	      };
 	    }
-	
+
 	    // vertx
 	    function lib$es6$promise$asap$$useVertxTimer() {
 	      return function() {
 	        lib$es6$promise$asap$$vertxNext(lib$es6$promise$asap$$flush);
 	      };
 	    }
-	
+
 	    function lib$es6$promise$asap$$useMutationObserver() {
 	      var iterations = 0;
 	      var observer = new lib$es6$promise$asap$$BrowserMutationObserver(lib$es6$promise$asap$$flush);
 	      var node = document.createTextNode('');
 	      observer.observe(node, { characterData: true });
-	
+
 	      return function() {
 	        node.data = (iterations = ++iterations % 2);
 	      };
 	    }
-	
+
 	    // web worker
 	    function lib$es6$promise$asap$$useMessageChannel() {
 	      var channel = new MessageChannel();
@@ -16972,28 +17068,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	        channel.port2.postMessage(0);
 	      };
 	    }
-	
+
 	    function lib$es6$promise$asap$$useSetTimeout() {
 	      return function() {
 	        setTimeout(lib$es6$promise$asap$$flush, 1);
 	      };
 	    }
-	
+
 	    var lib$es6$promise$asap$$queue = new Array(1000);
 	    function lib$es6$promise$asap$$flush() {
 	      for (var i = 0; i < lib$es6$promise$asap$$len; i+=2) {
 	        var callback = lib$es6$promise$asap$$queue[i];
 	        var arg = lib$es6$promise$asap$$queue[i+1];
-	
+
 	        callback(arg);
-	
+
 	        lib$es6$promise$asap$$queue[i] = undefined;
 	        lib$es6$promise$asap$$queue[i+1] = undefined;
 	      }
-	
+
 	      lib$es6$promise$asap$$len = 0;
 	    }
-	
+
 	    function lib$es6$promise$asap$$attemptVertex() {
 	      try {
 	        var r = require;
@@ -17004,7 +17100,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return lib$es6$promise$asap$$useSetTimeout();
 	      }
 	    }
-	
+
 	    var lib$es6$promise$asap$$scheduleFlush;
 	    // Decide what async method to use to triggering processing of queued callbacks:
 	    if (lib$es6$promise$asap$$isNode) {
@@ -17018,23 +17114,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	    } else {
 	      lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$useSetTimeout();
 	    }
-	
+
 	    function lib$es6$promise$$internal$$noop() {}
-	
+
 	    var lib$es6$promise$$internal$$PENDING   = void 0;
 	    var lib$es6$promise$$internal$$FULFILLED = 1;
 	    var lib$es6$promise$$internal$$REJECTED  = 2;
-	
+
 	    var lib$es6$promise$$internal$$GET_THEN_ERROR = new lib$es6$promise$$internal$$ErrorObject();
-	
+
 	    function lib$es6$promise$$internal$$selfFullfillment() {
 	      return new TypeError("You cannot resolve a promise with itself");
 	    }
-	
+
 	    function lib$es6$promise$$internal$$cannotReturnOwn() {
 	      return new TypeError('A promises callback cannot return that same promise.');
 	    }
-	
+
 	    function lib$es6$promise$$internal$$getThen(promise) {
 	      try {
 	        return promise.then;
@@ -17043,7 +17139,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return lib$es6$promise$$internal$$GET_THEN_ERROR;
 	      }
 	    }
-	
+
 	    function lib$es6$promise$$internal$$tryThen(then, value, fulfillmentHandler, rejectionHandler) {
 	      try {
 	        then.call(value, fulfillmentHandler, rejectionHandler);
@@ -17051,7 +17147,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return e;
 	      }
 	    }
-	
+
 	    function lib$es6$promise$$internal$$handleForeignThenable(promise, thenable, then) {
 	       lib$es6$promise$asap$$asap(function(promise) {
 	        var sealed = false;
@@ -17066,17 +17162,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }, function(reason) {
 	          if (sealed) { return; }
 	          sealed = true;
-	
+
 	          lib$es6$promise$$internal$$reject(promise, reason);
 	        }, 'Settle: ' + (promise._label || ' unknown promise'));
-	
+
 	        if (!sealed && error) {
 	          sealed = true;
 	          lib$es6$promise$$internal$$reject(promise, error);
 	        }
 	      }, promise);
 	    }
-	
+
 	    function lib$es6$promise$$internal$$handleOwnThenable(promise, thenable) {
 	      if (thenable._state === lib$es6$promise$$internal$$FULFILLED) {
 	        lib$es6$promise$$internal$$fulfill(promise, thenable._result);
@@ -17090,13 +17186,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        });
 	      }
 	    }
-	
+
 	    function lib$es6$promise$$internal$$handleMaybeThenable(promise, maybeThenable) {
 	      if (maybeThenable.constructor === promise.constructor) {
 	        lib$es6$promise$$internal$$handleOwnThenable(promise, maybeThenable);
 	      } else {
 	        var then = lib$es6$promise$$internal$$getThen(maybeThenable);
-	
+
 	        if (then === lib$es6$promise$$internal$$GET_THEN_ERROR) {
 	          lib$es6$promise$$internal$$reject(promise, lib$es6$promise$$internal$$GET_THEN_ERROR.error);
 	        } else if (then === undefined) {
@@ -17108,7 +17204,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	      }
 	    }
-	
+
 	    function lib$es6$promise$$internal$$resolve(promise, value) {
 	      if (promise === value) {
 	        lib$es6$promise$$internal$$reject(promise, lib$es6$promise$$internal$$selfFullfillment());
@@ -17118,77 +17214,77 @@ return /******/ (function(modules) { // webpackBootstrap
 	        lib$es6$promise$$internal$$fulfill(promise, value);
 	      }
 	    }
-	
+
 	    function lib$es6$promise$$internal$$publishRejection(promise) {
 	      if (promise._onerror) {
 	        promise._onerror(promise._result);
 	      }
-	
+
 	      lib$es6$promise$$internal$$publish(promise);
 	    }
-	
+
 	    function lib$es6$promise$$internal$$fulfill(promise, value) {
 	      if (promise._state !== lib$es6$promise$$internal$$PENDING) { return; }
-	
+
 	      promise._result = value;
 	      promise._state = lib$es6$promise$$internal$$FULFILLED;
-	
+
 	      if (promise._subscribers.length !== 0) {
 	        lib$es6$promise$asap$$asap(lib$es6$promise$$internal$$publish, promise);
 	      }
 	    }
-	
+
 	    function lib$es6$promise$$internal$$reject(promise, reason) {
 	      if (promise._state !== lib$es6$promise$$internal$$PENDING) { return; }
 	      promise._state = lib$es6$promise$$internal$$REJECTED;
 	      promise._result = reason;
-	
+
 	      lib$es6$promise$asap$$asap(lib$es6$promise$$internal$$publishRejection, promise);
 	    }
-	
+
 	    function lib$es6$promise$$internal$$subscribe(parent, child, onFulfillment, onRejection) {
 	      var subscribers = parent._subscribers;
 	      var length = subscribers.length;
-	
+
 	      parent._onerror = null;
-	
+
 	      subscribers[length] = child;
 	      subscribers[length + lib$es6$promise$$internal$$FULFILLED] = onFulfillment;
 	      subscribers[length + lib$es6$promise$$internal$$REJECTED]  = onRejection;
-	
+
 	      if (length === 0 && parent._state) {
 	        lib$es6$promise$asap$$asap(lib$es6$promise$$internal$$publish, parent);
 	      }
 	    }
-	
+
 	    function lib$es6$promise$$internal$$publish(promise) {
 	      var subscribers = promise._subscribers;
 	      var settled = promise._state;
-	
+
 	      if (subscribers.length === 0) { return; }
-	
+
 	      var child, callback, detail = promise._result;
-	
+
 	      for (var i = 0; i < subscribers.length; i += 3) {
 	        child = subscribers[i];
 	        callback = subscribers[i + settled];
-	
+
 	        if (child) {
 	          lib$es6$promise$$internal$$invokeCallback(settled, child, callback, detail);
 	        } else {
 	          callback(detail);
 	        }
 	      }
-	
+
 	      promise._subscribers.length = 0;
 	    }
-	
+
 	    function lib$es6$promise$$internal$$ErrorObject() {
 	      this.error = null;
 	    }
-	
+
 	    var lib$es6$promise$$internal$$TRY_CATCH_ERROR = new lib$es6$promise$$internal$$ErrorObject();
-	
+
 	    function lib$es6$promise$$internal$$tryCatch(callback, detail) {
 	      try {
 	        return callback(detail);
@@ -17197,14 +17293,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return lib$es6$promise$$internal$$TRY_CATCH_ERROR;
 	      }
 	    }
-	
+
 	    function lib$es6$promise$$internal$$invokeCallback(settled, promise, callback, detail) {
 	      var hasCallback = lib$es6$promise$utils$$isFunction(callback),
 	          value, error, succeeded, failed;
-	
+
 	      if (hasCallback) {
 	        value = lib$es6$promise$$internal$$tryCatch(callback, detail);
-	
+
 	        if (value === lib$es6$promise$$internal$$TRY_CATCH_ERROR) {
 	          failed = true;
 	          error = value.error;
@@ -17212,17 +17308,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	        } else {
 	          succeeded = true;
 	        }
-	
+
 	        if (promise === value) {
 	          lib$es6$promise$$internal$$reject(promise, lib$es6$promise$$internal$$cannotReturnOwn());
 	          return;
 	        }
-	
+
 	      } else {
 	        value = detail;
 	        succeeded = true;
 	      }
-	
+
 	      if (promise._state !== lib$es6$promise$$internal$$PENDING) {
 	        // noop
 	      } else if (hasCallback && succeeded) {
@@ -17235,7 +17331,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        lib$es6$promise$$internal$$reject(promise, value);
 	      }
 	    }
-	
+
 	    function lib$es6$promise$$internal$$initializePromise(promise, resolver) {
 	      try {
 	        resolver(function resolvePromise(value){
@@ -17247,20 +17343,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	        lib$es6$promise$$internal$$reject(promise, e);
 	      }
 	    }
-	
+
 	    function lib$es6$promise$enumerator$$Enumerator(Constructor, input) {
 	      var enumerator = this;
-	
+
 	      enumerator._instanceConstructor = Constructor;
 	      enumerator.promise = new Constructor(lib$es6$promise$$internal$$noop);
-	
+
 	      if (enumerator._validateInput(input)) {
 	        enumerator._input     = input;
 	        enumerator.length     = input.length;
 	        enumerator._remaining = input.length;
-	
+
 	        enumerator._init();
-	
+
 	        if (enumerator.length === 0) {
 	          lib$es6$promise$$internal$$fulfill(enumerator.promise, enumerator._result);
 	        } else {
@@ -17274,37 +17370,37 @@ return /******/ (function(modules) { // webpackBootstrap
 	        lib$es6$promise$$internal$$reject(enumerator.promise, enumerator._validationError());
 	      }
 	    }
-	
+
 	    lib$es6$promise$enumerator$$Enumerator.prototype._validateInput = function(input) {
 	      return lib$es6$promise$utils$$isArray(input);
 	    };
-	
+
 	    lib$es6$promise$enumerator$$Enumerator.prototype._validationError = function() {
 	      return new Error('Array Methods must be provided an Array');
 	    };
-	
+
 	    lib$es6$promise$enumerator$$Enumerator.prototype._init = function() {
 	      this._result = new Array(this.length);
 	    };
-	
+
 	    var lib$es6$promise$enumerator$$default = lib$es6$promise$enumerator$$Enumerator;
-	
+
 	    lib$es6$promise$enumerator$$Enumerator.prototype._enumerate = function() {
 	      var enumerator = this;
-	
+
 	      var length  = enumerator.length;
 	      var promise = enumerator.promise;
 	      var input   = enumerator._input;
-	
+
 	      for (var i = 0; promise._state === lib$es6$promise$$internal$$PENDING && i < length; i++) {
 	        enumerator._eachEntry(input[i], i);
 	      }
 	    };
-	
+
 	    lib$es6$promise$enumerator$$Enumerator.prototype._eachEntry = function(entry, i) {
 	      var enumerator = this;
 	      var c = enumerator._instanceConstructor;
-	
+
 	      if (lib$es6$promise$utils$$isMaybeThenable(entry)) {
 	        if (entry.constructor === c && entry._state !== lib$es6$promise$$internal$$PENDING) {
 	          entry._onerror = null;
@@ -17317,29 +17413,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	        enumerator._result[i] = entry;
 	      }
 	    };
-	
+
 	    lib$es6$promise$enumerator$$Enumerator.prototype._settledAt = function(state, i, value) {
 	      var enumerator = this;
 	      var promise = enumerator.promise;
-	
+
 	      if (promise._state === lib$es6$promise$$internal$$PENDING) {
 	        enumerator._remaining--;
-	
+
 	        if (state === lib$es6$promise$$internal$$REJECTED) {
 	          lib$es6$promise$$internal$$reject(promise, value);
 	        } else {
 	          enumerator._result[i] = value;
 	        }
 	      }
-	
+
 	      if (enumerator._remaining === 0) {
 	        lib$es6$promise$$internal$$fulfill(promise, enumerator._result);
 	      }
 	    };
-	
+
 	    lib$es6$promise$enumerator$$Enumerator.prototype._willSettleAt = function(promise, i) {
 	      var enumerator = this;
-	
+
 	      lib$es6$promise$$internal$$subscribe(promise, undefined, function(value) {
 	        enumerator._settledAt(lib$es6$promise$$internal$$FULFILLED, i, value);
 	      }, function(reason) {
@@ -17353,39 +17449,39 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function lib$es6$promise$promise$race$$race(entries) {
 	      /*jshint validthis:true */
 	      var Constructor = this;
-	
+
 	      var promise = new Constructor(lib$es6$promise$$internal$$noop);
-	
+
 	      if (!lib$es6$promise$utils$$isArray(entries)) {
 	        lib$es6$promise$$internal$$reject(promise, new TypeError('You must pass an array to race.'));
 	        return promise;
 	      }
-	
+
 	      var length = entries.length;
-	
+
 	      function onFulfillment(value) {
 	        lib$es6$promise$$internal$$resolve(promise, value);
 	      }
-	
+
 	      function onRejection(reason) {
 	        lib$es6$promise$$internal$$reject(promise, reason);
 	      }
-	
+
 	      for (var i = 0; promise._state === lib$es6$promise$$internal$$PENDING && i < length; i++) {
 	        lib$es6$promise$$internal$$subscribe(Constructor.resolve(entries[i]), undefined, onFulfillment, onRejection);
 	      }
-	
+
 	      return promise;
 	    }
 	    var lib$es6$promise$promise$race$$default = lib$es6$promise$promise$race$$race;
 	    function lib$es6$promise$promise$resolve$$resolve(object) {
 	      /*jshint validthis:true */
 	      var Constructor = this;
-	
+
 	      if (object && typeof object === 'object' && object.constructor === Constructor) {
 	        return object;
 	      }
-	
+
 	      var promise = new Constructor(lib$es6$promise$$internal$$noop);
 	      lib$es6$promise$$internal$$resolve(promise, object);
 	      return promise;
@@ -17399,83 +17495,83 @@ return /******/ (function(modules) { // webpackBootstrap
 	      return promise;
 	    }
 	    var lib$es6$promise$promise$reject$$default = lib$es6$promise$promise$reject$$reject;
-	
+
 	    var lib$es6$promise$promise$$counter = 0;
-	
+
 	    function lib$es6$promise$promise$$needsResolver() {
 	      throw new TypeError('You must pass a resolver function as the first argument to the promise constructor');
 	    }
-	
+
 	    function lib$es6$promise$promise$$needsNew() {
 	      throw new TypeError("Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.");
 	    }
-	
+
 	    var lib$es6$promise$promise$$default = lib$es6$promise$promise$$Promise;
 	    /**
 	      Promise objects represent the eventual result of an asynchronous operation. The
 	      primary way of interacting with a promise is through its `then` method, which
 	      registers callbacks to receive either a promise's eventual value or the reason
 	      why the promise cannot be fulfilled.
-	
+
 	      Terminology
 	      -----------
-	
+
 	      - `promise` is an object or function with a `then` method whose behavior conforms to this specification.
 	      - `thenable` is an object or function that defines a `then` method.
 	      - `value` is any legal JavaScript value (including undefined, a thenable, or a promise).
 	      - `exception` is a value that is thrown using the throw statement.
 	      - `reason` is a value that indicates why a promise was rejected.
 	      - `settled` the final resting state of a promise, fulfilled or rejected.
-	
+
 	      A promise can be in one of three states: pending, fulfilled, or rejected.
-	
+
 	      Promises that are fulfilled have a fulfillment value and are in the fulfilled
 	      state.  Promises that are rejected have a rejection reason and are in the
 	      rejected state.  A fulfillment value is never a thenable.
-	
+
 	      Promises can also be said to *resolve* a value.  If this value is also a
 	      promise, then the original promise's settled state will match the value's
 	      settled state.  So a promise that *resolves* a promise that rejects will
 	      itself reject, and a promise that *resolves* a promise that fulfills will
 	      itself fulfill.
-	
-	
+
+
 	      Basic Usage:
 	      ------------
-	
+
 	      ```js
 	      var promise = new Promise(function(resolve, reject) {
 	        // on success
 	        resolve(value);
-	
+
 	        // on failure
 	        reject(reason);
 	      });
-	
+
 	      promise.then(function(value) {
 	        // on fulfillment
 	      }, function(reason) {
 	        // on rejection
 	      });
 	      ```
-	
+
 	      Advanced Usage:
 	      ---------------
-	
+
 	      Promises shine when abstracting away asynchronous interactions such as
 	      `XMLHttpRequest`s.
-	
+
 	      ```js
 	      function getJSON(url) {
 	        return new Promise(function(resolve, reject){
 	          var xhr = new XMLHttpRequest();
-	
+
 	          xhr.open('GET', url);
 	          xhr.onreadystatechange = handler;
 	          xhr.responseType = 'json';
 	          xhr.setRequestHeader('Accept', 'application/json');
 	          xhr.send();
-	
+
 	          function handler() {
 	            if (this.readyState === this.DONE) {
 	              if (this.status === 200) {
@@ -17487,16 +17583,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	          };
 	        });
 	      }
-	
+
 	      getJSON('/posts.json').then(function(json) {
 	        // on fulfillment
 	      }, function(reason) {
 	        // on rejection
 	      });
 	      ```
-	
+
 	      Unlike callbacks, promises are great composable primitives.
-	
+
 	      ```js
 	      Promise.all([
 	        getJSON('/posts'),
@@ -17504,11 +17600,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	      ]).then(function(values){
 	        values[0] // => postsJSON
 	        values[1] // => commentsJSON
-	
+
 	        return values;
 	      });
 	      ```
-	
+
 	      @class Promise
 	      @param {function} resolver
 	      Useful for tooling.
@@ -17519,20 +17615,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	      this._state = undefined;
 	      this._result = undefined;
 	      this._subscribers = [];
-	
+
 	      if (lib$es6$promise$$internal$$noop !== resolver) {
 	        if (!lib$es6$promise$utils$$isFunction(resolver)) {
 	          lib$es6$promise$promise$$needsResolver();
 	        }
-	
+
 	        if (!(this instanceof lib$es6$promise$promise$$Promise)) {
 	          lib$es6$promise$promise$$needsNew();
 	        }
-	
+
 	        lib$es6$promise$$internal$$initializePromise(this, resolver);
 	      }
 	    }
-	
+
 	    lib$es6$promise$promise$$Promise.all = lib$es6$promise$promise$all$$default;
 	    lib$es6$promise$promise$$Promise.race = lib$es6$promise$promise$race$$default;
 	    lib$es6$promise$promise$$Promise.resolve = lib$es6$promise$promise$resolve$$default;
@@ -17540,15 +17636,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    lib$es6$promise$promise$$Promise._setScheduler = lib$es6$promise$asap$$setScheduler;
 	    lib$es6$promise$promise$$Promise._setAsap = lib$es6$promise$asap$$setAsap;
 	    lib$es6$promise$promise$$Promise._asap = lib$es6$promise$asap$$asap;
-	
+
 	    lib$es6$promise$promise$$Promise.prototype = {
 	      constructor: lib$es6$promise$promise$$Promise,
-	
+
 	    /**
 	      The primary way of interacting with a promise is through its `then` method,
 	      which registers callbacks to receive either a promise's eventual value or the
 	      reason why the promise cannot be fulfilled.
-	
+
 	      ```js
 	      findUser().then(function(user){
 	        // user is available
@@ -17556,14 +17652,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // user is unavailable, and you are given the reason why
 	      });
 	      ```
-	
+
 	      Chaining
 	      --------
-	
+
 	      The return value of `then` is itself a promise.  This second, 'downstream'
 	      promise is resolved with the return value of the first promise's fulfillment
 	      or rejection handler, or rejected if the handler throws an exception.
-	
+
 	      ```js
 	      findUser().then(function (user) {
 	        return user.name;
@@ -17573,7 +17669,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // If `findUser` fulfilled, `userName` will be the user's name, otherwise it
 	        // will be `'default name'`
 	      });
-	
+
 	      findUser().then(function (user) {
 	        throw new Error('Found user, but still unhappy');
 	      }, function (reason) {
@@ -17586,7 +17682,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      });
 	      ```
 	      If the downstream promise does not specify a rejection handler, rejection reasons will be propagated further downstream.
-	
+
 	      ```js
 	      findUser().then(function (user) {
 	        throw new PedagogicalException('Upstream error');
@@ -17598,15 +17694,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // The `PedgagocialException` is propagated all the way down to here
 	      });
 	      ```
-	
+
 	      Assimilation
 	      ------------
-	
+
 	      Sometimes the value you want to propagate to a downstream promise can only be
 	      retrieved asynchronously. This can be achieved by returning a promise in the
 	      fulfillment or rejection handler. The downstream promise will then be pending
 	      until the returned promise is settled. This is called *assimilation*.
-	
+
 	      ```js
 	      findUser().then(function (user) {
 	        return findCommentsByAuthor(user);
@@ -17614,9 +17710,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // The user's comments are now available
 	      });
 	      ```
-	
+
 	      If the assimliated promise rejects, then the downstream promise will also reject.
-	
+
 	      ```js
 	      findUser().then(function (user) {
 	        return findCommentsByAuthor(user);
@@ -17626,15 +17722,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // If `findCommentsByAuthor` rejects, we'll have the reason here
 	      });
 	      ```
-	
+
 	      Simple Example
 	      --------------
-	
+
 	      Synchronous Example
-	
+
 	      ```javascript
 	      var result;
-	
+
 	      try {
 	        result = findResult();
 	        // success
@@ -17642,9 +17738,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // failure
 	      }
 	      ```
-	
+
 	      Errback Example
-	
+
 	      ```js
 	      findResult(function(result, err){
 	        if (err) {
@@ -17654,9 +17750,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	      });
 	      ```
-	
+
 	      Promise Example;
-	
+
 	      ```javascript
 	      findResult().then(function(result){
 	        // success
@@ -17664,15 +17760,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // failure
 	      });
 	      ```
-	
+
 	      Advanced Example
 	      --------------
-	
+
 	      Synchronous Example
-	
+
 	      ```javascript
 	      var author, books;
-	
+
 	      try {
 	        author = findAuthor();
 	        books  = findBooksByAuthor(author);
@@ -17681,19 +17777,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // failure
 	      }
 	      ```
-	
+
 	      Errback Example
-	
+
 	      ```js
-	
+
 	      function foundBooks(books) {
-	
+
 	      }
-	
+
 	      function failure(reason) {
-	
+
 	      }
-	
+
 	      findAuthor(function(author, err){
 	        if (err) {
 	          failure(err);
@@ -17718,9 +17814,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	      });
 	      ```
-	
+
 	      Promise Example;
-	
+
 	      ```javascript
 	      findAuthor().
 	        then(findBooksByAuthor).
@@ -17730,7 +17826,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // something went wrong
 	      });
 	      ```
-	
+
 	      @method then
 	      @param {Function} onFulfilled
 	      @param {Function} onRejected
@@ -17740,14 +17836,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	      then: function(onFulfillment, onRejection) {
 	        var parent = this;
 	        var state = parent._state;
-	
+
 	        if (state === lib$es6$promise$$internal$$FULFILLED && !onFulfillment || state === lib$es6$promise$$internal$$REJECTED && !onRejection) {
 	          return this;
 	        }
-	
+
 	        var child = new this.constructor(lib$es6$promise$$internal$$noop);
 	        var result = parent._result;
-	
+
 	        if (state) {
 	          var callback = arguments[state - 1];
 	          lib$es6$promise$asap$$asap(function(){
@@ -17756,32 +17852,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	        } else {
 	          lib$es6$promise$$internal$$subscribe(parent, child, onFulfillment, onRejection);
 	        }
-	
+
 	        return child;
 	      },
-	
+
 	    /**
 	      `catch` is simply sugar for `then(undefined, onRejection)` which makes it the same
 	      as the catch block of a try/catch statement.
-	
+
 	      ```js
 	      function findAuthor(){
 	        throw new Error('couldn't find that author');
 	      }
-	
+
 	      // synchronous
 	      try {
 	        findAuthor();
 	      } catch(reason) {
 	        // something went wrong
 	      }
-	
+
 	      // async with promises
 	      findAuthor().catch(function(reason){
 	        // something went wrong
 	      });
 	      ```
-	
+
 	      @method catch
 	      @param {Function} onRejection
 	      Useful for tooling.
@@ -17793,7 +17889,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	    function lib$es6$promise$polyfill$$polyfill() {
 	      var local;
-	
+
 	      if (typeof global !== 'undefined') {
 	          local = global;
 	      } else if (typeof self !== 'undefined') {
@@ -17805,22 +17901,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	              throw new Error('polyfill failed because global object is unavailable in this environment');
 	          }
 	      }
-	
+
 	      var P = local.Promise;
-	
+
 	      if (P && Object.prototype.toString.call(P.resolve()) === '[object Promise]' && !P.cast) {
 	        return;
 	      }
-	
+
 	      local.Promise = lib$es6$promise$promise$$default;
 	    }
 	    var lib$es6$promise$polyfill$$default = lib$es6$promise$polyfill$$polyfill;
-	
+
 	    var lib$es6$promise$umd$$ES6Promise = {
 	      'Promise': lib$es6$promise$promise$$default,
 	      'polyfill': lib$es6$promise$polyfill$$default
 	    };
-	
+
 	    /* global define:true module:true window: true */
 	    if ("function" === 'function' && __webpack_require__(25)['amd']) {
 	      !(__WEBPACK_AMD_DEFINE_RESULT__ = function() { return lib$es6$promise$umd$$ES6Promise; }.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -17829,11 +17925,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    } else if (typeof this !== 'undefined') {
 	      this['ES6Promise'] = lib$es6$promise$umd$$ES6Promise;
 	    }
-	
+
 	    lib$es6$promise$polyfill$$default();
 	}).call(this);
-	
-	
+
+
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14), __webpack_require__(23).setImmediate, (function() { return this; }()), __webpack_require__(4)(module)))
 
 /***/ },
@@ -17845,9 +17941,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	var slice = Array.prototype.slice;
 	var immediateIds = {};
 	var nextImmediateId = 0;
-	
+
 	// DOM APIs, for completeness
-	
+
 	exports.setTimeout = function() {
 	  return new Timeout(apply.call(setTimeout, window, arguments), clearTimeout);
 	};
@@ -17856,7 +17952,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	exports.clearTimeout =
 	exports.clearInterval = function(timeout) { timeout.close(); };
-	
+
 	function Timeout(id, clearFn) {
 	  this._id = id;
 	  this._clearFn = clearFn;
@@ -17865,21 +17961,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	Timeout.prototype.close = function() {
 	  this._clearFn.call(window, this._id);
 	};
-	
+
 	// Does not start the time, just sets up the members needed.
 	exports.enroll = function(item, msecs) {
 	  clearTimeout(item._idleTimeoutId);
 	  item._idleTimeout = msecs;
 	};
-	
+
 	exports.unenroll = function(item) {
 	  clearTimeout(item._idleTimeoutId);
 	  item._idleTimeout = -1;
 	};
-	
+
 	exports._unrefActive = exports.active = function(item) {
 	  clearTimeout(item._idleTimeoutId);
-	
+
 	  var msecs = item._idleTimeout;
 	  if (msecs >= 0) {
 	    item._idleTimeoutId = setTimeout(function onTimeout() {
@@ -17888,14 +17984,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, msecs);
 	  }
 	};
-	
+
 	// That's not how node.js implements it but the exposed api is the same.
 	exports.setImmediate = typeof setImmediate === "function" ? setImmediate : function(fn) {
 	  var id = nextImmediateId++;
 	  var args = arguments.length < 2 ? false : slice.call(arguments, 1);
-	
+
 	  immediateIds[id] = true;
-	
+
 	  nextTick(function onNextTick() {
 	    if (immediateIds[id]) {
 	      // fn.call() is faster so we optimize for the common use-case
@@ -17909,10 +18005,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      exports.clearImmediate(id);
 	    }
 	  });
-	
+
 	  return id;
 	};
-	
+
 	exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
 	  delete immediateIds[id];
 	};
@@ -17936,7 +18032,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports) {
 
 	'use strict';
-	
+
 	/**
 	 * Syntactic sugar for invoking a function and expanding an array for arguments.
 	 *
@@ -17970,39 +18066,39 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(module, global) {/*! http://mths.be/base64 v0.1.0 by @mathias | MIT license */
 	;(function(root) {
-	
+
 		// Detect free variables `exports`.
 		var freeExports = typeof exports == 'object' && exports;
-	
+
 		// Detect free variable `module`.
 		var freeModule = typeof module == 'object' && module &&
 			module.exports == freeExports && module;
-	
+
 		// Detect free variable `global`, from Node.js or Browserified code, and use
 		// it as `root`.
 		var freeGlobal = typeof global == 'object' && global;
 		if (freeGlobal.global === freeGlobal || freeGlobal.window === freeGlobal) {
 			root = freeGlobal;
 		}
-	
+
 		/*--------------------------------------------------------------------------*/
-	
+
 		var InvalidCharacterError = function(message) {
 			this.message = message;
 		};
 		InvalidCharacterError.prototype = new Error;
 		InvalidCharacterError.prototype.name = 'InvalidCharacterError';
-	
+
 		var error = function(message) {
 			// Note: the error messages used throughout this file match those used by
 			// the native `atob`/`btoa` implementation in Chromium.
 			throw new InvalidCharacterError(message);
 		};
-	
+
 		var TABLE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 		// http://whatwg.org/html/common-microsyntaxes.html#space-character
 		var REGEX_SPACE_CHARACTERS = /[\t\n\f\r ]/g;
-	
+
 		// `decode` is designed to be fully compatible with `atob` as described in the
 		// HTML Standard. http://whatwg.org/html/webappapis.html#dom-windowbase64-atob
 		// The optimized base64-decoding algorithm used is based on @atk’s excellent
@@ -18042,7 +18138,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 			return output;
 		};
-	
+
 		// `encode` is designed to be fully compatible with `btoa` as described in the
 		// HTML Standard: http://whatwg.org/html/webappapis.html#dom-windowbase64-btoa
 		var encode = function(input) {
@@ -18065,7 +18161,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			var buffer;
 			// Make sure any padding is handled outside of the loop.
 			var length = input.length - padding;
-	
+
 			while (++position < length) {
 				// Read three bytes, i.e. 24 bits.
 				a = input.charCodeAt(position) << 16;
@@ -18081,7 +18177,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					TABLE.charAt(buffer & 0x3F)
 				);
 			}
-	
+
 			if (padding == 2) {
 				a = input.charCodeAt(position) << 8;
 				b = input.charCodeAt(++position);
@@ -18100,16 +18196,16 @@ return /******/ (function(modules) { // webpackBootstrap
 					'=='
 				);
 			}
-	
+
 			return output;
 		};
-	
+
 		var base64 = {
 			'encode': encode,
 			'decode': decode,
 			'version': '0.1.0'
 		};
-	
+
 		// Some AMD build optimizers, like r.js, check for specific condition patterns
 		// like the following:
 		if (
@@ -18129,9 +18225,9 @@ return /******/ (function(modules) { // webpackBootstrap
 		} else { // in Rhino or a web browser
 			root.base64 = base64;
 		}
-	
+
 	}(this));
-	
+
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)(module), (function() { return this; }())))
 
 /***/ },
@@ -18144,22 +18240,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	// version 0.7.0
 	// Underscore-to-camelCase converter (and vice versa)
 	// for strings and object keys
-	
+
 	// humps is copyright © 2012+ Dom Christie
 	// Released under the MIT license.
-	
-	
+
+
 	;(function(global) {
-	
+
 	  var _processKeys = function(convert, obj, separator, ignoreNumbers) {
 	    if(!_isObject(obj) || _isDate(obj) || _isRegExp(obj) || _isBoolean(obj)) {
 	      return obj;
 	    }
-	
+
 	    var output,
 	        i = 0,
 	        l = 0;
-	
+
 	    if(_isArray(obj)) {
 	      output = [];
 	      for(l=obj.length; i<l; i++) {
@@ -18176,23 +18272,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    return output;
 	  };
-	
+
 	  // String conversion methods
-	
+
 	  var separateWords = function(string, separator, ignoreNumbers) {
 	    if (typeof separator === 'undefined') {
 	      separator = '_';
 	    }
-	
+
 	    var regexp = /([a-z])([A-Z0-9])/g;
-	
+
 	    if (ignoreNumbers) {
 	      regexp = /([a-z])([A-Z])/g;
 	    }
-	
+
 	    return string.replace(regexp, '$1'+ separator +'$2');
 	  };
-	
+
 	  var camelize = function(string) {
 	    if (_isNumerical(string)) {
 	      return string;
@@ -18203,22 +18299,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // Ensure 1st char is always lowercase
 	    return string.substr(0, 1).toLowerCase() + string.substr(1);
 	  };
-	
+
 	  var pascalize = function(string) {
 	    var camelized = camelize(string);
 	    // Ensure 1st char is always uppercase
 	    return camelized.substr(0, 1).toUpperCase() + camelized.substr(1);
 	  };
-	
+
 	  var decamelize = function(string, separator, ignoreNumbers) {
 	    return separateWords(string, separator, ignoreNumbers).toLowerCase();
 	  };
-	
+
 	  // Utilities
 	  // Taken from Underscore.js
-	
+
 	  var toString = Object.prototype.toString;
-	
+
 	  var _isObject = function(obj) {
 	    return obj === Object(obj);
 	  };
@@ -18234,13 +18330,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var _isBoolean = function(obj) {
 	    return toString.call(obj) == '[object Boolean]';
 	  };
-	
+
 	  // Performant way to determine if obj coerces to a number
 	  var _isNumerical = function(obj) {
 	    obj = obj - 0;
 	    return obj === obj;
 	  };
-	
+
 	  var humps = {
 	    camelize: camelize,
 	    decamelize: decamelize,
@@ -18259,7 +18355,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      return this.decamelizeKeys.apply(this, arguments);
 	    }
 	  };
-	
+
 	  if (true) {
 	    !(__WEBPACK_AMD_DEFINE_FACTORY__ = (humps), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.call(exports, __webpack_require__, exports, module)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	  } else if (typeof module !== 'undefined' && module.exports) {
@@ -18267,7 +18363,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  } else {
 	    global.humps = humps;
 	  }
-	
+
 	})(this);
 
 
@@ -18276,23 +18372,23 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports) {
 
 	'use strict';
-	
+
 	/*
 	 * Utily functions for Booking.js
 	 */
-	
+
 	module.exports = {
-	
+
 	  isFunction: function(object) {
 	   return !!(object && object.constructor && object.call && object.apply);
 	  },
-	
+
 	  doCallback: function(hook, config, arg) {
 	    if(this.isFunction(config.callbacks[hook])) {
 	      config.callbacks[hook](arg);
 	    }
 	  }
-	
+
 	};
 
 
@@ -18301,13 +18397,13 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports) {
 
 	'use strict';
-	
+
 	/*
 	 * Default configuration for for Booking.js
 	 */
-	
+
 	var primary = {
-	
+
 	  // email: '',
 	  // apiToken: '',
 	  // calendar: '',
@@ -18318,6 +18414,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  includeStyles: true,
 	  showCredits: true,
 	  goToFirstEvent: true,
+	  bookingMode: 'instabook',
 	  bookingFields: {
 	    name: {
 	      placeholder: 'Your full name',
@@ -18359,10 +18456,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    future: '4 weeks',
 	    length: '1 hour'
 	  },
-	  timekitCreateEvent: {
-	    invite: true,
-	    my_rsvp: 'needsAction'
-	  },
+	  timekitCreateBooking: { },
+	  timekitUpdateBooking: { },
 	  fullCalendar: {
 	    header: {
 	      left: '',
@@ -18385,12 +18480,36 @@ return /******/ (function(modules) { // webpackBootstrap
 	    timeDateFormat: '12h-mdy-sun'
 	  },
 	  callbacks: {}
-	
+
 	};
-	
+
+	var bookingInstant = {
+
+	  timekitUpdateBooking: {
+	    action: 'confirm',
+	    event: {
+	      invite: true,
+	      my_rsvp: 'accepted'
+	    }
+	  }
+
+	};
+
+	var bookingActionable = {
+
+	  timekitUpdateBooking: {
+	    action: 'start',
+	    event: {
+	      invite: false,
+	      my_rsvp: 'needsAction'
+	    }
+	  }
+
+	};
+
 	// Preset: timeDateFormat = '24h-dmy-mon'
 	var timeDateFormat24hdmymon = {
-	
+
 	  fullCalendar: {
 	    timeFormat: 'HH:mm',
 	    firstDay: 1,
@@ -18408,12 +18527,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    bookingDateFormat: 'D. MMMM YYYY',
 	    bookingTimeFormat: 'HH:mm'
 	  }
-	
+
 	};
-	
+
 	// Preset: timeDateFormat = '12h-mdy-sun'
 	var timeDateFormat12hmdysun = {
-	
+
 	  fullCalendar: {
 	    timeFormat: 'h:mma',
 	    firstDay: 0,
@@ -18431,15 +18550,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    bookingDateFormat: 'MMMM D, YYYY',
 	    bookingTimeFormat: 'h:mma'
 	  }
-	
+
 	};
-	
+
 	// Export objects
 	module.exports = {
 	  primary: primary,
 	  presets: {
 	    timeDateFormat24hdmymon:  timeDateFormat24hdmymon,
-	    timeDateFormat12hmdysun:  timeDateFormat12hmdysun
+	    timeDateFormat12hmdysun:  timeDateFormat12hmdysun,
+	    bookingInstant: bookingInstant,
+	    bookingActionable: bookingActionable
 	  }
 	};
 
@@ -18449,7 +18570,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
+
 	// load the styles
 	var content = __webpack_require__(32);
 	if(typeof content === 'string') content = [[module.id, content, '']];
@@ -18476,11 +18597,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	exports = module.exports = __webpack_require__(33)();
 	// imports
-	
-	
+
+
 	// module
 	exports.push([module.id, "/*!\n * FullCalendar v2.4.0 Stylesheet\n * Docs & License: http://fullcalendar.io/\n * (c) 2015 Adam Shaw\n */.fc{direction:ltr;text-align:left}.fc-rtl{text-align:right}body .fc{font-size:1em}.fc-unthemed .fc-divider,.fc-unthemed .fc-popover,.fc-unthemed .fc-row,.fc-unthemed tbody,.fc-unthemed td,.fc-unthemed th,.fc-unthemed thead{border-color:#ddd}.fc-unthemed .fc-popover{background-color:#fff}.fc-unthemed .fc-divider,.fc-unthemed .fc-popover .fc-header{background:#eee}.fc-unthemed .fc-popover .fc-header .fc-close{color:#666}.fc-unthemed .fc-today{background:#fcf8e3}.fc-highlight{background:#bce8f1}.fc-bgevent,.fc-highlight{opacity:.3;filter:alpha(opacity=30)}.fc-bgevent{background:#8fdf82}.fc-nonbusiness{background:#d7d7d7}.fc-icon{display:inline-block;width:1em;height:1em;line-height:1em;font-size:1em;text-align:center;overflow:hidden;font-family:Courier New,Courier,monospace;-webkit-touch-callout:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.fc-icon:after{position:relative;margin:0 -1em}.fc-icon-left-single-arrow:after{content:\"\\2039\";font-weight:700;font-size:200%;top:-7%;left:3%}.fc-icon-right-single-arrow:after{content:\"\\203A\";font-weight:700;font-size:200%;top:-7%;left:-3%}.fc-icon-left-double-arrow:after{content:\"\\AB\";font-size:160%;top:-7%}.fc-icon-right-double-arrow:after{content:\"\\BB\";font-size:160%;top:-7%}.fc-icon-left-triangle:after{content:\"\\25C4\";font-size:125%;top:3%;left:-2%}.fc-icon-right-triangle:after{content:\"\\25BA\";font-size:125%;top:3%;left:2%}.fc-icon-down-triangle:after{content:\"\\25BC\";font-size:125%;top:2%}.fc-icon-x:after{content:\"\\D7\";font-size:200%;top:6%}.fc button{box-sizing:border-box;margin:0;height:2.1em;padding:0 .6em;font-size:1em;white-space:nowrap;cursor:pointer}.fc button::-moz-focus-inner{margin:0;padding:0}.fc-state-default{border:1px solid}.fc-state-default.fc-corner-left{border-top-left-radius:4px;border-bottom-left-radius:4px}.fc-state-default.fc-corner-right{border-top-right-radius:4px;border-bottom-right-radius:4px}.fc button .fc-icon{position:relative;top:-.05em;margin:0 .2em;vertical-align:middle}.fc-state-default{background-color:#f5f5f5;background-image:-webkit-gradient(linear,0 0,0 100%,from(#fff),to(#e6e6e6));background-image:-webkit-linear-gradient(top,#fff,#e6e6e6);background-image:linear-gradient(to bottom,#fff,#e6e6e6);background-repeat:repeat-x;border-color:#e6e6e6 #e6e6e6 #bfbfbf;border-color:rgba(0,0,0,.1) rgba(0,0,0,.1) rgba(0,0,0,.25);color:#333;text-shadow:0 1px 1px hsla(0,0%,100%,.75);box-shadow:inset 0 1px 0 hsla(0,0%,100%,.2),0 1px 2px rgba(0,0,0,.05)}.fc-state-active,.fc-state-disabled,.fc-state-down,.fc-state-hover{color:#333;background-color:#e6e6e6}.fc-state-hover{color:#333;text-decoration:none;background-position:0 -15px;-webkit-transition:background-position .1s linear;transition:background-position .1s linear}.fc-state-active,.fc-state-down{background-color:#ccc;background-image:none;box-shadow:inset 0 2px 4px rgba(0,0,0,.15),0 1px 2px rgba(0,0,0,.05)}.fc-state-disabled{cursor:default;background-image:none;opacity:.65;filter:alpha(opacity=65);box-shadow:none}.fc-button-group{display:inline-block}.fc .fc-button-group>*{float:left;margin:0 0 0 -1px}.fc .fc-button-group>:first-child{margin-left:0}.fc-popover{position:absolute;box-shadow:0 2px 6px rgba(0,0,0,.15)}.fc-popover .fc-header{padding:2px 4px}.fc-popover .fc-header .fc-title{margin:0 2px}.fc-popover .fc-header .fc-close{cursor:pointer}.fc-ltr .fc-popover .fc-header .fc-title,.fc-rtl .fc-popover .fc-header .fc-close{float:left}.fc-ltr .fc-popover .fc-header .fc-close,.fc-rtl .fc-popover .fc-header .fc-title{float:right}.fc-unthemed .fc-popover{border-width:1px;border-style:solid}.fc-unthemed .fc-popover .fc-header .fc-close{font-size:.9em;margin-top:2px}.fc-popover>.ui-widget-header+.ui-widget-content{border-top:0}.fc-divider{border-style:solid;border-width:1px}hr.fc-divider{height:0;margin:0;padding:0 0 2px;border-width:1px 0}.fc-clear{clear:both}.fc-bg,.fc-bgevent-skeleton,.fc-helper-skeleton,.fc-highlight-skeleton{position:absolute;top:0;left:0;right:0}.fc-bg{bottom:0}.fc-bg table{height:100%}.fc table{width:100%;table-layout:fixed;border-collapse:collapse;border-spacing:0;font-size:1em}.fc th{text-align:center}.fc td,.fc th{border-style:solid;border-width:1px;padding:0;vertical-align:top}.fc td.fc-today{border-style:double}.fc .fc-row{border-style:solid;border-width:0}.fc-row table{border-left:0 hidden transparent;border-right:0 hidden transparent;border-bottom:0 hidden transparent}.fc-row:first-child table{border-top:0 hidden transparent}.fc-row{position:relative}.fc-row .fc-bg{z-index:1}.fc-row .fc-bgevent-skeleton,.fc-row .fc-highlight-skeleton{bottom:0}.fc-row .fc-bgevent-skeleton table,.fc-row .fc-highlight-skeleton table{height:100%}.fc-row .fc-bgevent-skeleton td,.fc-row .fc-highlight-skeleton td{border-color:transparent}.fc-row .fc-bgevent-skeleton{z-index:2}.fc-row .fc-highlight-skeleton{z-index:3}.fc-row .fc-content-skeleton{position:relative;z-index:4;padding-bottom:2px}.fc-row .fc-helper-skeleton{z-index:5}.fc-row .fc-content-skeleton td,.fc-row .fc-helper-skeleton td{background:none;border-color:transparent;border-bottom:0}.fc-row .fc-content-skeleton tbody td,.fc-row .fc-helper-skeleton tbody td{border-top:0}.fc-scroller{overflow-y:scroll;overflow-x:hidden}.fc-scroller>*{position:relative;width:100%;overflow:hidden}.fc-event{position:relative;display:block;font-size:.85em;line-height:1.3;border-radius:3px;border:1px solid #3a87ad;background-color:#3a87ad;font-weight:400}.fc-event,.fc-event:hover,.ui-widget .fc-event{color:#fff;text-decoration:none}.fc-event.fc-draggable,.fc-event[href]{cursor:pointer}.fc-not-allowed,.fc-not-allowed .fc-event{cursor:not-allowed}.fc-event .fc-bg{z-index:1;background:#fff;opacity:.25;filter:alpha(opacity=25)}.fc-event .fc-content{position:relative;z-index:2}.fc-event .fc-resizer{position:absolute;z-index:3}.fc-ltr .fc-h-event.fc-not-start,.fc-rtl .fc-h-event.fc-not-end{margin-left:0;border-left-width:0;padding-left:1px;border-top-left-radius:0;border-bottom-left-radius:0}.fc-ltr .fc-h-event.fc-not-end,.fc-rtl .fc-h-event.fc-not-start{margin-right:0;border-right-width:0;padding-right:1px;border-top-right-radius:0;border-bottom-right-radius:0}.fc-h-event .fc-resizer{top:-1px;bottom:-1px;left:-1px;right:-1px;width:5px}.fc-ltr .fc-h-event .fc-start-resizer,.fc-ltr .fc-h-event .fc-start-resizer:after,.fc-ltr .fc-h-event .fc-start-resizer:before,.fc-rtl .fc-h-event .fc-end-resizer,.fc-rtl .fc-h-event .fc-end-resizer:after,.fc-rtl .fc-h-event .fc-end-resizer:before{right:auto;cursor:w-resize}.fc-ltr .fc-h-event .fc-end-resizer,.fc-ltr .fc-h-event .fc-end-resizer:after,.fc-ltr .fc-h-event .fc-end-resizer:before,.fc-rtl .fc-h-event .fc-start-resizer,.fc-rtl .fc-h-event .fc-start-resizer:after,.fc-rtl .fc-h-event .fc-start-resizer:before{left:auto;cursor:e-resize}.fc-day-grid-event{margin:1px 2px 0;padding:0 1px}.fc-day-grid-event .fc-content{white-space:nowrap;overflow:hidden}.fc-day-grid-event .fc-time{font-weight:700}.fc-day-grid-event .fc-resizer{left:-3px;right:-3px;width:7px}a.fc-more{margin:1px 3px;font-size:.85em;cursor:pointer;text-decoration:none}a.fc-more:hover{text-decoration:underline}.fc-limited{display:none}.fc-day-grid .fc-row{z-index:1}.fc-more-popover{z-index:2;width:220px}.fc-more-popover .fc-event-container{padding:10px}.fc-toolbar{text-align:center;margin-bottom:1em}.fc-toolbar .fc-left{float:left}.fc-toolbar .fc-right{float:right}.fc-toolbar .fc-center{display:inline-block}.fc .fc-toolbar>*>*{float:left;margin-left:.75em}.fc .fc-toolbar>*>:first-child{margin-left:0}.fc-toolbar h2{margin:0}.fc-toolbar button{position:relative}.fc-toolbar .fc-state-hover,.fc-toolbar .ui-state-hover{z-index:2}.fc-toolbar .fc-state-down{z-index:3}.fc-toolbar .fc-state-active,.fc-toolbar .ui-state-active{z-index:4}.fc-toolbar button:focus{z-index:5}.fc-view-container *,.fc-view-container :after,.fc-view-container :before{box-sizing:content-box}.fc-view,.fc-view>table{position:relative;z-index:1}.fc-basicDay-view .fc-content-skeleton,.fc-basicWeek-view .fc-content-skeleton{padding-top:1px;padding-bottom:1em}.fc-basic-view .fc-body .fc-row{min-height:4em}.fc-row.fc-rigid{overflow:hidden}.fc-row.fc-rigid .fc-content-skeleton{position:absolute;top:0;left:0;right:0}.fc-basic-view .fc-day-number,.fc-basic-view .fc-week-number{padding:0 2px}.fc-basic-view td.fc-day-number,.fc-basic-view td.fc-week-number span{padding-top:2px;padding-bottom:2px}.fc-basic-view .fc-week-number{text-align:center}.fc-basic-view .fc-week-number span{display:inline-block;min-width:1.25em}.fc-ltr .fc-basic-view .fc-day-number{text-align:right}.fc-rtl .fc-basic-view .fc-day-number{text-align:left}.fc-day-number.fc-other-month{opacity:.3;filter:alpha(opacity=30)}.fc-agenda-view .fc-day-grid{position:relative;z-index:2}.fc-agenda-view .fc-day-grid .fc-row{min-height:3em}.fc-agenda-view .fc-day-grid .fc-row .fc-content-skeleton{padding-top:1px;padding-bottom:1em}.fc .fc-axis{vertical-align:middle;padding:0 4px;white-space:nowrap}.fc-ltr .fc-axis{text-align:right}.fc-rtl .fc-axis{text-align:left}.ui-widget td.fc-axis{font-weight:400}.fc-time-grid,.fc-time-grid-container{position:relative;z-index:1}.fc-time-grid{min-height:100%}.fc-time-grid table{border:0 hidden transparent}.fc-time-grid>.fc-bg{z-index:1}.fc-time-grid .fc-slats,.fc-time-grid>hr{position:relative;z-index:2}.fc-time-grid .fc-bgevent-skeleton,.fc-time-grid .fc-content-skeleton{position:absolute;top:0;left:0;right:0}.fc-time-grid .fc-bgevent-skeleton{z-index:3}.fc-time-grid .fc-highlight-skeleton{z-index:4}.fc-time-grid .fc-content-skeleton{z-index:5}.fc-time-grid .fc-helper-skeleton{z-index:6}.fc-time-grid .fc-slats td{height:1.5em;border-bottom:0}.fc-time-grid .fc-slats .fc-minor td{border-top-style:dotted}.fc-time-grid .fc-slats .ui-widget-content{background:none}.fc-time-grid .fc-highlight-container{position:relative}.fc-time-grid .fc-highlight{position:absolute;left:0;right:0}.fc-time-grid .fc-bgevent-container,.fc-time-grid .fc-event-container{position:relative}.fc-ltr .fc-time-grid .fc-event-container{margin:0 2.5% 0 2px}.fc-rtl .fc-time-grid .fc-event-container{margin:0 2px 0 2.5%}.fc-time-grid .fc-bgevent,.fc-time-grid .fc-event{position:absolute;z-index:1}.fc-time-grid .fc-bgevent{left:0;right:0}.fc-v-event.fc-not-start{border-top-width:0;padding-top:1px;border-top-left-radius:0;border-top-right-radius:0}.fc-v-event.fc-not-end{border-bottom-width:0;padding-bottom:1px;border-bottom-left-radius:0;border-bottom-right-radius:0}.fc-time-grid-event{overflow:hidden}.fc-time-grid-event .fc-time,.fc-time-grid-event .fc-title{padding:0 1px}.fc-time-grid-event .fc-time{font-size:.85em;white-space:nowrap}.fc-time-grid-event.fc-short .fc-content{white-space:nowrap}.fc-time-grid-event.fc-short .fc-time,.fc-time-grid-event.fc-short .fc-title{display:inline-block;vertical-align:top}.fc-time-grid-event.fc-short .fc-time span{display:none}.fc-time-grid-event.fc-short .fc-time:before{content:attr(data-start)}.fc-time-grid-event.fc-short .fc-time:after{content:\"\\A0-\\A0\"}.fc-time-grid-event.fc-short .fc-title{font-size:.85em;padding:0}.fc-time-grid-event .fc-resizer{left:0;right:0;bottom:0;height:8px;overflow:hidden;line-height:8px;font-size:11px;font-family:monospace;text-align:center;cursor:s-resize}.fc-time-grid-event .fc-resizer:after{content:\"=\"}", ""]);
-	
+
 	// exports
 
 
@@ -18495,7 +18616,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// css base code, injected by the css-loader
 	module.exports = function() {
 		var list = [];
-	
+
 		// return the list of modules as css string
 		list.toString = function toString() {
 			var result = [];
@@ -18509,7 +18630,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 			return result.join("");
 		};
-	
+
 		// import a list of modules into the list
 		list.i = function(modules, mediaQuery) {
 			if(typeof modules === "string")
@@ -18565,23 +18686,23 @@ return /******/ (function(modules) { // webpackBootstrap
 		singletonElement = null,
 		singletonCounter = 0,
 		styleElementsInsertedAtTop = [];
-	
+
 	module.exports = function(list, options) {
 		if(false) {
 			if(typeof document !== "object") throw new Error("The style-loader cannot be used in a non-browser environment");
 		}
-	
+
 		options = options || {};
 		// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
 		// tags it will allow on a page
 		if (typeof options.singleton === "undefined") options.singleton = isOldIE();
-	
+
 		// By default, add <style> tags to the bottom of <head>.
 		if (typeof options.insertAt === "undefined") options.insertAt = "bottom";
-	
+
 		var styles = listToStyles(list);
 		addStylesToDom(styles, options);
-	
+
 		return function update(newList) {
 			var mayRemove = [];
 			for(var i = 0; i < styles.length; i++) {
@@ -18604,7 +18725,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 		};
 	}
-	
+
 	function addStylesToDom(styles, options) {
 		for(var i = 0; i < styles.length; i++) {
 			var item = styles[i];
@@ -18626,7 +18747,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 		}
 	}
-	
+
 	function listToStyles(list) {
 		var styles = [];
 		var newStyles = {};
@@ -18644,7 +18765,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		}
 		return styles;
 	}
-	
+
 	function insertStyleElement(options, styleElement) {
 		var head = getHeadElement();
 		var lastStyleElementInsertedAtTop = styleElementsInsertedAtTop[styleElementsInsertedAtTop.length - 1];
@@ -18663,7 +18784,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			throw new Error("Invalid value for parameter 'insertAt'. Must be 'top' or 'bottom'.");
 		}
 	}
-	
+
 	function removeStyleElement(styleElement) {
 		styleElement.parentNode.removeChild(styleElement);
 		var idx = styleElementsInsertedAtTop.indexOf(styleElement);
@@ -18671,24 +18792,24 @@ return /******/ (function(modules) { // webpackBootstrap
 			styleElementsInsertedAtTop.splice(idx, 1);
 		}
 	}
-	
+
 	function createStyleElement(options) {
 		var styleElement = document.createElement("style");
 		styleElement.type = "text/css";
 		insertStyleElement(options, styleElement);
 		return styleElement;
 	}
-	
+
 	function createLinkElement(options) {
 		var linkElement = document.createElement("link");
 		linkElement.rel = "stylesheet";
 		insertStyleElement(options, linkElement);
 		return linkElement;
 	}
-	
+
 	function addStyle(obj, options) {
 		var styleElement, update, remove;
-	
+
 		if (options.singleton) {
 			var styleIndex = singletonCounter++;
 			styleElement = singletonElement || (singletonElement = createStyleElement(options));
@@ -18714,9 +18835,9 @@ return /******/ (function(modules) { // webpackBootstrap
 				removeStyleElement(styleElement);
 			};
 		}
-	
+
 		update(obj);
-	
+
 		return function updateStyle(newObj) {
 			if(newObj) {
 				if(newObj.css === obj.css && newObj.media === obj.media && newObj.sourceMap === obj.sourceMap)
@@ -18727,19 +18848,19 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 		};
 	}
-	
+
 	var replaceText = (function () {
 		var textStore = [];
-	
+
 		return function (index, replacement) {
 			textStore[index] = replacement;
 			return textStore.filter(Boolean).join('\n');
 		};
 	})();
-	
+
 	function applyToSingletonTag(styleElement, index, remove, obj) {
 		var css = remove ? "" : obj.css;
-	
+
 		if (styleElement.styleSheet) {
 			styleElement.styleSheet.cssText = replaceText(index, css);
 		} else {
@@ -18753,16 +18874,16 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 		}
 	}
-	
+
 	function applyToTag(styleElement, obj) {
 		var css = obj.css;
 		var media = obj.media;
 		var sourceMap = obj.sourceMap;
-	
+
 		if(media) {
 			styleElement.setAttribute("media", media)
 		}
-	
+
 		if(styleElement.styleSheet) {
 			styleElement.styleSheet.cssText = css;
 		} else {
@@ -18772,23 +18893,23 @@ return /******/ (function(modules) { // webpackBootstrap
 			styleElement.appendChild(document.createTextNode(css));
 		}
 	}
-	
+
 	function updateLink(linkElement, obj) {
 		var css = obj.css;
 		var media = obj.media;
 		var sourceMap = obj.sourceMap;
-	
+
 		if(sourceMap) {
 			// http://stackoverflow.com/a/26603875
 			css += "\n/*# sourceMappingURL=data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + " */";
 		}
-	
+
 		var blob = new Blob([css], { type: "text/css" });
-	
+
 		var oldSrc = linkElement.href;
-	
+
 		linkElement.href = URL.createObjectURL(blob);
-	
+
 		if(oldSrc)
 			URL.revokeObjectURL(oldSrc);
 	}
@@ -18799,7 +18920,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
+
 	// load the styles
 	var content = __webpack_require__(36);
 	if(typeof content === 'string') content = [[module.id, content, '']];
@@ -18826,11 +18947,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	exports = module.exports = __webpack_require__(33)();
 	// imports
-	
-	
+
+
 	// module
 	exports.push([module.id, ".fc-view-container{background-color:#fbfbfb;color:#333}.fc-row.fc-widget-header{border-bottom:1px solid #ececec}.fc-row.fc-widget-header .fc-day-header{text-transform:uppercase;font-size:.9em;font-weight:600}.fc-axis,.fc-row.fc-widget-header .fc-day-header:first-line{color:#b9b9b9}.fc-axis{font-size:.9em}.fc-state-default{text-shadow:none;box-shadow:none;background-image:none;background-color:#fff;border-color:#fff}.fc-button{text-transform:uppercase;font-weight:600;font-size:1.1em}.fc-content-skeleton{border-top:1px solid #ddd}.fc .fc-toolbar{padding:0;margin-bottom:0;border-bottom:1px solid #ececec}.fc .fc-toolbar>*>button{padding:15px 17px;height:auto;outline:0;margin-left:0;-webkit-transition:opacity .2s ease;transition:opacity .2s ease;opacity:.3}.fc .fc-toolbar>*>button:hover{opacity:1}.fc .fc-toolbar>*>button.fc-state-disabled{-webkit-transition:opacity 0s;transition:opacity 0s;opacity:0}.fc .fc-toolbar>*>button.fc-prev-button{padding-right:8px}.fc .fc-toolbar>*>button.fc-next-button{padding-left:8px}.fc .fc-toolbar>*>button .fc-icon{font-size:1.1em}.fc .fc-toolbar>.fc-right>button.fc-today-button{padding:15px 5px}.fc-unthemed .fc-today{background:#fff}.fc-body>tr>.fc-widget-content,.fc-head>tr>.fc-widget-header{border:0!important}.fc th{border-color:#fff;padding:5px}.fc-unthemed .fc-divider,.fc-unthemed .fc-popover .fc-header{background-color:transparent}.empty-calendar .fc-event{opacity:0}.fc-event{-webkit-transition:all .2s,opacity .6s;transition:all .2s,opacity .6s;border:none;border-left:3px solid #689ad8;padding:3px;background-color:#fff;border-radius:4px;color:#333;margin:1px 0;box-shadow:0 1px 2px rgba(0,0,0,.07);cursor:pointer;margin-bottom:2px;opacity:1}.fc-event:hover{color:#fff;background-color:#689ad8;border-left:3px solid #689ad8;box-shadow:0 1px 3px rgba(0,0,0,.15)}.fc-event .fc-bg{opacity:0}.fc-day-grid-event{padding:15px;margin:5px}.fc-day-grid-event .fc-time{font-weight:600}.fc-time-grid .fc-slats .fc-minor td{border-top-style:none}.fc-time-grid .fc-slats td{border-top-color:#fbfbfb}.fc-time-grid .fc-slats td.fc-axis{border-top-color:#ececec}.fc-time-grid-event.fc-short .fc-content{font-size:.7em;line-height:.2em}.fc-time-grid-event.fc-short .fc-time:after{content:''}.fc-time-grid-event .fc-time{font-size:1.1em;padding:5px}.fc-unthemed .fc-divider,.fc-unthemed .fc-popover,.fc-unthemed .fc-row,.fc-unthemed tbody,.fc-unthemed td,.fc-unthemed th,.fc-unthemed thead{border-color:#ececec}.fc-agendaMonthly-view .fc-event{color:#fff}", ""]);
-	
+
 	// exports
 
 
@@ -18839,7 +18960,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
+
 	// load the styles
 	var content = __webpack_require__(38);
 	if(typeof content === 'string') content = [[module.id, content, '']];
@@ -18866,11 +18987,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	exports = module.exports = __webpack_require__(33)();
 	// imports
-	
-	
+
+
 	// module
 	exports.push([module.id, "@keyframes spin{to{-webkit-transform:rotate(1turn);transform:rotate(1turn)}}@-webkit-keyframes shake{0%{-webkit-transform:translateX(0);transform:translateX(0)}25%{-webkit-transform:translateX(5px);transform:translateX(5px)}50%{-webkit-transform:translateX(-5px);transform:translateX(-5px)}75%{-webkit-transform:translateX(5px);transform:translateX(5px)}}@keyframes shake{0%,to{-webkit-transform:translateX(0);transform:translateX(0)}25%{-webkit-transform:translateX(5px);transform:translateX(5px)}50%{-webkit-transform:translateX(-5px);transform:translateX(-5px)}75%{-webkit-transform:translateX(5px);transform:translateX(5px)}to{-webkit-transform:translateX(0);transform:translateX(0)}}", ""]);
-	
+
 	// exports
 
 
@@ -18879,7 +19000,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
+
 	// load the styles
 	var content = __webpack_require__(40);
 	if(typeof content === 'string') content = [[module.id, content, '']];
@@ -18907,10 +19028,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports = module.exports = __webpack_require__(33)();
 	// imports
 	exports.push([module.id, "@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);", ""]);
-	
+
 	// module
 	exports.push([module.id, "/*!\n * Booking.js\n * http://booking.timekit.io\n * (c) 2015 Timekit Inc.\n */.bookingjs{position:relative;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;font-size:13px;border-radius:4px;background-color:#fff;box-shadow:rgba(0,0,0,.2) 0 2px 4px 0;margin:60px auto 20px;z-index:10;opacity:0;color:#333}.bookingjs.show{-webkit-transition:opacity .3s ease;transition:opacity .3s ease;opacity:1}.is-small.has-avatar.has-displayname .bookingjs-calendar .fc-toolbar{padding-bottom:24px}.is-small .bookingjs-calendar .fc-toolbar>.fc-right>button.fc-today-button{position:absolute;left:15px}.bookingjs-timezonehelper{color:#aeaeae;text-align:center;padding:7px 10px;background-color:#fbfbfb;border-top:1px solid #ececec;min-height:15px;z-index:20;border-radius:0 0 4px 4px}.bookingjs-timezoneicon{width:10px;margin-right:5px}.bookingjs-avatar{position:absolute;top:-50px;left:50%;-webkit-transform:translateX(-50%);-ms-transform:translateX(-50%);transform:translateX(-50%);border-radius:150px;border:3px solid #fff;box-shadow:0 1px 3px 0 rgba(0,0,0,.13);overflow:hidden;z-index:40;background-color:#fff}.is-small .bookingjs-avatar{top:-40px}.bookingjs-avatar img{max-width:100%;vertical-align:middle;display:inline-block;width:80px;height:80px}.is-small .bookingjs-avatar img{width:70px;height:70px}.bookingjs-displayname{position:absolute;top:0;left:0;padding:15px 20px;color:#333;font-weight:600}.is-small .bookingjs-displayname{text-align:center;width:100%;box-sizing:border-box}.is-small.has-avatar .bookingjs-displayname{top:28px}.bookingjs-bookpage{position:absolute;height:100%;width:100%;top:0;left:0;background-color:#fbfbfb;z-index:30;opacity:0;-webkit-transition:opacity .2s ease;transition:opacity .2s ease;border-radius:4px}.bookingjs-bookpage.show{opacity:1}.bookingjs-bookpage-close{position:absolute;top:0;right:0;padding:18px;-webkit-transition:opacity .2s ease;transition:opacity .2s ease;opacity:.3}.bookingjs-bookpage-close:hover{opacity:1}.bookingjs-bookpage-date{text-align:center;font-size:34px;font-weight:400;margin-top:70px;margin-bottom:10px}.is-small .bookingjs-bookpage-date{font-size:27px;margin-top:60px}.bookingjs-bookpage-time{text-align:center;font-size:17px;font-weight:400;margin-bottom:50px;margin-top:10px}.is-small .bookingjs-bookpage-time{font-size:15px;margin-bottom:35px}.bookingjs-closeicon{width:15px}.bookingjs-form{width:350px;position:relative;margin:0 auto;text-align:center}.is-small .bookingjs-form{width:90%}.bookingjs-form-box{position:relative;box-shadow:0 1px 3px 0 rgba(0,0,0,.1);border-radius:4px;overflow:hidden;background-color:#fff;line-height:0}.bookingjs-form-success-message{position:absolute;top:-999px;left:0;right:0;padding:30px;background-color:#fff;opacity:0;-webkit-transition:opacity .3s ease;transition:opacity .3s ease;line-height:normal}.is-small .bookingjs-form-success-message{padding:22px 10px}.bookingjs-form-success-message .title{font-weight:600}.bookingjs-form-success-message .booked-email{color:#aeaeae}.bookingjs-form.success .bookingjs-form-success-message{opacity:1;top:0;bottom:0}.bookingjs-form-input{-webkit-transition:box-shadow .2s ease;transition:box-shadow .2s ease;width:100%;padding:15px 25px;border:0 solid #ececec;font-size:1em;box-shadow:inset 0 0 1px 1px hsla(0,0%,100%,0);text-align:left;box-sizing:border-box;line-height:normal;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif}.bookingjs-form-input:focus{outline:0;box-shadow:inset 0 0 1px 1px #689ad8}.bookingjs-form-input.hidden{display:none}.bookingjs-form-button{position:relative;-webkit-transition:background-color .2s,max-width .3s;transition:background-color .2s,max-width .3s;display:inline-block;padding:13px 25px;background-color:#689ad8;text-transform:uppercase;box-shadow:0 1px 3px 0 rgba(0,0,0,.15);color:#fff;border:0;border-radius:3px;font-size:1.1em;font-weight:600;margin-top:30px;cursor:pointer;height:44px;outline:0;text-align:center;max-width:200px}.bookingjs-form-button .error-text,.bookingjs-form-button .loading-text,.bookingjs-form-button .success-text{-webkit-transition:opacity .3s ease;transition:opacity .3s ease;position:absolute;top:13px;left:50%;-webkit-transform:translateX(-50%);-ms-transform:translateX(-50%);transform:translateX(-50%);opacity:0}.bookingjs-form-button .inactive-text{white-space:nowrap;opacity:1}.bookingjs-form-button .loading-text svg{height:19px;width:19px;-webkit-animation:spin .6s infinite linear;animation:spin .6s infinite linear}.bookingjs-form-button .error-text svg{height:15px;width:15px;margin-top:2px}.bookingjs-form-button .success-text svg{height:15px;margin-top:2px;-webkit-transform:scale(0);-ms-transform:scale(0);transform:scale(0);-webkit-transition:-webkit-transform .6s ease;transition:-webkit-transform .6s ease;transition:transform .6s ease;transition:transform .6s ease,-webkit-transform .6s ease}.bookingjs-form-button:hover{background-color:#3f7fce}.bookingjs-form-button.button-shake{-webkit-animation:shake .5s 1 ease;animation:shake .5s 1 ease}.bookingjs-form.loading .bookingjs-form-button,.bookingjs-form.loading .bookingjs-form-button:hover{max-width:80px;background-color:#b1b1b1;cursor:not-allowed}.bookingjs-form.loading .bookingjs-form-button .inactive-text,.bookingjs-form.loading .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.loading .bookingjs-form-button .loading-text,.bookingjs-form.loading .bookingjs-form-button:hover .loading-text{opacity:1}.bookingjs-form.error .bookingjs-form-button,.bookingjs-form.error .bookingjs-form-button:hover{max-width:80px;background-color:#d83b46;cursor:not-allowed}.bookingjs-form.error .bookingjs-form-button .inactive-text,.bookingjs-form.error .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.error .bookingjs-form-button .error-text,.bookingjs-form.error .bookingjs-form-button:hover .error-text{opacity:1}.bookingjs-form.success .bookingjs-form-button,.bookingjs-form.success .bookingjs-form-button:hover{max-width:80px;background-color:#5baf56;cursor:not-allowed}.bookingjs-form.success .bookingjs-form-button .inactive-text,.bookingjs-form.success .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.success .bookingjs-form-button .success-text,.bookingjs-form.success .bookingjs-form-button:hover .success-text{opacity:1}.bookingjs-form.success .bookingjs-form-button .success-text svg,.bookingjs-form.success .bookingjs-form-button:hover .success-text svg{-webkit-transform:scale(1);-ms-transform:scale(1);transform:scale(1)}.bookingjs-poweredby{position:absolute;bottom:0;left:0;right:0;text-align:center;padding:7px 10px}.bookingjs-poweredby a{-webkit-transition:color .2s ease;transition:color .2s ease;color:#aeaeae;text-decoration:none}.bookingjs-poweredby a svg path{-webkit-transition:fill .2s ease;transition:fill .2s ease;fill:#aeaeae}.bookingjs-poweredby a:hover{color:#333}.bookingjs-poweredby a:hover svg path{fill:#333}.bookingjs-timekiticon{width:13px;margin-right:5px;vertical-align:sub}", ""]);
-	
+
 	// exports
 
 
@@ -18945,9 +19066,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *  See the License for the specific language governing permissions and
 	 *  limitations under the License.
 	 */
-	
+
 	// This file is for use with Node.js. See dist/ for browser files.
-	
+
 	var Hogan = __webpack_require__(44);
 	Hogan.Template = __webpack_require__(45).Template;
 	Hogan.template = Hogan.Template;
@@ -18972,7 +19093,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *  See the License for the specific language governing permissions and
 	 *  limitations under the License.
 	 */
-	
+
 	(function (Hogan) {
 	  // Setup regex  assignments
 	  // remove whitespace according to Mustache spec
@@ -18983,13 +19104,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	      rSlash = /\\/g,
 	      rLineSep = /\u2028/,
 	      rParagraphSep = /\u2029/;
-	
+
 	  Hogan.tags = {
 	    '#': 1, '^': 2, '<': 3, '$': 4,
 	    '/': 5, '!': 6, '>': 7, '=': 8, '_v': 9,
 	    '{': 10, '&': 11, '_t': 12
 	  };
-	
+
 	  Hogan.scan = function scan(text, delimiters) {
 	    var len = text.length,
 	        IN_TEXT = 0,
@@ -19005,14 +19126,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	        lineStart = 0,
 	        otag = '{{',
 	        ctag = '}}';
-	
+
 	    function addBuf() {
 	      if (buf.length > 0) {
 	        tokens.push({tag: '_t', text: new String(buf)});
 	        buf = '';
 	      }
 	    }
-	
+
 	    function lineIsWhitespace() {
 	      var isAllWhitespace = true;
 	      for (var j = lineStart; j < tokens.length; j++) {
@@ -19023,13 +19144,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	          return false;
 	        }
 	      }
-	
+
 	      return isAllWhitespace;
 	    }
-	
+
 	    function filterLine(haveSeenTag, noNewLine) {
 	      addBuf();
-	
+
 	      if (haveSeenTag && lineIsWhitespace()) {
 	        for (var j = lineStart, next; j < tokens.length; j++) {
 	          if (tokens[j].text) {
@@ -19043,30 +19164,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	      } else if (!noNewLine) {
 	        tokens.push({tag:'\n'});
 	      }
-	
+
 	      seenTag = false;
 	      lineStart = tokens.length;
 	    }
-	
+
 	    function changeDelimiters(text, index) {
 	      var close = '=' + ctag,
 	          closeIndex = text.indexOf(close, index),
 	          delimiters = trim(
 	            text.substring(text.indexOf('=', index) + 1, closeIndex)
 	          ).split(' ');
-	
+
 	      otag = delimiters[0];
 	      ctag = delimiters[delimiters.length - 1];
-	
+
 	      return closeIndex + close.length - 1;
 	    }
-	
+
 	    if (delimiters) {
 	      delimiters = delimiters.split(' ');
 	      otag = delimiters[0];
 	      ctag = delimiters[1];
 	    }
-	
+
 	    for (i = 0; i < len; i++) {
 	      if (state == IN_TEXT) {
 	        if (tagChange(otag, text, i)) {
@@ -19113,58 +19234,58 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	      }
 	    }
-	
+
 	    filterLine(seenTag, true);
-	
+
 	    return tokens;
 	  }
-	
+
 	  function cleanTripleStache(token) {
 	    if (token.n.substr(token.n.length - 1) === '}') {
 	      token.n = token.n.substring(0, token.n.length - 1);
 	    }
 	  }
-	
+
 	  function trim(s) {
 	    if (s.trim) {
 	      return s.trim();
 	    }
-	
+
 	    return s.replace(/^\s*|\s*$/g, '');
 	  }
-	
+
 	  function tagChange(tag, text, index) {
 	    if (text.charAt(index) != tag.charAt(0)) {
 	      return false;
 	    }
-	
+
 	    for (var i = 1, l = tag.length; i < l; i++) {
 	      if (text.charAt(index + i) != tag.charAt(i)) {
 	        return false;
 	      }
 	    }
-	
+
 	    return true;
 	  }
-	
+
 	  // the tags allowed inside super templates
 	  var allowedInSuper = {'_t': true, '\n': true, '$': true, '/': true};
-	
+
 	  function buildTree(tokens, kind, stack, customTags) {
 	    var instructions = [],
 	        opener = null,
 	        tail = null,
 	        token = null;
-	
+
 	    tail = stack[stack.length - 1];
-	
+
 	    while (tokens.length > 0) {
 	      token = tokens.shift();
-	
+
 	      if (tail && tail.tag == '<' && !(token.tag in allowedInSuper)) {
 	        throw new Error('Illegal content in < super tag.');
 	      }
-	
+
 	      if (Hogan.tags[token.tag] <= Hogan.tags['$'] || isOpener(token, customTags)) {
 	        stack.push(token);
 	        token.nodes = buildTree(tokens, token.tag, stack, customTags);
@@ -19181,17 +19302,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	      } else if (token.tag == '\n') {
 	        token.last = (tokens.length == 0) || (tokens[0].tag == '\n');
 	      }
-	
+
 	      instructions.push(token);
 	    }
-	
+
 	    if (stack.length > 0) {
 	      throw new Error('missing closing tag: ' + stack.pop().n);
 	    }
-	
+
 	    return instructions;
 	  }
-	
+
 	  function isOpener(token, tags) {
 	    for (var i = 0, l = tags.length; i < l; i++) {
 	      if (tags[i].o == token.n) {
@@ -19200,7 +19321,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    }
 	  }
-	
+
 	  function isCloser(close, open, tags) {
 	    for (var i = 0, l = tags.length; i < l; i++) {
 	      if (tags[i].c == close && tags[i].o == open) {
@@ -19208,7 +19329,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    }
 	  }
-	
+
 	  function stringifySubstitutions(obj) {
 	    var items = [];
 	    for (var key in obj) {
@@ -19216,7 +19337,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    return "{ " + items.join(",") + " }";
 	  }
-	
+
 	  function stringifyPartials(codeObj) {
 	    var partials = [];
 	    for (var key in codeObj.partials) {
@@ -19224,36 +19345,36 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    return "partials: {" + partials.join(",") + "}, subs: " + stringifySubstitutions(codeObj.subs);
 	  }
-	
+
 	  Hogan.stringify = function(codeObj, text, options) {
 	    return "{code: function (c,p,i) { " + Hogan.wrapMain(codeObj.code) + " }," + stringifyPartials(codeObj) +  "}";
 	  }
-	
+
 	  var serialNo = 0;
 	  Hogan.generate = function(tree, text, options) {
 	    serialNo = 0;
 	    var context = { code: '', subs: {}, partials: {} };
 	    Hogan.walk(tree, context);
-	
+
 	    if (options.asString) {
 	      return this.stringify(context, text, options);
 	    }
-	
+
 	    return this.makeTemplate(context, text, options);
 	  }
-	
+
 	  Hogan.wrapMain = function(code) {
 	    return 'var t=this;t.b(i=i||"");' + code + 'return t.fl();';
 	  }
-	
+
 	  Hogan.template = Hogan.Template;
-	
+
 	  Hogan.makeTemplate = function(codeObj, text, options) {
 	    var template = this.makePartials(codeObj);
 	    template.code = new Function('c', 'p', 'i', this.wrapMain(codeObj.code));
 	    return new this.template(template, text, this, options);
 	  }
-	
+
 	  Hogan.makePartials = function(codeObj) {
 	    var key, template = {subs: {}, partials: codeObj.partials, name: codeObj.name};
 	    for (key in template.partials) {
@@ -19264,7 +19385,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    return template;
 	  }
-	
+
 	  function esc(s) {
 	    return s.replace(rSlash, '\\\\')
 	            .replace(rQuot, '\\\"')
@@ -19273,11 +19394,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            .replace(rLineSep, '\\u2028')
 	            .replace(rParagraphSep, '\\u2029');
 	  }
-	
+
 	  function chooseMethod(s) {
 	    return (~s.indexOf('.')) ? 'd' : 'f';
 	  }
-	
+
 	  function createPartial(node, context) {
 	    var prefix = "<" + (context.prefix || "");
 	    var sym = prefix + node.n + serialNo++;
@@ -19285,7 +19406,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    context.code += 't.b(t.rp("' +  esc(sym) + '",c,p,"' + (node.indent || '') + '"));';
 	    return sym;
 	  }
-	
+
 	  Hogan.codegen = {
 	    '#': function(node, context) {
 	      context.code += 'if(t.s(t.' + chooseMethod(node.n) + '("' + esc(node.n) + '",c,p,1),' +
@@ -19294,13 +19415,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	      Hogan.walk(node.nodes, context);
 	      context.code += '});c.pop();}';
 	    },
-	
+
 	    '^': function(node, context) {
 	      context.code += 'if(!t.s(t.' + chooseMethod(node.n) + '("' + esc(node.n) + '",c,p,1),c,p,1,0,0,"")){';
 	      Hogan.walk(node.nodes, context);
 	      context.code += '};';
 	    },
-	
+
 	    '>': createPartial,
 	    '<': function(node, context) {
 	      var ctx = {partials: {}, code: '', subs: {}, inPartial: true};
@@ -19309,7 +19430,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      template.subs = ctx.subs;
 	      template.partials = ctx.partials;
 	    },
-	
+
 	    '$': function(node, context) {
 	      var ctx = {subs: {}, code: '', partials: context.partials, prefix: node.n};
 	      Hogan.walk(node.nodes, ctx);
@@ -19318,32 +19439,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	        context.code += 't.sub("' + esc(node.n) + '",c,p,i);';
 	      }
 	    },
-	
+
 	    '\n': function(node, context) {
 	      context.code += write('"\\n"' + (node.last ? '' : ' + i'));
 	    },
-	
+
 	    '_v': function(node, context) {
 	      context.code += 't.b(t.v(t.' + chooseMethod(node.n) + '("' + esc(node.n) + '",c,p,0)));';
 	    },
-	
+
 	    '_t': function(node, context) {
 	      context.code += write('"' + esc(node.text) + '"');
 	    },
-	
+
 	    '{': tripleStache,
-	
+
 	    '&': tripleStache
 	  }
-	
+
 	  function tripleStache(node, context) {
 	    context.code += 't.b(t.t(t.' + chooseMethod(node.n) + '("' + esc(node.n) + '",c,p,0)));';
 	  }
-	
+
 	  function write(s) {
 	    return 't.b(' + s + ');';
 	  }
-	
+
 	  Hogan.walk = function(nodelist, context) {
 	    var func;
 	    for (var i = 0, l = nodelist.length; i < l; i++) {
@@ -19352,23 +19473,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    return context;
 	  }
-	
+
 	  Hogan.parse = function(tokens, text, options) {
 	    options = options || {};
 	    return buildTree(tokens, '', [], options.sectionTags || []);
 	  }
-	
+
 	  Hogan.cache = {};
-	
+
 	  Hogan.cacheKey = function(text, options) {
 	    return [text, !!options.asString, !!options.disableLambda, options.delimiters, !!options.modelGet].join('||');
 	  }
-	
+
 	  Hogan.compile = function(text, options) {
 	    options = options || {};
 	    var key = Hogan.cacheKey(text, options);
 	    var template = this.cache[key];
-	
+
 	    if (template) {
 	      var partials = template.partials;
 	      for (var name in partials) {
@@ -19376,7 +19497,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	      return template;
 	    }
-	
+
 	    template = this.generate(this.parse(this.scan(text, options.delimiters), text, options), text, options);
 	    return this.cache[key] = template;
 	  }
@@ -19401,9 +19522,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *  See the License for the specific language governing permissions and
 	 *  limitations under the License.
 	 */
-	
+
 	var Hogan = {};
-	
+
 	(function (Hogan) {
 	  Hogan.Template = function (codeObj, text, compiler, options) {
 	    codeObj = codeObj || {};
@@ -19415,50 +19536,50 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.subs = codeObj.subs || {};
 	    this.buf = '';
 	  }
-	
+
 	  Hogan.Template.prototype = {
 	    // render: replaced by generated code.
 	    r: function (context, partials, indent) { return ''; },
-	
+
 	    // variable escaping
 	    v: hoganEscape,
-	
+
 	    // triple stache
 	    t: coerceToString,
-	
+
 	    render: function render(context, partials, indent) {
 	      return this.ri([context], partials || {}, indent);
 	    },
-	
+
 	    // render internal -- a hook for overrides that catches partials too
 	    ri: function (context, partials, indent) {
 	      return this.r(context, partials, indent);
 	    },
-	
+
 	    // ensurePartial
 	    ep: function(symbol, partials) {
 	      var partial = this.partials[symbol];
-	
+
 	      // check to see that if we've instantiated this partial before
 	      var template = partials[partial.name];
 	      if (partial.instance && partial.base == template) {
 	        return partial.instance;
 	      }
-	
+
 	      if (typeof template == 'string') {
 	        if (!this.c) {
 	          throw new Error("No compiler available.");
 	        }
 	        template = this.c.compile(template, this.options);
 	      }
-	
+
 	      if (!template) {
 	        return null;
 	      }
-	
+
 	      // We use this to check whether the partials dictionary has changed
 	      this.partials[symbol].base = template;
-	
+
 	      if (partial.subs) {
 	        // Make sure we consider parent template now
 	        if (!partials.stackText) partials.stackText = {};
@@ -19471,57 +19592,57 @@ return /******/ (function(modules) { // webpackBootstrap
 	          this.stackSubs, this.stackPartials, partials.stackText);
 	      }
 	      this.partials[symbol].instance = template;
-	
+
 	      return template;
 	    },
-	
+
 	    // tries to find a partial in the current scope and render it
 	    rp: function(symbol, context, partials, indent) {
 	      var partial = this.ep(symbol, partials);
 	      if (!partial) {
 	        return '';
 	      }
-	
+
 	      return partial.ri(context, partials, indent);
 	    },
-	
+
 	    // render a section
 	    rs: function(context, partials, section) {
 	      var tail = context[context.length - 1];
-	
+
 	      if (!isArray(tail)) {
 	        section(context, partials, this);
 	        return;
 	      }
-	
+
 	      for (var i = 0; i < tail.length; i++) {
 	        context.push(tail[i]);
 	        section(context, partials, this);
 	        context.pop();
 	      }
 	    },
-	
+
 	    // maybe start a section
 	    s: function(val, ctx, partials, inverted, start, end, tags) {
 	      var pass;
-	
+
 	      if (isArray(val) && val.length === 0) {
 	        return false;
 	      }
-	
+
 	      if (typeof val == 'function') {
 	        val = this.ms(val, ctx, partials, inverted, start, end, tags);
 	      }
-	
+
 	      pass = !!val;
-	
+
 	      if (!inverted && pass && ctx) {
 	        ctx.push((typeof val == 'object') ? val : ctx[ctx.length - 1]);
 	      }
-	
+
 	      return pass;
 	    },
-	
+
 	    // find values with dotted names
 	    d: function(key, ctx, partials, returnFound) {
 	      var found,
@@ -19529,7 +19650,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          val = this.f(names[0], ctx, partials, returnFound),
 	          doModelGet = this.options.modelGet,
 	          cx = null;
-	
+
 	      if (key === '.' && isArray(ctx[ctx.length - 2])) {
 	        val = ctx[ctx.length - 1];
 	      } else {
@@ -19543,27 +19664,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	          }
 	        }
 	      }
-	
+
 	      if (returnFound && !val) {
 	        return false;
 	      }
-	
+
 	      if (!returnFound && typeof val == 'function') {
 	        ctx.push(cx);
 	        val = this.mv(val, ctx, partials);
 	        ctx.pop();
 	      }
-	
+
 	      return val;
 	    },
-	
+
 	    // find values with normal names
 	    f: function(key, ctx, partials, returnFound) {
 	      var val = false,
 	          v = null,
 	          found = false,
 	          doModelGet = this.options.modelGet;
-	
+
 	      for (var i = ctx.length - 1; i >= 0; i--) {
 	        v = ctx[i];
 	        val = findInScope(key, v, doModelGet);
@@ -19572,29 +19693,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	          break;
 	        }
 	      }
-	
+
 	      if (!found) {
 	        return (returnFound) ? false : "";
 	      }
-	
+
 	      if (!returnFound && typeof val == 'function') {
 	        val = this.mv(val, ctx, partials);
 	      }
-	
+
 	      return val;
 	    },
-	
+
 	    // higher order templates
 	    ls: function(func, cx, partials, text, tags) {
 	      var oldTags = this.options.delimiters;
-	
+
 	      this.options.delimiters = tags;
 	      this.b(this.ct(coerceToString(func.call(cx, text)), cx, partials));
 	      this.options.delimiters = oldTags;
-	
+
 	      return false;
 	    },
-	
+
 	    // compile text
 	    ct: function(text, cx, partials) {
 	      if (this.options.disableLambda) {
@@ -19602,18 +19723,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	      return this.c.compile(text, this.options).render(cx, partials);
 	    },
-	
+
 	    // template result buffering
 	    b: function(s) { this.buf += s; },
-	
+
 	    fl: function() { var r = this.buf; this.buf = ''; return r; },
-	
+
 	    // method replace section
 	    ms: function(func, ctx, partials, inverted, start, end, tags) {
 	      var textSource,
 	          cx = ctx[ctx.length - 1],
 	          result = func.call(cx);
-	
+
 	      if (typeof result == 'function') {
 	        if (inverted) {
 	          return true;
@@ -19622,22 +19743,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	          return this.ls(result, cx, partials, textSource.substring(start, end), tags);
 	        }
 	      }
-	
+
 	      return result;
 	    },
-	
+
 	    // method replace variable
 	    mv: function(func, ctx, partials) {
 	      var cx = ctx[ctx.length - 1];
 	      var result = func.call(cx);
-	
+
 	      if (typeof result == 'function') {
 	        return this.ct(coerceToString(result.call(cx)), cx, partials);
 	      }
-	
+
 	      return result;
 	    },
-	
+
 	    sub: function(name, context, partials, indent) {
 	      var f = this.subs[name];
 	      if (f) {
@@ -19646,27 +19767,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.activeSub = false;
 	      }
 	    }
-	
+
 	  };
-	
+
 	  //Find a key in an object
 	  function findInScope(key, scope, doModelGet) {
 	    var val;
-	
+
 	    if (scope && typeof scope == 'object') {
-	
+
 	      if (scope[key] !== undefined) {
 	        val = scope[key];
-	
+
 	      // try lookup with get for backbone or similar model data
 	      } else if (doModelGet && scope.get && typeof scope.get == 'function') {
 	        val = scope.get(key);
 	      }
 	    }
-	
+
 	    return val;
 	  }
-	
+
 	  function createSpecializedPartial(instance, subs, partials, stackSubs, stackPartials, stackText) {
 	    function PartialTemplate() {};
 	    PartialTemplate.prototype = instance;
@@ -19677,7 +19798,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    partial.subs = new Substitutions();
 	    partial.subsText = {};  //hehe. substext.
 	    partial.buf = '';
-	
+
 	    stackSubs = stackSubs || {};
 	    partial.stackSubs = stackSubs;
 	    partial.subsText = stackText;
@@ -19687,7 +19808,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    for (key in stackSubs) {
 	      partial.subs[key] = stackSubs[key];
 	    }
-	
+
 	    stackPartials = stackPartials || {};
 	    partial.stackPartials = stackPartials;
 	    for (key in partials) {
@@ -19696,21 +19817,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	    for (key in stackPartials) {
 	      partial.partials[key] = stackPartials[key];
 	    }
-	
+
 	    return partial;
 	  }
-	
+
 	  var rAmp = /&/g,
 	      rLt = /</g,
 	      rGt = />/g,
 	      rApos = /\'/g,
 	      rQuot = /\"/g,
 	      hChars = /[&<>\"\']/;
-	
+
 	  function coerceToString(val) {
 	    return String((val === null || val === undefined) ? '' : val);
 	  }
-	
+
 	  function hoganEscape(str) {
 	    str = coerceToString(str);
 	    return hChars.test(str) ?
@@ -19722,11 +19843,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        .replace(rQuot, '&quot;') :
 	      str;
 	  }
-	
+
 	  var isArray = Array.isArray || function(a) {
 	    return Object.prototype.toString.call(a) === '[object Array]';
 	  };
-	
+
 	})( true ? exports : Hogan);
 
 

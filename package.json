@@ -38,6 +38,6 @@
   "dependencies": {
     "fullcalendar": "^2.4.0",
     "moment": "^2.10.6",
-    "timekit-sdk": "^1.1.0"
+    "timekit-sdk": "file:../js-sdk"
   }
 }

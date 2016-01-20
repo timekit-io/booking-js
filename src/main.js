@@ -380,7 +380,7 @@ function TimekitBooking() {
     utils.doCallback('submitBookingForm', config, values);
 
     // Call create event endpoint
-    timekitCreateEvent(values).then(function(response){
+    timekitCreateBooking(values).then(function(response){
 
       utils.doCallback('createEventSuccessful', config, response);
 
@@ -433,6 +433,61 @@ function TimekitBooking() {
 
   };
 
+  // Create new booking
+  var timekitCreateBooking = function(data) {
+
+    var args = {
+      graph: config.bookingMode
+    }
+
+    $.extend(true, args, config.timekitCreateBooking);
+
+    utils.doCallback('createBookingStarted', config, args);
+
+    return timekit.createBooking(args)
+    .then(function(result) {
+      console.log('finished create')
+      return timekitUpdateBooking(result.data.id, data);
+    });
+
+  };
+
+  // Update the booking
+  var timekitUpdateBooking = function(id, data) {
+
+    console.log('calling update')
+
+    var args = {
+      id: id,
+      event: {
+        start: data.start,
+        //end: data.end,
+        what: config.name + ' x ' + data.name,
+        where: 'TBD',
+        description: '',
+        calendar_id: config.calendar,
+        participants: [config.email, data.email]
+      },
+      customer: {
+        name: data.name,
+        email: data.email,
+        timezone: '' // FIX
+      }
+    };
+
+    if (config.bookingFields.location.enabled) { args.event.where = data.location; }
+    if (config.bookingFields.comment.enabled) {  args.event.description = data.comment; }
+    if (config.bookingFields.phone.enabled) {    args.customer.phone = data.phone; }
+    if (config.bookingFields.voip.enabled) {     args.customer.voip = data.voip; }
+
+    $.extend(true, args, config.timekitUpdateBooking);
+
+    utils.doCallback('updateBookingStarted', config, args);
+
+    return timekit.updateBooking(args);
+
+  };
+
   // Render the powered by Timekit message
   var renderPoweredByMessage = function(pageTarget) {
 
@@ -468,6 +523,12 @@ function TimekitBooking() {
     }
     if(newConfig.localization.timeDateFormat === '12h-mdy-sun') {
       presetsConfig = defaultConfig.presets.timeDateFormat12hmdysun;
+    }
+    if(newConfig.bookingMode === 'instabook') {
+      presetsConfig = defaultConfig.presets.bookingInstant;
+    }
+    if(newConfig.bookingMode === 'actionable') {
+      presetsConfig = defaultConfig.presets.bookingActionable;
     }
 
     // Extend the config with the presets

@@ -154,7 +154,8 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
       }
     }
 
-    &-date {
+    &-date,
+    h2 {
       text-align: center;
       font-size: 34px;
       font-weight: 400;
@@ -167,7 +168,8 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
       }
     }
 
-    &-time {
+    &-time,
+    h3 {
       text-align: center;
       font-size: 17px;
       font-weight: 400;
@@ -236,10 +238,13 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
       bottom: 0;
     }
 
-    &-input {
+    &-input,
+    input, input:invalid
+    textarea, textarea:invalid {
       transition: box-shadow 0.2s ease;
       width: 100%;
       padding: 15px 25px;
+      margin: 0;
       border: 0px solid $borderColor;
       font-size: 1em;
       box-shadow: inset 0px 0px 1px 1px rgba(255,255,255, 0);

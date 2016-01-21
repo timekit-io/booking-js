@@ -85,14 +85,7 @@ describe('Basic interaction', function() {
 
       setTimeout(function() {
 
-        var name = 'Joe Test';
-        var email = 'test@timekit.io';
-        var comment = 'This is a test';
-
-        $('.input-name').val(name);
-        $('.input-email').val(email);
-        $('.input-comment').val(comment);
-        $('.bookingjs-form-button').click();
+        var inputs = interact.fillSubmit();
 
         expect($('.bookingjs-form').hasClass('loading')).toBe(true);
 
@@ -102,7 +95,7 @@ describe('Basic interaction', function() {
           expect($('.bookingjs-form-success-message')).toBeVisible();
 
           var successMessage = $('.bookingjs-form-success-message').html();
-          var contains = successMessage.indexOf(email) > -1;
+          var contains = successMessage.indexOf(inputs.email) > -1;
           expect(contains).toBe(true);
 
           done();

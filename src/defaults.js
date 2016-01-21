@@ -58,6 +58,7 @@ var primary = {
     future: '4 weeks',
     length: '1 hour'
   },
+  //timekitCreateEvent: { },
   timekitCreateBooking: { },
   timekitUpdateBooking: { },
   fullCalendar: {
@@ -92,7 +93,8 @@ var bookingInstant = {
     action: 'confirm',
     event: {
       invite: true,
-      my_rsvp: 'accepted'
+      my_rsvp: 'accepted',
+      sync_provider: true
     },
     actions: {
       notify_customer_by_email: {
@@ -110,7 +112,8 @@ var bookingActionable = {
     action: 'create',
     event: {
       invite: false,
-      my_rsvp: 'needsAction'
+      my_rsvp: 'needsAction',
+      sync_provider: true
     }
   }
 

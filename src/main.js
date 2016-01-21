@@ -2,7 +2,7 @@
 
 /*!
  * Booking.js
- * Version: 1.5.1
+ * Version: 1.5.2
  * http://booking.timekit.io
  *
  * Copyright 2015 Timekit, Inc.
@@ -45,7 +45,7 @@ function TimekitBooking() {
 
     rootTarget = $(config.targetEl);
     if (rootTarget.length === 0) {
-      throw new Error('TimekitBooking - No target DOM element was found (' + config.targetEl + ')');
+      utils.logError('No target DOM element was found (' + config.targetEl + ')');
     }
     rootTarget.addClass('bookingjs');
     rootTarget.children(':not(script)').remove();
@@ -89,7 +89,7 @@ function TimekitBooking() {
 
     }).catch(function(response){
       utils.doCallback('findTimeFailed', config, response);
-      throw new Error('TimekitBooking - An error with Timekit FindTime occured, context: ' + response);
+      utils.logError('An error with Timekit FindTime occured, context: ' + response);
     });
 
   };
@@ -184,7 +184,7 @@ function TimekitBooking() {
 
     }).catch(function(response){
       utils.doCallback('getUserTimezoneFailed', config, response);
-      throw new Error('TimekitBooking - An error with Timekit getUserTimezone occured, context: ' + response);
+      utils.logError('An error with Timekit getUserTimezone occured, context: ' + response);
     });
 
   };
@@ -403,34 +403,8 @@ function TimekitBooking() {
         formElement.removeClass('error');
       }, 2000);
 
-      throw new Error('TimekitBooking - An error with Timekit createEvent occured, context: ' + response);
+      utils.logError('An error with Timekit createEvent occured, context: ' + response);
     });
-
-  };
-
-  // Create new event through Timekit SDK
-  var timekitCreateEvent = function(data) {
-
-    var args = {
-      start: data.start,
-      end: data.end,
-      what: config.name + ' x ' + data.name,
-      where: 'TBD',
-      description: '',
-      calendar_id: config.calendar,
-      participants: [config.email, data.email]
-    };
-
-    if (config.bookingFields.location.enabled) { args.where = data.location; }
-    if (config.bookingFields.phone.enabled) {    args.description += config.bookingFields.phone.placeholder + ': ' + data.phone + '\n'; }
-    if (config.bookingFields.voip.enabled) {     args.description += config.bookingFields.voip.placeholder + ': ' + data.voip + '\n'; }
-    if (config.bookingFields.comment.enabled) {  args.description += config.bookingFields.comment.placeholder + ': ' + data.comment + '\n'; }
-
-    $.extend(true, args, config.timekitCreateEvent);
-
-    utils.doCallback('createEventStarted', config, args);
-
-    return timekit.createEvent(args);
 
   };
 
@@ -459,7 +433,7 @@ function TimekitBooking() {
       id: id,
       event: {
         start: data.start,
-        //end: data.end,
+        end: data.end,
         what: config.name + ' x ' + data.name,
         where: 'TBD',
         description: '',
@@ -479,6 +453,11 @@ function TimekitBooking() {
     if (config.bookingFields.voip.enabled) {     args.customer.voip = data.voip; }
 
     $.extend(true, args, config.timekitUpdateBooking);
+
+    if (config.timekitCreateEvent) {
+      $.extend(true, args.event, config.timekitCreateEvent); // backwards compatibility
+      utils.logDeprecated('config key "timekitCreateEvent" is not used anymore, use "timekitUpdateBooking"');
+    }
 
     utils.doCallback('updateBookingStarted', config, args);
 
@@ -507,7 +486,7 @@ function TimekitBooking() {
       if (window.timekitBookingConfig !== undefined) {
         suppliedConfig = window.timekitBookingConfig;
       } else {
-        throw new Error('TimekitBooking - No configuration was supplied or found. Please supply a config object upon library initialization');
+        utils.logError('No configuration was supplied or found. Please supply a config object upon library initialization');
       }
     }
 
@@ -522,7 +501,7 @@ function TimekitBooking() {
     if(newConfig.localization.timeDateFormat === '12h-mdy-sun') {
       presetsConfig = defaultConfig.presets.timeDateFormat12hmdysun;
     }
-    if(newConfig.bookingMode === 'instabook') {
+    if(newConfig.bookingMode === 'instant') {
       presetsConfig = defaultConfig.presets.bookingInstant;
     }
     if(newConfig.bookingMode === 'actionable') {
@@ -534,7 +513,7 @@ function TimekitBooking() {
 
     // Check for required settings
     if(!finalConfig.email || !finalConfig.apiToken || !finalConfig.calendar) {
-      throw new Error('TimekitBooking - A required config setting was missing ("email", "apiToken" or "calendar")');
+      utils.logError('A required config setting was missing ("email", "apiToken" or "calendar")');
     }
 
     // Set new config to instance config

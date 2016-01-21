@@ -58,16 +58,34 @@ module.exports = {
 
   },
 
-  // Create event endpoint
-  createEvent: function() {
+  // Update booking endpoint
+  createBooking: function() {
 
     jasmine.Ajax.stubRequest(
-      'https://api.timekit.io/v2/events'
+      'https://api.timekit.io/v2/bookings',
+      undefined,
+      'POST'
     ).andReturn({
       status: 201,
       statusText: 'HTTP/1.1 201 Created',
       contentType: 'application/json',
-      responseText: '{"meta":{"message":"Event created"}}'
+      responseText: '{"data":{"id":"0096163d-54a4-488f-aa3a-0b40111ee4be","state":"initialized","graph":"instant","all_states":["initialized","confirm","customer_data_saved","input_saved","event_created","notified_owner_by_email","notified_customer_by_email","webhook_triggered","confirmed","error"],"all_actions":["confirm","save_customer_data","save_input","create_event","notify_owner_by_email","notify_customer_by_email","trigger_webhook","confirmed"],"possible_actions":["confirm"]}}'
+    });
+
+  },
+
+  // Update booking endpoint
+  updateBooking: function() {
+
+    jasmine.Ajax.stubRequest(
+      'https://api.timekit.io/v2/bookings/0096163d-54a4-488f-aa3a-0b40111ee4be/confirm',
+      undefined,
+      'PUT'
+    ).andReturn({
+      status: 200,
+      statusText: 'HTTP/1.1 200 OK',
+      contentType: 'application/json',
+      responseText: '{"data":{"id":"0096163d-54a4-488f-aa3a-0b40111ee4be","state":"confirmed","graph":"instant","all_states":["initialized","confirm","customer_data_saved","input_saved","event_created","notified_owner_by_email","notified_customer_by_email","webhook_triggered","confirmed","error"],"all_actions":["confirm","save_customer_data","save_input","create_event","notify_owner_by_email","notify_customer_by_email","trigger_webhook","confirmed"],"possible_actions":[]}}'
     });
 
   },
@@ -77,7 +95,8 @@ module.exports = {
 
     this.findTime();
     this.userTimezone();
-    this.createEvent();
+    this.createBooking();
+    this.updateBooking();
 
   }
 

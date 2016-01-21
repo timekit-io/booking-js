@@ -137,7 +137,8 @@ var timeDateFormat24hdmymon = {
   },
   localization: {
     bookingDateFormat: 'D. MMMM YYYY',
-    bookingTimeFormat: 'HH:mm'
+    bookingTimeFormat: 'HH:mm',
+    emailTimeFormat: 'H:i'
   }
 
 };
@@ -160,7 +161,8 @@ var timeDateFormat12hmdysun = {
   },
   localization: {
     bookingDateFormat: 'MMMM D, YYYY',
-    bookingTimeFormat: 'h:mma'
+    bookingTimeFormat: 'h:mma',
+    emailTimeFormat: 'h:ia'
   }
 
 };

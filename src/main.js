@@ -55,10 +55,7 @@ function TimekitBooking() {
   // Setup the Timekit SDK with correct credentials
   var timekitSetup = function() {
 
-    var args = {};
-    $.extend(true, args, config.timekitConfig);
-
-    timekit.configure(args);
+    timekit.configure(config.timekitConfig);
     timekit.setUser(config.email, config.apiToken);
 
   };
@@ -461,8 +458,11 @@ function TimekitBooking() {
 
     utils.doCallback('updateBookingStarted', config, args);
 
-    return timekit.updateBooking(args);
+    var requestHeaders = { 'Timekit-OutputTimestampFormat': 'Y-m-d ' + config.localization.emailTimeFormat + ' (P e)' };
 
+    return timekit
+    .headers(requestHeaders)
+    .updateBooking(args);
   };
 
   // Render the powered by Timekit message
@@ -493,23 +493,23 @@ function TimekitBooking() {
     // Extend the default config with supplied settings
     var newConfig = $.extend(true, {}, defaultConfig.primary, suppliedConfig);
 
-    // Apply any presets if applicable (supplied config have presedence over preset)
+    // Apply timeDateFormat presets
     var presetsConfig = {};
     if(newConfig.localization.timeDateFormat === '24h-dmy-mon') {
       presetsConfig = defaultConfig.presets.timeDateFormat24hdmymon;
-    }
-    if(newConfig.localization.timeDateFormat === '12h-mdy-sun') {
+    } else if(newConfig.localization.timeDateFormat === '12h-mdy-sun') {
       presetsConfig = defaultConfig.presets.timeDateFormat12hmdysun;
     }
+    var finalConfig = $.extend(true, {}, presetsConfig, newConfig);
+
+    // Apply bookingMode presets
+    presetsConfig = {};
     if(newConfig.bookingMode === 'instant') {
       presetsConfig = defaultConfig.presets.bookingInstant;
-    }
-    if(newConfig.bookingMode === 'actionable') {
+    } else if(newConfig.bookingMode === 'actionable') {
       presetsConfig = defaultConfig.presets.bookingActionable;
     }
-
-    // Extend the config with the presets
-    var finalConfig = $.extend(true, {}, presetsConfig, newConfig);
+    finalConfig = $.extend(true, {}, presetsConfig, finalConfig);
 
     // Check for required settings
     if(!finalConfig.email || !finalConfig.apiToken || !finalConfig.calendar) {

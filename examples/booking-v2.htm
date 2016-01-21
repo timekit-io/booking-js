@@ -13,11 +13,12 @@
   <script type="text/javascript" src="../dist/booking.js"></script>
   <div id="bookingjs">
     <script type="text/javascript">
-      TimekitBooking().init({
+      var widget = new TimekitBooking();
+      widget.init({
         name:     'Doc Brown',
         email:    'marty.mcfly@timekit.io',
         apiToken: 'DarthVader',
-        calendar: 'ce1694df-11a9-4449-b32c-1e2dca346be6',
+        calendar: '44d85f03-480b-40d1-869f-d2b3d7b324e8',
         avatar:   '../misc/avatar-doc.jpg',
         timekitConfig: {
           app: 'timebird',
@@ -27,8 +28,19 @@
           actions: {
             trigger_webhook: {
               url: 'http://google.com'
+            },
+            notify_customer_by_email: {
+              enabled: true
             }
           }
+        },
+        bookingFields: {
+          'phone': {
+            enabled: true
+          }
+        },
+        localization: {
+          timeDateFormat: '24h-dmy-mon'
         }
       });
     </script>

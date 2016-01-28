@@ -465,25 +465,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var timekitCreateBooking = function(data) {
 	
 	    var args = {
-	      graph: config.bookingMode
-	    };
-	
-	    $.extend(true, args, config.timekitCreateBooking);
-	
-	    utils.doCallback('createBookingStarted', config, args);
-	
-	    return timekit.createBooking(args)
-	    .then(function(result) {
-	      return timekitUpdateBooking(result.data.id, data);
-	    });
-	
-	  };
-	
-	  // Update the booking
-	  var timekitUpdateBooking = function(id, data) {
-	
-	    var args = {
-	      id: id,
 	      event: {
 	        start: data.start,
 	        end: data.end,
@@ -505,20 +486,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (config.bookingFields.phone.enabled) {    args.customer.phone = data.phone; }
 	    if (config.bookingFields.voip.enabled) {     args.customer.voip = data.voip; }
 	
-	    $.extend(true, args, config.timekitUpdateBooking);
+	    $.extend(true, args, config.timekitCreateBooking);
 	
 	    if (config.timekitCreateEvent) {
 	      $.extend(true, args.event, config.timekitCreateEvent); // backwards compatibility
 	      utils.logDeprecated('config key "timekitCreateEvent" is not used anymore, use "timekitUpdateBooking"');
 	    }
 	
-	    utils.doCallback('updateBookingStarted', config, args);
+	    utils.doCallback('createBookingStarted', config, args);
 	
 	    var requestHeaders = { 'Timekit-OutputTimestampFormat': 'Y-m-d ' + config.localization.emailTimeFormat + ' (P e)' };
 	
 	    return timekit
 	    .headers(requestHeaders)
-	    .updateBooking(args);
+	    .createBooking(args);
+	
 	  };
 	
 	  // Render the powered by Timekit message
@@ -562,7 +544,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    presetsConfig = {};
 	    if(newConfig.bookingMode === 'instant') {
 	      presetsConfig = defaultConfig.presets.bookingInstant;
-	    } else if(newConfig.bookingMode === 'actionable') {
+	    } else if(newConfig.bookingMode === 'confirm_decline') {
 	      presetsConfig = defaultConfig.presets.bookingActionable;
 	    }
 	    finalConfig = $.extend(true, {}, presetsConfig, finalConfig);
@@ -19697,7 +19679,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Preset: bookingMode = 'instant'
 	var bookingInstant = {
 	
-	  timekitUpdateBooking: {
+	  timekitCreateBooking: {
+	    graph: 'instant',
 	    action: 'confirm',
 	    event: {
 	      invite: true,
@@ -19713,15 +19696,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	};
 	
-	// Preset: bookingMode = 'actionable'
+	// Preset: bookingMode = 'confirm_decline'
 	var bookingActionable = {
 	
-	  timekitUpdateBooking: {
+	  timekitCreateBooking: {
+	    graph: 'confirm_decline',
 	    action: 'create',
 	    event: {
-	      invite: false,
+	      invite: true,
 	      my_rsvp: 'needsAction',
 	      sync_provider: true
+	    },
+	    actions: {
+	      notify_customer_by_email: {
+	        enabled: false
+	      }
 	    }
 	  }
 	

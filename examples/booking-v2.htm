@@ -16,24 +16,15 @@
       var widget = new TimekitBooking();
       widget.init({
         name:     'Doc Brown',
-        email:    'marty.mcfly@timekit.io',
-        apiToken: 'DarthVader',
-        calendar: '44d85f03-480b-40d1-869f-d2b3d7b324e8',
+        email:    'timebirdcphtest@gmail.com',
+        apiToken: 'password',
+        calendar: 'abb40a63-e737-41ea-9f7f-710cc4642f7e',
         avatar:   '../misc/avatar-doc.jpg',
         timekitConfig: {
           app: 'timebird',
           apiBaseUrl: 'http://api-localhost.timekit.io/'
         },
-        timekitUpdateBooking: {
-          actions: {
-            trigger_webhook: {
-              url: 'http://google.com'
-            },
-            notify_customer_by_email: {
-              enabled: true
-            }
-          }
-        },
+        bookingMode: 'confirm_decline',
         bookingFields: {
           'phone': {
             enabled: true

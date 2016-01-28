@@ -89,7 +89,8 @@ var primary = {
 // Preset: bookingMode = 'instant'
 var bookingInstant = {
 
-  timekitUpdateBooking: {
+  timekitCreateBooking: {
+    graph: 'instant',
     action: 'confirm',
     event: {
       invite: true,
@@ -105,15 +106,21 @@ var bookingInstant = {
 
 };
 
-// Preset: bookingMode = 'actionable'
+// Preset: bookingMode = 'confirm_decline'
 var bookingActionable = {
 
-  timekitUpdateBooking: {
+  timekitCreateBooking: {
+    graph: 'confirm_decline',
     action: 'create',
     event: {
-      invite: false,
+      invite: true,
       my_rsvp: 'needsAction',
       sync_provider: true
+    },
+    actions: {
+      notify_customer_by_email: {
+        enabled: false
+      }
     }
   }
 

@@ -425,15 +425,15 @@ function TimekitBooking() {
       }
     };
 
-    if (config.bookingFields.location.enabled) { args.event.where = data.location; }
-    if (config.bookingFields.comment.enabled) {  args.event.description = data.comment; }
+    if (config.bookingFields.location.enabled) { args.details.where = data.location; }
+    if (config.bookingFields.comment.enabled) {  args.details.description = data.comment; }
     if (config.bookingFields.phone.enabled) {    args.customer.phone = data.phone; }
     if (config.bookingFields.voip.enabled) {     args.customer.voip = data.voip; }
 
     $.extend(true, args, config.timekitCreateBooking);
 
     if (config.timekitCreateEvent) {
-      $.extend(true, args.event, config.timekitCreateEvent); // backwards compatibility
+      $.extend(true, args.details, config.timekitCreateEvent); // backwards compatibility
       utils.logDeprecated('config key "timekitCreateEvent" is not used anymore, use "timekitUpdateBooking"');
     }
 

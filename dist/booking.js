@@ -465,7 +465,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var timekitCreateBooking = function(data) {
 	
 	    var args = {
-	      event: {
+	      details: {
 	        start: data.start,
 	        end: data.end,
 	        what: config.name + ' x ' + data.name,
@@ -495,7 +495,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    utils.doCallback('createBookingStarted', config, args);
 	
-	    var requestHeaders = { 'Timekit-OutputTimestampFormat': 'Y-m-d ' + config.localization.emailTimeFormat + ' (P e)' };
+	    var requestHeaders = {
+	      'Timekit-OutputTimestampFormat': 'Y-m-d ' + config.localization.emailTimeFormat + ' (P e)'
+	    };
 	
 	    return timekit
 	    .headers(requestHeaders)
@@ -19682,7 +19684,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  timekitCreateBooking: {
 	    graph: 'instant',
 	    action: 'confirm',
-	    event: {
+	    details: {
 	      invite: true,
 	      my_rsvp: 'accepted',
 	      sync_provider: true
@@ -19702,7 +19704,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  timekitCreateBooking: {
 	    graph: 'confirm_decline',
 	    action: 'create',
-	    event: {
+	    details: {
 	      invite: true,
 	      my_rsvp: 'needsAction',
 	      sync_provider: true

@@ -92,7 +92,7 @@ var bookingInstant = {
   timekitCreateBooking: {
     graph: 'instant',
     action: 'confirm',
-    event: {
+    details: {
       invite: true,
       my_rsvp: 'accepted',
       sync_provider: true
@@ -112,7 +112,7 @@ var bookingActionable = {
   timekitCreateBooking: {
     graph: 'confirm_decline',
     action: 'create',
-    event: {
+    details: {
       invite: true,
       my_rsvp: 'needsAction',
       sync_provider: true

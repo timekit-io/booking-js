@@ -409,7 +409,7 @@ function TimekitBooking() {
   var timekitCreateBooking = function(data) {
 
     var args = {
-      event: {
+      details: {
         start: data.start,
         end: data.end,
         what: config.name + ' x ' + data.name,
@@ -439,7 +439,9 @@ function TimekitBooking() {
 
     utils.doCallback('createBookingStarted', config, args);
 
-    var requestHeaders = { 'Timekit-OutputTimestampFormat': 'Y-m-d ' + config.localization.emailTimeFormat + ' (P e)' };
+    var requestHeaders = {
+      'Timekit-OutputTimestampFormat': 'Y-m-d ' + config.localization.emailTimeFormat + ' (P e)'
+    };
 
     return timekit
     .headers(requestHeaders)

@@ -1,6 +1,6 @@
 # Booking.js by Timekit
 
-[![Circle CI](https://img.shields.io/circleci/project/timekit-io/booking-js/master.svg)](https://circleci.com/gh/timekit-io/booking-js)
+[![Circle CI](https://img.shields.io/circleci/project/timekit-io/booking-js.svg)](https://circleci.com/gh/timekit-io/booking-js)
 [![Codacy Badge](https://api.codacy.com/project/badge/grade/feb445801acf454a95b1690a75959893)](https://www.codacy.com/app/laander/booking-js)
 
 **Latest release:**  [v1.5.2](https://github.com/timekit-io/booking-js/releases)
@@ -168,7 +168,7 @@ timekitFindTime: {
 
 When booking an event, the widget will call the `[POST] /bookings` endpoint through the JS SDK.
 
-The booking engine in Timekit is a powerful state machine that can take input data (event details and customer info) and perform actions on that based on a chosen "flow graph". 
+The booking engine in Timekit is a powerful state machine that can take input data (event details and customer info) and perform actions on that based on a chosen "flow graph".
 
 At the time of writing, Timekit supports two graphs:  
 1) `instant` - automatically confirm any incoming bookings, save it to calendar and send out notifications  

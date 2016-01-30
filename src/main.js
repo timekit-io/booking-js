@@ -380,14 +380,14 @@ function TimekitBooking() {
     // Call create event endpoint
     timekitCreateBooking(values).then(function(response){
 
-      utils.doCallback('createEventSuccessful', config, response);
+      utils.doCallback('createBookingSuccessful', config, response);
 
       formElement.find('.booked-email').html(values.email);
       formElement.removeClass('loading').addClass('success');
 
     }).catch(function(response){
 
-      utils.doCallback('createEventFailed', config, response);
+      utils.doCallback('createBookingFailed', config, response);
 
       var submitButton = formElement.find('.bookingjs-form-button');
       submitButton.addClass('button-shake');
@@ -400,7 +400,7 @@ function TimekitBooking() {
         formElement.removeClass('error');
       }, 2000);
 
-      utils.logError('An error with Timekit createEvent occured, context: ' + response);
+      utils.logError('An error with Timekit createBooking occured, context: ' + response);
     });
 
   };
@@ -434,7 +434,7 @@ function TimekitBooking() {
 
     if (config.timekitCreateEvent) {
       $.extend(true, args.details, config.timekitCreateEvent); // backwards compatibility
-      utils.logDeprecated('config key "timekitCreateEvent" is not used anymore, use "timekitUpdateBooking"');
+      utils.logDeprecated('config key "timekitCreateEvent" is not used anymore, use "timekitCreateBooking"');
     }
 
     utils.doCallback('createBookingStarted', config, args);

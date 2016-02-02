@@ -96,11 +96,6 @@ var bookingInstant = {
       invite: true,
       my_rsvp: 'accepted',
       sync_provider: true
-    },
-    actions: {
-      notify_customer_by_email: {
-        enabled: false
-      }
     }
   }
 
@@ -116,11 +111,6 @@ var bookingActionable = {
       invite: true,
       my_rsvp: 'needsAction',
       sync_provider: true
-    },
-    actions: {
-      notify_customer_by_email: {
-        enabled: false
-      }
     }
   }
 

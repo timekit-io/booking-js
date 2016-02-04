@@ -266,7 +266,7 @@ localization: {
 
 You can customize the booking form fields and their settings in this section. Only the `name`, `email` and `comment` fields are enabled by default. The `name` and `email` fields have to be enabled and is always required (for the event creation to work properly). All other fields can be enabled/disabled.
 
-If you're collecting user information before loading the widget, it can be useful to inject it into the form by setting the `prefilled` keys - just pass in the values and they will be set upon load. Combine it with `disabled` to lock the fields to your options.
+If you're collecting user information before loading the widget, it can be useful to inject it into the form by setting the `prefilled` keys - just pass in the values and they will be set upon load. Combine it with `locked` to lock the fields for user input.
 
 See `/examples/fields.htm`
 
@@ -275,40 +275,40 @@ bookingFields: {
   name: {
     placeholder: 'Your full name',
     prefilled: false,
-    disabled: false
+    locked: false
   },
   email: {
     placeholder: 'Your e-mail',
     prefilled: false,
-    disabled: false
+    locked: false
   },
   comment: {
     enabled: true,
     placeholder: 'Write a comment (optional)',
     prefilled: false,
     required: false,
-    disabled: false
+    locked: false
   },
   phone: {
     enabled: false,
     placeholder: 'Your phone number',
     prefilled: false,
     required: false,
-    disabled: false
+    locked: false
   },
   voip: {
     enabled: false,
     placeholder: 'Your Skype username',
     prefilled: false,
     required: false,
-    disabled: false
+    locked: false
   },
   location: {
     enabled: false,
     placeholder: 'Location',
     prefilled: false,
     required: false,
-    disabled: false
+    locked: false
   }
 }
 ```

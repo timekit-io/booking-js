@@ -20,40 +20,40 @@ var primary = {
     name: {
       placeholder: 'Your full name',
       prefilled: false,
-      disabled: false
+      locked: false
     },
     email: {
       placeholder: 'Your e-mail',
       prefilled: false,
-      disabled: false
+      locked: false
     },
     comment: {
       enabled: true,
       placeholder: 'Write a comment (optional)',
       prefilled: false,
       required: false,
-      disabled: false
+      locked: false
     },
     phone: {
       enabled: false,
       placeholder: 'Your phone number',
       prefilled: false,
       required: false,
-      disabled: false
+      locked: false
     },
     voip: {
       enabled: false,
       placeholder: 'Your Skype username',
       prefilled: false,
       required: false,
-      disabled: false
+      locked: false
     },
     location: {
       enabled: false,
       placeholder: 'Location',
       prefilled: false,
       required: false,
-      disabled: false
+      locked: false
     }
   },
   timekitConfig: {

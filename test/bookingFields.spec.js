@@ -136,4 +136,41 @@ describe('Booking fields', function() {
 
   });
 
+  fit('should be able to lock fields for user input', function(done) {
+
+    var config = {
+      bookingFields: {
+        name: {
+          locked: true,
+          prefilled: "My Test Name"
+        },
+        email: {
+          locked: false
+        }
+      }
+    }
+
+    createWidget(config);
+
+    setTimeout(function() {
+
+      interact.clickEvent();
+
+      setTimeout(function() {
+
+        var nameInput = $('.input-name');
+        expect(nameInput.prop('disabled')).toBe(true);
+        expect(nameInput.is('[disabled=disabled]')).toBe(true);
+
+        var emailInput = $('.input-email');
+        expect(emailInput.prop('disabled')).toBe(false);
+        expect(emailInput.is('[disabled=disabled]')).toBe(false);
+
+        done();
+
+      }, 500);
+    }, 500);
+
+  });
+
 });

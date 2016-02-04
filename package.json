@@ -40,6 +40,6 @@
     "fullcalendar": "^2.4.0",
     "moment": "^2.10.6",
     "moment-timezone": "^0.5.0",
-    "timekit-sdk": "file:../js-sdk"
+    "timekit-sdk": "timekit-io/js-sdk#new-bookings-endpoints"
   }
 }

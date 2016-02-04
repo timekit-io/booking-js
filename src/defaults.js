@@ -19,35 +19,41 @@ var primary = {
   bookingFields: {
     name: {
       placeholder: 'Your full name',
-      prefilled: false
+      prefilled: false,
+      locked: false
     },
     email: {
       placeholder: 'Your e-mail',
-      prefilled: false
+      prefilled: false,
+      locked: false
     },
     comment: {
       enabled: true,
       placeholder: 'Write a comment (optional)',
       prefilled: false,
-      required: false
+      required: false,
+      locked: false
     },
     phone: {
       enabled: false,
       placeholder: 'Your phone number',
       prefilled: false,
-      required: false
+      required: false,
+      locked: false
     },
     voip: {
       enabled: false,
       placeholder: 'Your Skype username',
       prefilled: false,
-      required: false
+      required: false,
+      locked: false
     },
     location: {
       enabled: false,
       placeholder: 'Location',
       prefilled: false,
-      required: false
+      required: false,
+      locked: false
     }
   },
   timekitConfig: {

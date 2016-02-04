@@ -17,7 +17,7 @@ Maintainer: Lasse Boisen Andersen ([la@timekit.io](mailto:la@timekit.io)). PR's 
 
 **Visit [booking.timekit.io](http://booking.timekit.io) to set up your account and generate a config.**
 
-Booking.js is meant as an easy to use, drop-in script that does it's job without any coding required. It's made for the browser and is quite similar to Stripe's Checkout.js. 
+Booking.js is meant as an easy to use, drop-in script that does it's job without any coding required. It's made for the browser and is quite similar to Stripe's Checkout.js.
 
 *This repo is mainly for community contributions and the curious soul that would like to customize the widget beyond settings provided in the wizard.*
 
@@ -104,7 +104,7 @@ Booking.js is made for various use-cases, so it's really extensible and customiz
   email:                    '',   // Your Timekit user's email (used for auth)
   apiToken:                 '',   // Your Timekit user's apiToken (as generated through the wizard)
   calendar:                 '',   // Your Timekit calendar ID that bookings should end up in
-  
+
   // Optional
   targetEl:                 '#bookingjs', // Which element should we the library load into
   name:                     '',   // Display name to show in the header and timezone helper
@@ -247,9 +247,9 @@ localization: {
 },
 ```
 
-For full language support, FullCalendar also takes a ["lang" option](http://fullcalendar.io/docs/text/lang/), accompanied by a language file. Make sure to use defer attribute on a script tag loading the language file if you are deferring booking.js, language file should be loaded after booking.js, but before initialization. 
+For full language support, FullCalendar also takes a ["lang" option](http://fullcalendar.io/docs/text/lang/), accompanied by a language file. Make sure to use defer attribute on a script tag loading the language file if you are deferring booking.js, language file should be loaded after booking.js, but before initialization.
 
-Remember to set `localization.timeDateFormat` to false so it doesn't override the language file's settings. 
+Remember to set `localization.timeDateFormat` to false so it doesn't override the language file's settings.
 
 See `/examples/local-language.htm`
 
@@ -266,7 +266,7 @@ localization: {
 
 You can customize the booking form fields and their settings in this section. Only the `name`, `email` and `comment` fields are enabled by default. The `name` and `email` fields have to be enabled and is always required (for the event creation to work properly). All other fields can be enabled/disabled.
 
-If you're collecting user information before loading the widget, it can be useful to inject it into the form by setting the `prefilled` keys - just pass in the values and they will be set upon load.
+If you're collecting user information before loading the widget, it can be useful to inject it into the form by setting the `prefilled` keys - just pass in the values and they will be set upon load. Combine it with `locked` to lock the fields for user input.
 
 See `/examples/fields.htm`
 
@@ -274,35 +274,41 @@ See `/examples/fields.htm`
 bookingFields: {
   name: {
     placeholder: 'Your full name',
-    prefilled: false
+    prefilled: false,
+    locked: false
   },
   email: {
     placeholder: 'Your e-mail',
-    prefilled: false
+    prefilled: false,
+    locked: false
   },
   comment: {
     enabled: true,
     placeholder: 'Write a comment (optional)',
     prefilled: false,
-    required: false
+    required: false,
+    locked: false
   },
   phone: {
     enabled: false,
     placeholder: 'Your phone number',
     prefilled: false,
-    required: false
+    required: false,
+    locked: false
   },
   voip: {
     enabled: false,
     placeholder: 'Your Skype username',
     prefilled: false,
-    required: false
+    required: false,
+    locked: false
   },
   location: {
     enabled: false,
     placeholder: 'Location',
     prefilled: false,
-    required: false
+    required: false,
+    locked: false
   }
 }
 ```

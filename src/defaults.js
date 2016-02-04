@@ -82,8 +82,7 @@ var primary = {
     allDaySlot: false,
     scrollTime: '08:00:00',
     timezone: 'local',
-    //minTime: '08:00:00',
-    //maxTime: '19:00:00',
+    nowIndicator: true
   },
   localization: {
     showTimezoneHelper: true,

@@ -203,3 +203,7 @@ $primaryDarkColor: darken($primaryColor, 10%);
 .fc-agendaMonthly-view .fc-event {
   color: white;
 }
+
+.fc-now-indicator {
+  border-color: rgba(255, 0, 0, 0.5);
+}

@@ -5,6 +5,7 @@
   name="name"
   placeholder="{{ fields.name.placeholder }}"
   {{# fields.name.prefilled }} value="{{ fields.name.prefilled }}" {{/ fields.name.prefilled }}
+  {{# fields.name.disabled }} disabled="disabled" {{/ fields.name.disabled }}
   required
 />
 
@@ -14,6 +15,7 @@
   name="email"
   placeholder="{{ fields.email.placeholder }}"
   {{# fields.email.prefilled }} value="{{ fields.email.prefilled }}" {{/ fields.email.prefilled }}
+  {{# fields.email.disabled }} disabled="disabled" {{/ fields.email.disabled }}
   required
 />
 
@@ -25,6 +27,7 @@
     placeholder="{{ fields.phone.placeholder }}"
     {{# fields.phone.prefilled }} value="{{ fields.phone.prefilled }}" {{/ fields.phone.prefilled }}
     {{# fields.phone.required }} required {{/ fields.phone.required }}
+    {{# fields.phone.disabled }} disabled="disabled" {{/ fields.phone.disabled }}
   />
 {{/ fields.phone.enabled }}
 
@@ -36,6 +39,7 @@
     placeholder="{{ fields.voip.placeholder }}"
     {{# fields.voip.prefilled }} value="{{ fields.voip.prefilled }}" {{/ fields.voip.prefilled }}
     {{# fields.voip.required }} required {{/ fields.voip.required }}
+    {{# fields.voip.disabled }} disabled="disabled" {{/ fields.voip.disabled }}
   />
 {{/ fields.voip.enabled }}
 
@@ -47,6 +51,7 @@
     placeholder="{{ fields.location.placeholder }}"
     {{# fields.location.prefilled }} value="{{ fields.location.prefilled }}" {{/ fields.location.prefilled }}
     {{# fields.location.required }} required {{/ fields.location.required }}
+    {{# fields.location.disabled }} disabled="disabled" {{/ fields.location.disabled }}
   />
 {{/ fields.location.enabled }}
 
@@ -58,5 +63,6 @@
     placeholder="{{ fields.comment.placeholder }}"
     {{# fields.comment.prefilled }} value="{{ fields.comment.prefilled }}" {{/ fields.comment.prefilled }}
     {{# fields.comment.required }} required {{/ fields.comment.required }}
+    {{# fields.comment.disabled }} disabled="disabled" {{/ fields.comment.disabled }}
   />
 {{/ fields.comment.enabled }}

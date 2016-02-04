@@ -252,6 +252,7 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
       box-sizing: border-box;
       line-height: normal;
       font-family: $fontFamily;
+      color: $textColor;
 
       &:focus {
         outline: 0;
@@ -260,6 +261,11 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
 
       &.hidden {
         display: none;
+      }
+
+      &:disabled {
+        cursor: not-allowed;
+        font-style: italic;
       }
     }
 

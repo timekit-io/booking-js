@@ -45,6 +45,8 @@ $primaryDarkColor: darken($primaryColor, 10%);
   text-transform: uppercase;
   font-weight: 600;
   font-size: 1.1em;
+  border: 0px;
+  outline: none;
 
   &:hover,
   &:visited,

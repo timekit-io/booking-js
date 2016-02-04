@@ -136,7 +136,7 @@ describe('Booking fields', function() {
 
   });
 
-  fit('should be able to lock fields for user input', function(done) {
+  it('should be able to lock fields for user input', function(done) {
 
     var config = {
       bookingFields: {

@@ -150,6 +150,7 @@ function TimekitBooking() {
 
     var timezoneHelperTarget = $(template.render({
       timezoneIcon: timezoneIcon,
+      loadingText: config.localization.strings.timezoneHelperLoading,
       loading: true
     }));
 
@@ -175,8 +176,7 @@ function TimekitBooking() {
         timezoneIcon: timezoneIcon,
         timezoneDifference: (tzOffsetDiff === 0 ? false : true),
         timezoneDifferent: interpolate.sprintf(config.localization.strings.timezoneHelperDifferent, tzOffsetDiff, tzDirection, config.name),
-        timezoneSame: interpolate.sprintf(config.localization.strings.timezoneHelperSame, config.name),
-        loadingText: config.localization.strings.timezoneHelperLoadingText
+        timezoneSame: interpolate.sprintf(config.localization.strings.timezoneHelperSame, config.name)
       }));
 
       timezoneHelperTarget.replaceWith(newTimezoneHelperTarget);

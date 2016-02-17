@@ -85,7 +85,7 @@ var primary = {
     strings: {
       submitText: 'Book it',
       successMessageTitle: 'Thanks!',
-      timezoneHelperLoadingText: 'Loading..',
+      timezoneHelperLoading: 'Loading..',
       timezoneHelperDifferent: 'Your timezone is %s hours %s of %s (calendar shown in your local time)',
       timezoneHelperSame: 'You are in the same timezone as %s'
     }

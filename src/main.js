@@ -291,8 +291,6 @@ function TimekitBooking() {
     var dateFormat = config.localization.bookingDateFormat || moment.localeData().longDateFormat('LL');
     var timeFormat = config.localization.bookingTimeFormat || moment.localeData().longDateFormat('LT');
 
-    console.log(config.localization.strings.successMessageBody)
-
     bookingPageTarget = $(template.render({
       chosenDate:           moment(eventData.start).format(dateFormat),
       chosenTime:           moment(eventData.start).format(timeFormat) + ' - ' + moment(eventData.end).format(timeFormat),

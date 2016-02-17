@@ -5,7 +5,7 @@
   name="name"
   placeholder="{{ fields.name.placeholder }}"
   {{# fields.name.prefilled }} value="{{ fields.name.prefilled }}" {{/ fields.name.prefilled }}
-  {{# fields.name.locked }} disabled="disabled" {{/ fields.name.locked }}
+  {{# fields.name.locked }} readonly {{/ fields.name.locked }}
   required
 />
 
@@ -15,7 +15,7 @@
   name="email"
   placeholder="{{ fields.email.placeholder }}"
   {{# fields.email.prefilled }} value="{{ fields.email.prefilled }}" {{/ fields.email.prefilled }}
-  {{# fields.email.locked }} disabled="disabled" {{/ fields.email.locked }}
+  {{# fields.email.locked }} readonly {{/ fields.email.locked }}
   required
 />
 
@@ -27,7 +27,7 @@
     placeholder="{{ fields.phone.placeholder }}"
     {{# fields.phone.prefilled }} value="{{ fields.phone.prefilled }}" {{/ fields.phone.prefilled }}
     {{# fields.phone.required }} required {{/ fields.phone.required }}
-    {{# fields.phone.locked }} disabled="disabled" {{/ fields.phone.locked }}
+    {{# fields.phone.locked }} readonly {{/ fields.phone.locked }}
   />
 {{/ fields.phone.enabled }}
 
@@ -39,7 +39,7 @@
     placeholder="{{ fields.voip.placeholder }}"
     {{# fields.voip.prefilled }} value="{{ fields.voip.prefilled }}" {{/ fields.voip.prefilled }}
     {{# fields.voip.required }} required {{/ fields.voip.required }}
-    {{# fields.voip.locked }} disabled="disabled" {{/ fields.voip.locked }}
+    {{# fields.voip.locked }} readonly {{/ fields.voip.locked }}
   />
 {{/ fields.voip.enabled }}
 
@@ -51,7 +51,7 @@
     placeholder="{{ fields.location.placeholder }}"
     {{# fields.location.prefilled }} value="{{ fields.location.prefilled }}" {{/ fields.location.prefilled }}
     {{# fields.location.required }} required {{/ fields.location.required }}
-    {{# fields.location.locked }} disabled="disabled" {{/ fields.location.locked }}
+    {{# fields.location.locked }} readonly {{/ fields.location.locked }}
   />
 {{/ fields.location.enabled }}
 
@@ -61,8 +61,6 @@
     rows="3"
     name="comment"
     placeholder="{{ fields.comment.placeholder }}"
-    {{# fields.comment.prefilled }} value="{{ fields.comment.prefilled }}" {{/ fields.comment.prefilled }}
     {{# fields.comment.required }} required {{/ fields.comment.required }}
-    {{# fields.comment.locked }} disabled="disabled" {{/ fields.comment.locked }}
-  />
+    {{# fields.comment.locked }} readonly {{/ fields.comment.locked }}>{{# fields.comment.prefilled }}{{ fields.comment.prefilled }}{{/ fields.comment.prefilled }}</textarea>
 {{/ fields.comment.enabled }}

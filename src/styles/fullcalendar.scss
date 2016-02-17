@@ -45,6 +45,8 @@ $primaryDarkColor: darken($primaryColor, 10%);
   text-transform: uppercase;
   font-weight: 600;
   font-size: 1.1em;
+  border: 0px;
+  outline: none;
 
   &:hover,
   &:visited,
@@ -200,4 +202,8 @@ $primaryDarkColor: darken($primaryColor, 10%);
 
 .fc-agendaMonthly-view .fc-event {
   color: white;
+}
+
+.fc-now-indicator {
+  border-color: rgba(255, 0, 0, 0.5);
 }

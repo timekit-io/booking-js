@@ -3,7 +3,7 @@
 [![Circle CI](https://img.shields.io/circleci/project/timekit-io/booking-js.svg)](https://circleci.com/gh/timekit-io/booking-js)
 [![Codacy Badge](https://api.codacy.com/project/badge/grade/feb445801acf454a95b1690a75959893)](https://www.codacy.com/app/laander/booking-js)
 
-**Latest release:**  [v1.5.2](https://github.com/timekit-io/booking-js/releases)
+**Latest release:**  [v1.6.0](https://github.com/timekit-io/booking-js/releases)
 
 > Make a beautiful embeddable booking widget in minutes.
 
@@ -44,8 +44,8 @@ The simplest and most universally compatible usage is with autoload. This will d
 
 ```html
 <div id="bookingjs">
-  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-  <script type="text/javascript" src="http://cdn.timekit.io/booking-js/v1/booking.min.js" defer></script>
+  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <script type="text/javascript" src="//cdn.timekit.io/booking-js/v1/booking.min.js" defer></script>
   <script type="text/javascript">
     window.timekitBookingConfig = {
       email:    'marty.mcfly@timekit.io',
@@ -63,8 +63,8 @@ If you intent to run multiple instances or want more control, just create a new 
 
 ```html
 <div id="bookingjs">
-  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-  <script type="text/javascript" src="http://cdn.timekit.io/booking-js/v1/booking.min.js"></script>
+  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <script type="text/javascript" src="//cdn.timekit.io/booking-js/v1/booking.min.js"></script>
   <script type="text/javascript">
     var widget = new TimekitBooking();
     widget.init({
@@ -75,13 +75,6 @@ If you intent to run multiple instances or want more control, just create a new 
   </script>
 </div>
 ```
-
-**Serve over HTTPS**
-
-Use the following URI to the library if you want it served with SSL:  
-`https://dbhpllgef527b.cloudfront.net/booking-js/v1/booking.min.js`
-
-(see [this issue](https://github.com/timekit-io/booking-js/issues/19) for more info)
 
 ## Authentication
 
@@ -263,7 +256,7 @@ localization: {
 
 You can customize the booking form fields and their settings in this section. Only the `name`, `email` and `comment` fields are enabled by default. The `name` and `email` fields have to be enabled and is always required (for the event creation to work properly). All other fields can be enabled/disabled.
 
-If you're collecting user information before loading the widget, it can be useful to inject it into the form by setting the `prefilled` keys - just pass in the values and they will be set upon load.
+If you're collecting user information before loading the widget, it can be useful to inject it into the form by setting the `prefilled` keys - just pass in the values and they will be set upon load. Combine it with `locked` to lock the fields for user input.
 
 See `/examples/fields.htm`
 
@@ -271,35 +264,41 @@ See `/examples/fields.htm`
 bookingFields: {
   name: {
     placeholder: 'Your full name',
-    prefilled: false
+    prefilled: false,
+    locked: false
   },
   email: {
     placeholder: 'Your e-mail',
-    prefilled: false
+    prefilled: false,
+    locked: false
   },
   comment: {
     enabled: true,
     placeholder: 'Write a comment (optional)',
     prefilled: false,
-    required: false
+    required: false,
+    locked: false
   },
   phone: {
     enabled: false,
     placeholder: 'Your phone number',
     prefilled: false,
-    required: false
+    required: false,
+    locked: false
   },
   voip: {
     enabled: false,
     placeholder: 'Your Skype username',
     prefilled: false,
-    required: false
+    required: false,
+    locked: false
   },
   location: {
     enabled: false,
     placeholder: 'Location',
     prefilled: false,
-    required: false
+    required: false,
+    locked: false
   }
 }
 ```

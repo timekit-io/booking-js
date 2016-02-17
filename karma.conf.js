@@ -19,7 +19,7 @@ module.exports = function(config) {
       { pattern: 'test/fixtures/**/*.html', included: false, served: true, watched: true },
       { pattern: 'misc/**/*.*',             included: false, served: true, watched: false },
       { pattern: 'dist/**/*',               included: false, served: true, watched: true },
-      { pattern: 'src/**/*',               included: false, served: false, watched: true }
+      { pattern: 'src/**/*',                included: false, served: false, watched: true }
     ],
 
     // list of files to exclude

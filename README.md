@@ -133,7 +133,7 @@ Booking.js is made for various use-cases, so it's really extensible and customiz
 }
 ```
 
-### `timekitConfig`
+### - `timekitConfig`
 
 You can pass any of the [Timekit JS SDK](https://github.com/timekit-io/js-sdk) settings directly to the widget. This is mostly relevant if you're building a tighter integration with Timekit and have your own app registered on the platform.
 
@@ -143,7 +143,7 @@ timekitConfig: {
 }
 ```
 
-### `timekitFindTime`
+### - `timekitFindTime`
 
 The Find Time algorithm is a powerful query tool for availability. Booking.js is calling the endpoint `[POST] /findtime` through the JS SDK and takes all the arguments as mentioned on the official [docs](http://developers.timekit.io/docs/findtime). The most powerful aspect are the [filters](http://developers.timekit.io/docs/find-time-filters). By default, there's no filters applied.
 
@@ -157,7 +157,7 @@ timekitFindTime: {
 },
 ```
 
-### `timekitCreateBooking`
+### - `timekitCreateBooking`
 
 When booking an event, the widget will call the `[POST] /bookings` endpoint through the JS SDK.
 
@@ -192,7 +192,7 @@ timekitCreateBooking: {
 },
 ```
 
-### `fullCalendar`
+### - `fullCalendar`
 
 You can supply and override all the [FullCalendar settings](http://fullcalendar.io/docs/):
 
@@ -220,7 +220,7 @@ fullCalendar: {
 
 *See below for FullCalendar language support.*
 
-### `localization`
+### - `localization`
 
 For quick localization of time/date formats, we provide a simple "preset" setting, `timeDateFormat`, that sets a range of different FullCalendar and localization settings.
 
@@ -234,6 +234,7 @@ localization: {
   timeDateFormat: '12h-mdy-sun', // US-style per default. For EU-style formatting, use '24h-dmy-mon'
   bookingDateFormat: 'MMMM D, YYYY', // Override the default date format on the booking page
   bookingTimeFormat: 'h:mma' // Override the default time format on the booking page
+  strings: { ... } // See below
 },
 ```
 
@@ -252,7 +253,24 @@ localization: {
 }
 ```
 
-### `bookingFields`
+If you're using the widget in another language, you might want to customize the text strings used in e.g. submit button and success message. This can be done in the `localization.strings` key.
+
+See `/examples/local-strings.htm`
+
+```javascript
+localization: {
+  strings: { // Customize string used in the widget, defaults are shown below
+    submitText: 'Book it',
+    successMessageTitle: 'Thanks!',
+    timezoneHelperLoading: 'Loading..',
+    timezoneHelperDifferent: 'Your timezone is %s hours %s of %s (calendar shown in your local time)',
+    timezoneHelperSame: 'You are in the same timezone as %s',
+    successMessageBody: 'An invitation has been sent to: <br /> %s <br /><br /> Please accept the invitation to confirm the booking. <br /><br />Have a great day!'
+  }
+}
+```
+
+### - `bookingFields`
 
 You can customize the booking form fields and their settings in this section. Only the `name`, `email` and `comment` fields are enabled by default. The `name` and `email` fields have to be enabled and is always required (for the event creation to work properly). All other fields can be enabled/disabled.
 
@@ -303,7 +321,7 @@ bookingFields: {
 }
 ```
 
-### `callbacks`
+### - `callbacks`
 
 You can hook into events happening throughout the user flow and perform asynchronous events. This is especially powerful for saving user data to your CRM system or redirect users to a payment gateway after booking is finished.
 

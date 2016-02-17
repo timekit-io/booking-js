@@ -163,7 +163,7 @@ function TimekitBooking() {
 
     timekit.getUserTimezone(args).then(function(response){
 
-      utils.doCallback('getUserTimezoneSuccesful', config, response);
+      utils.doCallback('getUserTimezoneSuccessful', config, response);
 
       var hostTzOffset = response.data.utc_offset;
       var tzOffsetDiff = Math.abs(localTzOffset - hostTzOffset);
@@ -382,12 +382,20 @@ function TimekitBooking() {
 
       utils.doCallback('createBookingSuccessful', config, response);
 
+      // Call deprecated callback
+      var responseDeprecated = response;
+      responseDeprecated.data = response.data.attributes.event_info;
+      utils.doCallback('createEventSuccessful', config, responseDeprecated, true);
+
       formElement.find('.booked-email').html(values.email);
       formElement.removeClass('loading').addClass('success');
 
     }).catch(function(response){
 
       utils.doCallback('createBookingFailed', config, response);
+
+      // Call deprecated callback
+      utils.doCallback('createEventFailed', config, response, true);
 
       var submitButton = formElement.find('.bookingjs-form-button');
       submitButton.addClass('button-shake');
@@ -409,14 +417,14 @@ function TimekitBooking() {
   var timekitCreateBooking = function(data) {
 
     var args = {
-      details: {
+      event: {
         start: data.start,
         end: data.end,
         what: config.name + ' x ' + data.name,
         where: 'TBD',
         description: '',
-        calendar_id: config.calendar,
-        participants: [config.email, data.email]
+        calendar_id: config.calendar
+        // participants: [config.email, data.email]
       },
       customer: {
         name: data.name,
@@ -425,19 +433,20 @@ function TimekitBooking() {
       }
     };
 
-    if (config.bookingFields.location.enabled) { args.details.where = data.location; }
-    if (config.bookingFields.comment.enabled) {  args.details.description = data.comment; }
+    if (config.bookingFields.location.enabled) { args.event.where = data.location; }
+    if (config.bookingFields.comment.enabled) {  args.event.description = data.comment; }
     if (config.bookingFields.phone.enabled) {    args.customer.phone = data.phone; }
     if (config.bookingFields.voip.enabled) {     args.customer.voip = data.voip; }
 
     $.extend(true, args, config.timekitCreateBooking);
 
     if (config.timekitCreateEvent) {
-      $.extend(true, args.details, config.timekitCreateEvent); // backwards compatibility
-      utils.logDeprecated('config key "timekitCreateEvent" is not used anymore, use "timekitCreateBooking"');
+      $.extend(true, args.event, config.timekitCreateEvent); // backwards compatibility
+      utils.logDeprecated('config key "timekitCreateEvent" has been replaced, use "timekitCreateBooking" and see docs');
     }
 
     utils.doCallback('createBookingStarted', config, args);
+    utils.doCallback('createEventStarted', config, args, true);
 
     var requestHeaders = {
       'Timekit-OutputTimestampFormat': 'Y-m-d ' + config.localization.emailTimeFormat + ' (P e)'

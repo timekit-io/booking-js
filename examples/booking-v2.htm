@@ -18,7 +18,7 @@
         name:     'Doc Brown',
         email:    'timebirdcphtest@gmail.com',
         apiToken: 'password',
-        calendar: 'abb40a63-e737-41ea-9f7f-710cc4642f7e',
+        calendar: '9e8c23de-43b7-4fdd-8f4b-18a9e9fcb226',
         avatar:   '../misc/avatar-doc.jpg',
         timekitConfig: {
           app: 'timebird',
@@ -32,6 +32,10 @@
         },
         localization: {
           timeDateFormat: '24h-dmy-mon'
+        },
+        callbacks: {
+          createEventSuccessful: function (data) { console.log('createEventSuccessful', data) },
+          createBookingSuccessful: function (data) { console.log('createBookingSuccessful', data) }
         }
       });
     </script>

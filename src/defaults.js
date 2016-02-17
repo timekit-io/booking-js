@@ -58,7 +58,6 @@ var primary = {
     future: '4 weeks',
     length: '1 hour'
   },
-  //timekitCreateEvent: { },
   timekitCreateBooking: { },
   timekitUpdateBooking: { },
   fullCalendar: {
@@ -74,9 +73,7 @@ var primary = {
     },
     allDaySlot: false,
     scrollTime: '08:00:00',
-    timezone: 'local',
-    //minTime: '08:00:00',
-    //maxTime: '19:00:00',
+    timezone: 'local'
   },
   localization: {
     showTimezoneHelper: true,
@@ -92,7 +89,7 @@ var bookingInstant = {
   timekitCreateBooking: {
     graph: 'instant',
     action: 'confirm',
-    details: {
+    event: {
       invite: true,
       my_rsvp: 'accepted',
       sync_provider: true
@@ -107,7 +104,7 @@ var bookingActionable = {
   timekitCreateBooking: {
     graph: 'confirm_decline',
     action: 'create',
-    details: {
+    event: {
       invite: true,
       my_rsvp: 'needsAction',
       sync_provider: true

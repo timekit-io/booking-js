@@ -40,7 +40,7 @@ To ensure that we can push out updates, improvements and bugfixes to the library
 See `/examples` for implementation examples or use the following:
 
 **Autoload**  
-The simplest and most universally compatible usage is with autoload. This will defer the loading of the library until the whole body has loaded and then look for `window.timekitBookingConfig` - if found, the library is loaded automatically.
+The simplest and most universally compatible usage is with autoload. This will defer the loading of the library until the whole document has loaded and then look for `window.timekitBookingConfig` - if found, the library is loaded automatically. Note that in single page applications, you should not use this approach.
 
 ```html
 <div id="bookingjs">
@@ -59,7 +59,7 @@ The simplest and most universally compatible usage is with autoload. This will d
 ```
 
 **Instantiation**  
-If you intent to run multiple instances or want more control, just create a new instance. This is ideal for usage in SPAs like Angular.js, where you'd like a `<div id="bookingjs">` in your template and JS in your controller or directive code.
+If you intent to run multiple instances or want more control, just create a new instance. This is ideal for usage in single page applications like Angular.js, where you'd like a `<div id="bookingjs">` in your template and JS in your controller or directive code.
 
 ```html
 <div id="bookingjs">
@@ -180,7 +180,7 @@ These can be set using the `bookingMode` config key on the root config level.
 timekitCreateBooking: {
   graph:          'instant',       // Inserted based on "bookingMode" specified. See description above on flow graph
   action:         'confirm',       // If "instant" graph is chosen, it will instantly perform the "confirm" action. See description above on flow graph
-  details: {    
+  event: {    
     where:        'Online',        // Default, you may want to customize this to a specific location, TBD or whatever fits
     invite:       true,            // Default, makes sure that participants (the visitor) is sent a Google invite
     my_rsvp:      'needsAction',   // Default, makes sure that the host also will be able to RSVP to the created event
@@ -319,7 +319,7 @@ callbacks: {
   createBookingSuccessful:  function(response) {},
   createBookingFailed:      function(response) {},
   getUserTimezoneStarted:   function(args) {},
-  getUserTimezoneSuccesful: function(response) {},
+  getUserTimezoneSuccessful:function(response) {},
   getUserTimezoneFailed:    function(response) {},
   fullCalendarInitialized:  function() {},
   renderCompleted:          function() {},

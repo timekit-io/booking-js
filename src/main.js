@@ -423,8 +423,8 @@ function TimekitBooking() {
         what: config.name + ' x ' + data.name,
         where: 'TBD',
         description: '',
-        calendar_id: config.calendar
-        // participants: [config.email, data.email]
+        calendar_id: config.calendar,
+        participants: [config.email, data.email]
       },
       customer: {
         name: data.name,

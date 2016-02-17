@@ -24,10 +24,10 @@ describe('Booking configuration', function() {
   it('should be able override default configuration for timekitUpdateBooking and book', function(done) {
 
     var config = {
-      timekitUpdateBooking: {
+      timekitCreateBooking: {
         event: {
           invite: false
-        },
+        }
       }
     }
     createWidget(config);
@@ -45,7 +45,7 @@ describe('Booking configuration', function() {
           var request = jasmine.Ajax.requests.mostRecent();
           var requestData = JSON.parse(request.params);
 
-          expect(request.url).toBe('https://api.timekit.io/v2/bookings/0096163d-54a4-488f-aa3a-0b40111ee4be/confirm');
+          expect(request.url).toBe('https://api.timekit.io/v2/bookings');
           expect(requestData.event.invite).toBe(false);
 
           done();

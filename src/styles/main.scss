@@ -203,7 +203,6 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
     &-box {
       position: relative;
       box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1);
-      border-radius: 4px;
       overflow: hidden;
       background-color: white;
       line-height: 0;
@@ -270,9 +269,13 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
         display: none;
       }
 
-      &:disabled {
+      &:read-only {
         cursor: not-allowed;
         font-style: italic;
+
+        &:focus {
+          box-shadow: inset 0px 0px 1px 1px #D8D8D8;
+        }
       }
     }
 
@@ -331,7 +334,8 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
         transition: transform 0.6s ease;
       }
 
-      &:hover {
+      &:hover,
+      &:focus {
         background-color: $primaryDarkColor;
       }
 

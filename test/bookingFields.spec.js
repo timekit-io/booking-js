@@ -142,10 +142,14 @@ describe('Booking fields', function() {
       bookingFields: {
         name: {
           locked: true,
-          prefilled: "My Test Name"
+          prefilled: 'My Test Name'
         },
         email: {
           locked: false
+        },
+        comment: {
+          locked: true,
+          prefilled: 'This should be submitted'
         }
       }
     }
@@ -159,15 +163,35 @@ describe('Booking fields', function() {
       setTimeout(function() {
 
         var nameInput = $('.input-name');
-        expect(nameInput.prop('disabled')).toBe(true);
-        expect(nameInput.is('[disabled=disabled]')).toBe(true);
+        expect(nameInput.prop('readonly')).toBe(true);
+        expect(nameInput.is('[readonly]')).toBe(true);
 
         var emailInput = $('.input-email');
-        expect(emailInput.prop('disabled')).toBe(false);
-        expect(emailInput.is('[disabled=disabled]')).toBe(false);
+        expect(emailInput.prop('readonly')).toBe(false);
+        expect(emailInput.is('[readonly]')).toBe(false);
 
-        done();
+        emailInput.val('someemail@timekit.io');
 
+        var commentInput = $('.input-comment');
+        expect(commentInput.prop('readonly')).toBe(true);
+        expect(commentInput.is('[readonly]')).toBe(true);
+
+        $('.bookingjs-form-button').click();
+
+        expect($('.bookingjs-form').hasClass('loading')).toBe(true);
+
+        setTimeout(function() {
+
+          expect($('.bookingjs-form').hasClass('success')).toBe(true);
+
+          var request = jasmine.Ajax.requests.mostRecent();
+
+          var requestDescription = JSON.parse(request.params).description
+          expect(requestDescription.search(config.bookingFields.comment.prefilled)).toBeGreaterThan(0);
+
+          done();
+
+        }, 200);
       }, 500);
     }, 500);
 

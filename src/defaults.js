@@ -6,9 +6,6 @@
 
 var primary = {
 
-  // email: '',
-  // apiToken: '',
-  // calendar: '',
   targetEl: '#bookingjs',
   name: '',
   avatar: '',
@@ -84,7 +81,14 @@ var primary = {
   },
   localization: {
     showTimezoneHelper: true,
-    timeDateFormat: '12h-mdy-sun'
+    timeDateFormat: '12h-mdy-sun',
+    strings: {
+      submitText: 'Book it',
+      successMessageTitle: 'Thanks!',
+      timezoneHelperLoadingText: 'Loading..',
+      timezoneHelperDifferent: 'Your timezone is %s hours %s of %s (calendar shown in your local time)',
+      timezoneHelperSame: 'You are in the same timezone as %s'
+    }
   },
   callbacks: {}
 
@@ -101,12 +105,17 @@ var bookingInstant = {
       my_rsvp: 'accepted',
       sync_provider: true
     }
+  },
+  localization: {
+    strings: {
+      successMessageBody: 'An invitation has been sent to: <br /> %s <br /><br /> Please accept the invitation to confirm the booking. <br /><br />Have a great day!'
+    }
   }
 
 };
 
 // Preset: bookingMode = 'confirm_decline'
-var bookingActionable = {
+var bookingConfirmDecline = {
 
   timekitCreateBooking: {
     graph: 'confirm_decline',
@@ -115,6 +124,11 @@ var bookingActionable = {
       invite: true,
       my_rsvp: 'needsAction',
       sync_provider: true
+    }
+  },
+  localization: {
+    strings: {
+      successMessageBody: "We have received your request and we'll be in touch when we have reviewed it. <br /><br />Have a great day!"
     }
   }
 
@@ -175,6 +189,6 @@ module.exports = {
     timeDateFormat24hdmymon:  timeDateFormat24hdmymon,
     timeDateFormat12hmdysun:  timeDateFormat12hmdysun,
     bookingInstant: bookingInstant,
-    bookingActionable: bookingActionable
+    bookingConfirmDecline: bookingConfirmDecline
   }
 };

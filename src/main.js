@@ -16,6 +16,7 @@ window.fullcalendar = require('fullcalendar');
 var moment          = window.moment = require('moment');
 var timekit         = require('timekit-sdk');
 require('moment-timezone/builds/moment-timezone-with-data-2010-2020.js');
+var interpolate     = require('sprintf-js');
 
 // Internal dependencies
 var utils         = require('./utils');
@@ -167,14 +168,15 @@ function TimekitBooking() {
 
       var hostTzOffset = response.data.utc_offset;
       var tzOffsetDiff = Math.abs(localTzOffset - hostTzOffset);
+      var tzDirection = (tzOffsetDiff > 0 ? 'ahead' : 'behind');
 
       var template = require('./templates/timezone-helper.html');
       var newTimezoneHelperTarget = $(template.render({
         timezoneIcon: timezoneIcon,
         timezoneDifference: (tzOffsetDiff === 0 ? false : true),
-        timezoneOffset: tzOffsetDiff,
-        timezoneDirection: (tzOffsetDiff > 0 ? 'ahead' : 'behind'),
-        hostName: config.name
+        timezoneDifferent: interpolate.sprintf(config.localization.strings.timezoneHelperDifferent, tzOffsetDiff, tzDirection, config.name),
+        timezoneSame: interpolate.sprintf(config.localization.strings.timezoneHelperSame, config.name),
+        loadingText: config.localization.strings.timezoneHelperLoadingText
       }));
 
       timezoneHelperTarget.replaceWith(newTimezoneHelperTarget);
@@ -289,6 +291,8 @@ function TimekitBooking() {
     var dateFormat = config.localization.bookingDateFormat || moment.localeData().longDateFormat('LL');
     var timeFormat = config.localization.bookingTimeFormat || moment.localeData().longDateFormat('LT');
 
+    console.log(config.localization.strings.successMessageBody)
+
     bookingPageTarget = $(template.render({
       chosenDate:           moment(eventData.start).format(dateFormat),
       chosenTime:           moment(eventData.start).format(timeFormat) + ' - ' + moment(eventData.end).format(timeFormat),
@@ -298,10 +302,9 @@ function TimekitBooking() {
       checkmarkIcon:        require('!svg-inline!./assets/checkmark-icon.svg'),
       loadingIcon:          require('!svg-inline!./assets/loading-spinner.svg'),
       errorIcon:            require('!svg-inline!./assets/error-icon.svg'),
-      submitText:           'Book it',
-      successMessageTitle:  'Thanks!',
-      successMessagePart1:  'An invitation has been sent to:',
-      successMessagePart2:  'Accept the invitation to confirm the booking.',
+      submitText:           config.localization.strings.submitText,
+      successMessageTitle:  config.localization.strings.successMessageTitle,
+      successMessageBody:   interpolate.sprintf(config.localization.strings.successMessageBody, '<span class="booked-email"></span>'),
       fields:               config.bookingFields
     }, {
       formFields: fieldsTemplate
@@ -500,7 +503,7 @@ function TimekitBooking() {
     if(newConfig.bookingMode === 'instant') {
       presetsConfig = defaultConfig.presets.bookingInstant;
     } else if(newConfig.bookingMode === 'confirm_decline') {
-      presetsConfig = defaultConfig.presets.bookingActionable;
+      presetsConfig = defaultConfig.presets.bookingConfirmDecline;
     }
     finalConfig = $.extend(true, {}, presetsConfig, finalConfig);
 

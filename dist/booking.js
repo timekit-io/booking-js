@@ -58,7 +58,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	/*!
 	 * Booking.js
-	 * Version: 1.6.0
+	 * Version: 1.7.0
 	 * http://booking.timekit.io
 	 *
 	 * Copyright 2015 Timekit, Inc.
@@ -71,10 +71,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	window.fullcalendar = __webpack_require__(2);
 	var moment          = window.moment = __webpack_require__(3);
 	var timekit         = __webpack_require__(7);
+	__webpack_require__(29);
+	var interpolate     = __webpack_require__(30);
 	
 	// Internal dependencies
-	var utils         = __webpack_require__(29);
-	var defaultConfig = __webpack_require__(30);
+	var utils         = __webpack_require__(31);
+	var defaultConfig = __webpack_require__(33);
 	
 	// Main library
 	function TimekitBooking() {
@@ -89,10 +91,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  // Inject style dependencies
 	  var includeStyles = function() {
-	    __webpack_require__(31);
-	    __webpack_require__(35);
-	    __webpack_require__(37);
-	    __webpack_require__(39);
+	    __webpack_require__(34);
+	    __webpack_require__(38);
+	    __webpack_require__(40);
+	    __webpack_require__(42);
 	  };
 	
 	  // Make sure DOM element is ready and clean it
@@ -100,7 +102,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    rootTarget = $(config.targetEl);
 	    if (rootTarget.length === 0) {
-	      throw new Error('TimekitBooking - No target DOM element was found (' + config.targetEl + ')');
+	      utils.logError('No target DOM element was found (' + config.targetEl + ')');
 	    }
 	    rootTarget.addClass('bookingjs');
 	    rootTarget.children(':not(script)').remove();
@@ -110,10 +112,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Setup the Timekit SDK with correct credentials
 	  var timekitSetup = function() {
 	
-	    var args = {};
-	    $.extend(true, args, config.timekitConfig);
-	
-	    timekit.configure(args);
+	    timekit.configure(config.timekitConfig);
 	    timekit.setUser(config.email, config.apiToken);
 	
 	  };
@@ -144,7 +143,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    }).catch(function(response){
 	      utils.doCallback('findTimeFailed', config, response);
-	      throw new Error('TimekitBooking - An error with Timekit FindTime occured, context: ' + response);
+	      utils.logError('An error with Timekit FindTime occured, context: ' + response);
 	    });
 	
 	  };
@@ -200,13 +199,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Calculate and display timezone helper
 	  var renderTimezoneHelper = function() {
 	
-	    var localTzOffset = (new Date()).getTimezoneOffset()/60*-1;
-	    var timezoneIcon = __webpack_require__(41);
+	    var localTzOffset = (moment().utcOffset()/60);
+	    var timezoneIcon = __webpack_require__(44);
 	
-	    var template = __webpack_require__(42);
+	    var template = __webpack_require__(45);
 	
 	    var timezoneHelperTarget = $(template.render({
 	      timezoneIcon: timezoneIcon,
+	      loadingText: config.localization.strings.timezoneHelperLoading,
 	      loading: true
 	    }));
 	
@@ -221,25 +221,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    timekit.getUserTimezone(args).then(function(response){
 	
-	      utils.doCallback('getUserTimezoneSuccesful', config, response);
+	      utils.doCallback('getUserTimezoneSuccessful', config, response);
 	
 	      var hostTzOffset = response.data.utc_offset;
 	      var tzOffsetDiff = Math.abs(localTzOffset - hostTzOffset);
+	      var tzDirection = (tzOffsetDiff > 0 ? 'ahead' : 'behind');
 	
-	      var template = __webpack_require__(42);
+	      var template = __webpack_require__(45);
 	      var newTimezoneHelperTarget = $(template.render({
 	        timezoneIcon: timezoneIcon,
 	        timezoneDifference: (tzOffsetDiff === 0 ? false : true),
-	        timezoneOffset: tzOffsetDiff,
-	        timezoneDirection: (tzOffsetDiff > 0 ? 'ahead' : 'behind'),
-	        hostName: config.name
+	        timezoneDifferent: interpolate.sprintf(config.localization.strings.timezoneHelperDifferent, tzOffsetDiff, tzDirection, config.name),
+	        timezoneSame: interpolate.sprintf(config.localization.strings.timezoneHelperSame, config.name)
 	      }));
 	
 	      timezoneHelperTarget.replaceWith(newTimezoneHelperTarget);
 	
 	    }).catch(function(response){
 	      utils.doCallback('getUserTimezoneFailed', config, response);
-	      throw new Error('TimekitBooking - An error with Timekit getUserTimezone occured, context: ' + response);
+	      utils.logError('An error with Timekit getUserTimezone occured, context: ' + response);
 	    });
 	
 	  };
@@ -313,7 +313,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Render the avatar image
 	  var renderAvatarImage = function() {
 	
-	    var template = __webpack_require__(46);
+	    var template = __webpack_require__(49);
 	    var avatarTarget = $(template.render({
 	      image: config.avatar
 	    }));
@@ -326,7 +326,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Render the avatar image
 	  var renderDisplayName = function() {
 	
-	    var template = __webpack_require__(47);
+	    var template = __webpack_require__(50);
 	    var displayNameTarget = $(template.render({
 	      name: config.name
 	    }));
@@ -341,8 +341,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    utils.doCallback('showBookingPage', config, eventData);
 	
-	    var fieldsTemplate = __webpack_require__(48);
-	    var template = __webpack_require__(49);
+	    var fieldsTemplate = __webpack_require__(51);
+	    var template = __webpack_require__(52);
 	
 	    var dateFormat = config.localization.bookingDateFormat || moment.localeData().longDateFormat('LL');
 	    var timeFormat = config.localization.bookingTimeFormat || moment.localeData().longDateFormat('LT');
@@ -352,14 +352,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	      chosenTime:           moment(eventData.start).format(timeFormat) + ' - ' + moment(eventData.end).format(timeFormat),
 	      start:                moment(eventData.start).format(),
 	      end:                  moment(eventData.end).format(),
-	      closeIcon:            __webpack_require__(50),
-	      checkmarkIcon:        __webpack_require__(51),
-	      loadingIcon:          __webpack_require__(52),
-	      errorIcon:            __webpack_require__(53),
-	      submitText:           'Book it',
-	      successMessageTitle:  'Thanks!',
-	      successMessagePart1:  'An invitation has been sent to:',
-	      successMessagePart2:  'Accept the invitation to confirm the booking.',
+	      closeIcon:            __webpack_require__(53),
+	      checkmarkIcon:        __webpack_require__(54),
+	      loadingIcon:          __webpack_require__(55),
+	      errorIcon:            __webpack_require__(56),
+	      submitText:           config.localization.strings.submitText,
+	      successMessageTitle:  config.localization.strings.successMessageTitle,
+	      successMessageBody:   interpolate.sprintf(config.localization.strings.successMessageBody, '<span class="booked-email"></span>'),
 	      fields:               config.bookingFields
 	    }, {
 	      formFields: fieldsTemplate
@@ -436,16 +435,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	    utils.doCallback('submitBookingForm', config, values);
 	
 	    // Call create event endpoint
-	    timekitCreateEvent(values).then(function(response){
+	    timekitCreateBooking(values).then(function(response){
 	
-	      utils.doCallback('createEventSuccessful', config, response);
+	      utils.doCallback('createBookingSuccessful', config, response);
+	
+	      // Call deprecated callback
+	      var responseDeprecated = response;
+	      responseDeprecated.data = response.data.attributes.event_info;
+	      utils.doCallback('createEventSuccessful', config, responseDeprecated, true);
 	
 	      formElement.find('.booked-email').html(values.email);
 	      formElement.removeClass('loading').addClass('success');
 	
 	    }).catch(function(response){
 	
-	      utils.doCallback('createEventFailed', config, response);
+	      utils.doCallback('createBookingFailed', config, response);
+	
+	      // Call deprecated callback
+	      utils.doCallback('createEventFailed', config, response, true);
 	
 	      var submitButton = formElement.find('.bookingjs-form-button');
 	      submitButton.addClass('button-shake');
@@ -458,42 +465,61 @@ return /******/ (function(modules) { // webpackBootstrap
 	        formElement.removeClass('error');
 	      }, 2000);
 	
-	      throw new Error('TimekitBooking - An error with Timekit createEvent occured, context: ' + response);
+	      utils.logError('An error with Timekit createBooking occured, context: ' + response);
 	    });
 	
 	  };
 	
-	  // Create new event through Timekit SDK
-	  var timekitCreateEvent = function(data) {
+	  // Create new booking
+	  var timekitCreateBooking = function(data) {
 	
 	    var args = {
-	      start: data.start,
-	      end: data.end,
-	      what: config.name + ' x ' + data.name,
-	      where: 'TBD',
-	      description: '',
-	      calendar_id: config.calendar,
-	      participants: [config.email, data.email]
+	      event: {
+	        start: data.start,
+	        end: data.end,
+	        what: config.name + ' x ' + data.name,
+	        where: 'TBD',
+	        description: '',
+	        calendar_id: config.calendar,
+	        participants: [config.email, data.email]
+	      },
+	      customer: {
+	        name: data.name,
+	        email: data.email,
+	        timezone: moment.tz.guess()
+	      }
 	    };
 	
-	    if (config.bookingFields.location.enabled) { args.where = data.location; }
-	    if (config.bookingFields.phone.enabled) {    args.description += config.bookingFields.phone.placeholder + ': ' + data.phone + '\n'; }
-	    if (config.bookingFields.voip.enabled) {     args.description += config.bookingFields.voip.placeholder + ': ' + data.voip + '\n'; }
-	    if (config.bookingFields.comment.enabled) {  args.description += config.bookingFields.comment.placeholder + ': ' + data.comment + '\n'; }
+	    if (config.bookingFields.location.enabled) { args.event.where = data.location; }
+	    if (config.bookingFields.comment.enabled) {  args.event.description = data.comment; }
+	    if (config.bookingFields.phone.enabled) {    args.customer.phone = data.phone; }
+	    if (config.bookingFields.voip.enabled) {     args.customer.voip = data.voip; }
 	
-	    $.extend(true, args, config.timekitCreateEvent);
+	    $.extend(true, args, config.timekitCreateBooking);
 	
-	    utils.doCallback('createEventStarted', config, args);
+	    if (config.timekitCreateEvent) {
+	      $.extend(true, args.event, config.timekitCreateEvent); // backwards compatibility
+	      utils.logDeprecated('config key "timekitCreateEvent" has been replaced, use "timekitCreateBooking" and see docs');
+	    }
 	
-	    return timekit.createEvent(args);
+	    utils.doCallback('createBookingStarted', config, args);
+	    utils.doCallback('createEventStarted', config, args, true);
+	
+	    var requestHeaders = {
+	      'Timekit-OutputTimestampFormat': 'Y-m-d ' + config.localization.emailTimeFormat + ' (P e)'
+	    };
+	
+	    return timekit
+	    .headers(requestHeaders)
+	    .createBooking(args);
 	
 	  };
 	
 	  // Render the powered by Timekit message
 	  var renderPoweredByMessage = function(pageTarget) {
 	
-	    var template = __webpack_require__(54);
-	    var timekitIcon = __webpack_require__(55);
+	    var template = __webpack_require__(57);
+	    var timekitIcon = __webpack_require__(58);
 	    var poweredTarget = $(template.render({
 	      timekitIcon: timekitIcon
 	    }));
@@ -510,28 +536,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (window.timekitBookingConfig !== undefined) {
 	        suppliedConfig = window.timekitBookingConfig;
 	      } else {
-	        throw new Error('TimekitBooking - No configuration was supplied or found. Please supply a config object upon library initialization');
+	        utils.logError('No configuration was supplied or found. Please supply a config object upon library initialization');
 	      }
 	    }
 	
 	    // Extend the default config with supplied settings
 	    var newConfig = $.extend(true, {}, defaultConfig.primary, suppliedConfig);
 	
-	    // Apply any presets if applicable (supplied config have presedence over preset)
+	    // Apply timeDateFormat presets
 	    var presetsConfig = {};
 	    if(newConfig.localization.timeDateFormat === '24h-dmy-mon') {
 	      presetsConfig = defaultConfig.presets.timeDateFormat24hdmymon;
-	    }
-	    if(newConfig.localization.timeDateFormat === '12h-mdy-sun') {
+	    } else if(newConfig.localization.timeDateFormat === '12h-mdy-sun') {
 	      presetsConfig = defaultConfig.presets.timeDateFormat12hmdysun;
 	    }
-	
-	    // Extend the config with the presets
 	    var finalConfig = $.extend(true, {}, presetsConfig, newConfig);
+	
+	    // Apply bookingMode presets
+	    presetsConfig = {};
+	    if(newConfig.bookingMode === 'instant') {
+	      presetsConfig = defaultConfig.presets.bookingInstant;
+	    } else if(newConfig.bookingMode === 'confirm_decline') {
+	      presetsConfig = defaultConfig.presets.bookingConfirmDecline;
+	    }
+	    finalConfig = $.extend(true, {}, presetsConfig, finalConfig);
 	
 	    // Check for required settings
 	    if(!finalConfig.email || !finalConfig.apiToken || !finalConfig.calendar) {
-	      throw new Error('TimekitBooking - A required config setting was missing ("email", "apiToken" or "calendar")');
+	      utils.logError('A required config setting was missing ("email", "apiToken" or "calendar")');
 	    }
 	
 	    // Set new config to instance config
@@ -19475,9 +19507,1404 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 29 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;//! moment-timezone.js
+	//! version : 0.5.0
+	//! author : Tim Wood
+	//! license : MIT
+	//! github.com/moment/moment-timezone
+	
+	(function (root, factory) {
+		"use strict";
+	
+		/*global define*/
+		if (true) {
+			!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(3)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));                 // AMD
+		} else if (typeof module === 'object' && module.exports) {
+			module.exports = factory(require('moment')); // Node
+		} else {
+			factory(root.moment);                        // Browser
+		}
+	}(this, function (moment) {
+		"use strict";
+	
+		// Do not load moment-timezone a second time.
+		if (moment.tz !== undefined) {
+			logError('Moment Timezone ' + moment.tz.version + ' was already loaded ' + (moment.tz.dataVersion ? 'with data from ' : 'without any data') + moment.tz.dataVersion);
+			return moment;
+		}
+	
+		var VERSION = "0.5.0",
+			zones = {},
+			links = {},
+			names = {},
+			guesses = {},
+			cachedGuess,
+	
+			momentVersion = moment.version.split('.'),
+			major = +momentVersion[0],
+			minor = +momentVersion[1];
+	
+		// Moment.js version check
+		if (major < 2 || (major === 2 && minor < 6)) {
+			logError('Moment Timezone requires Moment.js >= 2.6.0. You are using Moment.js ' + moment.version + '. See momentjs.com');
+		}
+	
+		/************************************
+			Unpacking
+		************************************/
+	
+		function charCodeToInt(charCode) {
+			if (charCode > 96) {
+				return charCode - 87;
+			} else if (charCode > 64) {
+				return charCode - 29;
+			}
+			return charCode - 48;
+		}
+	
+		function unpackBase60(string) {
+			var i = 0,
+				parts = string.split('.'),
+				whole = parts[0],
+				fractional = parts[1] || '',
+				multiplier = 1,
+				num,
+				out = 0,
+				sign = 1;
+	
+			// handle negative numbers
+			if (string.charCodeAt(0) === 45) {
+				i = 1;
+				sign = -1;
+			}
+	
+			// handle digits before the decimal
+			for (i; i < whole.length; i++) {
+				num = charCodeToInt(whole.charCodeAt(i));
+				out = 60 * out + num;
+			}
+	
+			// handle digits after the decimal
+			for (i = 0; i < fractional.length; i++) {
+				multiplier = multiplier / 60;
+				num = charCodeToInt(fractional.charCodeAt(i));
+				out += num * multiplier;
+			}
+	
+			return out * sign;
+		}
+	
+		function arrayToInt (array) {
+			for (var i = 0; i < array.length; i++) {
+				array[i] = unpackBase60(array[i]);
+			}
+		}
+	
+		function intToUntil (array, length) {
+			for (var i = 0; i < length; i++) {
+				array[i] = Math.round((array[i - 1] || 0) + (array[i] * 60000)); // minutes to milliseconds
+			}
+	
+			array[length - 1] = Infinity;
+		}
+	
+		function mapIndices (source, indices) {
+			var out = [], i;
+	
+			for (i = 0; i < indices.length; i++) {
+				out[i] = source[indices[i]];
+			}
+	
+			return out;
+		}
+	
+		function unpack (string) {
+			var data = string.split('|'),
+				offsets = data[2].split(' '),
+				indices = data[3].split(''),
+				untils  = data[4].split(' ');
+	
+			arrayToInt(offsets);
+			arrayToInt(indices);
+			arrayToInt(untils);
+	
+			intToUntil(untils, indices.length);
+	
+			return {
+				name       : data[0],
+				abbrs      : mapIndices(data[1].split(' '), indices),
+				offsets    : mapIndices(offsets, indices),
+				untils     : untils,
+				population : data[5] | 0
+			};
+		}
+	
+		/************************************
+			Zone object
+		************************************/
+	
+		function Zone (packedString) {
+			if (packedString) {
+				this._set(unpack(packedString));
+			}
+		}
+	
+		Zone.prototype = {
+			_set : function (unpacked) {
+				this.name       = unpacked.name;
+				this.abbrs      = unpacked.abbrs;
+				this.untils     = unpacked.untils;
+				this.offsets    = unpacked.offsets;
+				this.population = unpacked.population;
+			},
+	
+			_index : function (timestamp) {
+				var target = +timestamp,
+					untils = this.untils,
+					i;
+	
+				for (i = 0; i < untils.length; i++) {
+					if (target < untils[i]) {
+						return i;
+					}
+				}
+			},
+	
+			parse : function (timestamp) {
+				var target  = +timestamp,
+					offsets = this.offsets,
+					untils  = this.untils,
+					max     = untils.length - 1,
+					offset, offsetNext, offsetPrev, i;
+	
+				for (i = 0; i < max; i++) {
+					offset     = offsets[i];
+					offsetNext = offsets[i + 1];
+					offsetPrev = offsets[i ? i - 1 : i];
+	
+					if (offset < offsetNext && tz.moveAmbiguousForward) {
+						offset = offsetNext;
+					} else if (offset > offsetPrev && tz.moveInvalidForward) {
+						offset = offsetPrev;
+					}
+	
+					if (target < untils[i] - (offset * 60000)) {
+						return offsets[i];
+					}
+				}
+	
+				return offsets[max];
+			},
+	
+			abbr : function (mom) {
+				return this.abbrs[this._index(mom)];
+			},
+	
+			offset : function (mom) {
+				return this.offsets[this._index(mom)];
+			}
+		};
+	
+		/************************************
+			Current Timezone
+		************************************/
+	
+		function OffsetAt(at) {
+			var timeString = at.toTimeString();
+			var abbr = timeString.match(/\(.+\)/);
+			if (abbr && abbr[0]) {
+				// 17:56:31 GMT-0600 (CST)
+				// 17:56:31 GMT-0600 (Central Standard Time)
+				abbr = abbr[0].match(/[A-Z]/g).join('');
+			} else {
+				// 17:56:31 CST
+				abbr = timeString.match(/[A-Z]{3,5}/g)[0];
+			}
+	
+			if (abbr === 'GMT') {
+				abbr = undefined;
+			}
+	
+			this.at = +at;
+			this.abbr = abbr;
+			this.offset = at.getTimezoneOffset();
+		}
+	
+		function ZoneScore(zone) {
+			this.zone = zone;
+			this.offsetScore = 0;
+			this.abbrScore = 0;
+		}
+	
+		ZoneScore.prototype.scoreOffsetAt = function (offsetAt) {
+			this.offsetScore += Math.abs(this.zone.offset(offsetAt.at) - offsetAt.offset);
+			if (this.zone.abbr(offsetAt.at).match(/[A-Z]/g).join('') !== offsetAt.abbr) {
+				this.abbrScore++;
+			}
+		};
+	
+		function findChange(low, high) {
+			var mid, diff;
+	
+			while ((diff = ((high.at - low.at) / 12e4 | 0) * 6e4)) {
+				mid = new OffsetAt(new Date(low.at + diff));
+				if (mid.offset === low.offset) {
+					low = mid;
+				} else {
+					high = mid;
+				}
+			}
+	
+			return low;
+		}
+	
+		function userOffsets() {
+			var startYear = new Date().getFullYear() - 2,
+				last = new OffsetAt(new Date(startYear, 0, 1)),
+				offsets = [last],
+				change, next, i;
+	
+			for (i = 1; i < 48; i++) {
+				next = new OffsetAt(new Date(startYear, i, 1));
+				if (next.offset !== last.offset) {
+					change = findChange(last, next);
+					offsets.push(change);
+					offsets.push(new OffsetAt(new Date(change.at + 6e4)));
+				}
+				last = next;
+			}
+	
+			for (i = 0; i < 4; i++) {
+				offsets.push(new OffsetAt(new Date(startYear + i, 0, 1)));
+				offsets.push(new OffsetAt(new Date(startYear + i, 6, 1)));
+			}
+	
+			return offsets;
+		}
+	
+		function sortZoneScores (a, b) {
+			if (a.offsetScore !== b.offsetScore) {
+				return a.offsetScore - b.offsetScore;
+			}
+			if (a.abbrScore !== b.abbrScore) {
+				return a.abbrScore - b.abbrScore;
+			}
+			return b.zone.population - a.zone.population;
+		}
+	
+		function addToGuesses (name, offsets) {
+			var i, offset;
+			arrayToInt(offsets);
+			for (i = 0; i < offsets.length; i++) {
+				offset = offsets[i];
+				guesses[offset] = guesses[offset] || {};
+				guesses[offset][name] = true;
+			}
+		}
+	
+		function guessesForUserOffsets (offsets) {
+			var offsetsLength = offsets.length,
+				filteredGuesses = {},
+				out = [],
+				i, j, guessesOffset;
+	
+			for (i = 0; i < offsetsLength; i++) {
+				guessesOffset = guesses[offsets[i].offset] || {};
+				for (j in guessesOffset) {
+					if (guessesOffset.hasOwnProperty(j)) {
+						filteredGuesses[j] = true;
+					}
+				}
+			}
+	
+			for (i in filteredGuesses) {
+				if (filteredGuesses.hasOwnProperty(i)) {
+					out.push(names[i]);
+				}
+			}
+	
+			return out;
+		}
+	
+		function rebuildGuess () {
+			var offsets = userOffsets(),
+				offsetsLength = offsets.length,
+				guesses = guessesForUserOffsets(offsets),
+				zoneScores = [],
+				zoneScore, i, j;
+	
+			for (i = 0; i < guesses.length; i++) {
+				zoneScore = new ZoneScore(getZone(guesses[i]), offsetsLength);
+				for (j = 0; j < offsetsLength; j++) {
+					zoneScore.scoreOffsetAt(offsets[j]);
+				}
+				zoneScores.push(zoneScore);
+			}
+	
+			zoneScores.sort(sortZoneScores);
+	
+			return zoneScores.length > 0 ? zoneScores[0].zone.name : undefined;
+		}
+	
+		function guess (ignoreCache) {
+			if (!cachedGuess || ignoreCache) {
+				cachedGuess = rebuildGuess();
+			}
+			return cachedGuess;
+		}
+	
+		/************************************
+			Global Methods
+		************************************/
+	
+		function normalizeName (name) {
+			return (name || '').toLowerCase().replace(/\//g, '_');
+		}
+	
+		function addZone (packed) {
+			var i, name, split, normalized;
+	
+			if (typeof packed === "string") {
+				packed = [packed];
+			}
+	
+			for (i = 0; i < packed.length; i++) {
+				split = packed[i].split('|');
+				name = split[0];
+				normalized = normalizeName(name);
+				zones[normalized] = packed[i];
+				names[normalized] = name;
+				if (split[5]) {
+					addToGuesses(normalized, split[2].split(' '));
+				}
+			}
+		}
+	
+		function getZone (name, caller) {
+			name = normalizeName(name);
+	
+			var zone = zones[name];
+			var link;
+	
+			if (zone instanceof Zone) {
+				return zone;
+			}
+	
+			if (typeof zone === 'string') {
+				zone = new Zone(zone);
+				zones[name] = zone;
+				return zone;
+			}
+	
+			// Pass getZone to prevent recursion more than 1 level deep
+			if (links[name] && caller !== getZone && (link = getZone(links[name], getZone))) {
+				zone = zones[name] = new Zone();
+				zone._set(link);
+				zone.name = names[name];
+				return zone;
+			}
+	
+			return null;
+		}
+	
+		function getNames () {
+			var i, out = [];
+	
+			for (i in names) {
+				if (names.hasOwnProperty(i) && (zones[i] || zones[links[i]]) && names[i]) {
+					out.push(names[i]);
+				}
+			}
+	
+			return out.sort();
+		}
+	
+		function addLink (aliases) {
+			var i, alias, normal0, normal1;
+	
+			if (typeof aliases === "string") {
+				aliases = [aliases];
+			}
+	
+			for (i = 0; i < aliases.length; i++) {
+				alias = aliases[i].split('|');
+	
+				normal0 = normalizeName(alias[0]);
+				normal1 = normalizeName(alias[1]);
+	
+				links[normal0] = normal1;
+				names[normal0] = alias[0];
+	
+				links[normal1] = normal0;
+				names[normal1] = alias[1];
+			}
+		}
+	
+		function loadData (data) {
+			addZone(data.zones);
+			addLink(data.links);
+			tz.dataVersion = data.version;
+		}
+	
+		function zoneExists (name) {
+			if (!zoneExists.didShowError) {
+				zoneExists.didShowError = true;
+					logError("moment.tz.zoneExists('" + name + "') has been deprecated in favor of !moment.tz.zone('" + name + "')");
+			}
+			return !!getZone(name);
+		}
+	
+		function needsOffset (m) {
+			return !!(m._a && (m._tzm === undefined));
+		}
+	
+		function logError (message) {
+			if (typeof console !== 'undefined' && typeof console.error === 'function') {
+				console.error(message);
+			}
+		}
+	
+		/************************************
+			moment.tz namespace
+		************************************/
+	
+		function tz (input) {
+			var args = Array.prototype.slice.call(arguments, 0, -1),
+				name = arguments[arguments.length - 1],
+				zone = getZone(name),
+				out  = moment.utc.apply(null, args);
+	
+			if (zone && !moment.isMoment(input) && needsOffset(out)) {
+				out.add(zone.parse(out), 'minutes');
+			}
+	
+			out.tz(name);
+	
+			return out;
+		}
+	
+		tz.version      = VERSION;
+		tz.dataVersion  = '';
+		tz._zones       = zones;
+		tz._links       = links;
+		tz._names       = names;
+		tz.add          = addZone;
+		tz.link         = addLink;
+		tz.load         = loadData;
+		tz.zone         = getZone;
+		tz.zoneExists   = zoneExists; // deprecated in 0.1.0
+		tz.guess        = guess;
+		tz.names        = getNames;
+		tz.Zone         = Zone;
+		tz.unpack       = unpack;
+		tz.unpackBase60 = unpackBase60;
+		tz.needsOffset  = needsOffset;
+		tz.moveInvalidForward   = true;
+		tz.moveAmbiguousForward = false;
+	
+		/************************************
+			Interface with Moment.js
+		************************************/
+	
+		var fn = moment.fn;
+	
+		moment.tz = tz;
+	
+		moment.defaultZone = null;
+	
+		moment.updateOffset = function (mom, keepTime) {
+			var zone = moment.defaultZone,
+				offset;
+	
+			if (mom._z === undefined) {
+				if (zone && needsOffset(mom) && !mom._isUTC) {
+					mom._d = moment.utc(mom._a)._d;
+					mom.utc().add(zone.parse(mom), 'minutes');
+				}
+				mom._z = zone;
+			}
+			if (mom._z) {
+				offset = mom._z.offset(mom);
+				if (Math.abs(offset) < 16) {
+					offset = offset / 60;
+				}
+				if (mom.utcOffset !== undefined) {
+					mom.utcOffset(-offset, keepTime);
+				} else {
+					mom.zone(offset, keepTime);
+				}
+			}
+		};
+	
+		fn.tz = function (name) {
+			if (name) {
+				this._z = getZone(name);
+				if (this._z) {
+					moment.updateOffset(this);
+				} else {
+					logError("Moment Timezone has no data for " + name + ". See http://momentjs.com/timezone/docs/#/data-loading/.");
+				}
+				return this;
+			}
+			if (this._z) { return this._z.name; }
+		};
+	
+		function abbrWrap (old) {
+			return function () {
+				if (this._z) { return this._z.abbr(this); }
+				return old.call(this);
+			};
+		}
+	
+		function resetZoneWrap (old) {
+			return function () {
+				this._z = null;
+				return old.apply(this, arguments);
+			};
+		}
+	
+		fn.zoneName = abbrWrap(fn.zoneName);
+		fn.zoneAbbr = abbrWrap(fn.zoneAbbr);
+		fn.utc      = resetZoneWrap(fn.utc);
+	
+		moment.tz.setDefault = function(name) {
+			if (major < 2 || (major === 2 && minor < 9)) {
+				logError('Moment Timezone setDefault() requires Moment.js >= 2.9.0. You are using Moment.js ' + moment.version + '.');
+			}
+			moment.defaultZone = name ? getZone(name) : null;
+			return moment;
+		};
+	
+		// Cloning a moment should include the _z property.
+		var momentProperties = moment.momentProperties;
+		if (Object.prototype.toString.call(momentProperties) === '[object Array]') {
+			// moment 2.8.1+
+			momentProperties.push('_z');
+			momentProperties.push('_a');
+		} else if (momentProperties) {
+			// moment 2.7.0
+			momentProperties._z = null;
+		}
+	
+		loadData({
+			"version": "2015g",
+			"zones": [
+				"Africa/Abidjan|GMT|0|0||48e5",
+				"Africa/Khartoum|EAT|-30|0||51e5",
+				"Africa/Algiers|CET|-10|0||26e5",
+				"Africa/Lagos|WAT|-10|0||17e6",
+				"Africa/Maputo|CAT|-20|0||26e5",
+				"Africa/Cairo|EET EEST|-20 -30|010101010|1Cby0 Fb0 c10 8n0 8Nd0 gL0 e10 mn0|15e6",
+				"Africa/Casablanca|WET WEST|0 -10|01010101010101010101010101010101010101010|1Cco0 Db0 1zd0 Lz0 1Nf0 wM0 co0 go0 1o00 s00 dA0 vc0 11A0 A00 e00 y00 11A0 uM0 e00 Dc0 11A0 s00 e00 IM0 WM0 mo0 gM0 LA0 WM0 jA0 e00 Rc0 11A0 e00 e00 U00 11A0 8o0 e00 11A0|32e5",
+				"Europe/Paris|CET CEST|-10 -20|01010101010101010101010|1BWp0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00|11e6",
+				"Africa/Johannesburg|SAST|-20|0||84e5",
+				"Africa/Tripoli|EET CET CEST|-20 -10 -20|0120|1IlA0 TA0 1o00|11e5",
+				"Africa/Windhoek|WAST WAT|-20 -10|01010101010101010101010|1C1c0 11B0 1nX0 11B0 1nX0 11B0 1qL0 WN0 1qL0 11B0 1nX0 11B0 1nX0 11B0 1nX0 11B0 1nX0 11B0 1qL0 WN0 1qL0 11B0|32e4",
+				"America/Adak|HST HDT|a0 90|01010101010101010101010|1BR00 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0|326",
+				"America/Anchorage|AKST AKDT|90 80|01010101010101010101010|1BQX0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0|30e4",
+				"America/Santo_Domingo|AST|40|0||29e5",
+				"America/Araguaina|BRT BRST|30 20|010|1IdD0 Lz0|14e4",
+				"America/Argentina/Buenos_Aires|ART|30|0|",
+				"America/Asuncion|PYST PYT|30 40|01010101010101010101010|1C430 1a10 1fz0 1a10 1fz0 1cN0 17b0 1ip0 17b0 1ip0 17b0 1ip0 19X0 1fB0 19X0 1fB0 19X0 1ip0 17b0 1ip0 17b0 1ip0|28e5",
+				"America/Panama|EST|50|0||15e5",
+				"America/Bahia|BRT BRST|30 20|010|1FJf0 Rb0|27e5",
+				"America/Bahia_Banderas|MST CDT CST|70 50 60|01212121212121212121212|1C1l0 1nW0 11B0 1nX0 11B0 1nX0 14p0 1lb0 14p0 1lb0 14p0 1lb0 14p0 1nX0 11B0 1nX0 11B0 1nX0 14p0 1lb0 14p0 1lb0|84e3",
+				"America/Fortaleza|BRT|30|0||34e5",
+				"America/Managua|CST|60|0||22e5",
+				"America/Manaus|AMT|40|0||19e5",
+				"America/Bogota|COT|50|0||90e5",
+				"America/Denver|MST MDT|70 60|01010101010101010101010|1BQV0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0|26e5",
+				"America/Campo_Grande|AMST AMT|30 40|01010101010101010101010|1BIr0 1zd0 On0 1zd0 Rb0 1zd0 Lz0 1C10 Lz0 1C10 On0 1zd0 On0 1zd0 On0 1zd0 On0 1C10 Lz0 1C10 Lz0 1C10|77e4",
+				"America/Cancun|CST CDT EST|60 50 50|010101010102|1C1k0 1nX0 11B0 1nX0 11B0 1nX0 14p0 1lb0 14p0 1lb0 Dd0|63e4",
+				"America/Caracas|VET|4u|0||29e5",
+				"America/Cayenne|GFT|30|0||58e3",
+				"America/Cayman|EST EDT|50 40|01010101010|1Qtj0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0|58e3",
+				"America/Chicago|CST CDT|60 50|01010101010101010101010|1BQU0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0|92e5",
+				"America/Chihuahua|MST MDT|70 60|01010101010101010101010|1C1l0 1nX0 11B0 1nX0 11B0 1nX0 14p0 1lb0 14p0 1lb0 14p0 1lb0 14p0 1nX0 11B0 1nX0 11B0 1nX0 14p0 1lb0 14p0 1lb0|81e4",
+				"America/Phoenix|MST|70|0||42e5",
+				"America/Los_Angeles|PST PDT|80 70|01010101010101010101010|1BQW0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0|15e6",
+				"America/New_York|EST EDT|50 40|01010101010101010101010|1BQT0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0|21e6",
+				"America/Rio_Branco|AMT ACT|40 50|01|1KLE0|31e4",
+				"America/Fort_Nelson|PST PDT MST|80 70 70|010101010102|1BQW0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0|39e2",
+				"America/Halifax|AST ADT|40 30|01010101010101010101010|1BQS0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0|39e4",
+				"America/Godthab|WGT WGST|30 20|01010101010101010101010|1BWp0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00|17e3",
+				"America/Goose_Bay|AST ADT|40 30|01010101010101010101010|1BQQ1 1zb0 Op0 1zcX Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0|76e2",
+				"America/Grand_Turk|EST EDT AST|50 40 40|0101010101012|1BQT0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0|37e2",
+				"America/Guayaquil|ECT|50|0||27e5",
+				"America/Guyana|GYT|40|0||80e4",
+				"America/Havana|CST CDT|50 40|01010101010101010101010|1BQR0 1wo0 U00 1zc0 U00 1qM0 Oo0 1zc0 Oo0 1zc0 Oo0 1zc0 Rc0 1zc0 Oo0 1zc0 Oo0 1zc0 Oo0 1zc0 Oo0 1zc0|21e5",
+				"America/La_Paz|BOT|40|0||19e5",
+				"America/Lima|PET|50|0||11e6",
+				"America/Mexico_City|CST CDT|60 50|01010101010101010101010|1C1k0 1nX0 11B0 1nX0 11B0 1nX0 14p0 1lb0 14p0 1lb0 14p0 1lb0 14p0 1nX0 11B0 1nX0 11B0 1nX0 14p0 1lb0 14p0 1lb0|20e6",
+				"America/Metlakatla|PST|80|0||14e2",
+				"America/Miquelon|PMST PMDT|30 20|01010101010101010101010|1BQR0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0|61e2",
+				"America/Montevideo|UYST UYT|20 30|010101010101|1BQQ0 1ld0 14n0 1ld0 14n0 1o10 11z0 1o10 11z0 1o10 11z0|17e5",
+				"America/Noronha|FNT|20|0||30e2",
+				"America/North_Dakota/Beulah|MST MDT CST CDT|70 60 60 50|01232323232323232323232|1BQV0 1zb0 Oo0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0",
+				"America/Paramaribo|SRT|30|0||24e4",
+				"America/Port-au-Prince|EST EDT|50 40|0101010101010101010|1GI70 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0|23e5",
+				"America/Santa_Isabel|PST PDT|80 70|01010101010101010101010|1C1m0 1nX0 11B0 1nX0 11B0 1nX0 14p0 1lb0 14p0 1lb0 14p0 1lb0 14p0 1nX0 11B0 1nX0 11B0 1nX0 14p0 1lb0 14p0 1lb0|23e3",
+				"America/Santiago|CLST CLT CLT|30 40 30|010101010102|1C1f0 1fB0 1nX0 G10 1EL0 Op0 1zb0 Rd0 1wn0 Rd0 1wn0|62e5",
+				"America/Sao_Paulo|BRST BRT|20 30|01010101010101010101010|1BIq0 1zd0 On0 1zd0 Rb0 1zd0 Lz0 1C10 Lz0 1C10 On0 1zd0 On0 1zd0 On0 1zd0 On0 1C10 Lz0 1C10 Lz0 1C10|20e6",
+				"America/Scoresbysund|EGT EGST|10 0|01010101010101010101010|1BWp0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00|452",
+				"America/St_Johns|NST NDT|3u 2u|01010101010101010101010|1BQPv 1zb0 Op0 1zcX Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0|11e4",
+				"Antarctica/Casey|CAST AWST|-b0 -80|0101|1BN30 40P0 KL0|10",
+				"Antarctica/Davis|DAVT DAVT|-50 -70|0101|1BPw0 3Wn0 KN0|70",
+				"Antarctica/DumontDUrville|DDUT|-a0|0||80",
+				"Antarctica/Macquarie|AEDT MIST|-b0 -b0|01|1C140|1",
+				"Antarctica/Mawson|MAWT|-50|0||60",
+				"Pacific/Auckland|NZDT NZST|-d0 -c0|01010101010101010101010|1C120 1a00 1fA0 1a00 1fA0 1cM0 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1cM0 1fA0 1a00 1fA0 1a00|14e5",
+				"Antarctica/Rothera|ROTT|30|0||130",
+				"Antarctica/Syowa|SYOT|-30|0||20",
+				"Antarctica/Troll|UTC CEST|0 -20|01010101010101010101010|1BWp0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00|40",
+				"Antarctica/Vostok|VOST|-60|0||25",
+				"Asia/Baghdad|AST|-30|0||66e5",
+				"Asia/Almaty|ALMT|-60|0||15e5",
+				"Asia/Amman|EET EEST|-20 -30|010101010101010101010|1BVy0 1qM0 11A0 1o00 11A0 4bX0 Dd0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0|25e5",
+				"Asia/Anadyr|ANAT ANAST ANAT|-c0 -c0 -b0|0120|1BWe0 1qN0 WM0|13e3",
+				"Asia/Aqtobe|AQTT|-50|0||27e4",
+				"Asia/Ashgabat|TMT|-50|0||41e4",
+				"Asia/Baku|AZT AZST|-40 -50|01010101010101010101010|1BWo0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00|27e5",
+				"Asia/Bangkok|ICT|-70|0||15e6",
+				"Asia/Beirut|EET EEST|-20 -30|01010101010101010101010|1BWm0 1qL0 WN0 1qL0 WN0 1qL0 11B0 1nX0 11B0 1nX0 11B0 1nX0 11B0 1qL0 WN0 1qL0 WN0 1qL0 11B0 1nX0 11B0 1nX0|22e5",
+				"Asia/Bishkek|KGT|-60|0||87e4",
+				"Asia/Brunei|BNT|-80|0||42e4",
+				"Asia/Kolkata|IST|-5u|0||15e6",
+				"Asia/Chita|YAKT YAKST YAKT IRKT|-90 -a0 -a0 -80|01023|1BWh0 1qM0 WM0 8Hz0|33e4",
+				"Asia/Choibalsan|CHOT CHOST|-80 -90|0101010101010|1O8G0 1cJ0 1cP0 1cJ0 1cP0 1fx0 1cP0 1cJ0 1cP0 1cJ0 1cP0 1cJ0|38e3",
+				"Asia/Shanghai|CST|-80|0||23e6",
+				"Asia/Dhaka|BDT|-60|0||16e6",
+				"Asia/Damascus|EET EEST|-20 -30|01010101010101010101010|1C0m0 1nX0 11B0 1nX0 11B0 1nX0 11B0 1nX0 11B0 1qL0 WN0 1qL0 WN0 1qL0 11B0 1nX0 11B0 1nX0 11B0 1nX0 11B0 1qL0|26e5",
+				"Asia/Dili|TLT|-90|0||19e4",
+				"Asia/Dubai|GST|-40|0||39e5",
+				"Asia/Dushanbe|TJT|-50|0||76e4",
+				"Asia/Gaza|EET EEST|-20 -30|01010101010101010101010|1BVW1 SKX 1xd1 MKX 1AN0 1a00 1fA0 1cL0 1cN0 1nX0 1210 1nz0 1210 1nz0 14N0 1nz0 1210 1nz0 1210 1nz0 1210 1nz0|18e5",
+				"Asia/Hebron|EET EEST|-20 -30|0101010101010101010101010|1BVy0 Tb0 1xd1 MKX bB0 cn0 1cN0 1a00 1fA0 1cL0 1cN0 1nX0 1210 1nz0 1210 1nz0 14N0 1nz0 1210 1nz0 1210 1nz0 1210 1nz0|25e4",
+				"Asia/Hong_Kong|HKT|-80|0||73e5",
+				"Asia/Hovd|HOVT HOVST|-70 -80|0101010101010|1O8H0 1cJ0 1cP0 1cJ0 1cP0 1fx0 1cP0 1cJ0 1cP0 1cJ0 1cP0 1cJ0|81e3",
+				"Asia/Irkutsk|IRKT IRKST IRKT|-80 -90 -90|01020|1BWi0 1qM0 WM0 8Hz0|60e4",
+				"Europe/Istanbul|EET EEST|-20 -30|01010101010101010101010|1BWp0 1qM0 Xc0 1qo0 WM0 1qM0 11A0 1o00 1200 1nA0 11A0 1tA0 U00 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00|13e6",
+				"Asia/Jakarta|WIB|-70|0||31e6",
+				"Asia/Jayapura|WIT|-90|0||26e4",
+				"Asia/Jerusalem|IST IDT|-20 -30|01010101010101010101010|1BVA0 17X0 1kp0 1dz0 1c10 1aL0 1eN0 1oL0 10N0 1oL0 10N0 1oL0 10N0 1rz0 W10 1rz0 W10 1rz0 10N0 1oL0 10N0 1oL0|81e4",
+				"Asia/Kabul|AFT|-4u|0||46e5",
+				"Asia/Kamchatka|PETT PETST PETT|-c0 -c0 -b0|0120|1BWe0 1qN0 WM0|18e4",
+				"Asia/Karachi|PKT|-50|0||24e6",
+				"Asia/Urumqi|XJT|-60|0||32e5",
+				"Asia/Kathmandu|NPT|-5J|0||12e5",
+				"Asia/Khandyga|VLAT VLAST VLAT YAKT YAKT|-a0 -b0 -b0 -a0 -90|010234|1BWg0 1qM0 WM0 17V0 7zD0|66e2",
+				"Asia/Krasnoyarsk|KRAT KRAST KRAT|-70 -80 -80|01020|1BWj0 1qM0 WM0 8Hz0|10e5",
+				"Asia/Kuala_Lumpur|MYT|-80|0||71e5",
+				"Asia/Magadan|MAGT MAGST MAGT MAGT|-b0 -c0 -c0 -a0|01023|1BWf0 1qM0 WM0 8Hz0|95e3",
+				"Asia/Makassar|WITA|-80|0||15e5",
+				"Asia/Manila|PHT|-80|0||24e6",
+				"Europe/Athens|EET EEST|-20 -30|01010101010101010101010|1BWp0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00|35e5",
+				"Asia/Novokuznetsk|KRAT NOVST NOVT NOVT|-70 -70 -60 -70|01230|1BWj0 1qN0 WM0 8Hz0|55e4",
+				"Asia/Novosibirsk|NOVT NOVST NOVT|-60 -70 -70|01020|1BWk0 1qM0 WM0 8Hz0|15e5",
+				"Asia/Omsk|OMST OMSST OMST|-60 -70 -70|01020|1BWk0 1qM0 WM0 8Hz0|12e5",
+				"Asia/Oral|ORAT|-50|0||27e4",
+				"Asia/Pyongyang|KST KST|-90 -8u|01|1P4D0|29e5",
+				"Asia/Qyzylorda|QYZT|-60|0||73e4",
+				"Asia/Rangoon|MMT|-6u|0||48e5",
+				"Asia/Sakhalin|SAKT SAKST SAKT|-a0 -b0 -b0|01020|1BWg0 1qM0 WM0 8Hz0|58e4",
+				"Asia/Tashkent|UZT|-50|0||23e5",
+				"Asia/Seoul|KST|-90|0||23e6",
+				"Asia/Singapore|SGT|-80|0||56e5",
+				"Asia/Srednekolymsk|MAGT MAGST MAGT SRET|-b0 -c0 -c0 -b0|01023|1BWf0 1qM0 WM0 8Hz0|35e2",
+				"Asia/Tbilisi|GET|-40|0||11e5",
+				"Asia/Tehran|IRST IRDT|-3u -4u|01010101010101010101010|1BTUu 1dz0 1cp0 1dz0 1cp0 1dz0 1cN0 1dz0 1cp0 1dz0 1cp0 1dz0 1cp0 1dz0 1cN0 1dz0 1cp0 1dz0 1cp0 1dz0 1cp0 1dz0|14e6",
+				"Asia/Thimphu|BTT|-60|0||79e3",
+				"Asia/Tokyo|JST|-90|0||38e6",
+				"Asia/Ulaanbaatar|ULAT ULAST|-80 -90|0101010101010|1O8G0 1cJ0 1cP0 1cJ0 1cP0 1fx0 1cP0 1cJ0 1cP0 1cJ0 1cP0 1cJ0|12e5",
+				"Asia/Ust-Nera|MAGT MAGST MAGT VLAT VLAT|-b0 -c0 -c0 -b0 -a0|010234|1BWf0 1qM0 WM0 17V0 7zD0|65e2",
+				"Asia/Vladivostok|VLAT VLAST VLAT|-a0 -b0 -b0|01020|1BWg0 1qM0 WM0 8Hz0|60e4",
+				"Asia/Yakutsk|YAKT YAKST YAKT|-90 -a0 -a0|01020|1BWh0 1qM0 WM0 8Hz0|28e4",
+				"Asia/Yekaterinburg|YEKT YEKST YEKT|-50 -60 -60|01020|1BWl0 1qM0 WM0 8Hz0|14e5",
+				"Asia/Yerevan|AMT AMST|-40 -50|01010|1BWm0 1qM0 WM0 1qM0|13e5",
+				"Atlantic/Azores|AZOT AZOST|10 0|01010101010101010101010|1BWp0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00|25e4",
+				"Europe/Lisbon|WET WEST|0 -10|01010101010101010101010|1BWp0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00|27e5",
+				"Atlantic/Cape_Verde|CVT|10|0||50e4",
+				"Atlantic/South_Georgia|GST|20|0||30",
+				"Atlantic/Stanley|FKST FKT|30 40|010|1C6R0 U10|21e2",
+				"Australia/Sydney|AEDT AEST|-b0 -a0|01010101010101010101010|1C140 1cM0 1cM0 1cM0 1cM0 1fA0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1fA0 1cM0 1cM0 1cM0 1cM0|40e5",
+				"Australia/Adelaide|ACDT ACST|-au -9u|01010101010101010101010|1C14u 1cM0 1cM0 1cM0 1cM0 1fA0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1fA0 1cM0 1cM0 1cM0 1cM0|11e5",
+				"Australia/Brisbane|AEST|-a0|0||20e5",
+				"Australia/Darwin|ACST|-9u|0||12e4",
+				"Australia/Eucla|ACWST|-8J|0||368",
+				"Australia/Lord_Howe|LHDT LHST|-b0 -au|01010101010101010101010|1C130 1cMu 1cLu 1cMu 1cLu 1fAu 1cLu 1cMu 1cLu 1cMu 1cLu 1cMu 1cLu 1cMu 1cLu 1cMu 1cLu 1fAu 1cLu 1cMu 1cLu 1cMu|347",
+				"Australia/Perth|AWST|-80|0||18e5",
+				"Pacific/Easter|EASST EAST EAST|50 60 50|010101010102|1C1f0 1fB0 1nX0 G10 1EL0 Op0 1zb0 Rd0 1wn0 Rd0 1wn0|30e2",
+				"Europe/Dublin|GMT IST|0 -10|01010101010101010101010|1BWp0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00|12e5",
+				"Etc/GMT+1|GMT+1|10|0|",
+				"Etc/GMT+10|GMT+10|a0|0|",
+				"Etc/GMT+11|GMT+11|b0|0|",
+				"Etc/GMT+12|GMT+12|c0|0|",
+				"Etc/GMT+2|GMT+2|20|0|",
+				"Etc/GMT+3|GMT+3|30|0|",
+				"Etc/GMT+4|GMT+4|40|0|",
+				"Etc/GMT+5|GMT+5|50|0|",
+				"Etc/GMT+6|GMT+6|60|0|",
+				"Etc/GMT+7|GMT+7|70|0|",
+				"Etc/GMT+8|GMT+8|80|0|",
+				"Etc/GMT+9|GMT+9|90|0|",
+				"Etc/GMT-1|GMT-1|-10|0|",
+				"Etc/GMT-10|GMT-10|-a0|0|",
+				"Etc/GMT-11|GMT-11|-b0|0|",
+				"Etc/GMT-12|GMT-12|-c0|0|",
+				"Etc/GMT-13|GMT-13|-d0|0|",
+				"Etc/GMT-14|GMT-14|-e0|0|",
+				"Etc/GMT-2|GMT-2|-20|0|",
+				"Etc/GMT-3|GMT-3|-30|0|",
+				"Etc/GMT-4|GMT-4|-40|0|",
+				"Etc/GMT-5|GMT-5|-50|0|",
+				"Etc/GMT-6|GMT-6|-60|0|",
+				"Etc/GMT-7|GMT-7|-70|0|",
+				"Etc/GMT-8|GMT-8|-80|0|",
+				"Etc/GMT-9|GMT-9|-90|0|",
+				"Etc/UCT|UCT|0|0|",
+				"Etc/UTC|UTC|0|0|",
+				"Europe/London|GMT BST|0 -10|01010101010101010101010|1BWp0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00|10e6",
+				"Europe/Chisinau|EET EEST|-20 -30|01010101010101010101010|1BWo0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00|67e4",
+				"Europe/Kaliningrad|EET EEST FET|-20 -30 -30|01020|1BWo0 1qM0 WM0 8Hz0|44e4",
+				"Europe/Minsk|EET EEST FET MSK|-20 -30 -30 -30|01023|1BWo0 1qM0 WM0 8Hy0|19e5",
+				"Europe/Moscow|MSK MSD MSK|-30 -40 -40|01020|1BWn0 1qM0 WM0 8Hz0|16e6",
+				"Europe/Samara|SAMT SAMST SAMT|-40 -40 -30|0120|1BWm0 1qN0 WM0|12e5",
+				"Europe/Simferopol|EET EEST MSK MSK|-20 -30 -40 -30|01010101023|1BWp0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11z0 1nW0|33e4",
+				"Pacific/Honolulu|HST|a0|0||37e4",
+				"Indian/Chagos|IOT|-60|0||30e2",
+				"Indian/Christmas|CXT|-70|0||21e2",
+				"Indian/Cocos|CCT|-6u|0||596",
+				"Indian/Kerguelen|TFT|-50|0||130",
+				"Indian/Mahe|SCT|-40|0||79e3",
+				"Indian/Maldives|MVT|-50|0||35e4",
+				"Indian/Mauritius|MUT|-40|0||15e4",
+				"Indian/Reunion|RET|-40|0||84e4",
+				"Pacific/Majuro|MHT|-c0|0||28e3",
+				"MET|MET MEST|-10 -20|01010101010101010101010|1BWp0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00",
+				"Pacific/Chatham|CHADT CHAST|-dJ -cJ|01010101010101010101010|1C120 1a00 1fA0 1a00 1fA0 1cM0 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1cM0 1fA0 1a00 1fA0 1a00|600",
+				"Pacific/Apia|SST SDT WSDT WSST|b0 a0 -e0 -d0|01012323232323232323232|1Dbn0 1ff0 1a00 CI0 AQ0 1cM0 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1cM0 1fA0 1a00 1fA0 1a00|37e3",
+				"Pacific/Bougainville|PGT BST|-a0 -b0|01|1NwE0|18e4",
+				"Pacific/Chuuk|CHUT|-a0|0||49e3",
+				"Pacific/Efate|VUT|-b0|0||66e3",
+				"Pacific/Enderbury|PHOT|-d0|0||1",
+				"Pacific/Fakaofo|TKT TKT|b0 -d0|01|1Gfn0|483",
+				"Pacific/Fiji|FJST FJT|-d0 -c0|01010101010101010101010|1BWe0 1o00 Rc0 1wo0 Ao0 1Nc0 Ao0 1Q00 xz0 1SN0 uM0 1SM0 uM0 1VA0 s00 1VA0 uM0 1SM0 uM0 1SM0 uM0 1SM0|88e4",
+				"Pacific/Funafuti|TVT|-c0|0||45e2",
+				"Pacific/Galapagos|GALT|60|0||25e3",
+				"Pacific/Gambier|GAMT|90|0||125",
+				"Pacific/Guadalcanal|SBT|-b0|0||11e4",
+				"Pacific/Guam|ChST|-a0|0||17e4",
+				"Pacific/Kiritimati|LINT|-e0|0||51e2",
+				"Pacific/Kosrae|KOST|-b0|0||66e2",
+				"Pacific/Marquesas|MART|9u|0||86e2",
+				"Pacific/Pago_Pago|SST|b0|0||37e2",
+				"Pacific/Nauru|NRT|-c0|0||10e3",
+				"Pacific/Niue|NUT|b0|0||12e2",
+				"Pacific/Norfolk|NFT NFT|-bu -b0|01|1PoCu|25e4",
+				"Pacific/Noumea|NCT|-b0|0||98e3",
+				"Pacific/Palau|PWT|-90|0||21e3",
+				"Pacific/Pohnpei|PONT|-b0|0||34e3",
+				"Pacific/Port_Moresby|PGT|-a0|0||25e4",
+				"Pacific/Rarotonga|CKT|a0|0||13e3",
+				"Pacific/Tahiti|TAHT|a0|0||18e4",
+				"Pacific/Tarawa|GILT|-c0|0||29e3",
+				"Pacific/Tongatapu|TOT|-d0|0||75e3",
+				"Pacific/Wake|WAKT|-c0|0||16e3",
+				"Pacific/Wallis|WFT|-c0|0||94"
+			],
+			"links": [
+				"Africa/Abidjan|Africa/Accra",
+				"Africa/Abidjan|Africa/Bamako",
+				"Africa/Abidjan|Africa/Banjul",
+				"Africa/Abidjan|Africa/Bissau",
+				"Africa/Abidjan|Africa/Conakry",
+				"Africa/Abidjan|Africa/Dakar",
+				"Africa/Abidjan|Africa/Freetown",
+				"Africa/Abidjan|Africa/Lome",
+				"Africa/Abidjan|Africa/Monrovia",
+				"Africa/Abidjan|Africa/Nouakchott",
+				"Africa/Abidjan|Africa/Ouagadougou",
+				"Africa/Abidjan|Africa/Sao_Tome",
+				"Africa/Abidjan|Africa/Timbuktu",
+				"Africa/Abidjan|America/Danmarkshavn",
+				"Africa/Abidjan|Atlantic/Reykjavik",
+				"Africa/Abidjan|Atlantic/St_Helena",
+				"Africa/Abidjan|Etc/GMT",
+				"Africa/Abidjan|Etc/GMT+0",
+				"Africa/Abidjan|Etc/GMT-0",
+				"Africa/Abidjan|Etc/GMT0",
+				"Africa/Abidjan|Etc/Greenwich",
+				"Africa/Abidjan|GMT",
+				"Africa/Abidjan|GMT+0",
+				"Africa/Abidjan|GMT-0",
+				"Africa/Abidjan|GMT0",
+				"Africa/Abidjan|Greenwich",
+				"Africa/Abidjan|Iceland",
+				"Africa/Algiers|Africa/Tunis",
+				"Africa/Cairo|Egypt",
+				"Africa/Casablanca|Africa/El_Aaiun",
+				"Africa/Johannesburg|Africa/Maseru",
+				"Africa/Johannesburg|Africa/Mbabane",
+				"Africa/Khartoum|Africa/Addis_Ababa",
+				"Africa/Khartoum|Africa/Asmara",
+				"Africa/Khartoum|Africa/Asmera",
+				"Africa/Khartoum|Africa/Dar_es_Salaam",
+				"Africa/Khartoum|Africa/Djibouti",
+				"Africa/Khartoum|Africa/Juba",
+				"Africa/Khartoum|Africa/Kampala",
+				"Africa/Khartoum|Africa/Mogadishu",
+				"Africa/Khartoum|Africa/Nairobi",
+				"Africa/Khartoum|Indian/Antananarivo",
+				"Africa/Khartoum|Indian/Comoro",
+				"Africa/Khartoum|Indian/Mayotte",
+				"Africa/Lagos|Africa/Bangui",
+				"Africa/Lagos|Africa/Brazzaville",
+				"Africa/Lagos|Africa/Douala",
+				"Africa/Lagos|Africa/Kinshasa",
+				"Africa/Lagos|Africa/Libreville",
+				"Africa/Lagos|Africa/Luanda",
+				"Africa/Lagos|Africa/Malabo",
+				"Africa/Lagos|Africa/Ndjamena",
+				"Africa/Lagos|Africa/Niamey",
+				"Africa/Lagos|Africa/Porto-Novo",
+				"Africa/Maputo|Africa/Blantyre",
+				"Africa/Maputo|Africa/Bujumbura",
+				"Africa/Maputo|Africa/Gaborone",
+				"Africa/Maputo|Africa/Harare",
+				"Africa/Maputo|Africa/Kigali",
+				"Africa/Maputo|Africa/Lubumbashi",
+				"Africa/Maputo|Africa/Lusaka",
+				"Africa/Tripoli|Libya",
+				"America/Adak|America/Atka",
+				"America/Adak|US/Aleutian",
+				"America/Anchorage|America/Juneau",
+				"America/Anchorage|America/Nome",
+				"America/Anchorage|America/Sitka",
+				"America/Anchorage|America/Yakutat",
+				"America/Anchorage|US/Alaska",
+				"America/Argentina/Buenos_Aires|America/Argentina/Catamarca",
+				"America/Argentina/Buenos_Aires|America/Argentina/ComodRivadavia",
+				"America/Argentina/Buenos_Aires|America/Argentina/Cordoba",
+				"America/Argentina/Buenos_Aires|America/Argentina/Jujuy",
+				"America/Argentina/Buenos_Aires|America/Argentina/La_Rioja",
+				"America/Argentina/Buenos_Aires|America/Argentina/Mendoza",
+				"America/Argentina/Buenos_Aires|America/Argentina/Rio_Gallegos",
+				"America/Argentina/Buenos_Aires|America/Argentina/Salta",
+				"America/Argentina/Buenos_Aires|America/Argentina/San_Juan",
+				"America/Argentina/Buenos_Aires|America/Argentina/San_Luis",
+				"America/Argentina/Buenos_Aires|America/Argentina/Tucuman",
+				"America/Argentina/Buenos_Aires|America/Argentina/Ushuaia",
+				"America/Argentina/Buenos_Aires|America/Buenos_Aires",
+				"America/Argentina/Buenos_Aires|America/Catamarca",
+				"America/Argentina/Buenos_Aires|America/Cordoba",
+				"America/Argentina/Buenos_Aires|America/Jujuy",
+				"America/Argentina/Buenos_Aires|America/Mendoza",
+				"America/Argentina/Buenos_Aires|America/Rosario",
+				"America/Campo_Grande|America/Cuiaba",
+				"America/Chicago|America/Indiana/Knox",
+				"America/Chicago|America/Indiana/Tell_City",
+				"America/Chicago|America/Knox_IN",
+				"America/Chicago|America/Matamoros",
+				"America/Chicago|America/Menominee",
+				"America/Chicago|America/North_Dakota/Center",
+				"America/Chicago|America/North_Dakota/New_Salem",
+				"America/Chicago|America/Rainy_River",
+				"America/Chicago|America/Rankin_Inlet",
+				"America/Chicago|America/Resolute",
+				"America/Chicago|America/Winnipeg",
+				"America/Chicago|CST6CDT",
+				"America/Chicago|Canada/Central",
+				"America/Chicago|US/Central",
+				"America/Chicago|US/Indiana-Starke",
+				"America/Chihuahua|America/Mazatlan",
+				"America/Chihuahua|Mexico/BajaSur",
+				"America/Denver|America/Boise",
+				"America/Denver|America/Cambridge_Bay",
+				"America/Denver|America/Edmonton",
+				"America/Denver|America/Inuvik",
+				"America/Denver|America/Ojinaga",
+				"America/Denver|America/Shiprock",
+				"America/Denver|America/Yellowknife",
+				"America/Denver|Canada/Mountain",
+				"America/Denver|MST7MDT",
+				"America/Denver|Navajo",
+				"America/Denver|US/Mountain",
+				"America/Fortaleza|America/Belem",
+				"America/Fortaleza|America/Maceio",
+				"America/Fortaleza|America/Recife",
+				"America/Fortaleza|America/Santarem",
+				"America/Halifax|America/Glace_Bay",
+				"America/Halifax|America/Moncton",
+				"America/Halifax|America/Thule",
+				"America/Halifax|Atlantic/Bermuda",
+				"America/Halifax|Canada/Atlantic",
+				"America/Havana|Cuba",
+				"America/Los_Angeles|America/Dawson",
+				"America/Los_Angeles|America/Ensenada",
+				"America/Los_Angeles|America/Tijuana",
+				"America/Los_Angeles|America/Vancouver",
+				"America/Los_Angeles|America/Whitehorse",
+				"America/Los_Angeles|Canada/Pacific",
+				"America/Los_Angeles|Canada/Yukon",
+				"America/Los_Angeles|Mexico/BajaNorte",
+				"America/Los_Angeles|PST8PDT",
+				"America/Los_Angeles|US/Pacific",
+				"America/Los_Angeles|US/Pacific-New",
+				"America/Managua|America/Belize",
+				"America/Managua|America/Costa_Rica",
+				"America/Managua|America/El_Salvador",
+				"America/Managua|America/Guatemala",
+				"America/Managua|America/Regina",
+				"America/Managua|America/Swift_Current",
+				"America/Managua|America/Tegucigalpa",
+				"America/Managua|Canada/East-Saskatchewan",
+				"America/Managua|Canada/Saskatchewan",
+				"America/Manaus|America/Boa_Vista",
+				"America/Manaus|America/Porto_Velho",
+				"America/Manaus|Brazil/West",
+				"America/Metlakatla|Pacific/Pitcairn",
+				"America/Mexico_City|America/Merida",
+				"America/Mexico_City|America/Monterrey",
+				"America/Mexico_City|Mexico/General",
+				"America/New_York|America/Detroit",
+				"America/New_York|America/Fort_Wayne",
+				"America/New_York|America/Indiana/Indianapolis",
+				"America/New_York|America/Indiana/Marengo",
+				"America/New_York|America/Indiana/Petersburg",
+				"America/New_York|America/Indiana/Vevay",
+				"America/New_York|America/Indiana/Vincennes",
+				"America/New_York|America/Indiana/Winamac",
+				"America/New_York|America/Indianapolis",
+				"America/New_York|America/Iqaluit",
+				"America/New_York|America/Kentucky/Louisville",
+				"America/New_York|America/Kentucky/Monticello",
+				"America/New_York|America/Louisville",
+				"America/New_York|America/Montreal",
+				"America/New_York|America/Nassau",
+				"America/New_York|America/Nipigon",
+				"America/New_York|America/Pangnirtung",
+				"America/New_York|America/Thunder_Bay",
+				"America/New_York|America/Toronto",
+				"America/New_York|Canada/Eastern",
+				"America/New_York|EST5EDT",
+				"America/New_York|US/East-Indiana",
+				"America/New_York|US/Eastern",
+				"America/New_York|US/Michigan",
+				"America/Noronha|Brazil/DeNoronha",
+				"America/Panama|America/Atikokan",
+				"America/Panama|America/Coral_Harbour",
+				"America/Panama|America/Jamaica",
+				"America/Panama|EST",
+				"America/Panama|Jamaica",
+				"America/Phoenix|America/Creston",
+				"America/Phoenix|America/Dawson_Creek",
+				"America/Phoenix|America/Hermosillo",
+				"America/Phoenix|MST",
+				"America/Phoenix|US/Arizona",
+				"America/Rio_Branco|America/Eirunepe",
+				"America/Rio_Branco|America/Porto_Acre",
+				"America/Rio_Branco|Brazil/Acre",
+				"America/Santiago|Antarctica/Palmer",
+				"America/Santiago|Chile/Continental",
+				"America/Santo_Domingo|America/Anguilla",
+				"America/Santo_Domingo|America/Antigua",
+				"America/Santo_Domingo|America/Aruba",
+				"America/Santo_Domingo|America/Barbados",
+				"America/Santo_Domingo|America/Blanc-Sablon",
+				"America/Santo_Domingo|America/Curacao",
+				"America/Santo_Domingo|America/Dominica",
+				"America/Santo_Domingo|America/Grenada",
+				"America/Santo_Domingo|America/Guadeloupe",
+				"America/Santo_Domingo|America/Kralendijk",
+				"America/Santo_Domingo|America/Lower_Princes",
+				"America/Santo_Domingo|America/Marigot",
+				"America/Santo_Domingo|America/Martinique",
+				"America/Santo_Domingo|America/Montserrat",
+				"America/Santo_Domingo|America/Port_of_Spain",
+				"America/Santo_Domingo|America/Puerto_Rico",
+				"America/Santo_Domingo|America/St_Barthelemy",
+				"America/Santo_Domingo|America/St_Kitts",
+				"America/Santo_Domingo|America/St_Lucia",
+				"America/Santo_Domingo|America/St_Thomas",
+				"America/Santo_Domingo|America/St_Vincent",
+				"America/Santo_Domingo|America/Tortola",
+				"America/Santo_Domingo|America/Virgin",
+				"America/Sao_Paulo|Brazil/East",
+				"America/St_Johns|Canada/Newfoundland",
+				"Asia/Aqtobe|Asia/Aqtau",
+				"Asia/Ashgabat|Asia/Ashkhabad",
+				"Asia/Baghdad|Asia/Aden",
+				"Asia/Baghdad|Asia/Bahrain",
+				"Asia/Baghdad|Asia/Kuwait",
+				"Asia/Baghdad|Asia/Qatar",
+				"Asia/Baghdad|Asia/Riyadh",
+				"Asia/Bangkok|Asia/Ho_Chi_Minh",
+				"Asia/Bangkok|Asia/Phnom_Penh",
+				"Asia/Bangkok|Asia/Saigon",
+				"Asia/Bangkok|Asia/Vientiane",
+				"Asia/Dhaka|Asia/Dacca",
+				"Asia/Dubai|Asia/Muscat",
+				"Asia/Hong_Kong|Hongkong",
+				"Asia/Jakarta|Asia/Pontianak",
+				"Asia/Jerusalem|Asia/Tel_Aviv",
+				"Asia/Jerusalem|Israel",
+				"Asia/Kathmandu|Asia/Katmandu",
+				"Asia/Kolkata|Asia/Calcutta",
+				"Asia/Kolkata|Asia/Colombo",
+				"Asia/Kuala_Lumpur|Asia/Kuching",
+				"Asia/Makassar|Asia/Ujung_Pandang",
+				"Asia/Seoul|ROK",
+				"Asia/Shanghai|Asia/Chongqing",
+				"Asia/Shanghai|Asia/Chungking",
+				"Asia/Shanghai|Asia/Harbin",
+				"Asia/Shanghai|Asia/Macao",
+				"Asia/Shanghai|Asia/Macau",
+				"Asia/Shanghai|Asia/Taipei",
+				"Asia/Shanghai|PRC",
+				"Asia/Shanghai|ROC",
+				"Asia/Singapore|Singapore",
+				"Asia/Tashkent|Asia/Samarkand",
+				"Asia/Tehran|Iran",
+				"Asia/Thimphu|Asia/Thimbu",
+				"Asia/Tokyo|Japan",
+				"Asia/Ulaanbaatar|Asia/Ulan_Bator",
+				"Asia/Urumqi|Asia/Kashgar",
+				"Australia/Adelaide|Australia/Broken_Hill",
+				"Australia/Adelaide|Australia/South",
+				"Australia/Adelaide|Australia/Yancowinna",
+				"Australia/Brisbane|Australia/Lindeman",
+				"Australia/Brisbane|Australia/Queensland",
+				"Australia/Darwin|Australia/North",
+				"Australia/Lord_Howe|Australia/LHI",
+				"Australia/Perth|Australia/West",
+				"Australia/Sydney|Australia/ACT",
+				"Australia/Sydney|Australia/Canberra",
+				"Australia/Sydney|Australia/Currie",
+				"Australia/Sydney|Australia/Hobart",
+				"Australia/Sydney|Australia/Melbourne",
+				"Australia/Sydney|Australia/NSW",
+				"Australia/Sydney|Australia/Tasmania",
+				"Australia/Sydney|Australia/Victoria",
+				"Etc/UCT|UCT",
+				"Etc/UTC|Etc/Universal",
+				"Etc/UTC|Etc/Zulu",
+				"Etc/UTC|UTC",
+				"Etc/UTC|Universal",
+				"Etc/UTC|Zulu",
+				"Europe/Athens|Asia/Nicosia",
+				"Europe/Athens|EET",
+				"Europe/Athens|Europe/Bucharest",
+				"Europe/Athens|Europe/Helsinki",
+				"Europe/Athens|Europe/Kiev",
+				"Europe/Athens|Europe/Mariehamn",
+				"Europe/Athens|Europe/Nicosia",
+				"Europe/Athens|Europe/Riga",
+				"Europe/Athens|Europe/Sofia",
+				"Europe/Athens|Europe/Tallinn",
+				"Europe/Athens|Europe/Uzhgorod",
+				"Europe/Athens|Europe/Vilnius",
+				"Europe/Athens|Europe/Zaporozhye",
+				"Europe/Chisinau|Europe/Tiraspol",
+				"Europe/Dublin|Eire",
+				"Europe/Istanbul|Asia/Istanbul",
+				"Europe/Istanbul|Turkey",
+				"Europe/Lisbon|Atlantic/Canary",
+				"Europe/Lisbon|Atlantic/Faeroe",
+				"Europe/Lisbon|Atlantic/Faroe",
+				"Europe/Lisbon|Atlantic/Madeira",
+				"Europe/Lisbon|Portugal",
+				"Europe/Lisbon|WET",
+				"Europe/London|Europe/Belfast",
+				"Europe/London|Europe/Guernsey",
+				"Europe/London|Europe/Isle_of_Man",
+				"Europe/London|Europe/Jersey",
+				"Europe/London|GB",
+				"Europe/London|GB-Eire",
+				"Europe/Moscow|Europe/Volgograd",
+				"Europe/Moscow|W-SU",
+				"Europe/Paris|Africa/Ceuta",
+				"Europe/Paris|Arctic/Longyearbyen",
+				"Europe/Paris|Atlantic/Jan_Mayen",
+				"Europe/Paris|CET",
+				"Europe/Paris|Europe/Amsterdam",
+				"Europe/Paris|Europe/Andorra",
+				"Europe/Paris|Europe/Belgrade",
+				"Europe/Paris|Europe/Berlin",
+				"Europe/Paris|Europe/Bratislava",
+				"Europe/Paris|Europe/Brussels",
+				"Europe/Paris|Europe/Budapest",
+				"Europe/Paris|Europe/Busingen",
+				"Europe/Paris|Europe/Copenhagen",
+				"Europe/Paris|Europe/Gibraltar",
+				"Europe/Paris|Europe/Ljubljana",
+				"Europe/Paris|Europe/Luxembourg",
+				"Europe/Paris|Europe/Madrid",
+				"Europe/Paris|Europe/Malta",
+				"Europe/Paris|Europe/Monaco",
+				"Europe/Paris|Europe/Oslo",
+				"Europe/Paris|Europe/Podgorica",
+				"Europe/Paris|Europe/Prague",
+				"Europe/Paris|Europe/Rome",
+				"Europe/Paris|Europe/San_Marino",
+				"Europe/Paris|Europe/Sarajevo",
+				"Europe/Paris|Europe/Skopje",
+				"Europe/Paris|Europe/Stockholm",
+				"Europe/Paris|Europe/Tirane",
+				"Europe/Paris|Europe/Vaduz",
+				"Europe/Paris|Europe/Vatican",
+				"Europe/Paris|Europe/Vienna",
+				"Europe/Paris|Europe/Warsaw",
+				"Europe/Paris|Europe/Zagreb",
+				"Europe/Paris|Europe/Zurich",
+				"Europe/Paris|Poland",
+				"Pacific/Auckland|Antarctica/McMurdo",
+				"Pacific/Auckland|Antarctica/South_Pole",
+				"Pacific/Auckland|NZ",
+				"Pacific/Chatham|NZ-CHAT",
+				"Pacific/Chuuk|Pacific/Truk",
+				"Pacific/Chuuk|Pacific/Yap",
+				"Pacific/Easter|Chile/EasterIsland",
+				"Pacific/Guam|Pacific/Saipan",
+				"Pacific/Honolulu|HST",
+				"Pacific/Honolulu|Pacific/Johnston",
+				"Pacific/Honolulu|US/Hawaii",
+				"Pacific/Majuro|Kwajalein",
+				"Pacific/Majuro|Pacific/Kwajalein",
+				"Pacific/Pago_Pago|Pacific/Midway",
+				"Pacific/Pago_Pago|Pacific/Samoa",
+				"Pacific/Pago_Pago|US/Samoa",
+				"Pacific/Pohnpei|Pacific/Ponape"
+			]
+		});
+	
+	
+		return moment;
+	}));
+
+
+/***/ },
+/* 30 */
+/***/ function(module, exports, __webpack_require__) {
+
+	(function(window) {
+	    var re = {
+	        not_string: /[^s]/,
+	        number: /[diefg]/,
+	        json: /[j]/,
+	        not_json: /[^j]/,
+	        text: /^[^\x25]+/,
+	        modulo: /^\x25{2}/,
+	        placeholder: /^\x25(?:([1-9]\d*)\$|\(([^\)]+)\))?(\+)?(0|'[^$])?(-)?(\d+)?(?:\.(\d+))?([b-gijosuxX])/,
+	        key: /^([a-z_][a-z_\d]*)/i,
+	        key_access: /^\.([a-z_][a-z_\d]*)/i,
+	        index_access: /^\[(\d+)\]/,
+	        sign: /^[\+\-]/
+	    }
+	
+	    function sprintf() {
+	        var key = arguments[0], cache = sprintf.cache
+	        if (!(cache[key] && cache.hasOwnProperty(key))) {
+	            cache[key] = sprintf.parse(key)
+	        }
+	        return sprintf.format.call(null, cache[key], arguments)
+	    }
+	
+	    sprintf.format = function(parse_tree, argv) {
+	        var cursor = 1, tree_length = parse_tree.length, node_type = "", arg, output = [], i, k, match, pad, pad_character, pad_length, is_positive = true, sign = ""
+	        for (i = 0; i < tree_length; i++) {
+	            node_type = get_type(parse_tree[i])
+	            if (node_type === "string") {
+	                output[output.length] = parse_tree[i]
+	            }
+	            else if (node_type === "array") {
+	                match = parse_tree[i] // convenience purposes only
+	                if (match[2]) { // keyword argument
+	                    arg = argv[cursor]
+	                    for (k = 0; k < match[2].length; k++) {
+	                        if (!arg.hasOwnProperty(match[2][k])) {
+	                            throw new Error(sprintf("[sprintf] property '%s' does not exist", match[2][k]))
+	                        }
+	                        arg = arg[match[2][k]]
+	                    }
+	                }
+	                else if (match[1]) { // positional argument (explicit)
+	                    arg = argv[match[1]]
+	                }
+	                else { // positional argument (implicit)
+	                    arg = argv[cursor++]
+	                }
+	
+	                if (get_type(arg) == "function") {
+	                    arg = arg()
+	                }
+	
+	                if (re.not_string.test(match[8]) && re.not_json.test(match[8]) && (get_type(arg) != "number" && isNaN(arg))) {
+	                    throw new TypeError(sprintf("[sprintf] expecting number but found %s", get_type(arg)))
+	                }
+	
+	                if (re.number.test(match[8])) {
+	                    is_positive = arg >= 0
+	                }
+	
+	                switch (match[8]) {
+	                    case "b":
+	                        arg = arg.toString(2)
+	                    break
+	                    case "c":
+	                        arg = String.fromCharCode(arg)
+	                    break
+	                    case "d":
+	                    case "i":
+	                        arg = parseInt(arg, 10)
+	                    break
+	                    case "j":
+	                        arg = JSON.stringify(arg, null, match[6] ? parseInt(match[6]) : 0)
+	                    break
+	                    case "e":
+	                        arg = match[7] ? arg.toExponential(match[7]) : arg.toExponential()
+	                    break
+	                    case "f":
+	                        arg = match[7] ? parseFloat(arg).toFixed(match[7]) : parseFloat(arg)
+	                    break
+	                    case "g":
+	                        arg = match[7] ? parseFloat(arg).toPrecision(match[7]) : parseFloat(arg)
+	                    break
+	                    case "o":
+	                        arg = arg.toString(8)
+	                    break
+	                    case "s":
+	                        arg = ((arg = String(arg)) && match[7] ? arg.substring(0, match[7]) : arg)
+	                    break
+	                    case "u":
+	                        arg = arg >>> 0
+	                    break
+	                    case "x":
+	                        arg = arg.toString(16)
+	                    break
+	                    case "X":
+	                        arg = arg.toString(16).toUpperCase()
+	                    break
+	                }
+	                if (re.json.test(match[8])) {
+	                    output[output.length] = arg
+	                }
+	                else {
+	                    if (re.number.test(match[8]) && (!is_positive || match[3])) {
+	                        sign = is_positive ? "+" : "-"
+	                        arg = arg.toString().replace(re.sign, "")
+	                    }
+	                    else {
+	                        sign = ""
+	                    }
+	                    pad_character = match[4] ? match[4] === "0" ? "0" : match[4].charAt(1) : " "
+	                    pad_length = match[6] - (sign + arg).length
+	                    pad = match[6] ? (pad_length > 0 ? str_repeat(pad_character, pad_length) : "") : ""
+	                    output[output.length] = match[5] ? sign + arg + pad : (pad_character === "0" ? sign + pad + arg : pad + sign + arg)
+	                }
+	            }
+	        }
+	        return output.join("")
+	    }
+	
+	    sprintf.cache = {}
+	
+	    sprintf.parse = function(fmt) {
+	        var _fmt = fmt, match = [], parse_tree = [], arg_names = 0
+	        while (_fmt) {
+	            if ((match = re.text.exec(_fmt)) !== null) {
+	                parse_tree[parse_tree.length] = match[0]
+	            }
+	            else if ((match = re.modulo.exec(_fmt)) !== null) {
+	                parse_tree[parse_tree.length] = "%"
+	            }
+	            else if ((match = re.placeholder.exec(_fmt)) !== null) {
+	                if (match[2]) {
+	                    arg_names |= 1
+	                    var field_list = [], replacement_field = match[2], field_match = []
+	                    if ((field_match = re.key.exec(replacement_field)) !== null) {
+	                        field_list[field_list.length] = field_match[1]
+	                        while ((replacement_field = replacement_field.substring(field_match[0].length)) !== "") {
+	                            if ((field_match = re.key_access.exec(replacement_field)) !== null) {
+	                                field_list[field_list.length] = field_match[1]
+	                            }
+	                            else if ((field_match = re.index_access.exec(replacement_field)) !== null) {
+	                                field_list[field_list.length] = field_match[1]
+	                            }
+	                            else {
+	                                throw new SyntaxError("[sprintf] failed to parse named argument key")
+	                            }
+	                        }
+	                    }
+	                    else {
+	                        throw new SyntaxError("[sprintf] failed to parse named argument key")
+	                    }
+	                    match[2] = field_list
+	                }
+	                else {
+	                    arg_names |= 2
+	                }
+	                if (arg_names === 3) {
+	                    throw new Error("[sprintf] mixing positional and named placeholders is not (yet) supported")
+	                }
+	                parse_tree[parse_tree.length] = match
+	            }
+	            else {
+	                throw new SyntaxError("[sprintf] unexpected placeholder")
+	            }
+	            _fmt = _fmt.substring(match[0].length)
+	        }
+	        return parse_tree
+	    }
+	
+	    var vsprintf = function(fmt, argv, _argv) {
+	        _argv = (argv || []).slice(0)
+	        _argv.splice(0, 0, fmt)
+	        return sprintf.apply(null, _argv)
+	    }
+	
+	    /**
+	     * helpers
+	     */
+	    function get_type(variable) {
+	        return Object.prototype.toString.call(variable).slice(8, -1).toLowerCase()
+	    }
+	
+	    function str_repeat(input, multiplier) {
+	        return Array(multiplier + 1).join(input)
+	    }
+	
+	    /**
+	     * export to either browser or node.js
+	     */
+	    if (true) {
+	        exports.sprintf = sprintf
+	        exports.vsprintf = vsprintf
+	    }
+	    else {
+	        window.sprintf = sprintf
+	        window.vsprintf = vsprintf
+	
+	        if (typeof define === "function" && define.amd) {
+	            define(function() {
+	                return {
+	                    sprintf: sprintf,
+	                    vsprintf: vsprintf
+	                }
+	            })
+	        }
+	    }
+	})(typeof window === "undefined" ? this : window);
+
+
+/***/ },
+/* 31 */
+/***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
+	
+	__webpack_require__(32);
 	
 	/*
 	 * Utily functions for Booking.js
@@ -19489,17 +20916,52 @@ return /******/ (function(modules) { // webpackBootstrap
 	   return !!(object && object.constructor && object.call && object.apply);
 	  },
 	
-	  doCallback: function(hook, config, arg) {
+	  doCallback: function(hook, config, arg, deprecated) {
 	    if(this.isFunction(config.callbacks[hook])) {
 	      config.callbacks[hook](arg);
+	      if (deprecated) { this.logDeprecated(hook + ' callback has been replaced, please see docs'); }
 	    }
+	  },
+	
+	  logError: function(message) {
+	    console.error('TimekitBooking Error: ' + message);
+	  },
+	
+	  logDeprecated: function(message) {
+	    console.warn('TimekitBooking Deprecated: ' + message);
 	  }
 	
 	};
 
 
 /***/ },
-/* 30 */
+/* 32 */
+/***/ function(module, exports) {
+
+	// Console-polyfill. MIT license.
+	// https://github.com/paulmillr/console-polyfill
+	// Make it safe to do console.log() always.
+	(function(global) {
+	  'use strict';
+	  global.console = global.console || {};
+	  var con = global.console;
+	  var prop, method;
+	  var empty = {};
+	  var dummy = function() {};
+	  var properties = 'memory'.split(',');
+	  var methods = ('assert,clear,count,debug,dir,dirxml,error,exception,group,' +
+	     'groupCollapsed,groupEnd,info,log,markTimeline,profile,profiles,profileEnd,' +
+	     'show,table,time,timeEnd,timeline,timelineEnd,timeStamp,trace,warn').split(',');
+	  while (prop = properties.pop()) if (!con[prop]) con[prop] = empty;
+	  while (method = methods.pop()) if (!con[method]) con[method] = dummy;
+	})(typeof window === 'undefined' ? this : window);
+	// Using `this` for web workers while maintaining compatibility with browser
+	// targeted script loaders such as Browserify or Webpack where the only way to
+	// get to the global object is via `window`.
+
+
+/***/ },
+/* 33 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -19510,9 +20972,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var primary = {
 	
-	  // email: '',
-	  // apiToken: '',
-	  // calendar: '',
 	  targetEl: '#bookingjs',
 	  name: '',
 	  avatar: '',
@@ -19520,6 +20979,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  includeStyles: true,
 	  showCredits: true,
 	  goToFirstEvent: true,
+	  bookingMode: 'instant',
 	  bookingFields: {
 	    name: {
 	      placeholder: 'Your full name',
@@ -19567,11 +21027,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    future: '4 weeks',
 	    length: '1 hour'
 	  },
-	  timekitCreateEvent: {
-	    invite: true,
-	    my_rsvp: 'needsAction',
-	    sync_provider: true
-	  },
+	  timekitCreateBooking: { },
+	  timekitUpdateBooking: { },
 	  fullCalendar: {
 	    header: {
 	      left: '',
@@ -19590,9 +21047,56 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	  localization: {
 	    showTimezoneHelper: true,
-	    timeDateFormat: '12h-mdy-sun'
+	    timeDateFormat: '12h-mdy-sun',
+	    strings: {
+	      submitText: 'Book it',
+	      successMessageTitle: 'Thanks!',
+	      timezoneHelperLoading: 'Loading..',
+	      timezoneHelperDifferent: 'Your timezone is %s hours %s of %s (calendar shown in your local time)',
+	      timezoneHelperSame: 'You are in the same timezone as %s'
+	    }
 	  },
 	  callbacks: {}
+	
+	};
+	
+	// Preset: bookingMode = 'instant'
+	var bookingInstant = {
+	
+	  timekitCreateBooking: {
+	    graph: 'instant',
+	    action: 'confirm',
+	    event: {
+	      invite: true,
+	      my_rsvp: 'accepted',
+	      sync_provider: true
+	    }
+	  },
+	  localization: {
+	    strings: {
+	      successMessageBody: 'An invitation has been sent to: <br /> %s <br /><br /> Please accept the invitation to confirm the booking.'
+	    }
+	  }
+	
+	};
+	
+	// Preset: bookingMode = 'confirm_decline'
+	var bookingConfirmDecline = {
+	
+	  timekitCreateBooking: {
+	    graph: 'confirm_decline',
+	    action: 'create',
+	    event: {
+	      invite: true,
+	      my_rsvp: 'needsAction',
+	      sync_provider: true
+	    }
+	  },
+	  localization: {
+	    strings: {
+	      successMessageBody: "We have received your request and we'll be in touch when we have reviewed it. <br /><br />Have a great day!"
+	    }
+	  }
 	
 	};
 	
@@ -19614,7 +21118,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	  localization: {
 	    bookingDateFormat: 'D. MMMM YYYY',
-	    bookingTimeFormat: 'HH:mm'
+	    bookingTimeFormat: 'HH:mm',
+	    emailTimeFormat: 'H:i'
 	  }
 	
 	};
@@ -19637,7 +21142,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	  localization: {
 	    bookingDateFormat: 'MMMM D, YYYY',
-	    bookingTimeFormat: 'h:mma'
+	    bookingTimeFormat: 'h:mma',
+	    emailTimeFormat: 'h:ia'
 	  }
 	
 	};
@@ -19647,22 +21153,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	  primary: primary,
 	  presets: {
 	    timeDateFormat24hdmymon:  timeDateFormat24hdmymon,
-	    timeDateFormat12hmdysun:  timeDateFormat12hmdysun
+	    timeDateFormat12hmdysun:  timeDateFormat12hmdysun,
+	    bookingInstant: bookingInstant,
+	    bookingConfirmDecline: bookingConfirmDecline
 	  }
 	};
 
 
 /***/ },
-/* 31 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(32);
+	var content = __webpack_require__(35);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(34)(content, {"singleton":true});
+	var update = __webpack_require__(37)(content, {"singleton":true});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -19679,10 +21187,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 32 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(33)();
+	exports = module.exports = __webpack_require__(36)();
 	// imports
 	
 	
@@ -19693,7 +21201,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 33 */
+/* 36 */
 /***/ function(module, exports) {
 
 	/*
@@ -19749,7 +21257,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 34 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -20003,16 +21511,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 35 */
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(36);
+	var content = __webpack_require__(39);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(34)(content, {"singleton":true});
+	var update = __webpack_require__(37)(content, {"singleton":true});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -20029,10 +21537,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 36 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(33)();
+	exports = module.exports = __webpack_require__(36)();
 	// imports
 	
 	
@@ -20043,16 +21551,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 37 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(38);
+	var content = __webpack_require__(41);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(34)(content, {"singleton":true});
+	var update = __webpack_require__(37)(content, {"singleton":true});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -20069,10 +21577,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 38 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(33)();
+	exports = module.exports = __webpack_require__(36)();
 	// imports
 	
 	
@@ -20083,16 +21591,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 39 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(40);
+	var content = __webpack_require__(43);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(34)(content, {"singleton":true});
+	var update = __webpack_require__(37)(content, {"singleton":true});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -20109,34 +21617,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 40 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(33)();
+	exports = module.exports = __webpack_require__(36)();
 	// imports
 	exports.push([module.id, "@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);", ""]);
 	
 	// module
-	exports.push([module.id, "/*!\n * Booking.js\n * http://booking.timekit.io\n * (c) 2015 Timekit Inc.\n */.bookingjs{position:relative;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;font-size:13px;border-radius:4px;background-color:#fff;box-shadow:rgba(0,0,0,.2) 0 2px 4px 0;margin:60px auto 20px;z-index:10;opacity:0;color:#333}.bookingjs.show{-webkit-transition:opacity .3s ease;transition:opacity .3s ease;opacity:1}.is-small.has-avatar.has-displayname .bookingjs-calendar .fc-toolbar{padding-bottom:24px}.is-small .bookingjs-calendar .fc-toolbar>.fc-right>button.fc-today-button{position:absolute;left:15px}.bookingjs-timezonehelper{color:#aeaeae;text-align:center;padding:7px 10px;background-color:#fbfbfb;border-top:1px solid #ececec;min-height:15px;z-index:20;border-radius:0 0 4px 4px}.bookingjs-timezoneicon{width:10px;margin-right:5px}.bookingjs-avatar{position:absolute;top:-50px;left:50%;-webkit-transform:translateX(-50%);transform:translateX(-50%);border-radius:150px;border:3px solid #fff;box-shadow:0 1px 3px 0 rgba(0,0,0,.13);overflow:hidden;z-index:40;background-color:#fff}.is-small .bookingjs-avatar{top:-40px}.bookingjs-avatar img{max-width:100%;vertical-align:middle;display:inline-block;width:80px;height:80px}.is-small .bookingjs-avatar img{width:70px;height:70px}.bookingjs-displayname{position:absolute;top:0;left:0;padding:15px 20px;color:#333;font-weight:600}.is-small .bookingjs-displayname{text-align:center;width:100%;box-sizing:border-box}.is-small.has-avatar .bookingjs-displayname{top:44px;padding:0 20px}.bookingjs-bookpage{position:absolute;height:100%;width:100%;top:0;left:0;background-color:#fbfbfb;z-index:30;opacity:0;-webkit-transition:opacity .2s ease;transition:opacity .2s ease;border-radius:4px}.bookingjs-bookpage.show{opacity:1}.bookingjs-bookpage-close{position:absolute;top:0;right:0;padding:18px;-webkit-transition:opacity .2s ease;transition:opacity .2s ease;opacity:.3}.bookingjs-bookpage-close:hover{opacity:1}.bookingjs-bookpage-date,.bookingjs-bookpage h2{text-align:center;font-size:34px;font-weight:400;margin-top:70px;margin-bottom:10px}.is-small .bookingjs-bookpage-date,.is-small .bookingjs-bookpage h2{font-size:27px;margin-top:60px}.bookingjs-bookpage-time,.bookingjs-bookpage h3{text-align:center;font-size:17px;font-weight:400;margin-bottom:50px;margin-top:10px}.is-small .bookingjs-bookpage-time,.is-small .bookingjs-bookpage h3{font-size:15px;margin-bottom:35px}.bookingjs-closeicon{width:15px}.bookingjs-form{width:350px;position:relative;margin:0 auto;text-align:center}.is-small .bookingjs-form{width:90%}.bookingjs-form-box{position:relative;box-shadow:0 1px 3px 0 rgba(0,0,0,.1);border-radius:4px;overflow:hidden;background-color:#fff;line-height:0}.bookingjs-form-success-message{position:absolute;top:-999px;left:0;right:0;padding:30px;background-color:#fff;opacity:0;-webkit-transition:opacity .3s ease;transition:opacity .3s ease;line-height:normal}.is-small .bookingjs-form-success-message{padding:22px 10px}.bookingjs-form-success-message .title{font-weight:600}.bookingjs-form-success-message .booked-email{color:#aeaeae}.bookingjs-form.success .bookingjs-form-success-message{opacity:1;top:0;bottom:0}.bookingjs-form-input,.bookingjs-form input,.bookingjs-form input:invalid textarea,.bookingjs-form textarea:invalid{-webkit-transition:box-shadow .2s ease;transition:box-shadow .2s ease;width:100%;padding:15px 25px;margin:0;border:0 solid #ececec;font-size:1em;box-shadow:inset 0 0 1px 1px hsla(0,0%,100%,0);text-align:left;box-sizing:border-box;line-height:normal;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;color:#333}.bookingjs-form-input:focus,.bookingjs-form input:focus,.bookingjs-form input:invalid textarea:focus,.bookingjs-form textarea:invalid:focus{outline:0;box-shadow:inset 0 0 1px 1px #689ad8}.bookingjs-form-input.hidden,.bookingjs-form input.hidden,.bookingjs-form input:invalid textarea.hidden,.bookingjs-form textarea:invalid.hidden{display:none}.bookingjs-form-input:disabled,.bookingjs-form input:disabled,.bookingjs-form input:invalid textarea:disabled,.bookingjs-form textarea:invalid:disabled{cursor:not-allowed;font-style:italic}.bookingjs-form-button{position:relative;-webkit-transition:background-color .2s,max-width .3s;transition:background-color .2s,max-width .3s;display:inline-block;padding:13px 25px;background-color:#689ad8;text-transform:uppercase;box-shadow:0 1px 3px 0 rgba(0,0,0,.15);color:#fff;border:0;border-radius:3px;font-size:1.1em;font-weight:600;margin-top:30px;cursor:pointer;height:44px;outline:0;text-align:center;max-width:200px}.bookingjs-form-button .error-text,.bookingjs-form-button .loading-text,.bookingjs-form-button .success-text{-webkit-transition:opacity .3s ease;transition:opacity .3s ease;position:absolute;top:13px;left:50%;-webkit-transform:translateX(-50%);transform:translateX(-50%);opacity:0}.bookingjs-form-button .inactive-text{white-space:nowrap;opacity:1}.bookingjs-form-button .loading-text svg{height:19px;width:19px;-webkit-animation:spin .6s infinite linear;animation:spin .6s infinite linear}.bookingjs-form-button .error-text svg{height:15px;width:15px;margin-top:2px}.bookingjs-form-button .success-text svg{height:15px;margin-top:2px;-webkit-transform:scale(0);transform:scale(0);-webkit-transition:-webkit-transform .6s ease;transition:-webkit-transform .6s ease;transition:transform .6s ease;transition:transform .6s ease,-webkit-transform .6s ease}.bookingjs-form-button:hover{background-color:#3f7fce}.bookingjs-form-button.button-shake{-webkit-animation:shake .5s 1 ease;animation:shake .5s 1 ease}.bookingjs-form.loading .bookingjs-form-button,.bookingjs-form.loading .bookingjs-form-button:hover{max-width:80px;background-color:#b1b1b1;cursor:not-allowed}.bookingjs-form.loading .bookingjs-form-button .inactive-text,.bookingjs-form.loading .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.loading .bookingjs-form-button .loading-text,.bookingjs-form.loading .bookingjs-form-button:hover .loading-text{opacity:1}.bookingjs-form.error .bookingjs-form-button,.bookingjs-form.error .bookingjs-form-button:hover{max-width:80px;background-color:#d83b46;cursor:not-allowed}.bookingjs-form.error .bookingjs-form-button .inactive-text,.bookingjs-form.error .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.error .bookingjs-form-button .error-text,.bookingjs-form.error .bookingjs-form-button:hover .error-text{opacity:1}.bookingjs-form.success .bookingjs-form-button,.bookingjs-form.success .bookingjs-form-button:hover{max-width:80px;background-color:#5baf56;cursor:not-allowed}.bookingjs-form.success .bookingjs-form-button .inactive-text,.bookingjs-form.success .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.success .bookingjs-form-button .success-text,.bookingjs-form.success .bookingjs-form-button:hover .success-text{opacity:1}.bookingjs-form.success .bookingjs-form-button .success-text svg,.bookingjs-form.success .bookingjs-form-button:hover .success-text svg{-webkit-transform:scale(1);transform:scale(1)}.bookingjs-poweredby{position:absolute;bottom:0;left:0;right:0;text-align:center;padding:7px 10px}.bookingjs-poweredby a{-webkit-transition:color .2s ease;transition:color .2s ease;color:#aeaeae;text-decoration:none}.bookingjs-poweredby a svg path{-webkit-transition:fill .2s ease;transition:fill .2s ease;fill:#aeaeae}.bookingjs-poweredby a:hover{color:#333}.bookingjs-poweredby a:hover svg path{fill:#333}.bookingjs-timekiticon{width:13px;margin-right:5px;vertical-align:sub}", ""]);
+	exports.push([module.id, "/*!\n * Booking.js\n * http://booking.timekit.io\n * (c) 2015 Timekit Inc.\n */.bookingjs{position:relative;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;font-size:13px;border-radius:4px;background-color:#fff;box-shadow:rgba(0,0,0,.2) 0 2px 4px 0;margin:60px auto 20px;z-index:10;opacity:0;color:#333}.bookingjs.show{-webkit-transition:opacity .3s ease;transition:opacity .3s ease;opacity:1}.is-small.has-avatar.has-displayname .bookingjs-calendar .fc-toolbar{padding-bottom:24px}.is-small .bookingjs-calendar .fc-toolbar>.fc-right>button.fc-today-button{position:absolute;left:15px}.bookingjs-timezonehelper{color:#aeaeae;text-align:center;padding:7px 10px;background-color:#fbfbfb;border-top:1px solid #ececec;min-height:15px;z-index:20;border-radius:0 0 4px 4px}.bookingjs-timezoneicon{width:10px;margin-right:5px}.bookingjs-avatar{position:absolute;top:-50px;left:50%;-webkit-transform:translateX(-50%);transform:translateX(-50%);border-radius:150px;border:3px solid #fff;box-shadow:0 1px 3px 0 rgba(0,0,0,.13);overflow:hidden;z-index:40;background-color:#fff}.is-small .bookingjs-avatar{top:-40px}.bookingjs-avatar img{max-width:100%;vertical-align:middle;display:inline-block;width:80px;height:80px}.is-small .bookingjs-avatar img{width:70px;height:70px}.bookingjs-displayname{position:absolute;top:0;left:0;padding:15px 20px;color:#333;font-weight:600}.is-small .bookingjs-displayname{text-align:center;width:100%;box-sizing:border-box}.is-small.has-avatar .bookingjs-displayname{top:44px;padding:0 20px}.bookingjs-bookpage{position:absolute;height:100%;width:100%;top:0;left:0;background-color:#fbfbfb;z-index:30;opacity:0;-webkit-transition:opacity .2s ease;transition:opacity .2s ease;border-radius:4px}.bookingjs-bookpage.show{opacity:1}.bookingjs-bookpage-close{position:absolute;top:0;right:0;padding:18px;-webkit-transition:opacity .2s ease;transition:opacity .2s ease;opacity:.3}.bookingjs-bookpage-close:hover{opacity:1}.bookingjs-bookpage-date,.bookingjs-bookpage h2{text-align:center;font-size:34px;font-weight:400;margin-top:70px;margin-bottom:10px}.is-small .bookingjs-bookpage-date,.is-small .bookingjs-bookpage h2{font-size:27px;margin-top:60px}.bookingjs-bookpage-time,.bookingjs-bookpage h3{text-align:center;font-size:17px;font-weight:400;margin-bottom:50px;margin-top:10px}.is-small .bookingjs-bookpage-time,.is-small .bookingjs-bookpage h3{font-size:15px;margin-bottom:35px}.bookingjs-closeicon{width:15px}.bookingjs-form{width:350px;position:relative;margin:0 auto;text-align:center}.is-small .bookingjs-form{width:90%}.bookingjs-form-box{position:relative;box-shadow:0 1px 3px 0 rgba(0,0,0,.1);overflow:hidden;background-color:#fff;line-height:0}.bookingjs-form-success-message{position:absolute;top:-999px;left:0;right:0;padding:30px;background-color:#fff;opacity:0;-webkit-transition:opacity .3s ease;transition:opacity .3s ease;line-height:normal}.is-small .bookingjs-form-success-message{padding:22px 10px}.bookingjs-form-success-message .title{font-size:20px;display:block;margin-bottom:25px}.bookingjs-form-success-message .body{display:block}.bookingjs-form-success-message .body .booked-email{color:#aeaeae}.bookingjs-form.success .bookingjs-form-success-message{opacity:1;top:0;bottom:0}.bookingjs-form-input,.bookingjs-form input,.bookingjs-form input:invalid textarea,.bookingjs-form textarea:invalid{-webkit-transition:box-shadow .2s ease;transition:box-shadow .2s ease;width:100%;padding:15px 25px;margin:0;border:0 solid #ececec;font-size:1em;box-shadow:inset 0 0 1px 1px hsla(0,0%,100%,0);text-align:left;box-sizing:border-box;line-height:normal;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;color:#333}.bookingjs-form-input:focus,.bookingjs-form input:focus,.bookingjs-form input:invalid textarea:focus,.bookingjs-form textarea:invalid:focus{outline:0;box-shadow:inset 0 0 1px 1px #689ad8}.bookingjs-form-input.hidden,.bookingjs-form input.hidden,.bookingjs-form input:invalid textarea.hidden,.bookingjs-form textarea:invalid.hidden{display:none}.bookingjs-form-input:-moz-read-only,.bookingjs-form input:-moz-read-only,.bookingjs-form input:invalid textarea:-moz-read-only,.bookingjs-form textarea:invalid:-moz-read-only{cursor:not-allowed;font-style:italic}.bookingjs-form-input:read-only,.bookingjs-form input:invalid textarea:read-only,.bookingjs-form input:read-only,.bookingjs-form textarea:invalid:read-only{cursor:not-allowed;font-style:italic}.bookingjs-form-input:-moz-read-only:focus,.bookingjs-form input:-moz-read-only:focus,.bookingjs-form input:invalid textarea:-moz-read-only:focus,.bookingjs-form textarea:invalid:-moz-read-only:focus{box-shadow:inset 0 0 1px 1px #d8d8d8}.bookingjs-form-input:read-only:focus,.bookingjs-form input:invalid textarea:read-only:focus,.bookingjs-form input:read-only:focus,.bookingjs-form textarea:invalid:read-only:focus{box-shadow:inset 0 0 1px 1px #d8d8d8}.bookingjs-form-button{position:relative;-webkit-transition:background-color .2s,max-width .3s;transition:background-color .2s,max-width .3s;display:inline-block;padding:13px 25px;background-color:#689ad8;text-transform:uppercase;box-shadow:0 1px 3px 0 rgba(0,0,0,.15);color:#fff;border:0;border-radius:3px;font-size:1.1em;font-weight:600;margin-top:30px;cursor:pointer;height:44px;outline:0;text-align:center;max-width:200px}.bookingjs-form-button .error-text,.bookingjs-form-button .loading-text,.bookingjs-form-button .success-text{-webkit-transition:opacity .3s ease;transition:opacity .3s ease;position:absolute;top:13px;left:50%;-webkit-transform:translateX(-50%);transform:translateX(-50%);opacity:0}.bookingjs-form-button .inactive-text{white-space:nowrap;opacity:1}.bookingjs-form-button .loading-text svg{height:19px;width:19px;-webkit-animation:spin .6s infinite linear;animation:spin .6s infinite linear}.bookingjs-form-button .error-text svg{height:15px;width:15px;margin-top:2px}.bookingjs-form-button .success-text svg{height:15px;margin-top:2px;-webkit-transform:scale(0);transform:scale(0);-webkit-transition:-webkit-transform .6s ease;transition:-webkit-transform .6s ease;transition:transform .6s ease;transition:transform .6s ease,-webkit-transform .6s ease}.bookingjs-form-button:focus,.bookingjs-form-button:hover{background-color:#3f7fce}.bookingjs-form-button.button-shake{-webkit-animation:shake .5s 1 ease;animation:shake .5s 1 ease}.bookingjs-form.loading .bookingjs-form-button,.bookingjs-form.loading .bookingjs-form-button:hover{max-width:80px;background-color:#b1b1b1;cursor:not-allowed}.bookingjs-form.loading .bookingjs-form-button .inactive-text,.bookingjs-form.loading .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.loading .bookingjs-form-button .loading-text,.bookingjs-form.loading .bookingjs-form-button:hover .loading-text{opacity:1}.bookingjs-form.error .bookingjs-form-button,.bookingjs-form.error .bookingjs-form-button:hover{max-width:80px;background-color:#d83b46;cursor:not-allowed}.bookingjs-form.error .bookingjs-form-button .inactive-text,.bookingjs-form.error .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.error .bookingjs-form-button .error-text,.bookingjs-form.error .bookingjs-form-button:hover .error-text{opacity:1}.bookingjs-form.success .bookingjs-form-button,.bookingjs-form.success .bookingjs-form-button:hover{max-width:80px;background-color:#5baf56;cursor:not-allowed}.bookingjs-form.success .bookingjs-form-button .inactive-text,.bookingjs-form.success .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.success .bookingjs-form-button .success-text,.bookingjs-form.success .bookingjs-form-button:hover .success-text{opacity:1}.bookingjs-form.success .bookingjs-form-button .success-text svg,.bookingjs-form.success .bookingjs-form-button:hover .success-text svg{-webkit-transform:scale(1);transform:scale(1)}.bookingjs-poweredby{position:absolute;bottom:0;left:0;right:0;text-align:center;padding:7px 10px}.bookingjs-poweredby a{-webkit-transition:color .2s ease;transition:color .2s ease;color:#aeaeae;text-decoration:none}.bookingjs-poweredby a svg path{-webkit-transition:fill .2s ease;transition:fill .2s ease;fill:#aeaeae}.bookingjs-poweredby a:hover{color:#333}.bookingjs-poweredby a:hover svg path{fill:#333}.bookingjs-timekiticon{width:13px;margin-right:5px;vertical-align:sub}", ""]);
 	
 	// exports
 
 
 /***/ },
-/* 41 */
+/* 44 */
 /***/ function(module, exports) {
 
 	module.exports = "<svg class=\"bookingjs-timezoneicon\" viewBox=\"0 0 98 98\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>Shape</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"timezone-icon\" sketch:type=\"MSLayerGroup\" fill=\"#AEAEAE\"><path d=\"M37.656,1.387 L39.381,2.516 L46.176,3.475 L49.313,2.778 L55.186,3.495 L56.364,5.065 L52.274,4.52 L48.092,6.262 L49.293,9.385 L53.613,11.348 L54.189,7.395 L58.285,7.133 L64.121,12.707 L65.775,14.887 L66.56,16.28 L62.029,18.067 L55.185,21.169 L54.624,24.206 L50.095,28.476 L50.271,32.572 L48.9,32.559 L48.353,29.086 L45.757,28.238 L38.294,28.631 L35.286,34.137 L37.901,37.274 L42.221,34.917 L42.516,38.755 L44.172,40.062 L47.131,43.46 L46.985,47.751 L52.448,49.034 L56.454,46.159 L58.284,46.768 L65.003,49.45 L74.433,52.985 L76.396,57.698 L83.111,60.968 L84.644,66.732 L80.062,71.857 L74.66,77.519 L68.933,80.482 L63.04,84.408 L55.185,89.515 L50.835,93.941 L49.292,92.263 L52.782,83.419 L53.663,73.167 L46.15,66.34 L46.199,60.596 L48.164,58.239 L50.471,51.415 L45.809,48.811 L42.664,43.706 L37.75,41.817 L30.047,37.667 L26.904,29.024 L25.334,33.344 L22.977,26.276 L23.762,15.671 L27.69,12.136 L26.512,9.779 L29.26,5.459 L23.905,6.99 C9.611,15.545 0.01,31.135 0.01,49.006 C0.01,76.062 21.945,98 49.006,98 C76.062,98 98,76.062 98,49.006 C98,21.947 76.062,0.012 49.006,0.012 C45.092,0.012 41.305,0.52 37.656,1.387 Z\" id=\"Shape\" sketch:type=\"MSShapeGroup\"></path></g></g></svg>"
 
 /***/ },
-/* 42 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var H = __webpack_require__(43);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-timezonehelper\">");t.b("\n");t.b("\n" + i);t.b("  ");t.b(t.t(t.f("timezoneIcon",c,p,0)));t.b("\n");t.b("\n" + i);if(t.s(t.f("loading",c,p,1),c,p,0,79,110,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("    <span>Loading...</span>");t.b("\n" + i);});c.pop();}t.b("\n" + i);if(!t.s(t.f("loading",c,p,1),c,p,1,0,0,"")){if(t.s(t.f("timezoneDifference",c,p,1),c,p,0,172,318,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("      <span>Your timezone is ");t.b(t.v(t.f("timezoneOffset",c,p,0)));t.b(" hours ");t.b(t.v(t.f("timezoneDirection",c,p,0)));t.b(" of ");t.b(t.v(t.f("hostName",c,p,0)));t.b(" (calendar shown in your local time)</span>");t.b("\n" + i);});c.pop();}t.b("\n" + i);if(!t.s(t.f("timezoneDifference",c,p,1),c,p,1,0,0,"")){t.b("      <span>You are in the same timezone as ");t.b(t.v(t.f("hostName",c,p,0)));t.b("</span>");t.b("\n" + i);};};t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-timezonehelper\">\n\n  {{& timezoneIcon }}\n\n  {{# loading }}\n    <span>Loading...</span>\n  {{/ loading }}\n\n  {{^ loading }}\n    {{# timezoneDifference }}\n      <span>Your timezone is {{ timezoneOffset }} hours {{ timezoneDirection }} of {{ hostName }} (calendar shown in your local time)</span>\n    {{/ timezoneDifference }}\n\n    {{^ timezoneDifference }}\n      <span>You are in the same timezone as {{ hostName }}</span>\n    {{/ timezoneDifference }}\n  {{/ loading }}\n\n</div>\n", H);return T; }();
+	var H = __webpack_require__(46);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-timezonehelper\">");t.b("\n");t.b("\n" + i);t.b("  ");t.b(t.t(t.f("timezoneIcon",c,p,0)));t.b("\n");t.b("\n" + i);if(t.s(t.f("loading",c,p,1),c,p,0,79,117,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("    <span>");t.b(t.v(t.f("loadingText",c,p,0)));t.b("</span>");t.b("\n" + i);});c.pop();}t.b("\n" + i);if(!t.s(t.f("loading",c,p,1),c,p,1,0,0,"")){if(t.s(t.f("timezoneDifference",c,p,1),c,p,0,179,227,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("      <span>");t.b(t.v(t.f("timezoneDifferent",c,p,0)));t.b("</span>");t.b("\n" + i);});c.pop();}t.b("\n" + i);if(!t.s(t.f("timezoneDifference",c,p,1),c,p,1,0,0,"")){t.b("      <span>");t.b(t.v(t.f("timezoneSame",c,p,0)));t.b("</span>");t.b("\n" + i);};};t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-timezonehelper\">\n\n  {{& timezoneIcon }}\n\n  {{# loading }}\n    <span>{{ loadingText }}</span>\n  {{/ loading }}\n\n  {{^ loading }}\n    {{# timezoneDifference }}\n      <span>{{ timezoneDifferent }}</span>\n    {{/ timezoneDifference }}\n\n    {{^ timezoneDifference }}\n      <span>{{ timezoneSame }}</span>\n    {{/ timezoneDifference }}\n  {{/ loading }}\n\n</div>\n", H);return T; }();
 
 /***/ },
-/* 43 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -20156,14 +21664,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	// This file is for use with Node.js. See dist/ for browser files.
 	
-	var Hogan = __webpack_require__(44);
-	Hogan.Template = __webpack_require__(45).Template;
+	var Hogan = __webpack_require__(47);
+	Hogan.Template = __webpack_require__(48).Template;
 	Hogan.template = Hogan.Template;
 	module.exports = Hogan;
 
 
 /***/ },
-/* 44 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -20592,7 +22100,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 45 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -20939,66 +22447,66 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 46 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var H = __webpack_require__(43);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-avatar\">");t.b("\n" + i);t.b("  <img src=\"");t.b(t.t(t.f("image",c,p,0)));t.b("\" />");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-avatar\">\n  <img src=\"{{& image }}\" />\n</div>\n", H);return T; }();
-
-/***/ },
-/* 47 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var H = __webpack_require__(43);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-displayname\">");t.b("\n" + i);t.b("  <span>");t.b(t.v(t.f("name",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-displayname\">\n  <span>{{ name }}</span>\n</div>\n", H);return T; }();
-
-/***/ },
-/* 48 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var H = __webpack_require__(43);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("\n" + i);t.b("<input");t.b("\n" + i);t.b("  class=\"bookingjs-form-input input-name\"");t.b("\n" + i);t.b("  type=\"text\"");t.b("\n" + i);t.b("  name=\"name\"");t.b("\n" + i);t.b("  placeholder=\"");t.b(t.v(t.d("fields.name.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("  ");if(t.s(t.d("fields.name.prefilled",c,p,1),c,p,0,154,191,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.name.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("  ");if(t.s(t.d("fields.name.locked",c,p,1),c,p,0,247,268,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" disabled=\"disabled\" ");});c.pop();}t.b("\n" + i);t.b("  required");t.b("\n" + i);t.b("/>");t.b("\n");t.b("\n" + i);t.b("<input");t.b("\n" + i);t.b("  class=\"bookingjs-form-input input-email\"");t.b("\n" + i);t.b("  type=\"email\"");t.b("\n" + i);t.b("  name=\"email\"");t.b("\n" + i);t.b("  placeholder=\"");t.b(t.v(t.d("fields.email.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("  ");if(t.s(t.d("fields.email.prefilled",c,p,1),c,p,0,467,505,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.email.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("  ");if(t.s(t.d("fields.email.locked",c,p,1),c,p,0,563,584,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" disabled=\"disabled\" ");});c.pop();}t.b("\n" + i);t.b("  required");t.b("\n" + i);t.b("/>");t.b("\n");t.b("\n" + i);if(t.s(t.d("fields.phone.enabled",c,p,1),c,p,0,653,1044,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("  <input");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-phone\"");t.b("\n" + i);t.b("    type=\"tel\"");t.b("\n" + i);t.b("    name=\"phone\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.phone.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.phone.prefilled",c,p,1),c,p,0,822,860,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.phone.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.phone.required",c,p,1),c,p,0,922,932,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.phone.locked",c,p,1),c,p,0,991,1012,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" disabled=\"disabled\" ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);});c.pop();}t.b("\n" + i);if(t.s(t.d("fields.voip.enabled",c,p,1),c,p,0,1099,1481,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("  <input");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-voip\"");t.b("\n" + i);t.b("    type=\"text\"");t.b("\n" + i);t.b("    name=\"voip\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.voip.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.voip.prefilled",c,p,1),c,p,0,1265,1302,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.voip.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.voip.required",c,p,1),c,p,0,1362,1372,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.voip.locked",c,p,1),c,p,0,1429,1450,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" disabled=\"disabled\" ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);});c.pop();}t.b("\n" + i);if(t.s(t.d("fields.location.enabled",c,p,1),c,p,0,1539,1961,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("  <input");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-location\"");t.b("\n" + i);t.b("    type=\"text\"");t.b("\n" + i);t.b("    name=\"location\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.location.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.location.prefilled",c,p,1),c,p,0,1721,1762,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.location.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.location.required",c,p,1),c,p,0,1830,1840,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.location.locked",c,p,1),c,p,0,1905,1926,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" disabled=\"disabled\" ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);});c.pop();}t.b("\n" + i);if(t.s(t.d("fields.comment.enabled",c,p,1),c,p,0,2022,2434,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("  <textarea");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-comment\"");t.b("\n" + i);t.b("    rows=\"3\"");t.b("\n" + i);t.b("    name=\"comment\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.comment.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.comment.prefilled",c,p,1),c,p,0,2200,2240,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.comment.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.comment.required",c,p,1),c,p,0,2306,2316,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.comment.locked",c,p,1),c,p,0,2379,2400,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" disabled=\"disabled\" ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);});c.pop();}return t.fl(); },partials: {}, subs: {  }}, "\n<input\n  class=\"bookingjs-form-input input-name\"\n  type=\"text\"\n  name=\"name\"\n  placeholder=\"{{ fields.name.placeholder }}\"\n  {{# fields.name.prefilled }} value=\"{{ fields.name.prefilled }}\" {{/ fields.name.prefilled }}\n  {{# fields.name.locked }} disabled=\"disabled\" {{/ fields.name.locked }}\n  required\n/>\n\n<input\n  class=\"bookingjs-form-input input-email\"\n  type=\"email\"\n  name=\"email\"\n  placeholder=\"{{ fields.email.placeholder }}\"\n  {{# fields.email.prefilled }} value=\"{{ fields.email.prefilled }}\" {{/ fields.email.prefilled }}\n  {{# fields.email.locked }} disabled=\"disabled\" {{/ fields.email.locked }}\n  required\n/>\n\n{{# fields.phone.enabled }}\n  <input\n    class=\"bookingjs-form-input input-phone\"\n    type=\"tel\"\n    name=\"phone\"\n    placeholder=\"{{ fields.phone.placeholder }}\"\n    {{# fields.phone.prefilled }} value=\"{{ fields.phone.prefilled }}\" {{/ fields.phone.prefilled }}\n    {{# fields.phone.required }} required {{/ fields.phone.required }}\n    {{# fields.phone.locked }} disabled=\"disabled\" {{/ fields.phone.locked }}\n  />\n{{/ fields.phone.enabled }}\n\n{{# fields.voip.enabled }}\n  <input\n    class=\"bookingjs-form-input input-voip\"\n    type=\"text\"\n    name=\"voip\"\n    placeholder=\"{{ fields.voip.placeholder }}\"\n    {{# fields.voip.prefilled }} value=\"{{ fields.voip.prefilled }}\" {{/ fields.voip.prefilled }}\n    {{# fields.voip.required }} required {{/ fields.voip.required }}\n    {{# fields.voip.locked }} disabled=\"disabled\" {{/ fields.voip.locked }}\n  />\n{{/ fields.voip.enabled }}\n\n{{# fields.location.enabled }}\n  <input\n    class=\"bookingjs-form-input input-location\"\n    type=\"text\"\n    name=\"location\"\n    placeholder=\"{{ fields.location.placeholder }}\"\n    {{# fields.location.prefilled }} value=\"{{ fields.location.prefilled }}\" {{/ fields.location.prefilled }}\n    {{# fields.location.required }} required {{/ fields.location.required }}\n    {{# fields.location.locked }} disabled=\"disabled\" {{/ fields.location.locked }}\n  />\n{{/ fields.location.enabled }}\n\n{{# fields.comment.enabled }}\n  <textarea\n    class=\"bookingjs-form-input input-comment\"\n    rows=\"3\"\n    name=\"comment\"\n    placeholder=\"{{ fields.comment.placeholder }}\"\n    {{# fields.comment.prefilled }} value=\"{{ fields.comment.prefilled }}\" {{/ fields.comment.prefilled }}\n    {{# fields.comment.required }} required {{/ fields.comment.required }}\n    {{# fields.comment.locked }} disabled=\"disabled\" {{/ fields.comment.locked }}\n  />\n{{/ fields.comment.enabled }}\n", H);return T; }();
-
-/***/ },
 /* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var H = __webpack_require__(43);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-bookpage\">");t.b("\n" + i);t.b("  <a class=\"bookingjs-bookpage-close\" href=\"#\">");t.b(t.t(t.f("closeIcon",c,p,0)));t.b("</a>");t.b("\n" + i);t.b("  <h2 class=\"bookingjs-bookpage-date\">");t.b(t.v(t.f("chosenDate",c,p,0)));t.b("</h2>");t.b("\n" + i);t.b("  <h3 class=\"bookingjs-bookpage-time\">");t.b(t.v(t.f("chosenTime",c,p,0)));t.b("</h3>");t.b("\n" + i);t.b("  <form class=\"bookingjs-form\" action=\"#\">");t.b("\n" + i);t.b("    <div class=\"bookingjs-form-box\">");t.b("\n" + i);t.b("      <div class=\"bookingjs-form-success-message\">");t.b("\n" + i);t.b("        <span class=\"title\">");t.b(t.v(t.f("successMessageTitle",c,p,0)));t.b("</span><br /><br />");t.b("\n" + i);t.b("        <span class=\"bookingjs-success-message1\">");t.b(t.v(t.f("successMessagePart1",c,p,0)));t.b("</span><br />");t.b("\n" + i);t.b("        <span class=\"booked-email\"></span><br /><br />");t.b("\n" + i);t.b("        <span class=\"bookingjs-success-message2\">");t.b(t.v(t.f("successMessagePart2",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("      <div class=\"bookingjs-form-fields\">");t.b("\n" + i);t.b("        <input class=\"bookingjs-form-input hidden\" type=\"text\" name=\"start\" value=\"");t.b(t.v(t.f("start",c,p,0)));t.b("\" />");t.b("\n" + i);t.b("        <input class=\"bookingjs-form-input hidden\" type=\"text\" name=\"end\" value=\"");t.b(t.v(t.f("end",c,p,0)));t.b("\" />");t.b("\n" + i);t.b(t.rp("<formFields0",c,p,"        "));t.b("      </div>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <button class=\"bookingjs-form-button\" type=\"submit\">");t.b("\n" + i);t.b("      <span class=\"inactive-text\">");t.b(t.v(t.f("submitText",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"loading-text\">");t.b(t.t(t.f("loadingIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"error-text\">");t.b(t.t(t.f("errorIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"success-text\">");t.b(t.t(t.f("checkmarkIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("    </button>");t.b("\n" + i);t.b("  </form>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {"<formFields0":{name:"formFields", partials: {}, subs: {  }}}, subs: {  }}, "<div class=\"bookingjs-bookpage\">\n  <a class=\"bookingjs-bookpage-close\" href=\"#\">{{& closeIcon }}</a>\n  <h2 class=\"bookingjs-bookpage-date\">{{ chosenDate }}</h2>\n  <h3 class=\"bookingjs-bookpage-time\">{{ chosenTime }}</h3>\n  <form class=\"bookingjs-form\" action=\"#\">\n    <div class=\"bookingjs-form-box\">\n      <div class=\"bookingjs-form-success-message\">\n        <span class=\"title\">{{ successMessageTitle }}</span><br /><br />\n        <span class=\"bookingjs-success-message1\">{{ successMessagePart1 }}</span><br />\n        <span class=\"booked-email\"></span><br /><br />\n        <span class=\"bookingjs-success-message2\">{{ successMessagePart2 }}</span>\n      </div>\n      <div class=\"bookingjs-form-fields\">\n        <input class=\"bookingjs-form-input hidden\" type=\"text\" name=\"start\" value=\"{{ start }}\" />\n        <input class=\"bookingjs-form-input hidden\" type=\"text\" name=\"end\" value=\"{{ end }}\" />\n        {{> formFields }}\n      </div>\n    </div>\n    <button class=\"bookingjs-form-button\" type=\"submit\">\n      <span class=\"inactive-text\">{{ submitText }}</span>\n      <span class=\"loading-text\">{{& loadingIcon }}</span>\n      <span class=\"error-text\">{{& errorIcon }}</span>\n      <span class=\"success-text\">{{& checkmarkIcon }}</span>\n    </button>\n  </form>\n</div>\n", H);return T; }();
+	var H = __webpack_require__(46);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-avatar\">");t.b("\n" + i);t.b("  <img src=\"");t.b(t.t(t.f("image",c,p,0)));t.b("\" />");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-avatar\">\n  <img src=\"{{& image }}\" />\n</div>\n", H);return T; }();
 
 /***/ },
 /* 50 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
-	module.exports = "<svg class=\"bookingjs-closeicon\" viewBox=\"0 0 90 90\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>close-icon</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"close-icon\" sketch:type=\"MSLayerGroup\" fill=\"#000000\"><path d=\"M58,45 L87.2,15.8 C90.9,12.1 90.9,6.3 87.3,2.7 C83.7,-0.9 77.8,-0.8 74.2,2.8 L45,32 L15.8,2.8 C12.1,-0.9 6.3,-0.9 2.7,2.7 C-0.9,6.3 -0.8,12.2 2.8,15.8 L32,45 L2.8,74.2 C-0.9,77.9 -0.9,83.7 2.7,87.3 C6.3,90.9 12.2,90.8 15.8,87.2 L45,58 L74.2,87.2 C77.9,90.9 83.7,90.9 87.3,87.3 C90.9,83.7 90.8,77.8 87.2,74.2 L58,45 L58,45 Z\" id=\"Shape\" sketch:type=\"MSShapeGroup\"></path></g></g></svg>"
+	var H = __webpack_require__(46);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-displayname\">");t.b("\n" + i);t.b("  <span>");t.b(t.v(t.f("name",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-displayname\">\n  <span>{{ name }}</span>\n</div>\n", H);return T; }();
 
 /***/ },
 /* 51 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
-	module.exports = "<svg viewBox=\"0 0 38 26\" x=\"0px\" y=\"0px\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><path fill=\"#fff\" d=\"M4.59255916,9.14153015 L4.59255916,9.14153015 L4.59255917,9.14153016 C3.61060488,8.15335155 2.0152224,8.15314806 1.03260582,9.1419932 L0.737322592,9.43914816 C-0.245558943,10.4282599 -0.245836003,12.0327396 0.736862454,13.0216671 L12.8967481,25.2586313 C13.4826504,25.8482474 14.3060779,26.1023412 15.1093609,25.9623831 L15.1946218,25.9520176 C15.7962843,25.9101633 16.3621851,25.6553951 16.7974015,25.21742 L37.2642739,4.6208133 C38.2456495,3.63321696 38.2453889,2.02851586 37.2626092,1.03950653 L36.967326,0.742351578 C35.9843771,-0.246827998 34.390543,-0.247513927 33.4085772,0.740676315 L15.4197831,18.8434968 L14.826599,19.4404409 L14.2334149,18.8434968 L4.59255916,9.14153015 Z\" id=\"Path\"></path></svg>"
+	var H = __webpack_require__(46);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("\n" + i);t.b("<input");t.b("\n" + i);t.b("  class=\"bookingjs-form-input input-name\"");t.b("\n" + i);t.b("  type=\"text\"");t.b("\n" + i);t.b("  name=\"name\"");t.b("\n" + i);t.b("  placeholder=\"");t.b(t.v(t.d("fields.name.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("  ");if(t.s(t.d("fields.name.prefilled",c,p,1),c,p,0,154,191,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.name.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("  ");if(t.s(t.d("fields.name.locked",c,p,1),c,p,0,247,257,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("  required");t.b("\n" + i);t.b("/>");t.b("\n");t.b("\n" + i);t.b("<input");t.b("\n" + i);t.b("  class=\"bookingjs-form-input input-email\"");t.b("\n" + i);t.b("  type=\"email\"");t.b("\n" + i);t.b("  name=\"email\"");t.b("\n" + i);t.b("  placeholder=\"");t.b(t.v(t.d("fields.email.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("  ");if(t.s(t.d("fields.email.prefilled",c,p,1),c,p,0,456,494,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.email.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("  ");if(t.s(t.d("fields.email.locked",c,p,1),c,p,0,552,562,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("  required");t.b("\n" + i);t.b("/>");t.b("\n");t.b("\n" + i);if(t.s(t.d("fields.phone.enabled",c,p,1),c,p,0,631,1011,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("  <input");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-phone\"");t.b("\n" + i);t.b("    type=\"tel\"");t.b("\n" + i);t.b("    name=\"phone\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.phone.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.phone.prefilled",c,p,1),c,p,0,800,838,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.phone.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.phone.required",c,p,1),c,p,0,900,910,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.phone.locked",c,p,1),c,p,0,969,979,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);});c.pop();}t.b("\n" + i);if(t.s(t.d("fields.voip.enabled",c,p,1),c,p,0,1066,1437,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("  <input");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-voip\"");t.b("\n" + i);t.b("    type=\"text\"");t.b("\n" + i);t.b("    name=\"voip\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.voip.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.voip.prefilled",c,p,1),c,p,0,1232,1269,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.voip.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.voip.required",c,p,1),c,p,0,1329,1339,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.voip.locked",c,p,1),c,p,0,1396,1406,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);});c.pop();}t.b("\n" + i);if(t.s(t.d("fields.location.enabled",c,p,1),c,p,0,1495,1906,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("  <input");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-location\"");t.b("\n" + i);t.b("    type=\"text\"");t.b("\n" + i);t.b("    name=\"location\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.location.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.location.prefilled",c,p,1),c,p,0,1677,1718,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.location.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.location.required",c,p,1),c,p,0,1786,1796,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.location.locked",c,p,1),c,p,0,1861,1871,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);});c.pop();}t.b("\n" + i);if(t.s(t.d("fields.comment.enabled",c,p,1),c,p,0,1967,2360,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("  <textarea");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-comment\"");t.b("\n" + i);t.b("    rows=\"3\"");t.b("\n" + i);t.b("    name=\"comment\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.comment.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.comment.required",c,p,1),c,p,0,2144,2154,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.comment.locked",c,p,1),c,p,0,2217,2227,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b(">");if(t.s(t.d("fields.comment.prefilled",c,p,1),c,p,0,2287,2317,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(t.v(t.d("fields.comment.prefilled",c,p,0)));});c.pop();}t.b("</textarea>");t.b("\n" + i);});c.pop();}return t.fl(); },partials: {}, subs: {  }}, "\n<input\n  class=\"bookingjs-form-input input-name\"\n  type=\"text\"\n  name=\"name\"\n  placeholder=\"{{ fields.name.placeholder }}\"\n  {{# fields.name.prefilled }} value=\"{{ fields.name.prefilled }}\" {{/ fields.name.prefilled }}\n  {{# fields.name.locked }} readonly {{/ fields.name.locked }}\n  required\n/>\n\n<input\n  class=\"bookingjs-form-input input-email\"\n  type=\"email\"\n  name=\"email\"\n  placeholder=\"{{ fields.email.placeholder }}\"\n  {{# fields.email.prefilled }} value=\"{{ fields.email.prefilled }}\" {{/ fields.email.prefilled }}\n  {{# fields.email.locked }} readonly {{/ fields.email.locked }}\n  required\n/>\n\n{{# fields.phone.enabled }}\n  <input\n    class=\"bookingjs-form-input input-phone\"\n    type=\"tel\"\n    name=\"phone\"\n    placeholder=\"{{ fields.phone.placeholder }}\"\n    {{# fields.phone.prefilled }} value=\"{{ fields.phone.prefilled }}\" {{/ fields.phone.prefilled }}\n    {{# fields.phone.required }} required {{/ fields.phone.required }}\n    {{# fields.phone.locked }} readonly {{/ fields.phone.locked }}\n  />\n{{/ fields.phone.enabled }}\n\n{{# fields.voip.enabled }}\n  <input\n    class=\"bookingjs-form-input input-voip\"\n    type=\"text\"\n    name=\"voip\"\n    placeholder=\"{{ fields.voip.placeholder }}\"\n    {{# fields.voip.prefilled }} value=\"{{ fields.voip.prefilled }}\" {{/ fields.voip.prefilled }}\n    {{# fields.voip.required }} required {{/ fields.voip.required }}\n    {{# fields.voip.locked }} readonly {{/ fields.voip.locked }}\n  />\n{{/ fields.voip.enabled }}\n\n{{# fields.location.enabled }}\n  <input\n    class=\"bookingjs-form-input input-location\"\n    type=\"text\"\n    name=\"location\"\n    placeholder=\"{{ fields.location.placeholder }}\"\n    {{# fields.location.prefilled }} value=\"{{ fields.location.prefilled }}\" {{/ fields.location.prefilled }}\n    {{# fields.location.required }} required {{/ fields.location.required }}\n    {{# fields.location.locked }} readonly {{/ fields.location.locked }}\n  />\n{{/ fields.location.enabled }}\n\n{{# fields.comment.enabled }}\n  <textarea\n    class=\"bookingjs-form-input input-comment\"\n    rows=\"3\"\n    name=\"comment\"\n    placeholder=\"{{ fields.comment.placeholder }}\"\n    {{# fields.comment.required }} required {{/ fields.comment.required }}\n    {{# fields.comment.locked }} readonly {{/ fields.comment.locked }}>{{# fields.comment.prefilled }}{{ fields.comment.prefilled }}{{/ fields.comment.prefilled }}</textarea>\n{{/ fields.comment.enabled }}\n", H);return T; }();
 
 /***/ },
 /* 52 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
-	module.exports = "<svg version=\"1.1\" id=\"loader-1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" viewBox=\"0 0 38 38\" xml:space=\"preserve\"><path fill=\"#fff\" d=\"M38,19 C38,8.50658975 29.4934102,0 19,0 C8.50658975,0 0,8.50658975 0,19 L5,19 C5,11.2680135 11.2680135,5 19,5 C26.7319865,5 33,11.2680135 33,19 L38,19 Z\" id=\"Oval-1\" sketch:type=\"MSShapeGroup\"></path></path></svg>"
+	var H = __webpack_require__(46);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-bookpage\">");t.b("\n" + i);t.b("  <a class=\"bookingjs-bookpage-close\" href=\"#\">");t.b(t.t(t.f("closeIcon",c,p,0)));t.b("</a>");t.b("\n" + i);t.b("  <h2 class=\"bookingjs-bookpage-date\">");t.b(t.v(t.f("chosenDate",c,p,0)));t.b("</h2>");t.b("\n" + i);t.b("  <h3 class=\"bookingjs-bookpage-time\">");t.b(t.v(t.f("chosenTime",c,p,0)));t.b("</h3>");t.b("\n" + i);t.b("  <form class=\"bookingjs-form\" action=\"#\">");t.b("\n" + i);t.b("    <div class=\"bookingjs-form-box\">");t.b("\n" + i);t.b("      <div class=\"bookingjs-form-success-message\">");t.b("\n" + i);t.b("        <div class=\"title\">");t.b(t.v(t.f("successMessageTitle",c,p,0)));t.b("</div>");t.b("\n" + i);t.b("        <div class=\"body\">");t.b(t.t(t.f("successMessageBody",c,p,0)));t.b("</div>");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("      <div class=\"bookingjs-form-fields\">");t.b("\n" + i);t.b("        <input class=\"bookingjs-form-input hidden\" type=\"text\" name=\"start\" value=\"");t.b(t.v(t.f("start",c,p,0)));t.b("\" />");t.b("\n" + i);t.b("        <input class=\"bookingjs-form-input hidden\" type=\"text\" name=\"end\" value=\"");t.b(t.v(t.f("end",c,p,0)));t.b("\" />");t.b("\n" + i);t.b(t.rp("<formFields0",c,p,"        "));t.b("      </div>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <button class=\"bookingjs-form-button\" type=\"submit\">");t.b("\n" + i);t.b("      <span class=\"inactive-text\">");t.b(t.v(t.f("submitText",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"loading-text\">");t.b(t.t(t.f("loadingIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"error-text\">");t.b(t.t(t.f("errorIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"success-text\">");t.b(t.t(t.f("checkmarkIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("    </button>");t.b("\n" + i);t.b("  </form>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {"<formFields0":{name:"formFields", partials: {}, subs: {  }}}, subs: {  }}, "<div class=\"bookingjs-bookpage\">\n  <a class=\"bookingjs-bookpage-close\" href=\"#\">{{& closeIcon }}</a>\n  <h2 class=\"bookingjs-bookpage-date\">{{ chosenDate }}</h2>\n  <h3 class=\"bookingjs-bookpage-time\">{{ chosenTime }}</h3>\n  <form class=\"bookingjs-form\" action=\"#\">\n    <div class=\"bookingjs-form-box\">\n      <div class=\"bookingjs-form-success-message\">\n        <div class=\"title\">{{ successMessageTitle }}</div>\n        <div class=\"body\">{{& successMessageBody }}</div>\n      </div>\n      <div class=\"bookingjs-form-fields\">\n        <input class=\"bookingjs-form-input hidden\" type=\"text\" name=\"start\" value=\"{{ start }}\" />\n        <input class=\"bookingjs-form-input hidden\" type=\"text\" name=\"end\" value=\"{{ end }}\" />\n        {{> formFields }}\n      </div>\n    </div>\n    <button class=\"bookingjs-form-button\" type=\"submit\">\n      <span class=\"inactive-text\">{{ submitText }}</span>\n      <span class=\"loading-text\">{{& loadingIcon }}</span>\n      <span class=\"error-text\">{{& errorIcon }}</span>\n      <span class=\"success-text\">{{& checkmarkIcon }}</span>\n    </button>\n  </form>\n</div>\n", H);return T; }();
 
 /***/ },
 /* 53 */
 /***/ function(module, exports) {
 
-	module.exports = "<svg class=\"bookingjs-closeicon\" viewBox=\"0 0 90 90\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>error-icon</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"error-icon\" sketch:type=\"MSLayerGroup\" fill=\"#FFFFFF\"><path d=\"M58,45 L87.2,15.8 C90.9,12.1 90.9,6.3 87.3,2.7 C83.7,-0.9 77.8,-0.8 74.2,2.8 L45,32 L15.8,2.8 C12.1,-0.9 6.3,-0.9 2.7,2.7 C-0.9,6.3 -0.8,12.2 2.8,15.8 L32,45 L2.8,74.2 C-0.9,77.9 -0.9,83.7 2.7,87.3 C6.3,90.9 12.2,90.8 15.8,87.2 L45,58 L74.2,87.2 C77.9,90.9 83.7,90.9 87.3,87.3 C90.9,83.7 90.8,77.8 87.2,74.2 L58,45 L58,45 Z\" id=\"Shape\" sketch:type=\"MSShapeGroup\"></path></g></g></svg>"
+	module.exports = "<svg class=\"bookingjs-closeicon\" viewBox=\"0 0 90 90\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>close-icon</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"close-icon\" sketch:type=\"MSLayerGroup\" fill=\"#000000\"><path d=\"M58,45 L87.2,15.8 C90.9,12.1 90.9,6.3 87.3,2.7 C83.7,-0.9 77.8,-0.8 74.2,2.8 L45,32 L15.8,2.8 C12.1,-0.9 6.3,-0.9 2.7,2.7 C-0.9,6.3 -0.8,12.2 2.8,15.8 L32,45 L2.8,74.2 C-0.9,77.9 -0.9,83.7 2.7,87.3 C6.3,90.9 12.2,90.8 15.8,87.2 L45,58 L74.2,87.2 C77.9,90.9 83.7,90.9 87.3,87.3 C90.9,83.7 90.8,77.8 87.2,74.2 L58,45 L58,45 Z\" id=\"Shape\" sketch:type=\"MSShapeGroup\"></path></g></g></svg>"
 
 /***/ },
 /* 54 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
-	var H = __webpack_require__(43);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-poweredby\">");t.b("\n" + i);t.b("  <a href=\"http://booking.timekit.io\" target=\"_blank\">");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("timekitIcon",c,p,0)));t.b("\n" + i);t.b("    <span>Powered by Timekit</span>");t.b("\n" + i);t.b("  </a>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-poweredby\">\n  <a href=\"http://booking.timekit.io\" target=\"_blank\">\n    {{& timekitIcon }}\n    <span>Powered by Timekit</span>\n  </a>\n</div>\n", H);return T; }();
+	module.exports = "<svg viewBox=\"0 0 38 26\" x=\"0px\" y=\"0px\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><path fill=\"#fff\" d=\"M4.59255916,9.14153015 L4.59255916,9.14153015 L4.59255917,9.14153016 C3.61060488,8.15335155 2.0152224,8.15314806 1.03260582,9.1419932 L0.737322592,9.43914816 C-0.245558943,10.4282599 -0.245836003,12.0327396 0.736862454,13.0216671 L12.8967481,25.2586313 C13.4826504,25.8482474 14.3060779,26.1023412 15.1093609,25.9623831 L15.1946218,25.9520176 C15.7962843,25.9101633 16.3621851,25.6553951 16.7974015,25.21742 L37.2642739,4.6208133 C38.2456495,3.63321696 38.2453889,2.02851586 37.2626092,1.03950653 L36.967326,0.742351578 C35.9843771,-0.246827998 34.390543,-0.247513927 33.4085772,0.740676315 L15.4197831,18.8434968 L14.826599,19.4404409 L14.2334149,18.8434968 L4.59255916,9.14153015 Z\" id=\"Path\"></path></svg>"
 
 /***/ },
 /* 55 */
+/***/ function(module, exports) {
+
+	module.exports = "<svg version=\"1.1\" id=\"loader-1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" viewBox=\"0 0 38 38\" xml:space=\"preserve\"><path fill=\"#fff\" d=\"M38,19 C38,8.50658975 29.4934102,0 19,0 C8.50658975,0 0,8.50658975 0,19 L5,19 C5,11.2680135 11.2680135,5 19,5 C26.7319865,5 33,11.2680135 33,19 L38,19 Z\" id=\"Oval-1\" sketch:type=\"MSShapeGroup\"></path></path></svg>"
+
+/***/ },
+/* 56 */
+/***/ function(module, exports) {
+
+	module.exports = "<svg class=\"bookingjs-closeicon\" viewBox=\"0 0 90 90\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>error-icon</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"error-icon\" sketch:type=\"MSLayerGroup\" fill=\"#FFFFFF\"><path d=\"M58,45 L87.2,15.8 C90.9,12.1 90.9,6.3 87.3,2.7 C83.7,-0.9 77.8,-0.8 74.2,2.8 L45,32 L15.8,2.8 C12.1,-0.9 6.3,-0.9 2.7,2.7 C-0.9,6.3 -0.8,12.2 2.8,15.8 L32,45 L2.8,74.2 C-0.9,77.9 -0.9,83.7 2.7,87.3 C6.3,90.9 12.2,90.8 15.8,87.2 L45,58 L74.2,87.2 C77.9,90.9 83.7,90.9 87.3,87.3 C90.9,83.7 90.8,77.8 87.2,74.2 L58,45 L58,45 Z\" id=\"Shape\" sketch:type=\"MSShapeGroup\"></path></g></g></svg>"
+
+/***/ },
+/* 57 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var H = __webpack_require__(46);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-poweredby\">");t.b("\n" + i);t.b("  <a href=\"http://booking.timekit.io\" target=\"_blank\">");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("timekitIcon",c,p,0)));t.b("\n" + i);t.b("    <span>Powered by Timekit</span>");t.b("\n" + i);t.b("  </a>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-poweredby\">\n  <a href=\"http://booking.timekit.io\" target=\"_blank\">\n    {{& timekitIcon }}\n    <span>Powered by Timekit</span>\n  </a>\n</div>\n", H);return T; }();
+
+/***/ },
+/* 58 */
 /***/ function(module, exports) {
 
 	module.exports = "<svg class=\"bookingjs-timekiticon\" viewBox=\"0 0 495 594\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>Full vector path</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"Artboard-8\" sketch:type=\"MSArtboardGroup\" transform=\"translate(-979.000000, -549.000000)\" fill=\"#AEAEAE\"><g id=\"Full-vector-path\" sketch:type=\"MSLayerGroup\" transform=\"translate(979.000000, 549.000000)\"><path d=\"M32.6783606,348.314972 L81.9095347,309.666147 L178.242802,387.91348 C213.042282,416.179589 268.948833,417.207556 304.79022,390.230569 L411.868735,309.63503 L461.989416,351.164228 L294.687237,477.088734 C265.004826,499.430003 217.635083,498.547293 188.834846,475.15411 L32.6783606,348.314972 Z M19.2354438,359.039602 C-6.62593762,382.117664 -5.82713003,417.651408 21.8567615,440.137832 L188.814783,575.750588 C217.626101,599.152772 265.020127,600.031261 294.666324,577.71725 L471.933566,444.292269 C501.091173,422.346008 502.419289,385.92569 475.267328,362.197265 L304.79022,490.511467 C268.948833,517.488455 213.042282,516.460488 178.242802,488.194379 L19.2354438,359.039602 Z M95.4596929,299.028626 L198.50357,218.134257 C227.693194,195.219007 274.527519,195.836287 303.106573,219.516436 L398.57111,298.61683 L294.687237,376.807835 C265.004826,399.149104 217.635083,398.266394 188.834846,374.873211 L95.4596929,299.028626 Z\" id=\"Base-layer\" sketch:type=\"MSShapeGroup\"></path><path d=\"M45.8421644,258.72646 L32.470588,247.865309 L198.50357,117.521482 C227.708304,94.5943704 274.527519,95.223512 303.106573,118.903661 L462.199296,250.725357 L448.401633,261.110541 L292.387775,131.839944 C269.89295,113.20109 231.857075,112.695864 208.877526,130.735908 L45.8421644,258.72646 Z M32.2967277,269.367817 L19.0412272,258.600949 C-6.62061571,281.684165 -5.74436993,317.105855 21.8366979,339.50876 L188.834846,475.15411 C217.635083,498.547293 265.004826,499.430003 294.687237,477.088734 L471.912654,343.695235 C501.008799,321.795234 502.426315,285.506694 475.470948,261.763118 L461.699258,272.12874 L463.151849,273.332334 C483.387128,290.098964 482.810002,314.466035 461.809671,330.272501 L284.584254,463.666001 C261.076006,481.360119 222.242635,480.64608 199.426891,462.113841 L32.4287426,326.468491 C12.2129453,310.048076 12.2096732,285.628236 32.2967277,269.367817 Z\" id=\"Middle-layer\" sketch:type=\"MSShapeGroup\"></path><path d=\"M303.106573,18.6227621 L473.870647,160.115153 C502.470886,183.812855 501.573077,221.089616 471.912654,243.414336 L294.687237,376.807835 C265.004826,399.149104 217.635083,398.266394 188.834846,374.873211 L21.8366979,239.227861 C-6.94564818,215.84921 -6.64628574,178.293025 22.5453033,155.376233 L198.50357,17.2405832 C227.708304,-5.6865285 274.527519,-5.05738689 303.106573,18.6227621 Z M292.387775,31.5590447 C269.89295,12.9201909 231.857075,12.4149656 208.877526,30.4550095 L32.9192595,168.590659 C12.2117199,184.847067 12.006219,209.599262 32.4287426,226.187592 L199.426891,361.832942 C222.242635,380.365181 261.076006,381.07922 284.584254,363.385102 L461.809671,229.991603 C482.810002,214.185136 483.387128,189.818065 463.151849,173.051435 L292.387775,31.5590447 Z\" id=\"Top-layer\" sketch:type=\"MSShapeGroup\"></path></g></g></g></svg>"

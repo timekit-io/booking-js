@@ -2,7 +2,7 @@
 <html>
  <head>
   <meta charset="UTF-8">
-  <title>Booking.js localization preset example</title>
+  <title>Booking.js localization strings example</title>
   <style type="text/css">
     body { background-color: #E6E6E6; max-width: 700px; margin: 0 auto; }
   </style>
@@ -14,7 +14,7 @@
   <div id="bookingjs">
     <script type="text/javascript">
       TimekitBooking().init({
-        name:     'Doc European',
+        name:     'Doc Brown',
         email:    'marty.mcfly@timekit.io',
         apiToken: 'XT1JO879JF1qUXXzmETD5ucgxaDwsFsd',
         calendar: '22f86f0c-ee80-470c-95e8-dadd9d05edd2',
@@ -23,7 +23,14 @@
           app: 'bookingjs-demo'
         },
         localization: {
-          timeDateFormat: '24h-dmy-mon'
+          strings: {
+            submitText: 'Do it!',
+            successMessageTitle: 'Awesome',
+            successMessageBody: 'You should check your email (%s) now',
+            timezoneHelperLoading: 'Initializing..',
+            timezoneHelperDifferent: "You're %s hours %s of %s, brother",
+            timezoneHelperSame: "You're in the same place as %s",
+          }
         }
       });
     </script>

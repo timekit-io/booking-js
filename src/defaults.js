@@ -6,9 +6,6 @@
 
 var primary = {
 
-  // email: '',
-  // apiToken: '',
-  // calendar: '',
   targetEl: '#bookingjs',
   name: '',
   avatar: '',
@@ -16,6 +13,7 @@ var primary = {
   includeStyles: true,
   showCredits: true,
   goToFirstEvent: true,
+  bookingMode: 'instant',
   bookingFields: {
     name: {
       placeholder: 'Your full name',
@@ -63,11 +61,8 @@ var primary = {
     future: '4 weeks',
     length: '1 hour'
   },
-  timekitCreateEvent: {
-    invite: true,
-    my_rsvp: 'needsAction',
-    sync_provider: true
-  },
+  timekitCreateBooking: { },
+  timekitUpdateBooking: { },
   fullCalendar: {
     header: {
       left: '',
@@ -86,9 +81,56 @@ var primary = {
   },
   localization: {
     showTimezoneHelper: true,
-    timeDateFormat: '12h-mdy-sun'
+    timeDateFormat: '12h-mdy-sun',
+    strings: {
+      submitText: 'Book it',
+      successMessageTitle: 'Thanks!',
+      timezoneHelperLoading: 'Loading..',
+      timezoneHelperDifferent: 'Your timezone is %s hours %s of %s (calendar shown in your local time)',
+      timezoneHelperSame: 'You are in the same timezone as %s'
+    }
   },
   callbacks: {}
+
+};
+
+// Preset: bookingMode = 'instant'
+var bookingInstant = {
+
+  timekitCreateBooking: {
+    graph: 'instant',
+    action: 'confirm',
+    event: {
+      invite: true,
+      my_rsvp: 'accepted',
+      sync_provider: true
+    }
+  },
+  localization: {
+    strings: {
+      successMessageBody: 'An invitation has been sent to: <br /> %s <br /><br /> Please accept the invitation to confirm the booking.'
+    }
+  }
+
+};
+
+// Preset: bookingMode = 'confirm_decline'
+var bookingConfirmDecline = {
+
+  timekitCreateBooking: {
+    graph: 'confirm_decline',
+    action: 'create',
+    event: {
+      invite: true,
+      my_rsvp: 'needsAction',
+      sync_provider: true
+    }
+  },
+  localization: {
+    strings: {
+      successMessageBody: "We have received your request and we'll be in touch when we have reviewed it. <br /><br />Have a great day!"
+    }
+  }
 
 };
 
@@ -110,7 +152,8 @@ var timeDateFormat24hdmymon = {
   },
   localization: {
     bookingDateFormat: 'D. MMMM YYYY',
-    bookingTimeFormat: 'HH:mm'
+    bookingTimeFormat: 'HH:mm',
+    emailTimeFormat: 'H:i'
   }
 
 };
@@ -133,7 +176,8 @@ var timeDateFormat12hmdysun = {
   },
   localization: {
     bookingDateFormat: 'MMMM D, YYYY',
-    bookingTimeFormat: 'h:mma'
+    bookingTimeFormat: 'h:mma',
+    emailTimeFormat: 'h:ia'
   }
 
 };
@@ -143,6 +187,8 @@ module.exports = {
   primary: primary,
   presets: {
     timeDateFormat24hdmymon:  timeDateFormat24hdmymon,
-    timeDateFormat12hmdysun:  timeDateFormat12hmdysun
+    timeDateFormat12hmdysun:  timeDateFormat12hmdysun,
+    bookingInstant: bookingInstant,
+    bookingConfirmDecline: bookingConfirmDecline
   }
 };

@@ -2,7 +2,7 @@
 
 /*!
  * Booking.js
- * Version: 1.6.0
+ * Version: 1.7.0
  * http://booking.timekit.io
  *
  * Copyright 2015 Timekit, Inc.
@@ -15,6 +15,8 @@ var $               = require('jquery');
 window.fullcalendar = require('fullcalendar');
 var moment          = window.moment = require('moment');
 var timekit         = require('timekit-sdk');
+require('moment-timezone/builds/moment-timezone-with-data-2010-2020.js');
+var interpolate     = require('sprintf-js');
 
 // Internal dependencies
 var utils         = require('./utils');
@@ -44,7 +46,7 @@ function TimekitBooking() {
 
     rootTarget = $(config.targetEl);
     if (rootTarget.length === 0) {
-      throw new Error('TimekitBooking - No target DOM element was found (' + config.targetEl + ')');
+      utils.logError('No target DOM element was found (' + config.targetEl + ')');
     }
     rootTarget.addClass('bookingjs');
     rootTarget.children(':not(script)').remove();
@@ -54,10 +56,7 @@ function TimekitBooking() {
   // Setup the Timekit SDK with correct credentials
   var timekitSetup = function() {
 
-    var args = {};
-    $.extend(true, args, config.timekitConfig);
-
-    timekit.configure(args);
+    timekit.configure(config.timekitConfig);
     timekit.setUser(config.email, config.apiToken);
 
   };
@@ -88,7 +87,7 @@ function TimekitBooking() {
 
     }).catch(function(response){
       utils.doCallback('findTimeFailed', config, response);
-      throw new Error('TimekitBooking - An error with Timekit FindTime occured, context: ' + response);
+      utils.logError('An error with Timekit FindTime occured, context: ' + response);
     });
 
   };
@@ -144,13 +143,14 @@ function TimekitBooking() {
   // Calculate and display timezone helper
   var renderTimezoneHelper = function() {
 
-    var localTzOffset = (new Date()).getTimezoneOffset()/60*-1;
+    var localTzOffset = (moment().utcOffset()/60);
     var timezoneIcon = require('!svg-inline!./assets/timezone-icon.svg');
 
     var template = require('./templates/timezone-helper.html');
 
     var timezoneHelperTarget = $(template.render({
       timezoneIcon: timezoneIcon,
+      loadingText: config.localization.strings.timezoneHelperLoading,
       loading: true
     }));
 
@@ -165,25 +165,25 @@ function TimekitBooking() {
 
     timekit.getUserTimezone(args).then(function(response){
 
-      utils.doCallback('getUserTimezoneSuccesful', config, response);
+      utils.doCallback('getUserTimezoneSuccessful', config, response);
 
       var hostTzOffset = response.data.utc_offset;
       var tzOffsetDiff = Math.abs(localTzOffset - hostTzOffset);
+      var tzDirection = (tzOffsetDiff > 0 ? 'ahead' : 'behind');
 
       var template = require('./templates/timezone-helper.html');
       var newTimezoneHelperTarget = $(template.render({
         timezoneIcon: timezoneIcon,
         timezoneDifference: (tzOffsetDiff === 0 ? false : true),
-        timezoneOffset: tzOffsetDiff,
-        timezoneDirection: (tzOffsetDiff > 0 ? 'ahead' : 'behind'),
-        hostName: config.name
+        timezoneDifferent: interpolate.sprintf(config.localization.strings.timezoneHelperDifferent, tzOffsetDiff, tzDirection, config.name),
+        timezoneSame: interpolate.sprintf(config.localization.strings.timezoneHelperSame, config.name)
       }));
 
       timezoneHelperTarget.replaceWith(newTimezoneHelperTarget);
 
     }).catch(function(response){
       utils.doCallback('getUserTimezoneFailed', config, response);
-      throw new Error('TimekitBooking - An error with Timekit getUserTimezone occured, context: ' + response);
+      utils.logError('An error with Timekit getUserTimezone occured, context: ' + response);
     });
 
   };
@@ -300,10 +300,9 @@ function TimekitBooking() {
       checkmarkIcon:        require('!svg-inline!./assets/checkmark-icon.svg'),
       loadingIcon:          require('!svg-inline!./assets/loading-spinner.svg'),
       errorIcon:            require('!svg-inline!./assets/error-icon.svg'),
-      submitText:           'Book it',
-      successMessageTitle:  'Thanks!',
-      successMessagePart1:  'An invitation has been sent to:',
-      successMessagePart2:  'Accept the invitation to confirm the booking.',
+      submitText:           config.localization.strings.submitText,
+      successMessageTitle:  config.localization.strings.successMessageTitle,
+      successMessageBody:   interpolate.sprintf(config.localization.strings.successMessageBody, '<span class="booked-email"></span>'),
       fields:               config.bookingFields
     }, {
       formFields: fieldsTemplate
@@ -380,16 +379,24 @@ function TimekitBooking() {
     utils.doCallback('submitBookingForm', config, values);
 
     // Call create event endpoint
-    timekitCreateEvent(values).then(function(response){
+    timekitCreateBooking(values).then(function(response){
 
-      utils.doCallback('createEventSuccessful', config, response);
+      utils.doCallback('createBookingSuccessful', config, response);
+
+      // Call deprecated callback
+      var responseDeprecated = response;
+      responseDeprecated.data = response.data.attributes.event_info;
+      utils.doCallback('createEventSuccessful', config, responseDeprecated, true);
 
       formElement.find('.booked-email').html(values.email);
       formElement.removeClass('loading').addClass('success');
 
     }).catch(function(response){
 
-      utils.doCallback('createEventFailed', config, response);
+      utils.doCallback('createBookingFailed', config, response);
+
+      // Call deprecated callback
+      utils.doCallback('createEventFailed', config, response, true);
 
       var submitButton = formElement.find('.bookingjs-form-button');
       submitButton.addClass('button-shake');
@@ -402,34 +409,53 @@ function TimekitBooking() {
         formElement.removeClass('error');
       }, 2000);
 
-      throw new Error('TimekitBooking - An error with Timekit createEvent occured, context: ' + response);
+      utils.logError('An error with Timekit createBooking occured, context: ' + response);
     });
 
   };
 
-  // Create new event through Timekit SDK
-  var timekitCreateEvent = function(data) {
+  // Create new booking
+  var timekitCreateBooking = function(data) {
 
     var args = {
-      start: data.start,
-      end: data.end,
-      what: config.name + ' x ' + data.name,
-      where: 'TBD',
-      description: '',
-      calendar_id: config.calendar,
-      participants: [config.email, data.email]
+      event: {
+        start: data.start,
+        end: data.end,
+        what: config.name + ' x ' + data.name,
+        where: 'TBD',
+        description: '',
+        calendar_id: config.calendar,
+        participants: [config.email, data.email]
+      },
+      customer: {
+        name: data.name,
+        email: data.email,
+        timezone: moment.tz.guess()
+      }
     };
 
-    if (config.bookingFields.location.enabled) { args.where = data.location; }
-    if (config.bookingFields.phone.enabled) {    args.description += config.bookingFields.phone.placeholder + ': ' + data.phone + '\n'; }
-    if (config.bookingFields.voip.enabled) {     args.description += config.bookingFields.voip.placeholder + ': ' + data.voip + '\n'; }
-    if (config.bookingFields.comment.enabled) {  args.description += config.bookingFields.comment.placeholder + ': ' + data.comment + '\n'; }
+    if (config.bookingFields.location.enabled) { args.event.where = data.location; }
+    if (config.bookingFields.comment.enabled) {  args.event.description = data.comment; }
+    if (config.bookingFields.phone.enabled) {    args.customer.phone = data.phone; }
+    if (config.bookingFields.voip.enabled) {     args.customer.voip = data.voip; }
 
-    $.extend(true, args, config.timekitCreateEvent);
+    $.extend(true, args, config.timekitCreateBooking);
 
-    utils.doCallback('createEventStarted', config, args);
+    if (config.timekitCreateEvent) {
+      $.extend(true, args.event, config.timekitCreateEvent); // backwards compatibility
+      utils.logDeprecated('config key "timekitCreateEvent" has been replaced, use "timekitCreateBooking" and see docs');
+    }
 
-    return timekit.createEvent(args);
+    utils.doCallback('createBookingStarted', config, args);
+    utils.doCallback('createEventStarted', config, args, true);
+
+    var requestHeaders = {
+      'Timekit-OutputTimestampFormat': 'Y-m-d ' + config.localization.emailTimeFormat + ' (P e)'
+    };
+
+    return timekit
+    .headers(requestHeaders)
+    .createBooking(args);
 
   };
 
@@ -454,28 +480,34 @@ function TimekitBooking() {
       if (window.timekitBookingConfig !== undefined) {
         suppliedConfig = window.timekitBookingConfig;
       } else {
-        throw new Error('TimekitBooking - No configuration was supplied or found. Please supply a config object upon library initialization');
+        utils.logError('No configuration was supplied or found. Please supply a config object upon library initialization');
       }
     }
 
     // Extend the default config with supplied settings
     var newConfig = $.extend(true, {}, defaultConfig.primary, suppliedConfig);
 
-    // Apply any presets if applicable (supplied config have presedence over preset)
+    // Apply timeDateFormat presets
     var presetsConfig = {};
     if(newConfig.localization.timeDateFormat === '24h-dmy-mon') {
       presetsConfig = defaultConfig.presets.timeDateFormat24hdmymon;
-    }
-    if(newConfig.localization.timeDateFormat === '12h-mdy-sun') {
+    } else if(newConfig.localization.timeDateFormat === '12h-mdy-sun') {
       presetsConfig = defaultConfig.presets.timeDateFormat12hmdysun;
     }
-
-    // Extend the config with the presets
     var finalConfig = $.extend(true, {}, presetsConfig, newConfig);
+
+    // Apply bookingMode presets
+    presetsConfig = {};
+    if(newConfig.bookingMode === 'instant') {
+      presetsConfig = defaultConfig.presets.bookingInstant;
+    } else if(newConfig.bookingMode === 'confirm_decline') {
+      presetsConfig = defaultConfig.presets.bookingConfirmDecline;
+    }
+    finalConfig = $.extend(true, {}, presetsConfig, finalConfig);
 
     // Check for required settings
     if(!finalConfig.email || !finalConfig.apiToken || !finalConfig.calendar) {
-      throw new Error('TimekitBooking - A required config setting was missing ("email", "apiToken" or "calendar")');
+      utils.logError('A required config setting was missing ("email", "apiToken" or "calendar")');
     }
 
     // Set new config to instance config

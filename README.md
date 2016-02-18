@@ -3,7 +3,7 @@
 [![Circle CI](https://img.shields.io/circleci/project/timekit-io/booking-js.svg)](https://circleci.com/gh/timekit-io/booking-js)
 [![Codacy Badge](https://api.codacy.com/project/badge/grade/feb445801acf454a95b1690a75959893)](https://www.codacy.com/app/laander/booking-js)
 
-**Latest release:**  [v1.6.0](https://github.com/timekit-io/booking-js/releases)
+**Latest release:**  [v1.7.0](https://github.com/timekit-io/booking-js/releases)
 
 > Make a beautiful embeddable booking widget in minutes.
 
@@ -40,7 +40,7 @@ To ensure that we can push out updates, improvements and bugfixes to the library
 See `/examples` for implementation examples or use the following:
 
 **Autoload**  
-The simplest and most universally compatible usage is with autoload. This will defer the loading of the library until the whole body has loaded and then look for `window.timekitBookingConfig` - if found, the library is loaded automatically.
+The simplest and most universally compatible usage is with autoload. This will defer the loading of the library until the whole document has loaded and then look for `window.timekitBookingConfig` - if found, the library is loaded automatically. Note that in single page applications, you should not use this approach.
 
 ```html
 <div id="bookingjs">
@@ -59,7 +59,7 @@ The simplest and most universally compatible usage is with autoload. This will d
 ```
 
 **Instantiation**  
-If you intent to run multiple instances or want more control, just create a new instance. This is ideal for usage in SPAs like Angular.js, where you'd like a `<div id="bookingjs">` in your template and JS in your controller or directive code.
+If you intent to run multiple instances or want more control, just create a new instance. This is ideal for usage in single page applications like Angular.js, where you'd like a `<div id="bookingjs">` in your template and JS in your controller or directive code.
 
 ```html
 <div id="bookingjs">
@@ -93,6 +93,7 @@ Booking.js is made for various use-cases, so it's really extensible and customiz
 
 ```javascript
 {
+
   // Required
   email:                    '',   // Your Timekit user's email (used for auth)
   apiToken:                 '',   // Your Timekit user's apiToken (as generated through the wizard)
@@ -106,15 +107,7 @@ Booking.js is made for various use-cases, so it's really extensible and customiz
   includeStyles:            true, // Inject fullCalendar and library styles in <head>
   showCredits:              true, // Display a "Powered by Timekit" attribution footer (thanks!)
   goToFirstEvent:           true, // Display and scroll to the first upcoming event in the calendar (to avoid showing a blank calendar)
-
-  // Internationalization
-  localization: {
-    showTimezoneHelper:     true, // Should the timezone difference helper (bottom) be shown?
-    timeDateFormat:         '12h-mdy-sun' // For EU-style formatting, use '24h-dmy-mon' (see below)
-  },
-
-  // Customize form fields (see below)
-  bookingFields:            { ... },
+  bookingMode:              'instant', // Set which booking flow graph that should be used (also supports "confirm_decline", see below)
 
   // Timekit JS SDK (see below)
   timekitConfig:            { ... },
@@ -122,41 +115,27 @@ Booking.js is made for various use-cases, so it's really extensible and customiz
   // Timekit FindTime endpoint (see below)
   timekitFindTime:          { ... },
 
-  // Timekit CreateEvent endpoint (see below)
-  timekitCreateEvent:       { ... },
+  // Timekit CreateBooking endpoint (see below)
+  timekitCreateBooking:     { ... },
+
+  // Locale support presets (see below)
+  localization:             { ... },
 
   // FullCalendar options (see below)
   fullCalendar:             { ... },
 
-  // Register callbacks on events
-  callbacks: {
+  // Customize form fields (see below)
+  bookingFields:            { ... },
 
-    findTimeStarted:          function(args) {},
-    findTimeSuccessful:       function(response) {},
-    findTimeFailed:           function(response) {},
+  // Register callbacks on events (see below)
+  callbacks:                { ... }
 
-    createEventStarted:       function(args) {},
-    createEventSuccessful:    function(response) {},
-    createEventFailed:        function(response) {},
-
-    getUserTimezoneStarted:   function(args) {},
-    getUserTimezoneSuccesful: function(response) {},
-    getUserTimezoneFailed:    function(response) {},
-
-    fullCalendarInitialized:  function() {},
-    renderCompleted:          function() {},
-
-    showBookingPage:          function(event) {},
-    closeBookingPage:         function() {},
-    submitBookingForm:        function(values) {}
-
-  }
 }
 ```
 
-### Timekit SDK
+### - `timekitConfig`
 
-You can pass any of the [Timekit JS SDK](https://github.com/timekit-io/js-sdk) settings directly to the widget. This is mostly revelant if you're building a tighter integration with Timekit and have your own app registered on the platform.
+You can pass any of the [Timekit JS SDK](https://github.com/timekit-io/js-sdk) settings directly to the widget. This is mostly relevant if you're building a tighter integration with Timekit and have your own app registered on the platform.
 
 ```javascript
 timekitConfig: {
@@ -164,9 +143,9 @@ timekitConfig: {
 }
 ```
 
-### Timekit Find Time
+### - `timekitFindTime`
 
-The Find Time algorithm is a powerful query tool for availability. Booking.js is calling the endpoint `[POST]/findtime` through the JS SDK and takes all the arguments as mentioned on the official [docs](http://developers.timekit.io/docs/findtime). The most powerful aspect are the [filters](http://developers.timekit.io/docs/find-time-filters). By default, there's no filters applied.
+The Find Time algorithm is a powerful query tool for availability. Booking.js is calling the endpoint `[POST] /findtime` through the JS SDK and takes all the arguments as mentioned on the official [docs](http://developers.timekit.io/docs/findtime). The most powerful aspect are the [filters](http://developers.timekit.io/docs/find-time-filters). By default, there's no filters applied.
 
 There's only three default arguments out of the box:
 
@@ -174,29 +153,46 @@ There's only three default arguments out of the box:
 timekitFindTime: {
   future:       '4 weeks',      // Default, how long time into the future that timeslots should be returned
   length:       '1 hour',       // Default, the duration of the bookable timeslots
-  emails:       [config.email], // Inserted from the "email" setting in the general config
+  emails:       [config.email], // Inserted dynamically from the "email" setting in the general config
 },
 ```
 
-### Timekit Create Event
+### - `timekitCreateBooking`
 
-When booking an event, the widget will call the `[POST]/events` endpoint through the JS SDK, with the following settings:
+When booking an event, the widget will call the `[POST] /bookings` endpoint through the JS SDK.
+
+The booking engine in Timekit is a powerful state machine that can take input data (event details and customer info) and perform actions on that based on a chosen "flow graph".
+
+At the time of writing, Timekit supports two graphs:  
+1) `instant` - automatically confirm any incoming bookings, save it to calendar and send out notifications  
+2) `confirm_decline` - creates the booking as tentative and send notification to owner with confirm/decline actions  
+
+These can be set using the `bookingMode` config key on the root config level.
 
 ```javascript
-timekitCreateEvent: {
-  where:        'Online',        // Default, you may want to customize this to a specific location, TBD or whatever fits
-  invite:       true,            // Default, makes sure that participants (the visitor) is sent a Google invite
-  my_rsvp:      'needsAction',   // Default, makes sure that the host also will be able to RSVP to the created event
-  start:        data.start,      // Inserted from the chosen timeslot
-  end:          data.end,        // Inserted from the chosen timeslot
-  what:         config.name + ' x '+ data.name, // Inserted based on the host and visitors names (you can replace it with a static string)
-  calendar_id:  config.calendar, // Inserted from the "calendar" setting in the general config
-  participants: [config.email, data.email], // Inserted based on host and visitors ()
-  description:  data.comment || '' // Inserted based on the visitor's supplied comment
+timekitCreateBooking: {
+  graph:          'instant',       // Inserted based on "bookingMode" specified. See description above on flow graph
+  action:         'confirm',       // If "instant" graph is chosen, it will instantly perform the "confirm" action. See description above on flow graph
+  event: {    
+    where:        'Online',        // Default, you may want to customize this to a specific location, TBD or whatever fits
+    invite:       true,            // Default, makes sure that participants (the visitor) is sent a Google invite
+    my_rsvp:      'needsAction',   // Default, makes sure that the host also will be able to RSVP to the created event
+    start:        data.start,      // Inserted dynamically from the chosen timeslot
+    end:          data.end,        // Inserted dynamically from the chosen timeslot
+    what:         config.name + ' x '+ data.name, // Inserted dynamically based on the host and visitors names (you can replace it with a static string)
+    calendar_id:  config.calendar, // Inserted dynamically from the "calendar" setting in the general config
+    participants: [config.email, data.email], // Inserted dynamically based on host and visitors ()
+    description:  data.comment || '' // Inserted dynamically based on the visitor's supplied comment (if field is enabled)
+  },
+  customer: {
+    name:         data.name,       // Inserted dynamically based on visitors name
+    email:        data.email,      // Inserted dynamically based on visitors email
+    timezone:     moment.tz.guess() // Inserted dynamically based on visitors timezone (sniffed from browser/device settings)
+  }
 },
 ```
 
-### FullCalendar
+### - `fullCalendar`
 
 You can supply and override all the [FullCalendar settings](http://fullcalendar.io/docs/):
 
@@ -215,16 +211,16 @@ fullCalendar: {
   allDaySlot:   false,
   scrollTime:   '08:00:00',
   timezone:     'local',
-  defaultView:  sizing.view,     // Inserted based on the current width of the widget
-  height:       sizing.height,   // Inserted based on the current width of the widget
+  defaultView:  sizing.view,     // Inserted dynamically based on the current width of the widget
+  height:       sizing.height,   // Inserted dynamically based on the current width of the widget
   eventClick:   function(event), // Handled internally in Booking.js (overwrite if you want to replace the booking page)
-  windowResize: function(view)   // Recalculates the view and height based on the widget's width (if resized)
+  windowResize: function(view)   // Handled internally in Booking.js (overwrite if you want to disable or change automatic resizing)
 }
 ```
 
 *See below for FullCalendar language support.*
 
-### Localization
+### - `localization`
 
 For quick localization of time/date formats, we provide a simple "preset" setting, `timeDateFormat`, that sets a range of different FullCalendar and localization settings.
 
@@ -234,9 +230,11 @@ See `/examples/local-preset.htm`
 
 ```javascript
 localization: {
-  timeDateFormat: '12h-mdy-sun', // Default, alternative mode "24h-dmy-mon",
+  showTimezoneHelper: true, // Should the timezone difference helper (bottom) be shown?
+  timeDateFormat: '12h-mdy-sun', // US-style per default. For EU-style formatting, use '24h-dmy-mon'
   bookingDateFormat: 'MMMM D, YYYY', // Override the default date format on the booking page
   bookingTimeFormat: 'h:mma' // Override the default time format on the booking page
+  strings: { ... } // See below
 },
 ```
 
@@ -255,7 +253,24 @@ localization: {
 }
 ```
 
-### Booking form fields
+If you're using the widget in another language, you might want to customize the text strings used in e.g. submit button and success message. This can be done in the `localization.strings` key.
+
+See `/examples/local-strings.htm`
+
+```javascript
+localization: {
+  strings: { // Customize string used in the widget, defaults are shown below
+    submitText: 'Book it',
+    successMessageTitle: 'Thanks!',
+    timezoneHelperLoading: 'Loading..',
+    timezoneHelperDifferent: 'Your timezone is %s hours %s of %s (calendar shown in your local time)',
+    timezoneHelperSame: 'You are in the same timezone as %s',
+    successMessageBody: 'An invitation has been sent to: <br /> %s <br /><br /> Please accept the invitation to confirm the booking. <br /><br />Have a great day!'
+  }
+}
+```
+
+### - `bookingFields`
 
 You can customize the booking form fields and their settings in this section. Only the `name`, `email` and `comment` fields are enabled by default. The `name` and `email` fields have to be enabled and is always required (for the event creation to work properly). All other fields can be enabled/disabled.
 
@@ -306,19 +321,46 @@ bookingFields: {
 }
 ```
 
+### - `callbacks`
+
+You can hook into events happening throughout the user flow and perform asynchronous events. This is especially powerful for saving user data to your CRM system or redirect users to a payment gateway after booking is finished.
+
+Inspect to source code to learn more about in which order callbacks are fired. Complete list:
+
+```javascript
+callbacks: {
+  findTimeStarted:          function(args) {},
+  findTimeSuccessful:       function(response) {},
+  findTimeFailed:           function(response) {},
+  createBookingStarted:     function(args) {},
+  createBookingSuccessful:  function(response) {},
+  createBookingFailed:      function(response) {},
+  getUserTimezoneStarted:   function(args) {},
+  getUserTimezoneSuccessful:function(response) {},
+  getUserTimezoneFailed:    function(response) {},
+  fullCalendarInitialized:  function() {},
+  renderCompleted:          function() {},
+  showBookingPage:          function(event) {},
+  closeBookingPage:         function() {},
+  submitBookingForm:        function(values) {}
+}
+```
+
 ## Methods
 
 After you instantiated the widget, you can control it with the following methods:
 
 ```javascript
 var widget = new TimekitBooking();
-widget.init(config);          // Initalizes the widget with the given config
+widget.init(config);          // Initializes the widget with the given config
 widget.render();              // Re-renders the widget with it's instance config
 widget.setConfig(config);     // Push a new config into it (call render() afterwards)
 widget.getConfig();           // Returns the current config
 widget.destroy();             // Cleans the DOM element and empty config
 widget.fullCalendar(action);  // Direct access to FullCalendar's own method (for advanced use)
 ```
+
+*Only available when your using the instantiation approach and not autoload*
 
 ## Roadmap/todos
 

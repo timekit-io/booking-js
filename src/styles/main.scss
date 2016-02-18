@@ -224,11 +224,17 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
       }
 
       .title {
-        font-weight: 600;
+        font-size: 20px;
+        display: block;
+        margin-bottom: 25px;
       }
 
-      .booked-email {
-        color: $textLightColor;
+      .body {
+        display: block;
+
+        .booked-email {
+          color: $textLightColor;
+        }
       }
     }
 

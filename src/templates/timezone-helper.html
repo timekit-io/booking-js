@@ -3,16 +3,16 @@
   {{& timezoneIcon }}
 
   {{# loading }}
-    <span>Loading...</span>
+    <span>{{ loadingText }}</span>
   {{/ loading }}
 
   {{^ loading }}
     {{# timezoneDifference }}
-      <span>Your timezone is {{ timezoneOffset }} hours {{ timezoneDirection }} of {{ hostName }} (calendar shown in your local time)</span>
+      <span>{{ timezoneDifferent }}</span>
     {{/ timezoneDifference }}
 
     {{^ timezoneDifference }}
-      <span>You are in the same timezone as {{ hostName }}</span>
+      <span>{{ timezoneSame }}</span>
     {{/ timezoneDifference }}
   {{/ loading }}
 

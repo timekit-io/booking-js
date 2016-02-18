@@ -283,32 +283,32 @@ See `/examples/fields.htm`
 ```javascript
 bookingFields: {
   name: {
-    placeholder: 'Your full name',
+    placeholder: 'Full name',
     prefilled: false,
     locked: false
   },
   email: {
-    placeholder: 'Your e-mail',
+    placeholder: 'E-mail',
     prefilled: false,
     locked: false
   },
   comment: {
     enabled: true,
-    placeholder: 'Write a comment',
+    placeholder: 'Comment',
     prefilled: false,
     required: false,
     locked: false
   },
   phone: {
     enabled: false,
-    placeholder: 'Your phone number',
+    placeholder: 'Phone number',
     prefilled: false,
     required: false,
     locked: false
   },
   voip: {
     enabled: false,
-    placeholder: 'Your Skype username',
+    placeholder: 'Skype username',
     prefilled: false,
     required: false,
     locked: false

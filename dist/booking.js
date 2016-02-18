@@ -491,9 +491,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	
 	    if (config.bookingFields.location.enabled) { args.event.where = data.location; }
-	    if (config.bookingFields.comment.enabled) {  args.event.description = data.comment; }
-	    if (config.bookingFields.phone.enabled) {    args.customer.phone = data.phone; }
-	    if (config.bookingFields.voip.enabled) {     args.customer.voip = data.voip; }
+	    if (config.bookingFields.comment.enabled) {
+	      args.event.description += config.bookingFields.comment.placeholder + ': ' + data.comment + '\n';
+	    }
+	    if (config.bookingFields.phone.enabled) {
+	      args.customer.phone = data.phone;
+	      args.event.description += config.bookingFields.phone.placeholder + ': ' + data.phone + '\n';
+	    }
+	    if (config.bookingFields.voip.enabled) {
+	      args.customer.voip = data.voip;
+	      args.event.description += config.bookingFields.voip.placeholder + ': ' + data.voip + '\n';
+	    }
 	
 	    $.extend(true, args, config.timekitCreateBooking);
 	
@@ -552,11 +560,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    var finalConfig = $.extend(true, {}, presetsConfig, newConfig);
 	
-	    // Apply bookingMode presets
+	    // Apply bookingGraph presets
 	    presetsConfig = {};
-	    if(newConfig.bookingMode === 'instant') {
+	    if(newConfig.bookingGraph === 'instant') {
 	      presetsConfig = defaultConfig.presets.bookingInstant;
-	    } else if(newConfig.bookingMode === 'confirm_decline') {
+	    } else if(newConfig.bookingGraph === 'confirm_decline') {
 	      presetsConfig = defaultConfig.presets.bookingConfirmDecline;
 	    }
 	    finalConfig = $.extend(true, {}, presetsConfig, finalConfig);
@@ -20979,35 +20987,35 @@ return /******/ (function(modules) { // webpackBootstrap
 	  includeStyles: true,
 	  showCredits: true,
 	  goToFirstEvent: true,
-	  bookingMode: 'instant',
+	  bookingGraph: 'instant',
 	  bookingFields: {
 	    name: {
-	      placeholder: 'Your full name',
+	      placeholder: 'Full name',
 	      prefilled: false,
 	      locked: false
 	    },
 	    email: {
-	      placeholder: 'Your e-mail',
+	      placeholder: 'E-mail',
 	      prefilled: false,
 	      locked: false
 	    },
 	    comment: {
 	      enabled: true,
-	      placeholder: 'Write a comment (optional)',
+	      placeholder: 'Comment',
 	      prefilled: false,
 	      required: false,
 	      locked: false
 	    },
 	    phone: {
 	      enabled: false,
-	      placeholder: 'Your phone number',
+	      placeholder: 'Phone number',
 	      prefilled: false,
 	      required: false,
 	      locked: false
 	    },
 	    voip: {
 	      enabled: false,
-	      placeholder: 'Your Skype username',
+	      placeholder: 'Skype username',
 	      prefilled: false,
 	      required: false,
 	      locked: false
@@ -21060,7 +21068,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	};
 	
-	// Preset: bookingMode = 'instant'
+	// Preset: bookingGraph = 'instant'
 	var bookingInstant = {
 	
 	  timekitCreateBooking: {
@@ -21080,7 +21088,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	};
 	
-	// Preset: bookingMode = 'confirm_decline'
+	// Preset: bookingGraph = 'confirm_decline'
 	var bookingConfirmDecline = {
 	
 	  timekitCreateBooking: {

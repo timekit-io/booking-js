@@ -48,14 +48,14 @@ describe('Booking fields', function() {
         var phoneInput = $('.input-phone');
         expect(phoneInput).toBeInDOM();
         expect(phoneInput).toBeVisible();
-        expect(phoneInput.attr('placeholder')).toBe('Your phone number');
+        expect(phoneInput.attr('placeholder')).toBe('Phone number');
         expect(phoneInput.attr('required')).toBe(undefined);
         expect(phoneInput.val()).toBe('');
 
         var voipInput = $('.input-voip');
         expect(voipInput).toBeInDOM();
         expect(voipInput).toBeVisible();
-        expect(voipInput.attr('placeholder')).toBe('Your Skype username');
+        expect(voipInput.attr('placeholder')).toBe('Skype username');
         expect(voipInput.attr('required')).toBe(undefined);
         expect(voipInput.val()).toBe('');
 
@@ -187,7 +187,7 @@ describe('Booking fields', function() {
           var request = jasmine.Ajax.requests.mostRecent();
 
           var requestDescription = JSON.parse(request.params).event.description
-          expect(requestDescription).toBe(config.bookingFields.comment.prefilled);
+          expect(requestDescription).toBe('Comment: ' + config.bookingFields.comment.prefilled + '\n');
 
           done();
 

@@ -13,35 +13,35 @@ var primary = {
   includeStyles: true,
   showCredits: true,
   goToFirstEvent: true,
-  bookingMode: 'instant',
+  bookingGraph: 'instant',
   bookingFields: {
     name: {
-      placeholder: 'Your full name',
+      placeholder: 'Full name',
       prefilled: false,
       locked: false
     },
     email: {
-      placeholder: 'Your e-mail',
+      placeholder: 'E-mail',
       prefilled: false,
       locked: false
     },
     comment: {
       enabled: true,
-      placeholder: 'Write a comment (optional)',
+      placeholder: 'Comment',
       prefilled: false,
       required: false,
       locked: false
     },
     phone: {
       enabled: false,
-      placeholder: 'Your phone number',
+      placeholder: 'Phone number',
       prefilled: false,
       required: false,
       locked: false
     },
     voip: {
       enabled: false,
-      placeholder: 'Your Skype username',
+      placeholder: 'Skype username',
       prefilled: false,
       required: false,
       locked: false
@@ -94,7 +94,7 @@ var primary = {
 
 };
 
-// Preset: bookingMode = 'instant'
+// Preset: bookingGraph = 'instant'
 var bookingInstant = {
 
   timekitCreateBooking: {
@@ -114,7 +114,7 @@ var bookingInstant = {
 
 };
 
-// Preset: bookingMode = 'confirm_decline'
+// Preset: bookingGraph = 'confirm_decline'
 var bookingConfirmDecline = {
 
   timekitCreateBooking: {

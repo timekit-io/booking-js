@@ -58,7 +58,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	/*!
 	 * Booking.js
-	 * Version: 1.6.0
+	 * Version: 1.7.0
 	 * http://booking.timekit.io
 	 *
 	 * Copyright 2015 Timekit, Inc.
@@ -20919,7 +20919,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  doCallback: function(hook, config, arg, deprecated) {
 	    if(this.isFunction(config.callbacks[hook])) {
 	      config.callbacks[hook](arg);
-	      if (deprecated) this.logDeprecated(hook + ' callback has been replaced, please see docs')
+	      if (deprecated) { this.logDeprecated(hook + ' callback has been replaced, please see docs'); }
 	    }
 	  },
 	

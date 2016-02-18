@@ -1,6 +1,6 @@
 {
   "name": "timekit-booking",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "Make a beautiful embeddable booking widget in minutes",
   "main": "dist/booking.js",
   "repository": {

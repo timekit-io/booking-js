@@ -16,15 +16,14 @@
       var widget = new TimekitBooking();
       widget.init({
         name:     'Doc Brown',
-        email:    'timebirdcphtest@gmail.com',
-        apiToken: 'password',
-        calendar: '9e8c23de-43b7-4fdd-8f4b-18a9e9fcb226',
+        email:    'marty.mcfly@timekit.io',
+        apiToken: 'XT1JO879JF1qUXXzmETD5ucgxaDwsFsd',
+        calendar: '22f86f0c-ee80-470c-95e8-dadd9d05edd2',
         avatar:   '../misc/avatar-doc.jpg',
         timekitConfig: {
-          app: 'timebird',
-          apiBaseUrl: 'http://api-localhost.timekit.io/'
+          app: 'bookingjs-demo'
         },
-        bookingMode: 'confirm_decline',
+        bookingGraph: 'confirm_decline',
         bookingFields: {
           'phone': {
             enabled: true
@@ -34,7 +33,7 @@
           timeDateFormat: '24h-dmy-mon'
         },
         callbacks: {
-          createEventSuccessful: function (data) { console.log('createEventSuccessful', data) },
+          createEventSuccessful: function (data) { console.log('createEventSuccessful deprecated', data) },
           createBookingSuccessful: function (data) { console.log('createBookingSuccessful', data) }
         }
       });

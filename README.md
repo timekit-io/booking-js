@@ -107,7 +107,7 @@ Booking.js is made for various use-cases, so it's really extensible and customiz
   includeStyles:            true, // Inject fullCalendar and library styles in <head>
   showCredits:              true, // Display a "Powered by Timekit" attribution footer (thanks!)
   goToFirstEvent:           true, // Display and scroll to the first upcoming event in the calendar (to avoid showing a blank calendar)
-  bookingMode:              'instant', // Set which booking flow graph that should be used (also supports "confirm_decline", see below)
+  bookingGraph:              'instant', // Set which booking flow graph that should be used (also supports "confirm_decline", see below)
 
   // Timekit JS SDK (see below)
   timekitConfig:            { ... },
@@ -167,11 +167,13 @@ At the time of writing, Timekit supports two graphs:
 1) `instant` - automatically confirm any incoming bookings, save it to calendar and send out notifications  
 2) `confirm_decline` - creates the booking as tentative and send notification to owner with confirm/decline actions  
 
-These can be set using the `bookingMode` config key on the root config level.
+These can be set using the `bookingGraph` config key on the root config level.
+
+You can override specific endpoint settings like so:
 
 ```javascript
 timekitCreateBooking: {
-  graph:          'instant',       // Inserted based on "bookingMode" specified. See description above on flow graph
+  graph:          'instant',       // Inserted based on "bookingGraph" specified. See description above on flow graph
   action:         'confirm',       // If "instant" graph is chosen, it will instantly perform the "confirm" action. See description above on flow graph
   event: {    
     where:        'Online',        // Default, you may want to customize this to a specific location, TBD or whatever fits
@@ -262,10 +264,10 @@ localization: {
   strings: { // Customize string used in the widget, defaults are shown below
     submitText: 'Book it',
     successMessageTitle: 'Thanks!',
+    successMessageBody: 'An invitation has been sent to: <br /> %s <br /><br /> Please accept the invitation to confirm the booking.',
     timezoneHelperLoading: 'Loading..',
     timezoneHelperDifferent: 'Your timezone is %s hours %s of %s (calendar shown in your local time)',
-    timezoneHelperSame: 'You are in the same timezone as %s',
-    successMessageBody: 'An invitation has been sent to: <br /> %s <br /><br /> Please accept the invitation to confirm the booking. <br /><br />Have a great day!'
+    timezoneHelperSame: 'You are in the same timezone as %s'
   }
 }
 ```
@@ -292,7 +294,7 @@ bookingFields: {
   },
   comment: {
     enabled: true,
-    placeholder: 'Write a comment (optional)',
+    placeholder: 'Write a comment',
     prefilled: false,
     required: false,
     locked: false

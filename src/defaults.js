@@ -108,7 +108,7 @@ var bookingInstant = {
   },
   localization: {
     strings: {
-      successMessageBody: 'An invitation has been sent to: <br /> %s <br /><br /> Please accept the invitation to confirm the booking. <br /><br />Have a great day!'
+      successMessageBody: 'An invitation has been sent to: <br /> %s <br /><br /> Please accept the invitation to confirm the booking.'
     }
   }
 

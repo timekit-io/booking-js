@@ -384,7 +384,7 @@ function TimekitBooking() {
       utils.doCallback('createBookingSuccessful', config, response);
 
       // Call deprecated callback
-      var responseDeprecated = response;
+      var responseDeprecated = $.extend(response);
       responseDeprecated.data = response.data.attributes.event_info;
       utils.doCallback('createEventSuccessful', config, responseDeprecated, true);
 

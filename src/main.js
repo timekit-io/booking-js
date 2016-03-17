@@ -53,10 +53,16 @@ function TimekitBooking() {
 
   };
 
-  // Setup the Timekit SDK with correct credentials
-  var timekitSetup = function() {
+  // Setup the Timekit SDK with correct config
+  var timekitSetupConfig = function() {
 
     timekit.configure(config.timekitConfig);
+
+  };
+
+  // Setup the Timekit SDK with correct credentials
+  var timekitSetupUser = function() {
+
     timekit.setUser(config.email, config.apiToken);
 
   };
@@ -64,7 +70,12 @@ function TimekitBooking() {
   // Fetch availabile time through Timekit SDK
   var timekitFindTime = function() {
 
-    var args = { emails: [config.email] };
+    var args = {};
+
+    // Only add email to findtime if no calendars or users are explicitly specified
+    if (!config.timekitFindTime.calendar_ids && !config.timekitFindTime.user_ids) {
+      args.emails = [config.email];
+    }
     $.extend(args, config.timekitFindTime);
 
     utils.doCallback('findTimeStarted', config, args);
@@ -480,7 +491,12 @@ function TimekitBooking() {
 
   };
 
-  // Set configs and defaults
+  // Set config defaults
+  var setConfigDefaults = function(suppliedConfig) {
+    return $.extend(true, {}, defaultConfig.primary, suppliedConfig);
+  }
+
+  // Setup config
   var setConfig = function(suppliedConfig) {
 
     // Check whether a config is supplied
@@ -493,7 +509,7 @@ function TimekitBooking() {
     }
 
     // Extend the default config with supplied settings
-    var newConfig = $.extend(true, {}, defaultConfig.primary, suppliedConfig);
+    var newConfig = setConfigDefaults(suppliedConfig);
 
     // Apply timeDateFormat presets
     var presetsConfig = {};
@@ -535,11 +551,15 @@ function TimekitBooking() {
   // Render method
   var render = function() {
 
+    // Include library styles if enabled
+    includeStyles();
+
     // Set rootTarget to the target element and clean before child nodes before continuing
     prepareDOM();
 
     // Setup Timekit SDK config
-    timekitSetup();
+    timekitSetupConfig();
+    timekitSetupUser();
 
     // Initialize FullCalendar
     initializeCalendar();
@@ -571,17 +591,38 @@ function TimekitBooking() {
   // Initilization method
   var init = function(suppliedConfig) {
 
-    // Handle config and defaults
-    setConfig(suppliedConfig);
-
-    // Include library styles if enabled
-    if (config.includeStyles) {
-      includeStyles();
+    // Start from local config
+    if (!suppliedConfig.widgetId) {
+      return start(suppliedConfig)
     }
 
-    return render();
+    // Load remote config
+    return loadRemoteConfig(suppliedConfig)
+    .then(function (response) {
+      var mergedConfig = $.extend(true, {}, response.data.config, suppliedConfig);
+      start(mergedConfig)
+    })
+    .catch(function (response) {
+      utils.logError('The supplied widgetId could not be found');
+    })
 
   };
+
+  var loadRemoteConfig = function(suppliedConfig) {
+
+    config = setConfigDefaults(suppliedConfig)
+    timekitSetupConfig();
+    return timekit.getPublicWidget({ slug: suppliedConfig.widgetId })
+
+  }
+
+  var start = function(suppliedConfig) {
+
+    // Handle config and defaults
+    setConfig(suppliedConfig);
+    return render();
+
+  }
 
   var destroy = function() {
 

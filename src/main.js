@@ -592,7 +592,7 @@ function TimekitBooking() {
   var init = function(suppliedConfig) {
 
     // Start from local config
-    if (!suppliedConfig.widgetId) {
+    if (!suppliedConfig.widgetId && !suppliedConfig.widgetSlug) {
       return start(suppliedConfig)
     }
 
@@ -602,17 +602,28 @@ function TimekitBooking() {
       var mergedConfig = $.extend(true, {}, response.data.config, suppliedConfig);
       start(mergedConfig)
     })
-    .catch(function (response) {
-      utils.logError('The supplied widgetId could not be found');
-    })
 
   };
 
+  // Load config from remote (embed or hosted)
   var loadRemoteConfig = function(suppliedConfig) {
 
     config = setConfigDefaults(suppliedConfig)
     timekitSetupConfig();
-    return timekit.getPublicWidget({ slug: suppliedConfig.widgetId })
+    if (suppliedConfig.widgetId) {
+      return timekit
+      .getEmbedWidget({ id: suppliedConfig.widgetId })
+      .catch(function (response) {
+        utils.logError('The widget could not be found, please double-check your widgetId');
+      })
+    }
+    if (suppliedConfig.widgetSlug) {
+      return timekit
+      .getHostedWidget({ slug: suppliedConfig.widgetSlug })
+      .catch(function (response) {
+        utils.logError('The widget could not be found, please double-check your widgetSlug');
+      })
+    }
 
   }
 

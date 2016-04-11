@@ -537,10 +537,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Render the powered by Timekit message
 	  var renderPoweredByMessage = function(pageTarget) {
 	
+	    var campaignName = 'widget'
+	    var campaignSource = window.location.hostname.replace(/\./g, '-')
+	    if (config.widgetSlug) campaignName = 'hosted-widget'
+	    if (config.widgetId) campaignName = 'embedded-widget'
+	
 	    var template = __webpack_require__(57);
 	    var hourLogo = __webpack_require__(58);
 	    var poweredTarget = $(template.render({
-	      hourLogo: hourLogo
+	      hourLogo: hourLogo,
+	      campaignName: campaignName,
+	      campaignSource: campaignSource
 	    }));
 	
 	    pageTarget.append(poweredTarget);
@@ -22817,7 +22824,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	var H = __webpack_require__(46);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"hourwidget-poweredby\">");t.b("\n" + i);t.b("  <a href=\"http://hourhq.com\" target=\"_blank\">");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("hourLogo",c,p,0)));t.b("\n" + i);t.b("    <span>Powered by Hour</span>");t.b("\n" + i);t.b("  </a>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"hourwidget-poweredby\">\n  <a href=\"http://hourhq.com\" target=\"_blank\">\n    {{& hourLogo }}\n    <span>Powered by Hour</span>\n  </a>\n</div>\n", H);return T; }();
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"hourwidget-poweredby\">");t.b("\n" + i);t.b("  <a href=\"http://hourhq.com?utm_medium=link&utm_source=");t.b(t.v(t.f("campaignSource",c,p,0)));t.b("&utm_campaign=");t.b(t.v(t.f("campaignName",c,p,0)));t.b("&utm_content=powered-by\" target=\"_blank\">");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("hourLogo",c,p,0)));t.b("\n" + i);t.b("    <span>Powered by Hour</span>");t.b("\n" + i);t.b("  </a>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"hourwidget-poweredby\">\n  <a href=\"http://hourhq.com?utm_medium=link&utm_source={{ campaignSource }}&utm_campaign={{ campaignName }}&utm_content=powered-by\" target=\"_blank\">\n    {{& hourLogo }}\n    <span>Powered by Hour</span>\n  </a>\n</div>\n", H);return T; }();
 
 /***/ },
 /* 58 */

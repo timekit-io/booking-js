@@ -481,10 +481,17 @@ function HourWidget() {
   // Render the powered by Timekit message
   var renderPoweredByMessage = function(pageTarget) {
 
+    var campaignName = 'widget'
+    var campaignSource = window.location.hostname.replace(/\./g, '-')
+    if (config.widgetSlug) campaignName = 'hosted-widget'
+    if (config.widgetId) campaignName = 'embedded-widget'
+
     var template = require('./templates/poweredby.html');
     var hourLogo = require('!svg-inline!./assets/hour-logo.svg');
     var poweredTarget = $(template.render({
-      hourLogo: hourLogo
+      hourLogo: hourLogo,
+      campaignName: campaignName,
+      campaignSource: campaignSource
     }));
 
     pageTarget.append(poweredTarget);

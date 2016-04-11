@@ -30,7 +30,7 @@ describe('Initialization regular', function() {
 
   it('should be able init and display the widget with instance pattern', function() {
 
-    var widget = new TimekitBooking();
+    var widget = new HourWidget();
     widget.init(baseConfig);
 
     expect(widget).toBeDefined();
@@ -42,7 +42,7 @@ describe('Initialization regular', function() {
 
   it('should be able init and display the widget with singleton pattern', function() {
 
-    TimekitBooking().init(baseConfig);
+    HourWidget().init(baseConfig);
 
     expect($('.bookingjs-calendar')).toBeInDOM();
 
@@ -75,7 +75,7 @@ describe('Initialization minified', function() {
 
   it('should be able init and display the widget with instance pattern', function() {
 
-    var widget = new TimekitBooking();
+    var widget = new HourWidget();
     widget.init(baseConfig);
 
     expect(widget).toBeDefined();

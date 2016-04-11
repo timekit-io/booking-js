@@ -3,7 +3,7 @@
 [![Circle CI](https://img.shields.io/circleci/project/timekit-io/booking-js.svg)](https://circleci.com/gh/timekit-io/booking-js)
 [![Codacy Badge](https://api.codacy.com/project/badge/grade/feb445801acf454a95b1690a75959893)](https://www.codacy.com/app/laander/booking-js)
 
-**Latest release:**  [v1.7.0](https://github.com/timekit-io/booking-js/releases)
+**Latest release:**  [v2.0.0](https://github.com/timekit-io/booking-js/releases)
 
 > Make a beautiful embeddable booking widget in minutes.
 
@@ -66,7 +66,7 @@ If you intent to run multiple instances or want more control, just create a new 
   <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
   <script type="text/javascript" src="//cdn.timekit.io/booking-js/v1/booking.min.js"></script>
   <script type="text/javascript">
-    var widget = new TimekitBooking();
+    var widget = new HourWidget();
     widget.init({
       email:    'marty.mcfly@timekit.io',
       apiToken: 'bNpbFHRmrfZbtS5nEtCVl8sY5vUkOFCL',
@@ -139,7 +139,7 @@ You can pass any of the [Timekit JS SDK](https://github.com/timekit-io/js-sdk) s
 
 ```javascript
 timekitConfig: {
-  app:          'bookingjs' // Default
+  app:          'hour-embed' // Default
 }
 ```
 
@@ -353,7 +353,7 @@ callbacks: {
 After you instantiated the widget, you can control it with the following methods:
 
 ```javascript
-var widget = new TimekitBooking();
+var widget = new HourWidget();
 widget.init(config);          // Initializes the widget with the given config
 widget.render();              // Re-renders the widget with it's instance config
 widget.setConfig(config);     // Push a new config into it (call render() afterwards)

@@ -22,7 +22,7 @@ describe('Config loading', function() {
 
   it('should be able to load remote config with slug', function(done) {
 
-    var widget = new TimekitBooking();
+    var widget = new HourWidget();
     var config = {
       widgetSlug: 'my-widget-slug'
     };
@@ -45,7 +45,7 @@ describe('Config loading', function() {
 
   it('should be able to load remote config with id', function(done) {
 
-    var widget = new TimekitBooking();
+    var widget = new HourWidget();
     var config = {
       widgetId: '12345'
     };

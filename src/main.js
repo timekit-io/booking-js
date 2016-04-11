@@ -2,7 +2,7 @@
 
 /*!
  * Hour Widget
- * Version: 1.7.0
+ * Version: 2.0.0
  * http://booking.timekit.io
  *
  * Copyright 2015 Timekit, Inc.
@@ -23,7 +23,7 @@ var utils         = require('./utils');
 var defaultConfig = require('./defaults');
 
 // Main library
-function TimekitBooking() {
+function HourWidget() {
 
   // Library config
   var config = {};
@@ -666,10 +666,10 @@ function TimekitBooking() {
 // Autoload if config is available on window, else export function
 if (window && window.hourWidgetConfig && window.hourWidgetConfig.autoload !== false) {
   $(window).load(function(){
-    var instance = new TimekitBooking();
+    var instance = new HourWidget();
     instance.init(window.hourWidgetConfig);
     module.exports = instance;
   });
 } else {
-  module.exports = TimekitBooking;
+  module.exports = HourWidget;
 }

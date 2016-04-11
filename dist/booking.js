@@ -4,9 +4,9 @@
 	else if(typeof define === 'function' && define.amd)
 		define(["jQuery"], factory);
 	else if(typeof exports === 'object')
-		exports["TimekitBooking"] = factory(require("jQuery"));
+		exports["HourWidget"] = factory(require("jQuery"));
 	else
-		root["TimekitBooking"] = factory(root["jQuery"]);
+		root["HourWidget"] = factory(root["jQuery"]);
 })(this, function(__WEBPACK_EXTERNAL_MODULE_1__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
@@ -79,7 +79,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var defaultConfig = __webpack_require__(33);
 	
 	// Main library
-	function TimekitBooking() {
+	function HourWidget() {
 	
 	  // Library config
 	  var config = {};
@@ -722,12 +722,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Autoload if config is available on window, else export function
 	if (window && window.hourWidgetConfig && window.hourWidgetConfig.autoload !== false) {
 	  $(window).load(function(){
-	    var instance = new TimekitBooking();
+	    var instance = new HourWidget();
 	    instance.init(window.hourWidgetConfig);
 	    module.exports = instance;
 	  });
 	} else {
-	  module.exports = TimekitBooking;
+	  module.exports = HourWidget;
 	}
 
 
@@ -21238,11 +21238,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	
 	  logError: function(message) {
-	    console.error('TimekitBooking Error: ' + message);
+	    console.error('HourWidget Error: ' + message);
 	  },
 	
 	  logDeprecated: function(message) {
-	    console.warn('TimekitBooking Deprecated: ' + message);
+	    console.warn('HourWidget Deprecated: ' + message);
 	  }
 	
 	};

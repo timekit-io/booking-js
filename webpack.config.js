@@ -9,7 +9,7 @@ module.exports = {
         path: './dist',
         filename: 'hour-widget.js',
         libraryTarget: 'umd',
-        library: 'TimekitBooking'
+        library: 'HourWidget'
     },
     externals: {
         'jquery': 'jQuery'

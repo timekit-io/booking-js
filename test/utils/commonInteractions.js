@@ -19,7 +19,7 @@ module.exports = {
     $('.input-name').val(data.name);
     $('.input-email').val(data.email);
     $('.input-comment').val(data.comment);
-    $('.bookingjs-form-button').click();
+    $('.hourwidget-form-button').click();
     return data;
   }
 

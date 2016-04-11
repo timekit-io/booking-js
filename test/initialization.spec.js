@@ -36,7 +36,7 @@ describe('Initialization regular', function() {
     expect(widget).toBeDefined();
     expect(widget.getConfig()).toBeDefined();
 
-    expect($('.bookingjs-calendar')).toBeInDOM();
+    expect($('.hourwidget-calendar')).toBeInDOM();
 
   });
 
@@ -44,7 +44,7 @@ describe('Initialization regular', function() {
 
     HourWidget().init(baseConfig);
 
-    expect($('.bookingjs-calendar')).toBeInDOM();
+    expect($('.hourwidget-calendar')).toBeInDOM();
 
   });
 
@@ -81,7 +81,7 @@ describe('Initialization minified', function() {
     expect(widget).toBeDefined();
     expect(widget.getConfig()).toBeDefined();
 
-    expect($('.bookingjs-calendar')).toBeInDOM();
+    expect($('.hourwidget-calendar')).toBeInDOM();
 
   });
 

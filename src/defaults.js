@@ -55,7 +55,7 @@ var primary = {
     }
   },
   timekitConfig: {
-    app: 'bookingjs'
+    app: 'hour-embed'
   },
   timekitFindTime: {
     future: '4 weeks',

@@ -3,7 +3,7 @@
 /*!
  * Hour Widget
  * Version: 2.0.0
- * http://booking.timekit.io
+ * http://hourhq.com
  *
  * Copyright 2015 Timekit, Inc.
  * Hour Widget is freely distributable under the MIT license.
@@ -48,7 +48,7 @@ function HourWidget() {
     if (rootTarget.length === 0) {
       utils.logError('No target DOM element was found (' + config.targetEl + ')');
     }
-    rootTarget.addClass('bookingjs');
+    rootTarget.addClass('hourwidget');
     rootTarget.children(':not(script)').remove();
 
   };
@@ -217,7 +217,7 @@ function HourWidget() {
 
     $.extend(true, args, config.fullCalendar);
 
-    calendarTarget = $('<div class="bookingjs-calendar empty-calendar">');
+    calendarTarget = $('<div class="hourwidget-calendar empty-calendar">');
     rootTarget.append(calendarTarget);
 
     calendarTarget.fullCalendar(args);
@@ -319,12 +319,12 @@ function HourWidget() {
       formFields: fieldsTemplate
     }));
 
-    bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
+    bookingPageTarget.children('.hourwidget-bookpage-close').click(function(e) {
       e.preventDefault();
       hideBookingPage();
     });
 
-    var form = bookingPageTarget.children('.bookingjs-form');
+    var form = bookingPageTarget.children('.hourwidget-form');
 
     form.submit(function(e) {
       submitBookingForm(this, e);
@@ -372,7 +372,7 @@ function HourWidget() {
 
     // Abort if form is submitting, have submitted or does not validate
     if(formElement.hasClass('loading') || formElement.hasClass('success') || formElement.hasClass('error') || !e.target.checkValidity()) {
-      var submitButton = formElement.find('.bookingjs-form-button');
+      var submitButton = formElement.find('.hourwidget-form-button');
       submitButton.addClass('button-shake');
       setTimeout(function() {
         submitButton.removeClass('button-shake');
@@ -409,7 +409,7 @@ function HourWidget() {
       // Call deprecated callback
       utils.doCallback('createEventFailed', config, response, true);
 
-      var submitButton = formElement.find('.bookingjs-form-button');
+      var submitButton = formElement.find('.hourwidget-form-button');
       submitButton.addClass('button-shake');
       setTimeout(function() {
         submitButton.removeClass('button-shake');

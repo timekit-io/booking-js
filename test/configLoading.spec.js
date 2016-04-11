@@ -36,7 +36,7 @@ describe('Config loading', function() {
 
       expect(request.url).toBe('https://api.timekit.io/v2/widgets/hosted/my-widget-slug');
       expect(widget.getConfig().email).toBeDefined();
-      expect($('.bookingjs-calendar')).toBeInDOM();
+      expect($('.hourwidget-calendar')).toBeInDOM();
       done();
 
     }, 50)
@@ -59,7 +59,7 @@ describe('Config loading', function() {
 
       expect(request.url).toBe('https://api.timekit.io/v2/widgets/embed/12345');
       expect(widget.getConfig().email).toBeDefined();
-      expect($('.bookingjs-calendar')).toBeInDOM();
+      expect($('.hourwidget-calendar')).toBeInDOM();
       done();
 
     }, 50)

@@ -1,12 +1,12 @@
 'use strict';
 
 /*
- * Default configuration for for Booking.js
+ * Default configuration
  */
 
 var primary = {
 
-  targetEl: '#bookingjs',
+  targetEl: '#hourwidget',
   name: '',
   avatar: '',
   autoload: true,

@@ -20,11 +20,11 @@ describe('Config loading', function() {
     jasmine.Ajax.uninstall();
   });
 
-  it('should be able to load remote config', function(done) {
+  it('should be able to load remote config with slug', function(done) {
 
     var widget = new TimekitBooking();
     var config = {
-      widgetId: 'my-widget-slug'
+      widgetSlug: 'my-widget-slug'
     };
     widget.init(config);
 
@@ -34,7 +34,30 @@ describe('Config loading', function() {
 
       var request = jasmine.Ajax.requests.first();
 
-      expect(request.url).toBe('https://api.timekit.io/v2/widgets/public/my-widget-slug');
+      expect(request.url).toBe('https://api.timekit.io/v2/widgets/hosted/my-widget-slug');
+      expect(widget.getConfig().email).toBeDefined();
+      expect($('.bookingjs-calendar')).toBeInDOM();
+      done();
+
+    }, 50)
+  });
+
+
+  it('should be able to load remote config with id', function(done) {
+
+    var widget = new TimekitBooking();
+    var config = {
+      widgetId: '12345'
+    };
+    widget.init(config);
+
+    expect(widget).toBeDefined();
+
+    setTimeout(function() {
+
+      var request = jasmine.Ajax.requests.first();
+
+      expect(request.url).toBe('https://api.timekit.io/v2/widgets/embed/12345');
       expect(widget.getConfig().email).toBeDefined();
       expect($('.bookingjs-calendar')).toBeInDOM();
       done();

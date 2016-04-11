@@ -24,7 +24,7 @@ describe('Initialization regular', function() {
 
     expect(window).toBeDefined();
     expect($).toBeDefined();
-    expect($('#bookingjs')).toBeInDOM();
+    expect($('#hourwidget')).toBeInDOM();
 
   });
 
@@ -69,7 +69,7 @@ describe('Initialization minified', function() {
 
     expect(window).toBeDefined();
     expect($).toBeDefined();
-    expect($('#bookingjs')).toBeInDOM();
+    expect($('#hourwidget')).toBeInDOM();
 
   });
 

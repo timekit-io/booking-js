@@ -3,7 +3,7 @@
 require('console-polyfill');
 
 /*
- * Utily functions for Booking.js
+ * Utily functions
  */
 
 module.exports = {

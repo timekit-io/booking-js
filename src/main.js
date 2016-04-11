@@ -1,12 +1,12 @@
 'use strict';
 
 /*!
- * Booking.js
+ * Hour Widget
  * Version: 1.7.0
  * http://booking.timekit.io
  *
  * Copyright 2015 Timekit, Inc.
- * Timekit Booking.js is freely distributable under the MIT license.
+ * Hour Widget is freely distributable under the MIT license.
  *
  */
 
@@ -501,8 +501,8 @@ function TimekitBooking() {
 
     // Check whether a config is supplied
     if(suppliedConfig === undefined || typeof suppliedConfig !== 'object' || $.isEmptyObject(suppliedConfig)) {
-      if (window.timekitBookingConfig !== undefined) {
-        suppliedConfig = window.timekitBookingConfig;
+      if (window.hourWidgetConfig !== undefined) {
+        suppliedConfig = window.hourWidgetConfig;
       } else {
         utils.logError('No configuration was supplied or found. Please supply a config object upon library initialization');
       }
@@ -664,10 +664,10 @@ function TimekitBooking() {
 }
 
 // Autoload if config is available on window, else export function
-if (window && window.timekitBookingConfig && window.timekitBookingConfig.autoload !== false) {
+if (window && window.hourWidgetConfig && window.hourWidgetConfig.autoload !== false) {
   $(window).load(function(){
     var instance = new TimekitBooking();
-    instance.init(window.timekitBookingConfig);
+    instance.init(window.hourWidgetConfig);
     module.exports = instance;
   });
 } else {

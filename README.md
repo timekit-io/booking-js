@@ -1,4 +1,4 @@
-# Booking.js by Timekit
+# Hour Widget by Timekit
 
 [![Circle CI](https://img.shields.io/circleci/project/timekit-io/booking-js.svg)](https://circleci.com/gh/timekit-io/booking-js)
 [![Codacy Badge](https://api.codacy.com/project/badge/grade/feb445801acf454a95b1690a75959893)](https://www.codacy.com/app/laander/booking-js)
@@ -7,7 +7,7 @@
 
 > Make a beautiful embeddable booking widget in minutes.
 
-![Booking.js Screenshot](misc/widget-screenshot.png)
+![Hour Widget Screenshot](misc/widget-screenshot.png)
 
 Uses *FullCalendar* with a custom theme for dynamic calendar rendering with available timeslots fetched from *Timekit* (through the Javascript SDK). The shown appointment slots can be booked with automatic calendar invites sent to both host and visitor. Integrates with *Google Calendar* for automatic availability.
 
@@ -15,9 +15,9 @@ Maintainer: Lasse Boisen Andersen ([la@timekit.io](mailto:la@timekit.io)). PR's 
 
 ## Get started
 
-**Visit [booking.timekit.io](http://booking.timekit.io) to set up your account and generate a config.**
+**Visit [hourhq.com](http://hourhq.com) to set up your account and generate a config.**
 
-Booking.js is meant as an easy to use, drop-in script that does it's job without any coding required. It's made for the browser and is quite similar to Stripe's Checkout.js.
+Hour Widget is meant as an easy to use, drop-in script that does it's job without any coding required. It's made for the browser and is quite similar to Stripe's Checkout.js.
 
 *This repo is mainly for community contributions and the curious soul that would like to customize the widget beyond settings provided in the wizard.*
 
@@ -40,14 +40,14 @@ To ensure that we can push out updates, improvements and bugfixes to the library
 See `/examples` for implementation examples or use the following:
 
 **Autoload**  
-The simplest and most universally compatible usage is with autoload. This will defer the loading of the library until the whole document has loaded and then look for `window.timekitBookingConfig` - if found, the library is loaded automatically. Note that in single page applications, you should not use this approach.
+The simplest and most universally compatible usage is with autoload. This will defer the loading of the library until the whole document has loaded and then look for `window.hourWidgetConfig` - if found, the library is loaded automatically. Note that in single page applications, you should not use this approach.
 
 ```html
-<div id="bookingjs">
+<div id="hourwidget">
   <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
   <script type="text/javascript" src="//cdn.timekit.io/booking-js/v1/booking.min.js" defer></script>
   <script type="text/javascript">
-    window.timekitBookingConfig = {
+    window.hourWidgetConfig = {
       email:    'marty.mcfly@timekit.io',
       apiToken: 'bNpbFHRmrfZbtS5nEtCVl8sY5vUkOFCL',
       calendar: '8687f058-5b52-4fa4-885c-9294e52ab7d4',
@@ -59,10 +59,10 @@ The simplest and most universally compatible usage is with autoload. This will d
 ```
 
 **Instantiation**  
-If you intent to run multiple instances or want more control, just create a new instance. This is ideal for usage in single page applications like Angular.js, where you'd like a `<div id="bookingjs">` in your template and JS in your controller or directive code.
+If you intent to run multiple instances or want more control, just create a new instance. This is ideal for usage in single page applications like Angular.js, where you'd like a `<div id="hourwidget">` in your template and JS in your controller or directive code.
 
 ```html
-<div id="bookingjs">
+<div id="hourwidget">
   <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
   <script type="text/javascript" src="//cdn.timekit.io/booking-js/v1/booking.min.js"></script>
   <script type="text/javascript">
@@ -87,7 +87,7 @@ The `email` and `apiToken` setting is the key part here. When you specify domain
 
 ## Configuration
 
-Booking.js is made for various use-cases, so it's really extensible and customizable. We augment all the intrinsic options so you can overwrite them as needed, e.g. Timekit FindTime options or FullCalendar settings.
+Hour Widget is made for various use-cases, so it's really extensible and customizable. We augment all the intrinsic options so you can overwrite them as needed, e.g. Timekit FindTime options or FullCalendar settings.
 
 ### Example
 
@@ -100,7 +100,7 @@ Booking.js is made for various use-cases, so it's really extensible and customiz
   calendar:                 '',   // Your Timekit calendar ID that bookings should end up in
 
   // Optional
-  targetEl:                 '#bookingjs', // Which element should we the library load into
+  targetEl:                 '#hourwidget', // Which element should we the library load into
   name:                     '',   // Display name to show in the header and timezone helper
   avatar:                   '',   // Provide an image URL for a circular image avatar
   autoload:                 true, // Auto initialization if config object is found on window var
@@ -145,7 +145,7 @@ timekitConfig: {
 
 ### - `timekitFindTime`
 
-The Find Time algorithm is a powerful query tool for availability. Booking.js is calling the endpoint `[POST] /findtime` through the JS SDK and takes all the arguments as mentioned on the official [docs](http://developers.timekit.io/docs/findtime). The most powerful aspect are the [filters](http://developers.timekit.io/docs/find-time-filters). By default, there's no filters applied.
+The Find Time algorithm is a powerful query tool for availability. Hour Widget is calling the endpoint `[POST] /findtime` through the JS SDK and takes all the arguments as mentioned on the official [docs](http://developers.timekit.io/docs/findtime). The most powerful aspect are the [filters](http://developers.timekit.io/docs/find-time-filters). By default, there's no filters applied.
 
 There's only three default arguments out of the box:
 
@@ -215,8 +215,8 @@ fullCalendar: {
   timezone:     'local',
   defaultView:  sizing.view,     // Inserted dynamically based on the current width of the widget
   height:       sizing.height,   // Inserted dynamically based on the current width of the widget
-  eventClick:   function(event), // Handled internally in Booking.js (overwrite if you want to replace the booking page)
-  windowResize: function(view)   // Handled internally in Booking.js (overwrite if you want to disable or change automatic resizing)
+  eventClick:   function(event), // Handled internally in Hour Widget (overwrite if you want to replace the booking page)
+  windowResize: function(view)   // Handled internally in Hour Widget (overwrite if you want to disable or change automatic resizing)
 }
 ```
 
@@ -240,7 +240,7 @@ localization: {
 },
 ```
 
-For full language support, FullCalendar also takes a ["lang" option](http://fullcalendar.io/docs/text/lang/), accompanied by a language file. Make sure to use defer attribute on a script tag loading the language file if you are deferring booking.js, language file should be loaded after booking.js, but before initialization.
+For full language support, FullCalendar also takes a ["lang" option](http://fullcalendar.io/docs/text/lang/), accompanied by a language file. Make sure to use defer attribute on a script tag loading the language file if you are deferring hour widget, language file should be loaded after hour widget, but before initialization.
 
 Remember to set `localization.timeDateFormat` to false so it doesn't override the language file's settings.
 

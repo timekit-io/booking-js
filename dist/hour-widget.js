@@ -57,12 +57,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 	
 	/*!
-	 * Booking.js
+	 * Hour Widget
 	 * Version: 1.7.0
 	 * http://booking.timekit.io
 	 *
 	 * Copyright 2015 Timekit, Inc.
-	 * Timekit Booking.js is freely distributable under the MIT license.
+	 * Hour Widget is freely distributable under the MIT license.
 	 *
 	 */
 	
@@ -21221,7 +21221,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	__webpack_require__(32);
 	
 	/*
-	 * Utily functions for Booking.js
+	 * Utily functions
 	 */
 	
 	module.exports = {
@@ -21281,7 +21281,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 	
 	/*
-	 * Default configuration for for Booking.js
+	 * Default configuration
 	 */
 	
 	var primary = {
@@ -22829,4 +22829,4 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ])
 });
 ;
-//# sourceMappingURL=booking.js.map
+//# sourceMappingURL=hour-widget.js.map

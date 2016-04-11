@@ -75,15 +75,29 @@ module.exports = {
   },
 
   // Get widget endpoint
-  getPublicWidget: function() {
+  getHostedWidget: function() {
 
     jasmine.Ajax.stubRequest(
-      'https://api.timekit.io/v2/widgets/public/my-widget-slug'
+      'https://api.timekit.io/v2/widgets/hosted/my-widget-slug'
     ).andReturn({
       status: 200,
       statusText: 'HTTP/1.1 200 OK',
       contentType: 'application/json',
       responseText: '{ "data": { "id": "886c0efc-b76b-47c8-945d-bc4e43924c79", "slug": "my-widget-slug", "config": { "email": "marty.mcfly@timekit.io", "apiToken": "XT1JO879JF1qUXXzmETD5ucgxaDwsFsd", "calendar": "22f86f0c-ee80-470c-95e8-dadd9d05edd2", "email": "marty.mcfly@timekit.io", "timekitConfig": { "app": "bookingjs-demo" } } } }'
+    });
+
+  },
+
+  // Get widget endpoint
+  getEmbedWidget: function() {
+
+    jasmine.Ajax.stubRequest(
+      'https://api.timekit.io/v2/widgets/embed/12345'
+    ).andReturn({
+      status: 200,
+      statusText: 'HTTP/1.1 200 OK',
+      contentType: 'application/json',
+      responseText: '{ "data": { "id": "12345", "slug": "my-widget-slug", "config": { "email": "marty.mcfly@timekit.io", "apiToken": "XT1JO879JF1qUXXzmETD5ucgxaDwsFsd", "calendar": "22f86f0c-ee80-470c-95e8-dadd9d05edd2", "email": "marty.mcfly@timekit.io", "timekitConfig": { "app": "bookingjs-demo" } } } }'
     });
 
   },
@@ -94,7 +108,8 @@ module.exports = {
     this.findTime();
     this.userTimezone();
     this.createBooking();
-    this.getPublicWidget();
+    this.getHostedWidget();
+    this.getEmbedWidget();
 
   }
 

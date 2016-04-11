@@ -2,7 +2,7 @@
   "name": "timekit-booking",
   "version": "1.7.0",
   "description": "Make a beautiful embeddable booking widget in minutes",
-  "main": "dist/booking.js",
+  "main": "dist/hour-widget.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/timekit/booking.git"

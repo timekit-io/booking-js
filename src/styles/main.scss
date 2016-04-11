@@ -28,14 +28,19 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
   border-radius: 4px;
   background-color: white;
   box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px 0px;
-  margin: 60px auto 20px auto;
+  margin: 20px auto 20px auto;
   z-index: 10;
   opacity: 0;
   color: $textColor;
+  border-top: 1px solid $borderColor;
 
   &.show {
     transition: opacity 0.3s ease;
     opacity: 1;
+  }
+
+  &.has-avatar {
+    margin-top: 60px;
   }
 
   &-calendar {

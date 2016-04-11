@@ -59,7 +59,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/*!
 	 * Hour Widget
 	 * Version: 2.0.0
-	 * http://booking.timekit.io
+	 * http://hourhq.com
 	 *
 	 * Copyright 2015 Timekit, Inc.
 	 * Hour Widget is freely distributable under the MIT license.

@@ -482,9 +482,9 @@ function TimekitBooking() {
   var renderPoweredByMessage = function(pageTarget) {
 
     var template = require('./templates/poweredby.html');
-    var timekitIcon = require('!svg-inline!./assets/timekit-icon.svg');
+    var hourLogo = require('!svg-inline!./assets/hour-logo.svg');
     var poweredTarget = $(template.render({
-      timekitIcon: timekitIcon
+      hourLogo: hourLogo
     }));
 
     pageTarget.append(poweredTarget);

@@ -62,7 +62,7 @@ module.exports = {
   createBooking: function() {
 
     jasmine.Ajax.stubRequest(
-      'https://api.timekit.io/v2/bookings',
+      'https://api.timekit.io/v2/bookings?include=attributes',
       undefined,
       'POST'
     ).andReturn({

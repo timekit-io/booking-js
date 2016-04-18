@@ -12639,7 +12639,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(module) {//! moment.js
-	//! version : 2.12.0
+	//! version : 2.13.0
 	//! authors : Tim Wood, Iskren Chernev, Moment.js contributors
 	//! license : MIT
 	//! momentjs.com
@@ -12716,7 +12716,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            invalidMonth    : null,
 	            invalidFormat   : false,
 	            userInvalidated : false,
-	            iso             : false
+	            iso             : false,
+	            parsedDateParts : [],
+	            meridiem        : null
 	        };
 	    }
 	
@@ -12727,9 +12729,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return m._pf;
 	    }
 	
+	    var some;
+	    if (Array.prototype.some) {
+	        some = Array.prototype.some;
+	    } else {
+	        some = function (fun) {
+	            var t = Object(this);
+	            var len = t.length >>> 0;
+	
+	            for (var i = 0; i < len; i++) {
+	                if (i in t && fun.call(this, t[i], i, t)) {
+	                    return true;
+	                }
+	            }
+	
+	            return false;
+	        };
+	    }
+	
 	    function valid__isValid(m) {
 	        if (m._isValid == null) {
 	            var flags = getParsingFlags(m);
+	            var parsedParts = some.call(flags.parsedDateParts, function (i) {
+	                return i != null;
+	            });
 	            m._isValid = !isNaN(m._d.getTime()) &&
 	                flags.overflow < 0 &&
 	                !flags.empty &&
@@ -12737,7 +12760,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                !flags.invalidWeekday &&
 	                !flags.nullInput &&
 	                !flags.invalidFormat &&
-	                !flags.userInvalidated;
+	                !flags.userInvalidated &&
+	                (!flags.meridiem || (flags.meridiem && parsedParts));
 	
 	            if (m._strict) {
 	                m._isValid = m._isValid &&
@@ -12880,6 +12904,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var firstTime = true;
 	
 	        return extend(function () {
+	            if (utils_hooks__hooks.deprecationHandler != null) {
+	                utils_hooks__hooks.deprecationHandler(null, msg);
+	            }
 	            if (firstTime) {
 	                warn(msg + '\nArguments: ' + Array.prototype.slice.call(arguments).join(', ') + '\n' + (new Error()).stack);
 	                firstTime = false;
@@ -12891,6 +12918,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var deprecations = {};
 	
 	    function deprecateSimple(name, msg) {
+	        if (utils_hooks__hooks.deprecationHandler != null) {
+	            utils_hooks__hooks.deprecationHandler(name, msg);
+	        }
 	        if (!deprecations[name]) {
 	            warn(msg);
 	            deprecations[name] = true;
@@ -12898,6 +12928,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	
 	    utils_hooks__hooks.suppressDeprecationWarnings = false;
+	    utils_hooks__hooks.deprecationHandler = null;
 	
 	    function isFunction(input) {
 	        return input instanceof Function || Object.prototype.toString.call(input) === '[object Function]';
@@ -12945,6 +12976,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (config != null) {
 	            this.set(config);
 	        }
+	    }
+	
+	    var keys;
+	
+	    if (Object.keys) {
+	        keys = Object.keys;
+	    } else {
+	        keys = function (obj) {
+	            var i, res = [];
+	            for (i in obj) {
+	                if (hasOwnProp(obj, i)) {
+	                    res.push(i);
+	                }
+	            }
+	            return res;
+	        };
 	    }
 	
 	    // internal storage for locale config files
@@ -13101,7 +13148,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	
 	    function locale_locales__listLocales() {
-	        return Object.keys(locales);
+	        return keys(locales);
 	    }
 	
 	    var aliases = {};
@@ -13180,7 +13227,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            Math.pow(10, Math.max(0, zerosToFill)).toString().substr(1) + absNumber;
 	    }
 	
-	    var formattingTokens = /(\[[^\[]*\])|(\\)?([Hh]mm(ss)?|Mo|MM?M?M?|Do|DDDo|DD?D?D?|ddd?d?|do?|w[o|w]?|W[o|W]?|Qo?|YYYYYY|YYYYY|YYYY|YY|gg(ggg?)?|GG(GGG?)?|e|E|a|A|hh?|HH?|mm?|ss?|S{1,9}|x|X|zz?|ZZ?|.)/g;
+	    var formattingTokens = /(\[[^\[]*\])|(\\)?([Hh]mm(ss)?|Mo|MM?M?M?|Do|DDDo|DD?D?D?|ddd?d?|do?|w[o|w]?|W[o|W]?|Qo?|YYYYYY|YYYYY|YYYY|YY|gg(ggg?)?|GG(GGG?)?|e|E|a|A|hh?|HH?|kk?|mm?|ss?|S{1,9}|x|X|zz?|ZZ?|.)/g;
 	
 	    var localFormattingTokens = /(\[[^\[]*\])|(\\)?(LTS|LT|LL?L?L?|l{1,4})/g;
 	
@@ -13233,7 +13280,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	
 	        return function (mom) {
-	            var output = '';
+	            var output = '', i;
 	            for (i = 0; i < length; i++) {
 	                output += array[i] instanceof Function ? array[i].call(mom, format) : array[i];
 	            }
@@ -13362,6 +13409,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var WEEK = 7;
 	    var WEEKDAY = 8;
 	
+	    var indexOf;
+	
+	    if (Array.prototype.indexOf) {
+	        indexOf = Array.prototype.indexOf;
+	    } else {
+	        indexOf = function (o) {
+	            // I know
+	            var i;
+	            for (i = 0; i < this.length; ++i) {
+	                if (this[i] === o) {
+	                    return i;
+	                }
+	            }
+	            return -1;
+	        };
+	    }
+	
 	    function daysInMonth(year, month) {
 	        return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
 	    }
@@ -13424,8 +13488,53 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this._monthsShort[MONTHS_IN_FORMAT.test(format) ? 'format' : 'standalone'][m.month()];
 	    }
 	
+	    function units_month__handleStrictParse(monthName, format, strict) {
+	        var i, ii, mom, llc = monthName.toLocaleLowerCase();
+	        if (!this._monthsParse) {
+	            // this is not used
+	            this._monthsParse = [];
+	            this._longMonthsParse = [];
+	            this._shortMonthsParse = [];
+	            for (i = 0; i < 12; ++i) {
+	                mom = create_utc__createUTC([2000, i]);
+	                this._shortMonthsParse[i] = this.monthsShort(mom, '').toLocaleLowerCase();
+	                this._longMonthsParse[i] = this.months(mom, '').toLocaleLowerCase();
+	            }
+	        }
+	
+	        if (strict) {
+	            if (format === 'MMM') {
+	                ii = indexOf.call(this._shortMonthsParse, llc);
+	                return ii !== -1 ? ii : null;
+	            } else {
+	                ii = indexOf.call(this._longMonthsParse, llc);
+	                return ii !== -1 ? ii : null;
+	            }
+	        } else {
+	            if (format === 'MMM') {
+	                ii = indexOf.call(this._shortMonthsParse, llc);
+	                if (ii !== -1) {
+	                    return ii;
+	                }
+	                ii = indexOf.call(this._longMonthsParse, llc);
+	                return ii !== -1 ? ii : null;
+	            } else {
+	                ii = indexOf.call(this._longMonthsParse, llc);
+	                if (ii !== -1) {
+	                    return ii;
+	                }
+	                ii = indexOf.call(this._shortMonthsParse, llc);
+	                return ii !== -1 ? ii : null;
+	            }
+	        }
+	    }
+	
 	    function localeMonthsParse (monthName, format, strict) {
 	        var i, mom, regex;
+	
+	        if (this._monthsParseExact) {
+	            return units_month__handleStrictParse.call(this, monthName, format, strict);
+	        }
 	
 	        if (!this._monthsParse) {
 	            this._monthsParse = [];
@@ -13433,6 +13542,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this._shortMonthsParse = [];
 	        }
 	
+	        // TODO: add sorting
+	        // Sorting makes sure if one month (or abbr) is a prefix of another
+	        // see sorting in computeMonthsParse
 	        for (i = 0; i < 12; i++) {
 	            // make the regex if we don't have it already
 	            mom = create_utc__createUTC([2000, i]);
@@ -13558,8 +13670,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	        this._monthsRegex = new RegExp('^(' + mixedPieces.join('|') + ')', 'i');
 	        this._monthsShortRegex = this._monthsRegex;
-	        this._monthsStrictRegex = new RegExp('^(' + longPieces.join('|') + ')$', 'i');
-	        this._monthsShortStrictRegex = new RegExp('^(' + shortPieces.join('|') + ')$', 'i');
+	        this._monthsStrictRegex = new RegExp('^(' + longPieces.join('|') + ')', 'i');
+	        this._monthsShortStrictRegex = new RegExp('^(' + shortPieces.join('|') + ')', 'i');
 	    }
 	
 	    function checkOverflow (m) {
@@ -13786,7 +13898,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    // MOMENTS
 	
-	    var getSetYear = makeGetSet('FullYear', false);
+	    var getSetYear = makeGetSet('FullYear', true);
 	
 	    function getIsLeapYear () {
 	        return isLeapYear(this.year());
@@ -14055,6 +14167,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                config._a[HOUR] > 0) {
 	            getParsingFlags(config).bigHour = undefined;
 	        }
+	
+	        getParsingFlags(config).parsedDateParts = config._a.slice(0);
+	        getParsingFlags(config).meridiem = config._meridiem;
 	        // handle meridiem
 	        config._a[HOUR] = meridiemFixWrap(config._locale, config._a[HOUR], config._meridiem);
 	
@@ -14195,7 +14310,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (input === undefined) {
 	            config._d = new Date(utils_hooks__hooks.now());
 	        } else if (isDate(input)) {
-	            config._d = new Date(+input);
+	            config._d = new Date(input.valueOf());
 	        } else if (typeof input === 'string') {
 	            configFromString(config);
 	        } else if (isArray(input)) {
@@ -14315,7 +14430,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this._milliseconds = +milliseconds +
 	            seconds * 1e3 + // 1000
 	            minutes * 6e4 + // 1000 * 60
-	            hours * 36e5; // 1000 * 60 * 60
+	            hours * 1000 * 60 * 60; //using 1000 * 60 * 60 instead of 36e5 to avoid floating point rounding errors https://github.com/moment/moment/issues/2978
 	        // Because of dateAddRemove treats 24 hours as different from a
 	        // day when working around DST, we need to store them separately
 	        this._days = +days +
@@ -14385,9 +14500,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var res, diff;
 	        if (model._isUTC) {
 	            res = model.clone();
-	            diff = (isMoment(input) || isDate(input) ? +input : +local__createLocal(input)) - (+res);
+	            diff = (isMoment(input) || isDate(input) ? input.valueOf() : local__createLocal(input).valueOf()) - res.valueOf();
 	            // Use low-level api, because this fn is low-level api.
-	            res._d.setTime(+res._d + diff);
+	            res._d.setTime(res._d.valueOf() + diff);
 	            utils_hooks__hooks.updateOffset(res, false);
 	            return res;
 	        } else {
@@ -14548,7 +14663,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // from http://docs.closure-library.googlecode.com/git/closure_goog_date_date.js.source.html
 	    // somewhat more in line with 4.4.3.2 2004 spec, but allows decimal anywhere
 	    // and further modified to allow for strings containing both week and day
-	    var isoRegex = /^(-)?P(?:([0-9,.]*)Y)?(?:([0-9,.]*)M)?(?:([0-9,.]*)W)?(?:([0-9,.]*)D)?(?:T(?:([0-9,.]*)H)?(?:([0-9,.]*)M)?(?:([0-9,.]*)S)?)?$/;
+	    var isoRegex = /^(-)?P(?:(-?[0-9,.]*)Y)?(?:(-?[0-9,.]*)M)?(?:(-?[0-9,.]*)W)?(?:(-?[0-9,.]*)D)?(?:T(?:(-?[0-9,.]*)H)?(?:(-?[0-9,.]*)M)?(?:(-?[0-9,.]*)S)?)?$/;
 	
 	    function create__createDuration (input, key) {
 	        var duration = input,
@@ -14692,7 +14807,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        updateOffset = updateOffset == null ? true : updateOffset;
 	
 	        if (milliseconds) {
-	            mom._d.setTime(+mom._d + milliseconds * isAdding);
+	            mom._d.setTime(mom._d.valueOf() + milliseconds * isAdding);
 	        }
 	        if (days) {
 	            get_set__set(mom, 'Date', get_set__get(mom, 'Date') + days * isAdding);
@@ -14737,9 +14852,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        units = normalizeUnits(!isUndefined(units) ? units : 'millisecond');
 	        if (units === 'millisecond') {
-	            return +this > +localInput;
+	            return this.valueOf() > localInput.valueOf();
 	        } else {
-	            return +localInput < +this.clone().startOf(units);
+	            return localInput.valueOf() < this.clone().startOf(units).valueOf();
 	        }
 	    }
 	
@@ -14750,14 +14865,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        units = normalizeUnits(!isUndefined(units) ? units : 'millisecond');
 	        if (units === 'millisecond') {
-	            return +this < +localInput;
+	            return this.valueOf() < localInput.valueOf();
 	        } else {
-	            return +this.clone().endOf(units) < +localInput;
+	            return this.clone().endOf(units).valueOf() < localInput.valueOf();
 	        }
 	    }
 	
-	    function isBetween (from, to, units) {
-	        return this.isAfter(from, units) && this.isBefore(to, units);
+	    function isBetween (from, to, units, inclusivity) {
+	        inclusivity = inclusivity || '()';
+	        return (inclusivity[0] === '(' ? this.isAfter(from, units) : !this.isBefore(from, units)) &&
+	            (inclusivity[1] === ')' ? this.isBefore(to, units) : !this.isAfter(to, units));
 	    }
 	
 	    function isSame (input, units) {
@@ -14768,10 +14885,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        units = normalizeUnits(units || 'millisecond');
 	        if (units === 'millisecond') {
-	            return +this === +localInput;
+	            return this.valueOf() === localInput.valueOf();
 	        } else {
-	            inputMs = +localInput;
-	            return +(this.clone().startOf(units)) <= inputMs && inputMs <= +(this.clone().endOf(units));
+	            inputMs = localInput.valueOf();
+	            return this.clone().startOf(units).valueOf() <= inputMs && inputMs <= this.clone().endOf(units).valueOf();
 	        }
 	    }
 	
@@ -14838,10 +14955,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            adjust = (b - anchor) / (anchor2 - anchor);
 	        }
 	
-	        return -(wholeMonthDiff + adjust);
+	        //check for negative zero, return zero if negative zero
+	        return -(wholeMonthDiff + adjust) || 0;
 	    }
 	
 	    utils_hooks__hooks.defaultFormat = 'YYYY-MM-DDTHH:mm:ssZ';
+	    utils_hooks__hooks.defaultFormatUtc = 'YYYY-MM-DDTHH:mm:ss[Z]';
 	
 	    function toString () {
 	        return this.clone().locale('en').format('ddd MMM DD YYYY HH:mm:ss [GMT]ZZ');
@@ -14862,7 +14981,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	
 	    function format (inputString) {
-	        var output = formatMoment(this, inputString || utils_hooks__hooks.defaultFormat);
+	        if (!inputString) {
+	            inputString = this.isUtc() ? utils_hooks__hooks.defaultFormatUtc : utils_hooks__hooks.defaultFormat;
+	        }
+	        var output = formatMoment(this, inputString);
 	        return this.localeData().postformat(output);
 	    }
 	
@@ -14941,6 +15063,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        case 'week':
 	        case 'isoWeek':
 	        case 'day':
+	        case 'date':
 	            this.hours(0);
 	            /* falls through */
 	        case 'hour':
@@ -14974,19 +15097,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (units === undefined || units === 'millisecond') {
 	            return this;
 	        }
+	
+	        // 'date' is an alias for 'day', so it should be considered as such.
+	        if (units === 'date') {
+	            units = 'day';
+	        }
+	
 	        return this.startOf(units).add(1, (units === 'isoWeek' ? 'week' : units)).subtract(1, 'ms');
 	    }
 	
 	    function to_type__valueOf () {
-	        return +this._d - ((this._offset || 0) * 60000);
+	        return this._d.valueOf() - ((this._offset || 0) * 60000);
 	    }
 	
 	    function unix () {
-	        return Math.floor(+this / 1000);
+	        return Math.floor(this.valueOf() / 1000);
 	    }
 	
 	    function toDate () {
-	        return this._offset ? new Date(+this) : this._d;
+	        return this._offset ? new Date(this.valueOf()) : this._d;
 	    }
 	
 	    function toArray () {
@@ -15255,9 +15384,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    addRegexToken('d',    match1to2);
 	    addRegexToken('e',    match1to2);
 	    addRegexToken('E',    match1to2);
-	    addRegexToken('dd',   matchWord);
-	    addRegexToken('ddd',  matchWord);
-	    addRegexToken('dddd', matchWord);
+	    addRegexToken('dd',   function (isStrict, locale) {
+	        return locale.weekdaysMinRegex(isStrict);
+	    });
+	    addRegexToken('ddd',   function (isStrict, locale) {
+	        return locale.weekdaysShortRegex(isStrict);
+	    });
+	    addRegexToken('dddd',   function (isStrict, locale) {
+	        return locale.weekdaysRegex(isStrict);
+	    });
 	
 	    addWeekParseToken(['dd', 'ddd', 'dddd'], function (input, week, config, token) {
 	        var weekday = config._locale.weekdaysParse(input, token, config._strict);
@@ -15310,8 +15445,76 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return this._weekdaysMin[m.day()];
 	    }
 	
+	    function day_of_week__handleStrictParse(weekdayName, format, strict) {
+	        var i, ii, mom, llc = weekdayName.toLocaleLowerCase();
+	        if (!this._weekdaysParse) {
+	            this._weekdaysParse = [];
+	            this._shortWeekdaysParse = [];
+	            this._minWeekdaysParse = [];
+	
+	            for (i = 0; i < 7; ++i) {
+	                mom = create_utc__createUTC([2000, 1]).day(i);
+	                this._minWeekdaysParse[i] = this.weekdaysMin(mom, '').toLocaleLowerCase();
+	                this._shortWeekdaysParse[i] = this.weekdaysShort(mom, '').toLocaleLowerCase();
+	                this._weekdaysParse[i] = this.weekdays(mom, '').toLocaleLowerCase();
+	            }
+	        }
+	
+	        if (strict) {
+	            if (format === 'dddd') {
+	                ii = indexOf.call(this._weekdaysParse, llc);
+	                return ii !== -1 ? ii : null;
+	            } else if (format === 'ddd') {
+	                ii = indexOf.call(this._shortWeekdaysParse, llc);
+	                return ii !== -1 ? ii : null;
+	            } else {
+	                ii = indexOf.call(this._minWeekdaysParse, llc);
+	                return ii !== -1 ? ii : null;
+	            }
+	        } else {
+	            if (format === 'dddd') {
+	                ii = indexOf.call(this._weekdaysParse, llc);
+	                if (ii !== -1) {
+	                    return ii;
+	                }
+	                ii = indexOf.call(this._shortWeekdaysParse, llc);
+	                if (ii !== -1) {
+	                    return ii;
+	                }
+	                ii = indexOf.call(this._minWeekdaysParse, llc);
+	                return ii !== -1 ? ii : null;
+	            } else if (format === 'ddd') {
+	                ii = indexOf.call(this._shortWeekdaysParse, llc);
+	                if (ii !== -1) {
+	                    return ii;
+	                }
+	                ii = indexOf.call(this._weekdaysParse, llc);
+	                if (ii !== -1) {
+	                    return ii;
+	                }
+	                ii = indexOf.call(this._minWeekdaysParse, llc);
+	                return ii !== -1 ? ii : null;
+	            } else {
+	                ii = indexOf.call(this._minWeekdaysParse, llc);
+	                if (ii !== -1) {
+	                    return ii;
+	                }
+	                ii = indexOf.call(this._weekdaysParse, llc);
+	                if (ii !== -1) {
+	                    return ii;
+	                }
+	                ii = indexOf.call(this._shortWeekdaysParse, llc);
+	                return ii !== -1 ? ii : null;
+	            }
+	        }
+	    }
+	
 	    function localeWeekdaysParse (weekdayName, format, strict) {
 	        var i, mom, regex;
+	
+	        if (this._weekdaysParseExact) {
+	            return day_of_week__handleStrictParse.call(this, weekdayName, format, strict);
+	        }
 	
 	        if (!this._weekdaysParse) {
 	            this._weekdaysParse = [];
@@ -15323,7 +15526,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        for (i = 0; i < 7; i++) {
 	            // make the regex if we don't have it already
 	
-	            mom = local__createLocal([2000, 1]).day(i);
+	            mom = create_utc__createUTC([2000, 1]).day(i);
 	            if (strict && !this._fullWeekdaysParse[i]) {
 	                this._fullWeekdaysParse[i] = new RegExp('^' + this.weekdays(mom, '').replace('.', '\.?') + '$', 'i');
 	                this._shortWeekdaysParse[i] = new RegExp('^' + this.weekdaysShort(mom, '').replace('.', '\.?') + '$', 'i');
@@ -15379,6 +15582,99 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return input == null ? this.day() || 7 : this.day(this.day() % 7 ? input : input - 7);
 	    }
 	
+	    var defaultWeekdaysRegex = matchWord;
+	    function weekdaysRegex (isStrict) {
+	        if (this._weekdaysParseExact) {
+	            if (!hasOwnProp(this, '_weekdaysRegex')) {
+	                computeWeekdaysParse.call(this);
+	            }
+	            if (isStrict) {
+	                return this._weekdaysStrictRegex;
+	            } else {
+	                return this._weekdaysRegex;
+	            }
+	        } else {
+	            return this._weekdaysStrictRegex && isStrict ?
+	                this._weekdaysStrictRegex : this._weekdaysRegex;
+	        }
+	    }
+	
+	    var defaultWeekdaysShortRegex = matchWord;
+	    function weekdaysShortRegex (isStrict) {
+	        if (this._weekdaysParseExact) {
+	            if (!hasOwnProp(this, '_weekdaysRegex')) {
+	                computeWeekdaysParse.call(this);
+	            }
+	            if (isStrict) {
+	                return this._weekdaysShortStrictRegex;
+	            } else {
+	                return this._weekdaysShortRegex;
+	            }
+	        } else {
+	            return this._weekdaysShortStrictRegex && isStrict ?
+	                this._weekdaysShortStrictRegex : this._weekdaysShortRegex;
+	        }
+	    }
+	
+	    var defaultWeekdaysMinRegex = matchWord;
+	    function weekdaysMinRegex (isStrict) {
+	        if (this._weekdaysParseExact) {
+	            if (!hasOwnProp(this, '_weekdaysRegex')) {
+	                computeWeekdaysParse.call(this);
+	            }
+	            if (isStrict) {
+	                return this._weekdaysMinStrictRegex;
+	            } else {
+	                return this._weekdaysMinRegex;
+	            }
+	        } else {
+	            return this._weekdaysMinStrictRegex && isStrict ?
+	                this._weekdaysMinStrictRegex : this._weekdaysMinRegex;
+	        }
+	    }
+	
+	
+	    function computeWeekdaysParse () {
+	        function cmpLenRev(a, b) {
+	            return b.length - a.length;
+	        }
+	
+	        var minPieces = [], shortPieces = [], longPieces = [], mixedPieces = [],
+	            i, mom, minp, shortp, longp;
+	        for (i = 0; i < 7; i++) {
+	            // make the regex if we don't have it already
+	            mom = create_utc__createUTC([2000, 1]).day(i);
+	            minp = this.weekdaysMin(mom, '');
+	            shortp = this.weekdaysShort(mom, '');
+	            longp = this.weekdays(mom, '');
+	            minPieces.push(minp);
+	            shortPieces.push(shortp);
+	            longPieces.push(longp);
+	            mixedPieces.push(minp);
+	            mixedPieces.push(shortp);
+	            mixedPieces.push(longp);
+	        }
+	        // Sorting makes sure if one weekday (or abbr) is a prefix of another it
+	        // will match the longer piece.
+	        minPieces.sort(cmpLenRev);
+	        shortPieces.sort(cmpLenRev);
+	        longPieces.sort(cmpLenRev);
+	        mixedPieces.sort(cmpLenRev);
+	        for (i = 0; i < 7; i++) {
+	            shortPieces[i] = regexEscape(shortPieces[i]);
+	            longPieces[i] = regexEscape(longPieces[i]);
+	            mixedPieces[i] = regexEscape(mixedPieces[i]);
+	        }
+	
+	        this._weekdaysRegex = new RegExp('^(' + mixedPieces.join('|') + ')', 'i');
+	        this._weekdaysShortRegex = this._weekdaysRegex;
+	        this._weekdaysMinRegex = this._weekdaysRegex;
+	
+	        this._weekdaysStrictRegex = new RegExp('^(' + longPieces.join('|') + ')', 'i');
+	        this._weekdaysShortStrictRegex = new RegExp('^(' + shortPieces.join('|') + ')', 'i');
+	        this._weekdaysMinStrictRegex = new RegExp('^(' + minPieces.join('|') + ')', 'i');
+	    }
+	
 	    // FORMATTING
 	
 	    addFormatToken('DDD', ['DDDD', 3], 'DDDo', 'dayOfYear');
@@ -15410,8 +15706,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return this.hours() % 12 || 12;
 	    }
 	
+	    function kFormat() {
+	        return this.hours() || 24;
+	    }
+	
 	    addFormatToken('H', ['HH', 2], 0, 'hour');
 	    addFormatToken('h', ['hh', 2], 0, hFormat);
+	    addFormatToken('k', ['kk', 2], 0, kFormat);
 	
 	    addFormatToken('hmm', 0, 0, function () {
 	        return '' + hFormat.apply(this) + zeroFill(this.minutes(), 2);
@@ -15872,6 +16173,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    prototype__proto._weekdaysShort = defaultLocaleWeekdaysShort;
 	    prototype__proto.weekdaysParse  =        localeWeekdaysParse;
 	
+	    prototype__proto._weekdaysRegex      = defaultWeekdaysRegex;
+	    prototype__proto.weekdaysRegex       =        weekdaysRegex;
+	    prototype__proto._weekdaysShortRegex = defaultWeekdaysShortRegex;
+	    prototype__proto.weekdaysShortRegex  =        weekdaysShortRegex;
+	    prototype__proto._weekdaysMinRegex   = defaultWeekdaysMinRegex;
+	    prototype__proto.weekdaysMinRegex    =        weekdaysMinRegex;
+	
 	    // Hours
 	    prototype__proto.isPM = localeIsPM;
 	    prototype__proto._meridiemParse = defaultLocaleMeridiemParse;
@@ -15883,7 +16191,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return locale[field](utc, format);
 	    }
 	
-	    function list (format, index, field, count, setter) {
+	    function listMonthsImpl (format, index, field) {
 	        if (typeof format === 'number') {
 	            index = format;
 	            format = undefined;
@@ -15892,35 +16200,79 @@ return /******/ (function(modules) { // webpackBootstrap
 	        format = format || '';
 	
 	        if (index != null) {
-	            return lists__get(format, index, field, setter);
+	            return lists__get(format, index, field, 'month');
 	        }
 	
 	        var i;
 	        var out = [];
-	        for (i = 0; i < count; i++) {
-	            out[i] = lists__get(format, i, field, setter);
+	        for (i = 0; i < 12; i++) {
+	            out[i] = lists__get(format, i, field, 'month');
+	        }
+	        return out;
+	    }
+	
+	    // ()
+	    // (5)
+	    // (fmt, 5)
+	    // (fmt)
+	    // (true)
+	    // (true, 5)
+	    // (true, fmt, 5)
+	    // (true, fmt)
+	    function listWeekdaysImpl (localeSorted, format, index, field) {
+	        if (typeof localeSorted === 'boolean') {
+	            if (typeof format === 'number') {
+	                index = format;
+	                format = undefined;
+	            }
+	
+	            format = format || '';
+	        } else {
+	            format = localeSorted;
+	            index = format;
+	            localeSorted = false;
+	
+	            if (typeof format === 'number') {
+	                index = format;
+	                format = undefined;
+	            }
+	
+	            format = format || '';
+	        }
+	
+	        var locale = locale_locales__getLocale(),
+	            shift = localeSorted ? locale._week.dow : 0;
+	
+	        if (index != null) {
+	            return lists__get(format, (index + shift) % 7, field, 'day');
+	        }
+	
+	        var i;
+	        var out = [];
+	        for (i = 0; i < 7; i++) {
+	            out[i] = lists__get(format, (i + shift) % 7, field, 'day');
 	        }
 	        return out;
 	    }
 	
 	    function lists__listMonths (format, index) {
-	        return list(format, index, 'months', 12, 'month');
+	        return listMonthsImpl(format, index, 'months');
 	    }
 	
 	    function lists__listMonthsShort (format, index) {
-	        return list(format, index, 'monthsShort', 12, 'month');
+	        return listMonthsImpl(format, index, 'monthsShort');
 	    }
 	
-	    function lists__listWeekdays (format, index) {
-	        return list(format, index, 'weekdays', 7, 'day');
+	    function lists__listWeekdays (localeSorted, format, index) {
+	        return listWeekdaysImpl(localeSorted, format, index, 'weekdays');
 	    }
 	
-	    function lists__listWeekdaysShort (format, index) {
-	        return list(format, index, 'weekdaysShort', 7, 'day');
+	    function lists__listWeekdaysShort (localeSorted, format, index) {
+	        return listWeekdaysImpl(localeSorted, format, index, 'weekdaysShort');
 	    }
 	
-	    function lists__listWeekdaysMin (format, index) {
-	        return list(format, index, 'weekdaysMin', 7, 'day');
+	    function lists__listWeekdaysMin (localeSorted, format, index) {
+	        return listWeekdaysImpl(localeSorted, format, index, 'weekdaysMin');
 	    }
 	
 	    locale_locales__getSetGlobalLocale('en', {
@@ -16291,7 +16643,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // Side effect imports
 	
 	
-	    utils_hooks__hooks.version = '2.12.0';
+	    utils_hooks__hooks.version = '2.13.0';
 	
 	    setHookCallback(local__createLocal);
 	
@@ -16445,7 +16797,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	/*!
 	 * Timekit JavaScript SDK
-	 * Version: 1.2.0
+	 * Version: 1.3.0
 	 * http://timekit.io
 	 *
 	 * Copyright 2015 Timekit, Inc.
@@ -16475,7 +16827,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    app: 'demo',
 	    apiBaseUrl: 'https://api.timekit.io/',
 	    apiVersion: 'v2',
-	    convertResponseToCamelcase: false
+	    convertResponseToCamelcase: false,
+	    convertRequestToSnakecase: true
 	  };
 	
 	  /**
@@ -16539,11 +16892,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	
 	    // decamelize keys in data objects
-	    if (args.data) { args.data = humps.decamelizeKeys(args.data); }
+	    if (args.data && config.convertRequestToSnakecase) { args.data = humps.decamelizeKeys(args.data); }
 	
 	    // register response interceptor for data manipulation
 	    var interceptor = axios.interceptors.response.use(function (response) {
-	      if(response.data && response.data.data) {
+	      if (response.data && response.data.data) {
 	        response.data = response.data.data;
 	        if (config.convertResponseToCamelcase) {
 	          response.data = humps.camelizeKeys(response.data);
@@ -16678,7 +17031,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 	
 	  /**
-	   * Initiate a server sync on all the users accounts
+	   * Initiate an account sync
 	   * @type {Function}
 	   * @return {Promise}
 	   */
@@ -16686,6 +17039,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    return TK.makeRequest({
 	      url: '/accounts/sync',
+	      method: 'get',
+	      params: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Initiate an account sync where only calendar models are synced
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.accountSyncCalendars = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/accounts/sync/calendars',
 	      method: 'get',
 	      params: data
 	    });
@@ -19799,7 +20167,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;//! moment-timezone.js
-	//! version : 0.5.2
+	//! version : 0.5.3
 	//! author : Tim Wood
 	//! license : MIT
 	//! github.com/moment/moment-timezone
@@ -19824,7 +20192,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			return moment;
 		}
 	
-		var VERSION = "0.5.2",
+		var VERSION = "0.5.3",
 			zones = {},
 			links = {},
 			names = {},
@@ -20394,7 +20762,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		}
 	
 		loadData({
-			"version": "2016b",
+			"version": "2016c",
 			"zones": [
 				"Africa/Abidjan|GMT|0|0||48e5",
 				"Africa/Khartoum|EAT|-30|0||51e5",
@@ -20449,7 +20817,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				"America/North_Dakota/Beulah|MST MDT CST CDT|70 60 60 50|01232323232323232323232|1BQV0 1zb0 Oo0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0",
 				"America/Paramaribo|SRT|30|0||24e4",
 				"America/Port-au-Prince|EST EDT|50 40|010101010|1GI70 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0|23e5",
-				"America/Santiago|CLST CLT CLT|30 40 30|010101010102|1C1f0 1fB0 1nX0 G10 1EL0 Op0 1zb0 Rd0 1wn0 Rd0 1wn0|62e5",
+				"America/Santiago|CLST CLT|30 40|010101010101010101010|1C1f0 1fB0 1nX0 G10 1EL0 Op0 1zb0 Rd0 1wn0 Rd0 46n0 Ap0 1Nb0 Ap0 1Nb0 Ap0 1Nb0 Ap0 1Nb0 Ap0|62e5",
 				"America/Sao_Paulo|BRST BRT|20 30|01010101010101010101010|1BIq0 1zd0 On0 1zd0 Rb0 1zd0 Lz0 1C10 Lz0 1C10 On0 1zd0 On0 1zd0 On0 1zd0 On0 1C10 Lz0 1C10 Lz0 1C10|20e6",
 				"America/Scoresbysund|EGT EGST|10 0|01010101010101010101010|1BWp0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00|452",
 				"America/St_Johns|NST NDT|3u 2u|01010101010101010101010|1BQPv 1zb0 Op0 1zcX Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0|11e4",
@@ -20469,7 +20837,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				"Asia/Anadyr|ANAT ANAST ANAT|-c0 -c0 -b0|0120|1BWe0 1qN0 WM0|13e3",
 				"Asia/Aqtobe|AQTT|-50|0||27e4",
 				"Asia/Ashgabat|TMT|-50|0||41e4",
-				"Asia/Baku|AZT AZST|-40 -50|01010101010101010101010|1BWo0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00|27e5",
+				"Asia/Baku|AZT AZST|-40 -50|0101010101010|1BWo0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00|27e5",
 				"Asia/Bangkok|ICT|-70|0||15e6",
 				"Asia/Barnaul|+06 +07|-60 -70|010101|1BWk0 1qM0 WM0 8Hz0 3rd0",
 				"Asia/Beirut|EET EEST|-20 -30|01010101010101010101010|1BWm0 1qL0 WN0 1qL0 WN0 1qL0 11B0 1nX0 11B0 1nX0 11B0 1nX0 11B0 1qL0 WN0 1qL0 WN0 1qL0 11B0 1nX0 11B0 1nX0|22e5",
@@ -20539,7 +20907,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				"Australia/Eucla|ACWST|-8J|0||368",
 				"Australia/Lord_Howe|LHDT LHST|-b0 -au|01010101010101010101010|1C130 1cMu 1cLu 1cMu 1cLu 1fAu 1cLu 1cMu 1cLu 1cMu 1cLu 1cMu 1cLu 1cMu 1cLu 1cMu 1cLu 1fAu 1cLu 1cMu 1cLu 1cMu|347",
 				"Australia/Perth|AWST|-80|0||18e5",
-				"Pacific/Easter|EASST EAST EAST|50 60 50|010101010102|1C1f0 1fB0 1nX0 G10 1EL0 Op0 1zb0 Rd0 1wn0 Rd0 1wn0|30e2",
+				"Pacific/Easter|EASST EAST|50 60|010101010101010101010|1C1f0 1fB0 1nX0 G10 1EL0 Op0 1zb0 Rd0 1wn0 Rd0 46n0 Ap0 1Nb0 Ap0 1Nb0 Ap0 1Nb0 Ap0 1Nb0 Ap0|30e2",
 				"Europe/Dublin|GMT IST|0 -10|01010101010101010101010|1BWp0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00|12e5",
 				"Etc/GMT+1|GMT+1|10|0|",
 				"Etc/GMT+10|GMT+10|a0|0|",
@@ -21781,7 +22149,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	function applyToTag(styleElement, obj) {
 		var css = obj.css;
 		var media = obj.media;
-		var sourceMap = obj.sourceMap;
 	
 		if(media) {
 			styleElement.setAttribute("media", media)
@@ -21799,7 +22166,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	function updateLink(linkElement, obj) {
 		var css = obj.css;
-		var media = obj.media;
 		var sourceMap = obj.sourceMap;
 	
 		if(sourceMap) {
@@ -21933,7 +22299,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.push([module.id, "@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);", ""]);
 	
 	// module
-	exports.push([module.id, "/*!\n * Hour Widget\n * http://hourhq.com\n * (c) 2015 Timekit Inc.\n */.hourwidget{position:relative;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;font-size:13px;border-radius:4px;background-color:#fff;box-shadow:rgba(0,0,0,.2) 0 2px 4px 0;margin:20px auto;z-index:10;opacity:0;color:#333;border-top:1px solid #ececec}.hourwidget.show{-webkit-transition:opacity .3s ease;transition:opacity .3s ease;opacity:1}.hourwidget.has-avatar{margin-top:60px}.is-small.has-avatar.has-displayname .hourwidget-calendar .fc-toolbar{padding-bottom:24px}.is-small .hourwidget-calendar .fc-toolbar>.fc-right>button.fc-today-button{position:absolute;left:15px}.hourwidget-timezonehelper{color:#aeaeae;text-align:center;padding:7px 10px;background-color:#fbfbfb;border-top:1px solid #ececec;min-height:15px;z-index:20;border-radius:0 0 4px 4px}.hourwidget-timezoneicon{width:10px;margin-right:5px}.hourwidget-avatar{position:absolute;top:-50px;left:50%;-webkit-transform:translateX(-50%);transform:translateX(-50%);border-radius:150px;border:3px solid #fff;box-shadow:0 1px 3px 0 rgba(0,0,0,.13);overflow:hidden;z-index:40;background-color:#fff}.is-small .hourwidget-avatar{top:-40px}.hourwidget-avatar img{max-width:100%;vertical-align:middle;display:inline-block;width:80px;height:80px}.is-small .hourwidget-avatar img{width:70px;height:70px}.hourwidget-displayname{position:absolute;top:0;left:0;padding:15px 20px;color:#333;font-weight:600}.is-small .hourwidget-displayname{text-align:center;width:100%;box-sizing:border-box}.is-small.has-avatar .hourwidget-displayname{top:44px;padding:0 20px}.hourwidget-bookpage{position:absolute;height:100%;width:100%;top:0;left:0;background-color:#fbfbfb;z-index:30;opacity:0;-webkit-transition:opacity .2s ease;transition:opacity .2s ease;border-radius:4px}.hourwidget-bookpage.show{opacity:1}.hourwidget-bookpage-close{position:absolute;top:0;right:0;padding:18px;-webkit-transition:opacity .2s ease;transition:opacity .2s ease;opacity:.3}.hourwidget-bookpage-close:hover{opacity:1}.hourwidget-bookpage-date,.hourwidget-bookpage h2{text-align:center;font-size:34px;font-weight:400;margin-top:70px;margin-bottom:10px}.is-small .hourwidget-bookpage-date,.is-small .hourwidget-bookpage h2{font-size:27px;margin-top:60px}.hourwidget-bookpage-time,.hourwidget-bookpage h3{text-align:center;font-size:17px;font-weight:400;margin-bottom:50px;margin-top:10px}.is-small .hourwidget-bookpage-time,.is-small .hourwidget-bookpage h3{font-size:15px;margin-bottom:35px}.hourwidget-closeicon{width:15px}.hourwidget-form{width:350px;position:relative;margin:0 auto;text-align:center}.is-small .hourwidget-form{width:90%}.hourwidget-form-box{position:relative;box-shadow:0 1px 3px 0 rgba(0,0,0,.1);overflow:hidden;background-color:#fff;line-height:0}.hourwidget-form-success-message{position:absolute;top:-999px;left:0;right:0;padding:30px;background-color:#fff;opacity:0;-webkit-transition:opacity .3s ease;transition:opacity .3s ease;line-height:normal}.is-small .hourwidget-form-success-message{padding:22px 10px}.hourwidget-form-success-message .title{font-size:20px;display:block;margin-bottom:25px}.hourwidget-form-success-message .body{display:block}.hourwidget-form-success-message .body .booked-email{color:#aeaeae}.hourwidget-form.success .hourwidget-form-success-message{opacity:1;top:0;bottom:0}.hourwidget-form-input,.hourwidget-form input,.hourwidget-form input:invalid textarea,.hourwidget-form textarea:invalid{-webkit-transition:box-shadow .2s ease;transition:box-shadow .2s ease;width:100%;padding:15px 25px;margin:0;border:0 solid #ececec;font-size:1em;box-shadow:inset 0 0 1px 1px hsla(0,0%,100%,0);text-align:left;box-sizing:border-box;line-height:normal;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;color:#333}.hourwidget-form-input:focus,.hourwidget-form input:focus,.hourwidget-form input:invalid textarea:focus,.hourwidget-form textarea:invalid:focus{outline:0;box-shadow:inset 0 0 1px 1px #689ad8}.hourwidget-form-input.hidden,.hourwidget-form input.hidden,.hourwidget-form input:invalid textarea.hidden,.hourwidget-form textarea:invalid.hidden{display:none}.hourwidget-form-input:-moz-read-only,.hourwidget-form input:-moz-read-only,.hourwidget-form input:invalid textarea:-moz-read-only,.hourwidget-form textarea:invalid:-moz-read-only{cursor:not-allowed;font-style:italic}.hourwidget-form-input:read-only,.hourwidget-form input:invalid textarea:read-only,.hourwidget-form input:read-only,.hourwidget-form textarea:invalid:read-only{cursor:not-allowed;font-style:italic}.hourwidget-form-input:-moz-read-only:focus,.hourwidget-form input:-moz-read-only:focus,.hourwidget-form input:invalid textarea:-moz-read-only:focus,.hourwidget-form textarea:invalid:-moz-read-only:focus{box-shadow:inset 0 0 1px 1px #d8d8d8}.hourwidget-form-input:read-only:focus,.hourwidget-form input:invalid textarea:read-only:focus,.hourwidget-form input:read-only:focus,.hourwidget-form textarea:invalid:read-only:focus{box-shadow:inset 0 0 1px 1px #d8d8d8}.hourwidget-form-button{position:relative;-webkit-transition:background-color .2s,max-width .3s;transition:background-color .2s,max-width .3s;display:inline-block;padding:13px 25px;background-color:#689ad8;text-transform:uppercase;box-shadow:0 1px 3px 0 rgba(0,0,0,.15);color:#fff;border:0;border-radius:3px;font-size:1.1em;font-weight:600;margin-top:30px;cursor:pointer;height:44px;outline:0;text-align:center;max-width:200px}.hourwidget-form-button .error-text,.hourwidget-form-button .loading-text,.hourwidget-form-button .success-text{-webkit-transition:opacity .3s ease;transition:opacity .3s ease;position:absolute;top:13px;left:50%;-webkit-transform:translateX(-50%);transform:translateX(-50%);opacity:0}.hourwidget-form-button .inactive-text{white-space:nowrap;opacity:1}.hourwidget-form-button .loading-text svg{height:19px;width:19px;-webkit-animation:spin .6s infinite linear;animation:spin .6s infinite linear}.hourwidget-form-button .error-text svg{height:15px;width:15px;margin-top:2px}.hourwidget-form-button .success-text svg{height:15px;margin-top:2px;-webkit-transform:scale(0);transform:scale(0);-webkit-transition:-webkit-transform .6s ease;transition:-webkit-transform .6s ease;transition:transform .6s ease;transition:transform .6s ease,-webkit-transform .6s ease}.hourwidget-form-button:focus,.hourwidget-form-button:hover{background-color:#3f7fce}.hourwidget-form-button.button-shake{-webkit-animation:shake .5s 1 ease;animation:shake .5s 1 ease}.hourwidget-form.loading .hourwidget-form-button,.hourwidget-form.loading .hourwidget-form-button:hover{max-width:80px;background-color:#b1b1b1;cursor:not-allowed}.hourwidget-form.loading .hourwidget-form-button .inactive-text,.hourwidget-form.loading .hourwidget-form-button:hover .inactive-text{opacity:0}.hourwidget-form.loading .hourwidget-form-button .loading-text,.hourwidget-form.loading .hourwidget-form-button:hover .loading-text{opacity:1}.hourwidget-form.error .hourwidget-form-button,.hourwidget-form.error .hourwidget-form-button:hover{max-width:80px;background-color:#d83b46;cursor:not-allowed}.hourwidget-form.error .hourwidget-form-button .inactive-text,.hourwidget-form.error .hourwidget-form-button:hover .inactive-text{opacity:0}.hourwidget-form.error .hourwidget-form-button .error-text,.hourwidget-form.error .hourwidget-form-button:hover .error-text{opacity:1}.hourwidget-form.success .hourwidget-form-button,.hourwidget-form.success .hourwidget-form-button:hover{max-width:80px;background-color:#5baf56;cursor:not-allowed}.hourwidget-form.success .hourwidget-form-button .inactive-text,.hourwidget-form.success .hourwidget-form-button:hover .inactive-text{opacity:0}.hourwidget-form.success .hourwidget-form-button .success-text,.hourwidget-form.success .hourwidget-form-button:hover .success-text{opacity:1}.hourwidget-form.success .hourwidget-form-button .success-text svg,.hourwidget-form.success .hourwidget-form-button:hover .success-text svg{-webkit-transform:scale(1);transform:scale(1)}.hourwidget-poweredby{position:absolute;bottom:0;left:0;right:0;text-align:center;padding:7px 10px}.hourwidget-poweredby a{-webkit-transition:color .2s ease;transition:color .2s ease;color:#aeaeae;text-decoration:none}.hourwidget-poweredby a svg path{-webkit-transition:fill .2s ease;transition:fill .2s ease;fill:#aeaeae}.hourwidget-poweredby a:hover{color:#333}.hourwidget-poweredby a:hover svg path{fill:#333}.hourwidget-hourlogo{width:15px;height:15px;margin-right:5px;vertical-align:sub}", ""]);
+	exports.push([module.id, "/*!\n * Hour Widget\n * http://hourhq.com\n * (c) 2015 Timekit Inc.\n */.hourwidget{position:relative;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;font-size:13px;border-radius:4px;background-color:#fff;box-shadow:0 2px 4px 0 rgba(0,0,0,.2);margin:20px auto;z-index:10;opacity:0;color:#333;border-top:1px solid #ececec}.hourwidget.show{-webkit-transition:opacity .3s ease;transition:opacity .3s ease;opacity:1}.hourwidget.has-avatar{margin-top:60px}.is-small.has-avatar.has-displayname .hourwidget-calendar .fc-toolbar{padding-bottom:24px}.is-small .hourwidget-calendar .fc-toolbar>.fc-right>button.fc-today-button{position:absolute;left:15px}.hourwidget-timezonehelper{color:#aeaeae;text-align:center;padding:7px 10px;background-color:#fbfbfb;border-top:1px solid #ececec;min-height:15px;z-index:20;border-radius:0 0 4px 4px}.hourwidget-timezoneicon{width:10px;margin-right:5px}.hourwidget-avatar{position:absolute;top:-50px;left:50%;-webkit-transform:translateX(-50%);transform:translateX(-50%);border-radius:150px;border:3px solid #fff;box-shadow:0 1px 3px 0 rgba(0,0,0,.13);overflow:hidden;z-index:40;background-color:#fff}.is-small .hourwidget-avatar{top:-40px}.hourwidget-avatar img{max-width:100%;vertical-align:middle;display:inline-block;width:80px;height:80px}.is-small .hourwidget-avatar img{width:70px;height:70px}.hourwidget-displayname{position:absolute;top:0;left:0;padding:15px 20px;color:#333;font-weight:600}.is-small .hourwidget-displayname{text-align:center;width:100%;box-sizing:border-box}.is-small.has-avatar .hourwidget-displayname{top:44px;padding:0 20px}.hourwidget-bookpage{position:absolute;height:100%;width:100%;top:0;left:0;background-color:#fbfbfb;z-index:30;opacity:0;-webkit-transition:opacity .2s ease;transition:opacity .2s ease;border-radius:4px}.hourwidget-bookpage.show{opacity:1}.hourwidget-bookpage-close{position:absolute;top:0;right:0;padding:18px;-webkit-transition:opacity .2s ease;transition:opacity .2s ease;opacity:.3}.hourwidget-bookpage-close:hover{opacity:1}.hourwidget-bookpage-date,.hourwidget-bookpage h2{text-align:center;font-size:34px;font-weight:400;margin-top:70px;margin-bottom:10px}.is-small .hourwidget-bookpage-date,.is-small .hourwidget-bookpage h2{font-size:27px;margin-top:60px}.hourwidget-bookpage-time,.hourwidget-bookpage h3{text-align:center;font-size:17px;font-weight:400;margin-bottom:50px;margin-top:10px}.is-small .hourwidget-bookpage-time,.is-small .hourwidget-bookpage h3{font-size:15px;margin-bottom:35px}.hourwidget-closeicon{height:15px;width:15px}.hourwidget-form{width:350px;position:relative;margin:0 auto;text-align:center}.is-small .hourwidget-form{width:90%}.hourwidget-form-box{position:relative;box-shadow:0 1px 3px 0 rgba(0,0,0,.1);overflow:hidden;background-color:#fff;line-height:0}.hourwidget-form-success-message{position:absolute;top:-999px;left:0;right:0;padding:30px;background-color:#fff;opacity:0;-webkit-transition:opacity .3s ease;transition:opacity .3s ease;line-height:normal}.is-small .hourwidget-form-success-message{padding:22px 10px}.hourwidget-form-success-message .title{font-size:20px;display:block;margin-bottom:25px}.hourwidget-form-success-message .body{display:block}.hourwidget-form-success-message .body .booked-email{color:#aeaeae}.hourwidget-form.success .hourwidget-form-success-message{opacity:1;top:0;bottom:0}.hourwidget-form-input,.hourwidget-form input,.hourwidget-form input:invalid textarea,.hourwidget-form textarea:invalid{-webkit-transition:box-shadow .2s ease;transition:box-shadow .2s ease;width:100%;padding:15px 25px;margin:0;border:0 solid #ececec;font-size:1em;box-shadow:inset 0 0 1px 1px hsla(0,0%,100%,0);text-align:left;box-sizing:border-box;line-height:normal;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;color:#333;overflow:auto}.hourwidget-form-input:focus,.hourwidget-form input:focus,.hourwidget-form input:invalid textarea:focus,.hourwidget-form textarea:invalid:focus{outline:0;box-shadow:inset 0 0 1px 1px #689ad8}.hourwidget-form-input.hidden,.hourwidget-form input.hidden,.hourwidget-form input:invalid textarea.hidden,.hourwidget-form textarea:invalid.hidden{display:none}.hourwidget-form-input:-moz-read-only,.hourwidget-form input:-moz-read-only,.hourwidget-form input:invalid textarea:-moz-read-only,.hourwidget-form textarea:invalid:-moz-read-only{cursor:not-allowed;font-style:italic}.hourwidget-form-input:read-only,.hourwidget-form input:invalid textarea:read-only,.hourwidget-form input:read-only,.hourwidget-form textarea:invalid:read-only{cursor:not-allowed;font-style:italic}.hourwidget-form-input:-moz-read-only:focus,.hourwidget-form input:-moz-read-only:focus,.hourwidget-form input:invalid textarea:-moz-read-only:focus,.hourwidget-form textarea:invalid:-moz-read-only:focus{box-shadow:inset 0 0 1px 1px #d8d8d8}.hourwidget-form-input:read-only:focus,.hourwidget-form input:invalid textarea:read-only:focus,.hourwidget-form input:read-only:focus,.hourwidget-form textarea:invalid:read-only:focus{box-shadow:inset 0 0 1px 1px #d8d8d8}.hourwidget-form-button{position:relative;-webkit-transition:background-color .2s,max-width .3s;transition:background-color .2s,max-width .3s;display:inline-block;padding:13px 25px;background-color:#689ad8;text-transform:uppercase;box-shadow:0 1px 3px 0 rgba(0,0,0,.15);color:#fff;border:0;border-radius:3px;font-size:1.1em;font-weight:600;margin-top:30px;cursor:pointer;height:44px;outline:0;text-align:center;max-width:200px}.hourwidget-form-button .error-text,.hourwidget-form-button .loading-text,.hourwidget-form-button .success-text{-webkit-transition:opacity .3s ease;transition:opacity .3s ease;position:absolute;top:13px;left:50%;-webkit-transform:translateX(-50%);transform:translateX(-50%);opacity:0}.hourwidget-form-button .inactive-text{white-space:nowrap;opacity:1}.hourwidget-form-button .loading-text svg{height:19px;width:19px;-webkit-animation:spin .6s infinite linear;animation:spin .6s infinite linear}.hourwidget-form-button .error-text svg{height:15px;width:15px;margin-top:2px}.hourwidget-form-button .success-text svg{height:15px;margin-top:2px;-webkit-transform:scale(0);transform:scale(0);-webkit-transition:-webkit-transform .6s ease;transition:-webkit-transform .6s ease;transition:transform .6s ease;transition:transform .6s ease,-webkit-transform .6s ease}.hourwidget-form-button:focus,.hourwidget-form-button:hover{background-color:#3f7fce}.hourwidget-form-button.button-shake{-webkit-animation:shake .5s 1 ease;animation:shake .5s 1 ease}.hourwidget-form.loading .hourwidget-form-button,.hourwidget-form.loading .hourwidget-form-button:hover{max-width:80px;background-color:#b1b1b1;cursor:not-allowed}.hourwidget-form.loading .hourwidget-form-button .inactive-text,.hourwidget-form.loading .hourwidget-form-button:hover .inactive-text{opacity:0}.hourwidget-form.loading .hourwidget-form-button .loading-text,.hourwidget-form.loading .hourwidget-form-button:hover .loading-text{opacity:1}.hourwidget-form.error .hourwidget-form-button,.hourwidget-form.error .hourwidget-form-button:hover{max-width:80px;background-color:#d83b46;cursor:not-allowed}.hourwidget-form.error .hourwidget-form-button .inactive-text,.hourwidget-form.error .hourwidget-form-button:hover .inactive-text{opacity:0}.hourwidget-form.error .hourwidget-form-button .error-text,.hourwidget-form.error .hourwidget-form-button:hover .error-text{opacity:1}.hourwidget-form.success .hourwidget-form-button,.hourwidget-form.success .hourwidget-form-button:hover{max-width:80px;background-color:#5baf56;cursor:not-allowed}.hourwidget-form.success .hourwidget-form-button .inactive-text,.hourwidget-form.success .hourwidget-form-button:hover .inactive-text{opacity:0}.hourwidget-form.success .hourwidget-form-button .success-text,.hourwidget-form.success .hourwidget-form-button:hover .success-text{opacity:1}.hourwidget-form.success .hourwidget-form-button .success-text svg,.hourwidget-form.success .hourwidget-form-button:hover .success-text svg{-webkit-transform:scale(1);transform:scale(1)}.hourwidget-poweredby{position:absolute;bottom:0;left:0;right:0;text-align:center;padding:7px 10px}.hourwidget-poweredby a{-webkit-transition:color .2s ease;transition:color .2s ease;color:#aeaeae;text-decoration:none}.hourwidget-poweredby a svg path{-webkit-transition:fill .2s ease;transition:fill .2s ease;fill:#aeaeae}.hourwidget-poweredby a:hover{color:#333}.hourwidget-poweredby a:hover svg path{fill:#333}.hourwidget-hourlogo{width:15px;height:15px;margin-right:5px;vertical-align:sub}", ""]);
 	
 	// exports
 

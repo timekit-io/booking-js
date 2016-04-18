@@ -265,6 +265,7 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
       line-height: normal;
       font-family: $fontFamily;
       color: $textColor;
+      overflow: auto;
 
       &:focus {
         outline: 0;

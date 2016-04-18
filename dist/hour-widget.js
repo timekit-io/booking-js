@@ -450,20 +450,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	      utils.doCallback('createBookingSuccessful', config, response);
 	
-	      // Call deprecated callback
-	      var responseDeprecated = response;
-	      responseDeprecated.data = response.data.attributes.event_info;
-	      utils.doCallback('createEventSuccessful', config, responseDeprecated, true);
-	
 	      formElement.find('.booked-email').html(values.email);
 	      formElement.removeClass('loading').addClass('success');
 	
 	    }).catch(function(response){
 	
 	      utils.doCallback('createBookingFailed', config, response);
-	
-	      // Call deprecated callback
-	      utils.doCallback('createEventFailed', config, response, true);
 	
 	      var submitButton = formElement.find('.hourwidget-form-button');
 	      submitButton.addClass('button-shake');
@@ -516,13 +508,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    $.extend(true, args, config.timekitCreateBooking);
 	
-	    if (config.timekitCreateEvent) {
-	      $.extend(true, args.event, config.timekitCreateEvent); // backwards compatibility
-	      utils.logDeprecated('config key "timekitCreateEvent" has been replaced, use "timekitCreateBooking" and see docs');
-	    }
-	
 	    utils.doCallback('createBookingStarted', config, args);
-	    utils.doCallback('createEventStarted', config, args, true);
 	
 	    var requestHeaders = {
 	      'Timekit-OutputTimestampFormat': 'Y-m-d ' + config.localization.emailTimeFormat + ' (P e)'
@@ -530,6 +516,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    return timekit
 	    .headers(requestHeaders)
+	    .include('attributes')
 	    .createBooking(args);
 	
 	  };

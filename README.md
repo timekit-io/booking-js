@@ -3,7 +3,7 @@
 [![Circle CI](https://img.shields.io/circleci/project/timekit-io/booking-js.svg)](https://circleci.com/gh/timekit-io/booking-js)
 [![Codacy Badge](https://api.codacy.com/project/badge/grade/feb445801acf454a95b1690a75959893)](https://www.codacy.com/app/laander/booking-js)
 
-**Latest release:**  [v1.7.0](https://github.com/timekit-io/booking-js/releases)
+**Latest release:**  [v1.7.1](https://github.com/timekit-io/booking-js/releases)
 
 > Make a beautiful embeddable booking widget in minutes.
 

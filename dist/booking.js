@@ -58,7 +58,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	/*!
 	 * Booking.js
-	 * Version: 1.7.0
+	 * Version: 1.7.1
 	 * http://booking.timekit.io
 	 *
 	 * Copyright 2015 Timekit, Inc.

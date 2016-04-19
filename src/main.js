@@ -462,7 +462,6 @@ function TimekitBooking() {
     };
 
     return timekit
-    .include('attributes')
     .headers(requestHeaders)
     .createBooking(args);
 

@@ -45,7 +45,7 @@ describe('Booking configuration', function() {
           var request = jasmine.Ajax.requests.mostRecent();
           var requestData = JSON.parse(request.params);
 
-          expect(request.url).toBe('https://api.timekit.io/v2/bookings?include=attributes');
+          expect(request.url).toBe('https://api.timekit.io/v2/bookings?include=attributes,event');
           expect(requestData.event.invite).toBe(false);
 
           done();

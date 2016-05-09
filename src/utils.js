@@ -20,11 +20,11 @@ module.exports = {
   },
 
   logError: function(message) {
-    console.error('HourWidget Error: ' + message);
+    console.error('TimekitBooking Error: ' + message);
   },
 
   logDeprecated: function(message) {
-    console.warn('HourWidget Deprecated: ' + message);
+    console.warn('TimekitBooking Deprecated: ' + message);
   }
 
 };

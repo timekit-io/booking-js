@@ -176,13 +176,13 @@ describe('Booking fields', function() {
         expect(commentInput.prop('readonly')).toBe(true);
         expect(commentInput.is('[readonly]')).toBe(true);
 
-        $('.hourwidget-form-button').click();
+        $('.bookingjs-form-button').click();
 
-        expect($('.hourwidget-form').hasClass('loading')).toBe(true);
+        expect($('.bookingjs-form').hasClass('loading')).toBe(true);
 
         setTimeout(function() {
 
-          expect($('.hourwidget-form').hasClass('success')).toBe(true);
+          expect($('.bookingjs-form').hasClass('success')).toBe(true);
 
           var request = jasmine.Ajax.requests.mostRecent();
 

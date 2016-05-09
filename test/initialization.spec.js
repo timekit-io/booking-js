@@ -24,27 +24,27 @@ describe('Initialization regular', function() {
 
     expect(window).toBeDefined();
     expect($).toBeDefined();
-    expect($('#hourwidget')).toBeInDOM();
+    expect($('#bookingjs')).toBeInDOM();
 
   });
 
   it('should be able init and display the widget with instance pattern', function() {
 
-    var widget = new HourWidget();
+    var widget = new TimekitBooking();
     widget.init(baseConfig);
 
     expect(widget).toBeDefined();
     expect(widget.getConfig()).toBeDefined();
 
-    expect($('.hourwidget-calendar')).toBeInDOM();
+    expect($('.bookingjs-calendar')).toBeInDOM();
 
   });
 
   it('should be able init and display the widget with singleton pattern', function() {
 
-    HourWidget().init(baseConfig);
+    TimekitBooking().init(baseConfig);
 
-    expect($('.hourwidget-calendar')).toBeInDOM();
+    expect($('.bookingjs-calendar')).toBeInDOM();
 
   });
 
@@ -69,19 +69,19 @@ describe('Initialization minified', function() {
 
     expect(window).toBeDefined();
     expect($).toBeDefined();
-    expect($('#hourwidget')).toBeInDOM();
+    expect($('#bookingjs')).toBeInDOM();
 
   });
 
   it('should be able init and display the widget with instance pattern', function() {
 
-    var widget = new HourWidget();
+    var widget = new TimekitBooking();
     widget.init(baseConfig);
 
     expect(widget).toBeDefined();
     expect(widget.getConfig()).toBeDefined();
 
-    expect($('.hourwidget-calendar')).toBeInDOM();
+    expect($('.bookingjs-calendar')).toBeInDOM();
 
   });
 

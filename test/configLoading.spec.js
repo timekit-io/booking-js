@@ -22,7 +22,7 @@ describe('Config loading', function() {
 
   it('should be able to load remote config with slug', function(done) {
 
-    var widget = new HourWidget();
+    var widget = new TimekitBooking();
     var config = {
       widgetSlug: 'my-widget-slug'
     };
@@ -36,7 +36,7 @@ describe('Config loading', function() {
 
       expect(request.url).toBe('https://api.timekit.io/v2/widgets/hosted/my-widget-slug');
       expect(widget.getConfig().email).toBeDefined();
-      expect($('.hourwidget-calendar')).toBeInDOM();
+      expect($('.bookingjs-calendar')).toBeInDOM();
       done();
 
     }, 50)
@@ -45,7 +45,7 @@ describe('Config loading', function() {
 
   it('should be able to load remote config with id', function(done) {
 
-    var widget = new HourWidget();
+    var widget = new TimekitBooking();
     var config = {
       widgetId: '12345'
     };
@@ -59,7 +59,7 @@ describe('Config loading', function() {
 
       expect(request.url).toBe('https://api.timekit.io/v2/widgets/embed/12345');
       expect(widget.getConfig().email).toBeDefined();
-      expect($('.hourwidget-calendar')).toBeInDOM();
+      expect($('.bookingjs-calendar')).toBeInDOM();
       done();
 
     }, 50)

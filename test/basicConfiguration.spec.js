@@ -27,10 +27,10 @@ describe('Basic configuration', function() {
     }
     createWidget(config);
 
-    expect($('.hourwidget-displayname')).toBeInDOM();
-    expect($('.hourwidget-displayname')).toBeVisible();
-    expect($('.hourwidget-displayname')).toContainElement('span');
-    expect($('.hourwidget-displayname span')).toContainText(config.name);
+    expect($('.bookingjs-displayname')).toBeInDOM();
+    expect($('.bookingjs-displayname')).toBeVisible();
+    expect($('.bookingjs-displayname')).toContainElement('span');
+    expect($('.bookingjs-displayname span')).toContainText(config.name);
 
   });
 
@@ -41,11 +41,11 @@ describe('Basic configuration', function() {
     }
     createWidget(config);
 
-    expect($('.hourwidget-avatar')).toBeInDOM();
-    expect($('.hourwidget-avatar')).toBeVisible();
-    expect($('.hourwidget-avatar')).toContainElement('img');
+    expect($('.bookingjs-avatar')).toBeInDOM();
+    expect($('.bookingjs-avatar')).toBeVisible();
+    expect($('.bookingjs-avatar')).toContainElement('img');
 
-    var source = $('.hourwidget-avatar img').prop('src');
+    var source = $('.bookingjs-avatar img').prop('src');
     var contains = source.indexOf(config.avatar) > -1;
     expect(contains).toBe(true);
 

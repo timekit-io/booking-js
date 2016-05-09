@@ -8,7 +8,7 @@ module.exports = function(config) {
   var newConfig = {};
   $.extend(true, newConfig, config, baseConfig);
 
-  var widget = new HourWidget();
+  var widget = new TimekitBooking();
   widget.init(newConfig);
 
   return widget;

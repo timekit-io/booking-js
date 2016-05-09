@@ -1,20 +1,20 @@
-<div class="hourwidget-bookpage">
-  <a class="hourwidget-bookpage-close" href="#">{{& closeIcon }}</a>
-  <h2 class="hourwidget-bookpage-date">{{ chosenDate }}</h2>
-  <h3 class="hourwidget-bookpage-time">{{ chosenTime }}</h3>
-  <form class="hourwidget-form" action="#">
-    <div class="hourwidget-form-box">
-      <div class="hourwidget-form-success-message">
+<div class="bookingjs-bookpage">
+  <a class="bookingjs-bookpage-close" href="#">{{& closeIcon }}</a>
+  <h2 class="bookingjs-bookpage-date">{{ chosenDate }}</h2>
+  <h3 class="bookingjs-bookpage-time">{{ chosenTime }}</h3>
+  <form class="bookingjs-form" action="#">
+    <div class="bookingjs-form-box">
+      <div class="bookingjs-form-success-message">
         <div class="title">{{ successMessageTitle }}</div>
         <div class="body">{{& successMessageBody }}</div>
       </div>
-      <div class="hourwidget-form-fields">
-        <input class="hourwidget-form-input hidden" type="text" name="start" value="{{ start }}" />
-        <input class="hourwidget-form-input hidden" type="text" name="end" value="{{ end }}" />
+      <div class="bookingjs-form-fields">
+        <input class="bookingjs-form-input hidden" type="text" name="start" value="{{ start }}" />
+        <input class="bookingjs-form-input hidden" type="text" name="end" value="{{ end }}" />
         {{> formFields }}
       </div>
     </div>
-    <button class="hourwidget-form-button" type="submit">
+    <button class="bookingjs-form-button" type="submit">
       <span class="inactive-text">{{ submitText }}</span>
       <span class="loading-text">{{& loadingIcon }}</span>
       <span class="error-text">{{& errorIcon }}</span>

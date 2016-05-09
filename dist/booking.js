@@ -101,9 +101,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var prepareDOM = function() {
 	
 	    rootTarget = $(config.targetEl);
-	    if (rootTarget.length === 0) {
-	      utils.logError('No target DOM element was found (' + config.targetEl + ')');
-	    }
+	    if (rootTarget.length === 0) rootTarget = $('#hourwidget'); // TODO temprorary fix for hour widget migrations
+	    if (rootTarget.length === 0) utils.logError('No target DOM element was found (' + config.targetEl + ')');
 	    rootTarget.addClass('bookingjs');
 	    rootTarget.children(':not(script)').remove();
 	

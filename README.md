@@ -67,7 +67,7 @@ If you intent to run multiple instances or want more control, just create a new 
   <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
   <script type="text/javascript" src="//cdn.timekit.io/booking-js/v1/booking.min.js"></script>
   <script type="text/javascript">
-    var widget = new HourWidget();
+    var widget = new TimekitBooking();
     widget.init({
       email:    'marty.mcfly@timekit.io',
       apiToken: 'bNpbFHRmrfZbtS5nEtCVl8sY5vUkOFCL',
@@ -140,7 +140,7 @@ You can pass any of the [Timekit JS SDK](https://github.com/timekit-io/js-sdk) s
 
 ```javascript
 timekitConfig: {
-  app:          'hour-embed' // Default
+  app:          'bookingjs' // Default
 }
 ```
 
@@ -241,7 +241,7 @@ localization: {
 },
 ```
 
-For full language support, FullCalendar also takes a ["lang" option](http://fullcalendar.io/docs/text/lang/), accompanied by a language file. Make sure to use defer attribute on a script tag loading the language file if you are deferring hour widget, language file should be loaded after hour widget, but before initialization.
+For full language support, FullCalendar also takes a ["lang" option](http://fullcalendar.io/docs/text/lang/), accompanied by a language file. Make sure to use defer attribute on a script tag loading the language file if you are deferring booking.js, language file should be loaded after booking.js, but before initialization.
 
 Remember to set `localization.timeDateFormat` to false so it doesn't override the language file's settings.
 
@@ -354,7 +354,7 @@ callbacks: {
 After you instantiated the widget, you can control it with the following methods:
 
 ```javascript
-var widget = new HourWidget();
+var widget = new TimekitBooking();
 widget.init(config);          // Initializes the widget with the given config
 widget.render();              // Re-renders the widget with it's instance config
 widget.setConfig(config);     // Push a new config into it (call render() afterwards)

@@ -2,10 +2,10 @@
   "name": "timekit-booking",
   "version": "1.7.2",
   "description": "Make a beautiful embeddable booking widget in minutes",
-  "main": "dist/booking.js",
+  "main": "dist/booking.min.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/timekit/booking.git"
+    "url": "https://github.com/timekit-io/booking-js.git"
   },
   "scripts": {
     "test": "karma start --single-run",

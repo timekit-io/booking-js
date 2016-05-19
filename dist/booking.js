@@ -525,8 +525,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    var campaignName = 'widget'
 	    var campaignSource = window.location.hostname.replace(/\./g, '-')
-	    if (config.widgetSlug) campaignName = 'hosted-widget'
-	    if (config.widgetId) campaignName = 'embedded-widget'
+	    if (config.widgetSlug) { campaignName = 'hosted-widget'; }
+	    if (config.widgetId) { campaignName = 'embedded-widget'; }
 	
 	    var template = __webpack_require__(57);
 	    var timekitLogo = __webpack_require__(58);
@@ -658,14 +658,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (suppliedConfig.widgetId) {
 	      return timekit
 	      .getEmbedWidget({ id: suppliedConfig.widgetId })
-	      .catch(function (response) {
+	      .catch(function () {
 	        utils.logError('The widget could not be found, please double-check your widgetId');
 	      })
 	    }
 	    if (suppliedConfig.widgetSlug) {
 	      return timekit
 	      .getHostedWidget({ slug: suppliedConfig.widgetSlug })
-	      .catch(function (response) {
+	      .catch(function () {
 	        utils.logError('The widget could not be found, please double-check your widgetSlug');
 	      })
 	    } else {

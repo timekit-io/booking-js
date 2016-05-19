@@ -2,11 +2,11 @@
 
 /*!
  * Booking.js
- * Version: 1.7.2
- * http://booking.timekit.io
+ * Version: 1.8.0
+ * http://timekit.io
  *
  * Copyright 2015 Timekit, Inc.
- * Timekit Booking.js is freely distributable under the MIT license.
+ * Booking.js is freely distributable under the MIT license.
  *
  */
 
@@ -45,18 +45,23 @@ function TimekitBooking() {
   var prepareDOM = function() {
 
     rootTarget = $(config.targetEl);
-    if (rootTarget.length === 0) {
-      utils.logError('No target DOM element was found (' + config.targetEl + ')');
-    }
+    if (rootTarget.length === 0) rootTarget = $('#hourwidget'); // TODO temprorary fix for hour widget migrations
+    if (rootTarget.length === 0) utils.logError('No target DOM element was found (' + config.targetEl + ')');
     rootTarget.addClass('bookingjs');
     rootTarget.children(':not(script)').remove();
 
   };
 
-  // Setup the Timekit SDK with correct credentials
-  var timekitSetup = function() {
+  // Setup the Timekit SDK with correct config
+  var timekitSetupConfig = function() {
 
     timekit.configure(config.timekitConfig);
+
+  };
+
+  // Setup the Timekit SDK with correct credentials
+  var timekitSetupUser = function() {
+
     timekit.setUser(config.email, config.apiToken);
 
   };
@@ -64,7 +69,12 @@ function TimekitBooking() {
   // Fetch availabile time through Timekit SDK
   var timekitFindTime = function() {
 
-    var args = { emails: [config.email] };
+    var args = {};
+
+    // Only add email to findtime if no calendars or users are explicitly specified
+    if (!config.timekitFindTime.calendar_ids && !config.timekitFindTime.user_ids) {
+      args.emails = [config.email];
+    }
     $.extend(args, config.timekitFindTime);
 
     utils.doCallback('findTimeStarted', config, args);
@@ -383,20 +393,12 @@ function TimekitBooking() {
 
       utils.doCallback('createBookingSuccessful', config, response);
 
-      // Call deprecated callback
-      var responseDeprecated = response;
-      responseDeprecated.data = response.data.attributes.event_info;
-      utils.doCallback('createEventSuccessful', config, responseDeprecated, true);
-
       formElement.find('.booked-email').html(values.email);
       formElement.removeClass('loading').addClass('success');
 
     }).catch(function(response){
 
       utils.doCallback('createBookingFailed', config, response);
-
-      // Call deprecated callback
-      utils.doCallback('createEventFailed', config, response, true);
 
       var submitButton = formElement.find('.bookingjs-form-button');
       submitButton.addClass('button-shake');
@@ -449,13 +451,7 @@ function TimekitBooking() {
 
     $.extend(true, args, config.timekitCreateBooking);
 
-    if (config.timekitCreateEvent) {
-      $.extend(true, args.event, config.timekitCreateEvent); // backwards compatibility
-      utils.logDeprecated('config key "timekitCreateEvent" has been replaced, use "timekitCreateBooking" and see docs');
-    }
-
     utils.doCallback('createBookingStarted', config, args);
-    utils.doCallback('createEventStarted', config, args, true);
 
     var requestHeaders = {
       'Timekit-OutputTimestampFormat': 'Y-m-d ' + config.localization.emailTimeFormat + ' (P e)'
@@ -471,30 +467,38 @@ function TimekitBooking() {
   // Render the powered by Timekit message
   var renderPoweredByMessage = function(pageTarget) {
 
+    var campaignName = 'widget'
+    var campaignSource = window.location.hostname.replace(/\./g, '-')
+    if (config.widgetSlug) { campaignName = 'hosted-widget'; }
+    if (config.widgetId) { campaignName = 'embedded-widget'; }
+
     var template = require('./templates/poweredby.html');
-    var timekitIcon = require('!svg-inline!./assets/timekit-icon.svg');
+    var timekitLogo = require('!svg-inline!./assets/timekit-logo.svg');
     var poweredTarget = $(template.render({
-      timekitIcon: timekitIcon
+      timekitLogo: timekitLogo,
+      campaignName: campaignName,
+      campaignSource: campaignSource
     }));
 
     pageTarget.append(poweredTarget);
 
   };
 
-  // Set configs and defaults
+  // Set config defaults
+  var setConfigDefaults = function(suppliedConfig) {
+    return $.extend(true, {}, defaultConfig.primary, suppliedConfig);
+  }
+
+  // Setup config
   var setConfig = function(suppliedConfig) {
 
     // Check whether a config is supplied
     if(suppliedConfig === undefined || typeof suppliedConfig !== 'object' || $.isEmptyObject(suppliedConfig)) {
-      if (window.timekitBookingConfig !== undefined) {
-        suppliedConfig = window.timekitBookingConfig;
-      } else {
-        utils.logError('No configuration was supplied or found. Please supply a config object upon library initialization');
-      }
+      utils.logError('No configuration was supplied or found. Please supply a config object upon library initialization');
     }
 
     // Extend the default config with supplied settings
-    var newConfig = $.extend(true, {}, defaultConfig.primary, suppliedConfig);
+    var newConfig = setConfigDefaults(suppliedConfig);
 
     // Apply timeDateFormat presets
     var presetsConfig = {};
@@ -536,11 +540,15 @@ function TimekitBooking() {
   // Render method
   var render = function() {
 
+    // Include library styles if enabled
+    includeStyles();
+
     // Set rootTarget to the target element and clean before child nodes before continuing
     prepareDOM();
 
     // Setup Timekit SDK config
-    timekitSetup();
+    timekitSetupConfig();
+    timekitSetupUser();
 
     // Initialize FullCalendar
     initializeCalendar();
@@ -572,17 +580,51 @@ function TimekitBooking() {
   // Initilization method
   var init = function(suppliedConfig) {
 
-    // Handle config and defaults
-    setConfig(suppliedConfig);
-
-    // Include library styles if enabled
-    if (config.includeStyles) {
-      includeStyles();
+    // Start from local config
+    if (!suppliedConfig.widgetId && !suppliedConfig.widgetSlug) {
+      return start(suppliedConfig)
     }
 
-    return render();
+    // Load remote config
+    return loadRemoteConfig(suppliedConfig)
+    .then(function (response) {
+      var mergedConfig = $.extend(true, {}, response.data.config, suppliedConfig);
+      start(mergedConfig)
+    })
 
   };
+
+  // Load config from remote (embed or hosted)
+  var loadRemoteConfig = function(suppliedConfig) {
+
+    config = setConfigDefaults(suppliedConfig)
+    timekitSetupConfig();
+    if (suppliedConfig.widgetId) {
+      return timekit
+      .getEmbedWidget({ id: suppliedConfig.widgetId })
+      .catch(function () {
+        utils.logError('The widget could not be found, please double-check your widgetId');
+      })
+    }
+    if (suppliedConfig.widgetSlug) {
+      return timekit
+      .getHostedWidget({ slug: suppliedConfig.widgetSlug })
+      .catch(function () {
+        utils.logError('The widget could not be found, please double-check your widgetSlug');
+      })
+    } else {
+      utils.logError('No widget configuration, widgetSlug or widgetId found');
+    }
+
+  }
+
+  var start = function(suppliedConfig) {
+
+    // Handle config and defaults
+    setConfig(suppliedConfig);
+    return render();
+
+  }
 
   var destroy = function() {
 
@@ -613,10 +655,12 @@ function TimekitBooking() {
 }
 
 // Autoload if config is available on window, else export function
-if (window && window.timekitBookingConfig && window.timekitBookingConfig.autoload !== false) {
+// TODO temprorary fix for hour widget migrations
+var globalLibraryConfig = window.timekitBookingConfig || window.hourWidgetConfig
+if (window && globalLibraryConfig && globalLibraryConfig.autoload !== false) {
   $(window).load(function(){
     var instance = new TimekitBooking();
-    instance.init(window.timekitBookingConfig);
+    instance.init(globalLibraryConfig);
     module.exports = instance;
   });
 } else {

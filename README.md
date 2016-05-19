@@ -3,7 +3,11 @@
 [![Circle CI](https://img.shields.io/circleci/project/timekit-io/booking-js.svg)](https://circleci.com/gh/timekit-io/booking-js)
 [![Codacy Badge](https://api.codacy.com/project/badge/grade/feb445801acf454a95b1690a75959893)](https://www.codacy.com/app/laander/booking-js)
 
+<<<<<<< HEAD
+**Latest release:**  [v1.8.0](https://github.com/timekit-io/booking-js/releases)
+=======
 **Latest release:**  [v1.7.2](https://github.com/timekit-io/booking-js/releases)
+>>>>>>> e49790631cc1779580a3b196fdea47f57b2abff9
 
 > Make a beautiful embeddable booking widget in minutes.
 
@@ -15,11 +19,12 @@ Maintainer: Lasse Boisen Andersen ([la@timekit.io](mailto:la@timekit.io)). PR's 
 
 ## Get started
 
-**Visit [booking.timekit.io](http://booking.timekit.io) to set up your account and generate a config.**
+You can use the widget in two different ways:
 
-Booking.js is meant as an easy to use, drop-in script that does it's job without any coding required. It's made for the browser and is quite similar to Stripe's Checkout.js.
+1) For non-developers, **[Hour](http://hourhq.com)** is a simple and easy to use availability and booking system made for sales & support scenarios.
+2) For developers, **[Timekit](http://timekit.io)** provides you with a modular and flexible API platform that allows you to integrate availability and bookings deep into your own product.
 
-*This repo is mainly for community contributions and the curious soul that would like to customize the widget beyond settings provided in the wizard.*
+*This repo is mainly for community contributions and the curious soul that would like to customize the widget.*
 
 ## Dependencies
 
@@ -107,7 +112,7 @@ Booking.js is made for various use-cases, so it's really extensible and customiz
   includeStyles:            true, // Inject fullCalendar and library styles in <head>
   showCredits:              true, // Display a "Powered by Timekit" attribution footer (thanks!)
   goToFirstEvent:           true, // Display and scroll to the first upcoming event in the calendar (to avoid showing a blank calendar)
-  bookingGraph:              'instant', // Set which booking flow graph that should be used (also supports "confirm_decline", see below)
+  bookingGraph:             'instant', // Set which booking flow graph that should be used (also supports "confirm_decline", see below)
 
   // Timekit JS SDK (see below)
   timekitConfig:            { ... },

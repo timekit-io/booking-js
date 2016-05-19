@@ -58,11 +58,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	/*!
 	 * Booking.js
-	 * Version: 1.7.2
-	 * http://booking.timekit.io
+	 * Version: 1.8.0
+	 * http://timekit.io
 	 *
 	 * Copyright 2015 Timekit, Inc.
-	 * Timekit Booking.js is freely distributable under the MIT license.
+	 * Booking.js is freely distributable under the MIT license.
 	 *
 	 */
 	
@@ -101,18 +101,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var prepareDOM = function() {
 	
 	    rootTarget = $(config.targetEl);
-	    if (rootTarget.length === 0) {
-	      utils.logError('No target DOM element was found (' + config.targetEl + ')');
-	    }
+	    if (rootTarget.length === 0) rootTarget = $('#hourwidget'); // TODO temprorary fix for hour widget migrations
+	    if (rootTarget.length === 0) utils.logError('No target DOM element was found (' + config.targetEl + ')');
 	    rootTarget.addClass('bookingjs');
 	    rootTarget.children(':not(script)').remove();
 	
 	  };
 	
-	  // Setup the Timekit SDK with correct credentials
-	  var timekitSetup = function() {
+	  // Setup the Timekit SDK with correct config
+	  var timekitSetupConfig = function() {
 	
 	    timekit.configure(config.timekitConfig);
+	
+	  };
+	
+	  // Setup the Timekit SDK with correct credentials
+	  var timekitSetupUser = function() {
+	
 	    timekit.setUser(config.email, config.apiToken);
 	
 	  };
@@ -120,7 +125,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Fetch availabile time through Timekit SDK
 	  var timekitFindTime = function() {
 	
-	    var args = { emails: [config.email] };
+	    var args = {};
+	
+	    // Only add email to findtime if no calendars or users are explicitly specified
+	    if (!config.timekitFindTime.calendar_ids && !config.timekitFindTime.user_ids) {
+	      args.emails = [config.email];
+	    }
 	    $.extend(args, config.timekitFindTime);
 	
 	    utils.doCallback('findTimeStarted', config, args);
@@ -439,20 +449,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	      utils.doCallback('createBookingSuccessful', config, response);
 	
-	      // Call deprecated callback
-	      var responseDeprecated = response;
-	      responseDeprecated.data = response.data.attributes.event_info;
-	      utils.doCallback('createEventSuccessful', config, responseDeprecated, true);
-	
 	      formElement.find('.booked-email').html(values.email);
 	      formElement.removeClass('loading').addClass('success');
 	
 	    }).catch(function(response){
 	
 	      utils.doCallback('createBookingFailed', config, response);
-	
-	      // Call deprecated callback
-	      utils.doCallback('createEventFailed', config, response, true);
 	
 	      var submitButton = formElement.find('.bookingjs-form-button');
 	      submitButton.addClass('button-shake');
@@ -505,13 +507,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    $.extend(true, args, config.timekitCreateBooking);
 	
-	    if (config.timekitCreateEvent) {
-	      $.extend(true, args.event, config.timekitCreateEvent); // backwards compatibility
-	      utils.logDeprecated('config key "timekitCreateEvent" has been replaced, use "timekitCreateBooking" and see docs');
-	    }
-	
 	    utils.doCallback('createBookingStarted', config, args);
-	    utils.doCallback('createEventStarted', config, args, true);
 	
 	    var requestHeaders = {
 	      'Timekit-OutputTimestampFormat': 'Y-m-d ' + config.localization.emailTimeFormat + ' (P e)'
@@ -527,30 +523,38 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Render the powered by Timekit message
 	  var renderPoweredByMessage = function(pageTarget) {
 	
+	    var campaignName = 'widget'
+	    var campaignSource = window.location.hostname.replace(/\./g, '-')
+	    if (config.widgetSlug) { campaignName = 'hosted-widget'; }
+	    if (config.widgetId) { campaignName = 'embedded-widget'; }
+	
 	    var template = __webpack_require__(57);
-	    var timekitIcon = __webpack_require__(58);
+	    var timekitLogo = __webpack_require__(58);
 	    var poweredTarget = $(template.render({
-	      timekitIcon: timekitIcon
+	      timekitLogo: timekitLogo,
+	      campaignName: campaignName,
+	      campaignSource: campaignSource
 	    }));
 	
 	    pageTarget.append(poweredTarget);
 	
 	  };
 	
-	  // Set configs and defaults
+	  // Set config defaults
+	  var setConfigDefaults = function(suppliedConfig) {
+	    return $.extend(true, {}, defaultConfig.primary, suppliedConfig);
+	  }
+	
+	  // Setup config
 	  var setConfig = function(suppliedConfig) {
 	
 	    // Check whether a config is supplied
 	    if(suppliedConfig === undefined || typeof suppliedConfig !== 'object' || $.isEmptyObject(suppliedConfig)) {
-	      if (window.timekitBookingConfig !== undefined) {
-	        suppliedConfig = window.timekitBookingConfig;
-	      } else {
-	        utils.logError('No configuration was supplied or found. Please supply a config object upon library initialization');
-	      }
+	      utils.logError('No configuration was supplied or found. Please supply a config object upon library initialization');
 	    }
 	
 	    // Extend the default config with supplied settings
-	    var newConfig = $.extend(true, {}, defaultConfig.primary, suppliedConfig);
+	    var newConfig = setConfigDefaults(suppliedConfig);
 	
 	    // Apply timeDateFormat presets
 	    var presetsConfig = {};
@@ -592,11 +596,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Render method
 	  var render = function() {
 	
+	    // Include library styles if enabled
+	    includeStyles();
+	
 	    // Set rootTarget to the target element and clean before child nodes before continuing
 	    prepareDOM();
 	
 	    // Setup Timekit SDK config
-	    timekitSetup();
+	    timekitSetupConfig();
+	    timekitSetupUser();
 	
 	    // Initialize FullCalendar
 	    initializeCalendar();
@@ -628,17 +636,51 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Initilization method
 	  var init = function(suppliedConfig) {
 	
-	    // Handle config and defaults
-	    setConfig(suppliedConfig);
-	
-	    // Include library styles if enabled
-	    if (config.includeStyles) {
-	      includeStyles();
+	    // Start from local config
+	    if (!suppliedConfig.widgetId && !suppliedConfig.widgetSlug) {
+	      return start(suppliedConfig)
 	    }
 	
-	    return render();
+	    // Load remote config
+	    return loadRemoteConfig(suppliedConfig)
+	    .then(function (response) {
+	      var mergedConfig = $.extend(true, {}, response.data.config, suppliedConfig);
+	      start(mergedConfig)
+	    })
 	
 	  };
+	
+	  // Load config from remote (embed or hosted)
+	  var loadRemoteConfig = function(suppliedConfig) {
+	
+	    config = setConfigDefaults(suppliedConfig)
+	    timekitSetupConfig();
+	    if (suppliedConfig.widgetId) {
+	      return timekit
+	      .getEmbedWidget({ id: suppliedConfig.widgetId })
+	      .catch(function () {
+	        utils.logError('The widget could not be found, please double-check your widgetId');
+	      })
+	    }
+	    if (suppliedConfig.widgetSlug) {
+	      return timekit
+	      .getHostedWidget({ slug: suppliedConfig.widgetSlug })
+	      .catch(function () {
+	        utils.logError('The widget could not be found, please double-check your widgetSlug');
+	      })
+	    } else {
+	      utils.logError('No widget configuration, widgetSlug or widgetId found');
+	    }
+	
+	  }
+	
+	  var start = function(suppliedConfig) {
+	
+	    // Handle config and defaults
+	    setConfig(suppliedConfig);
+	    return render();
+	
+	  }
 	
 	  var destroy = function() {
 	
@@ -669,10 +711,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	
 	// Autoload if config is available on window, else export function
-	if (window && window.timekitBookingConfig && window.timekitBookingConfig.autoload !== false) {
+	// TODO temprorary fix for hour widget migrations
+	var globalLibraryConfig = window.timekitBookingConfig || window.hourWidgetConfig
+	if (window && globalLibraryConfig && globalLibraryConfig.autoload !== false) {
 	  $(window).load(function(){
 	    var instance = new TimekitBooking();
-	    instance.init(window.timekitBookingConfig);
+	    instance.init(globalLibraryConfig);
 	    module.exports = instance;
 	  });
 	} else {
@@ -691,9 +735,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
-	 * FullCalendar v2.6.1
+	 * FullCalendar v2.7.1
 	 * Docs & License: http://fullcalendar.io/
-	 * (c) 2015 Adam Shaw
+	 * (c) 2016 Adam Shaw
 	 */
 	
 	(function(factory) {
@@ -711,10 +755,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	;;
 	
 	var FC = $.fullCalendar = {
-		version: "2.6.1",
+		version: "2.7.1",
 		internalApiVersion: 3
 	};
 	var fcViews = FC.views = {};
+	
+	
+	FC.isTouch = 'ontouchstart' in document;
 	
 	
 	$.fn.fullCalendar = function(options) {
@@ -954,29 +1001,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	
 	
-	// Turns a container element into a scroller if its contents is taller than the allotted height.
-	// Returns true if the element is now a scroller, false otherwise.
-	// NOTE: this method is best because it takes weird zooming dimensions into account
-	function setPotentialScroller(containerEl, height) {
-		containerEl.height(height).addClass('fc-scroller');
+	// Given one element that resides inside another,
+	// Subtracts the height of the inner element from the outer element.
+	function subtractInnerElHeight(outerEl, innerEl) {
+		var both = outerEl.add(innerEl);
+		var diff;
 	
-		// are scrollbars needed?
-		if (containerEl[0].scrollHeight - 1 > containerEl[0].clientHeight) { // !!! -1 because IE is often off-by-one :(
-			return true;
-		}
+		// effin' IE8/9/10/11 sometimes returns 0 for dimensions. this weird hack was the only thing that worked
+		both.css({
+			position: 'relative', // cause a reflow, which will force fresh dimension recalculation
+			left: -1 // ensure reflow in case the el was already relative. negative is less likely to cause new scroll
+		});
+		diff = outerEl.outerHeight() - innerEl.outerHeight(); // grab the dimensions
+		both.css({ position: '', left: '' }); // undo hack
 	
-		unsetScroller(containerEl); // undo
-		return false;
+		return diff;
 	}
 	
 	
-	// Takes an element that might have been a scroller, and turns it back into a normal element.
-	function unsetScroller(containerEl) {
-		containerEl.height('').removeClass('fc-scroller');
-	}
-	
-	
-	/* General DOM Utilities
+	/* Element Geom Utilities
 	----------------------------------------------------------------------------------------------------------------------*/
 	
 	FC.getOuterRect = getOuterRect;
@@ -1001,26 +1044,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	// Queries the outer bounding area of a jQuery element.
 	// Returns a rectangle with absolute coordinates: left, right (exclusive), top, bottom (exclusive).
-	function getOuterRect(el) {
+	// Origin is optional.
+	function getOuterRect(el, origin) {
 		var offset = el.offset();
+		var left = offset.left - (origin ? origin.left : 0);
+		var top = offset.top - (origin ? origin.top : 0);
 	
 		return {
-			left: offset.left,
-			right: offset.left + el.outerWidth(),
-			top: offset.top,
-			bottom: offset.top + el.outerHeight()
+			left: left,
+			right: left + el.outerWidth(),
+			top: top,
+			bottom: top + el.outerHeight()
 		};
 	}
 	
 	
 	// Queries the area within the margin/border/scrollbars of a jQuery element. Does not go within the padding.
 	// Returns a rectangle with absolute coordinates: left, right (exclusive), top, bottom (exclusive).
+	// Origin is optional.
 	// NOTE: should use clientLeft/clientTop, but very unreliable cross-browser.
-	function getClientRect(el) {
+	function getClientRect(el, origin) {
 		var offset = el.offset();
 		var scrollbarWidths = getScrollbarWidths(el);
-		var left = offset.left + getCssFloat(el, 'border-left-width') + scrollbarWidths.left;
-		var top = offset.top + getCssFloat(el, 'border-top-width') + scrollbarWidths.top;
+		var left = offset.left + getCssFloat(el, 'border-left-width') + scrollbarWidths.left - (origin ? origin.left : 0);
+		var top = offset.top + getCssFloat(el, 'border-top-width') + scrollbarWidths.top - (origin ? origin.top : 0);
 	
 		return {
 			left: left,
@@ -1033,10 +1080,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	// Queries the area within the margin/border/padding of a jQuery element. Assumed not to have scrollbars.
 	// Returns a rectangle with absolute coordinates: left, right (exclusive), top, bottom (exclusive).
-	function getContentRect(el) {
+	// Origin is optional.
+	function getContentRect(el, origin) {
 		var offset = el.offset(); // just outside of border, margin not included
-		var left = offset.left + getCssFloat(el, 'border-left-width') + getCssFloat(el, 'padding-left');
-		var top = offset.top + getCssFloat(el, 'border-top-width') + getCssFloat(el, 'padding-top');
+		var left = offset.left + getCssFloat(el, 'border-left-width') + getCssFloat(el, 'padding-left') -
+			(origin ? origin.left : 0);
+		var top = offset.top + getCssFloat(el, 'border-top-width') + getCssFloat(el, 'padding-top') -
+			(origin ? origin.top : 0);
 	
 		return {
 			left: left,
@@ -1106,13 +1156,58 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	
 	
+	/* Mouse / Touch Utilities
+	----------------------------------------------------------------------------------------------------------------------*/
+	
+	FC.preventDefault = preventDefault;
+	
+	
 	// Returns a boolean whether this was a left mouse click and no ctrl key (which means right click on Mac)
 	function isPrimaryMouseButton(ev) {
 		return ev.which == 1 && !ev.ctrlKey;
 	}
 	
 	
-	/* Geometry
+	function getEvX(ev) {
+		if (ev.pageX !== undefined) {
+			return ev.pageX;
+		}
+		var touches = ev.originalEvent.touches;
+		if (touches) {
+			return touches[0].pageX;
+		}
+	}
+	
+	
+	function getEvY(ev) {
+		if (ev.pageY !== undefined) {
+			return ev.pageY;
+		}
+		var touches = ev.originalEvent.touches;
+		if (touches) {
+			return touches[0].pageY;
+		}
+	}
+	
+	
+	function getEvIsTouch(ev) {
+		return /^touch/.test(ev.type);
+	}
+	
+	
+	function preventSelection(el) {
+		el.addClass('fc-unselectable')
+			.on('selectstart', preventDefault);
+	}
+	
+	
+	// Stops a mouse/touch event from doing it's native browser action
+	function preventDefault(ev) {
+		ev.preventDefault();
+	}
+	
+	
+	/* General Geometry Utils
 	----------------------------------------------------------------------------------------------------------------------*/
 	
 	FC.intersectRects = intersectRects;
@@ -1638,22 +1733,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	// Returns a function, that, as long as it continues to be invoked, will not
 	// be triggered. The function will be called after it stops being called for
-	// N milliseconds.
+	// N milliseconds. If `immediate` is passed, trigger the function on the
+	// leading edge, instead of the trailing.
 	// https://github.com/jashkenas/underscore/blob/1.6.0/underscore.js#L714
-	function debounce(func, wait) {
-		var timeoutId;
-		var args;
-		var context;
-		var timestamp; // of most recent call
+	function debounce(func, wait, immediate) {
+		var timeout, args, context, timestamp, result;
+	
 		var later = function() {
 			var last = +new Date() - timestamp;
-			if (last < wait && last > 0) {
-				timeoutId = setTimeout(later, wait - last);
+			if (last < wait) {
+				timeout = setTimeout(later, wait - last);
 			}
 			else {
-				timeoutId = null;
-				func.apply(context, args);
-				if (!timeoutId) {
+				timeout = null;
+				if (!immediate) {
+					result = func.apply(context, args);
 					context = args = null;
 				}
 			}
@@ -1663,9 +1757,15 @@ return /******/ (function(modules) { // webpackBootstrap
 			context = this;
 			args = arguments;
 			timestamp = +new Date();
-			if (!timeoutId) {
-				timeoutId = setTimeout(later, wait);
+			var callNow = immediate && !timeout;
+			if (!timeout) {
+				timeout = setTimeout(later, wait);
 			}
+			if (callNow) {
+				result = func.apply(context, args);
+				context = args = null;
+			}
+			return result;
 		};
 	}
 	
@@ -2469,23 +2569,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 	function mixIntoClass(theClass, members) {
-		copyOwnProps(members.prototype || members, theClass.prototype); // TODO: copyNativeMethods?
+		copyOwnProps(members, theClass.prototype); // TODO: copyNativeMethods?
 	}
 	;;
 	
-	var Emitter = FC.Emitter = Class.extend({
+	var EmitterMixin = FC.EmitterMixin = {
 	
 		callbackHash: null,
 	
 	
 		on: function(name, callback) {
-			this.getCallbacks(name).add(callback);
+			this.loopCallbacks(name, 'add', [ callback ]);
+	
 			return this; // for chaining
 		},
 	
 	
 		off: function(name, callback) {
-			this.getCallbacks(name).remove(callback);
+			this.loopCallbacks(name, 'remove', [ callback ]);
+	
 			return this; // for chaining
 		},
 	
@@ -2500,30 +2602,104 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 		triggerWith: function(name, context, args) {
-			var callbacks = this.getCallbacks(name);
-	
-			callbacks.fireWith(context, args);
+			this.loopCallbacks(name, 'fireWith', [ context, args ]);
 	
 			return this; // for chaining
 		},
 	
 	
-		getCallbacks: function(name) {
-			var callbacks;
+		/*
+		Given an event name string with possible namespaces,
+		call the given methodName on all the internal Callback object with the given arguments.
+		*/
+		loopCallbacks: function(name, methodName, args) {
+			var parts = name.split('.'); // "click.namespace" -> [ "click", "namespace" ]
+			var i, part;
+			var callbackObj;
 	
+			for (i = 0; i < parts.length; i++) {
+				part = parts[i];
+				if (part) { // in case no event name like "click"
+					callbackObj = this.ensureCallbackObj((i ? '.' : '') + part); // put periods in front of namespaces
+					callbackObj[methodName].apply(callbackObj, args);
+				}
+			}
+		},
+	
+	
+		ensureCallbackObj: function(name) {
 			if (!this.callbackHash) {
 				this.callbackHash = {};
 			}
-	
-			callbacks = this.callbackHash[name];
-			if (!callbacks) {
-				callbacks = this.callbackHash[name] = $.Callbacks();
+			if (!this.callbackHash[name]) {
+				this.callbackHash[name] = $.Callbacks();
 			}
-	
-			return callbacks;
+			return this.callbackHash[name];
 		}
 	
-	});
+	};
+	;;
+	
+	/*
+	Utility methods for easily listening to events on another object,
+	and more importantly, easily unlistening from them.
+	*/
+	var ListenerMixin = FC.ListenerMixin = (function() {
+		var guid = 0;
+		var ListenerMixin = {
+	
+			listenerId: null,
+	
+			/*
+			Given an `other` object that has on/off methods, bind the given `callback` to an event by the given name.
+			The `callback` will be called with the `this` context of the object that .listenTo is being called on.
+			Can be called:
+				.listenTo(other, eventName, callback)
+			OR
+				.listenTo(other, {
+					eventName1: callback1,
+					eventName2: callback2
+				})
+			*/
+			listenTo: function(other, arg, callback) {
+				if (typeof arg === 'object') { // given dictionary of callbacks
+					for (var eventName in arg) {
+						if (arg.hasOwnProperty(eventName)) {
+							this.listenTo(other, eventName, arg[eventName]);
+						}
+					}
+				}
+				else if (typeof arg === 'string') {
+					other.on(
+						arg + '.' + this.getListenerNamespace(), // use event namespacing to identify this object
+						$.proxy(callback, this) // always use `this` context
+							// the usually-undesired jQuery guid behavior doesn't matter,
+							// because we always unbind via namespace
+					);
+				}
+			},
+	
+			/*
+			Causes the current object to stop listening to events on the `other` object.
+			`eventName` is optional. If omitted, will stop listening to ALL events on `other`.
+			*/
+			stopListeningTo: function(other, eventName) {
+				other.off((eventName || '') + '.' + this.getListenerNamespace());
+			},
+	
+			/*
+			Returns a string, unique to this object, to be used for event namespacing
+			*/
+			getListenerNamespace: function() {
+				if (this.listenerId == null) {
+					this.listenerId = guid++;
+				}
+				return '_listener' + this.listenerId;
+			}
+	
+		};
+		return ListenerMixin;
+	})();
 	;;
 	
 	/* A rectangular panel that is absolutely positioned over other content
@@ -2540,12 +2716,11 @@ return /******/ (function(modules) { // webpackBootstrap
 		- hide (callback)
 	*/
 	
-	var Popover = Class.extend({
+	var Popover = Class.extend(ListenerMixin, {
 	
 		isHidden: true,
 		options: null,
 		el: null, // the container element for the popover. generated by this object
-		documentMousedownProxy: null, // document mousedown handler bound to `this`
 		margin: 10, // the space required between the popover and the edges of the scroll container
 	
 	
@@ -2599,7 +2774,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			});
 	
 			if (options.autoHide) {
-				$(document).on('mousedown', this.documentMousedownProxy = proxy(this, 'documentMousedown'));
+				this.listenTo($(document), 'mousedown', this.documentMousedown);
 			}
 		},
 	
@@ -2622,7 +2797,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.el = null;
 			}
 	
-			$(document).off('mousedown', this.documentMousedownProxy);
+			this.stopListeningTo($(document), 'mousedown');
 		},
 	
 	
@@ -2935,148 +3110,303 @@ return /******/ (function(modules) { // webpackBootstrap
 	----------------------------------------------------------------------------------------------------------------------*/
 	// TODO: use Emitter
 	
-	var DragListener = FC.DragListener = Class.extend({
+	var DragListener = FC.DragListener = Class.extend(ListenerMixin, {
 	
 		options: null,
 	
-		isListening: false,
-		isDragging: false,
+		// for IE8 bug-fighting behavior
+		subjectEl: null,
+		subjectHref: null,
 	
 		// coordinates of the initial mousedown
 		originX: null,
 		originY: null,
 	
-		// handler attached to the document, bound to the DragListener's `this`
-		mousemoveProxy: null,
-		mouseupProxy: null,
-	
-		// for IE8 bug-fighting behavior, for now
-		subjectEl: null, // the element being draged. optional
-		subjectHref: null,
-	
 		scrollEl: null,
-		scrollBounds: null, // { top, bottom, left, right }
-		scrollTopVel: null, // pixels per second
-		scrollLeftVel: null, // pixels per second
-		scrollIntervalId: null, // ID of setTimeout for scrolling animation loop
-		scrollHandlerProxy: null, // this-scoped function for handling when scrollEl is scrolled
 	
-		scrollSensitivity: 30, // pixels from edge for scrolling to start
-		scrollSpeed: 200, // pixels per second, at maximum speed
-		scrollIntervalMs: 50, // millisecond wait between scroll increment
+		isInteracting: false,
+		isDistanceSurpassed: false,
+		isDelayEnded: false,
+		isDragging: false,
+		isTouch: false,
+	
+		delay: null,
+		delayTimeoutId: null,
+		minDistance: null,
 	
 	
 		constructor: function(options) {
-			options = options || {};
-			this.options = options;
-			this.subjectEl = options.subjectEl;
+			this.options = options || {};
 		},
 	
 	
-		// Call this when the user does a mousedown. Will probably lead to startListening
-		mousedown: function(ev) {
-			if (isPrimaryMouseButton(ev)) {
-	
-				ev.preventDefault(); // prevents native selection in most browsers
-	
-				this.startListening(ev);
-	
-				// start the drag immediately if there is no minimum distance for a drag start
-				if (!this.options.distance) {
-					this.startDrag(ev);
-				}
-			}
-		},
+		// Interaction (high-level)
+		// -----------------------------------------------------------------------------------------------------------------
 	
 	
-		// Call this to start tracking mouse movements
-		startListening: function(ev) {
-			var scrollParent;
+		startInteraction: function(ev, extraOptions) {
+			var isTouch = getEvIsTouch(ev);
 	
-			if (!this.isListening) {
-	
-				// grab scroll container and attach handler
-				if (ev && this.options.scroll) {
-					scrollParent = getScrollParent($(ev.target));
-					if (!scrollParent.is(window) && !scrollParent.is(document)) {
-						this.scrollEl = scrollParent;
-	
-						// scope to `this`, and use `debounce` to make sure rapid calls don't happen
-						this.scrollHandlerProxy = debounce(proxy(this, 'scrollHandler'), 100);
-						this.scrollEl.on('scroll', this.scrollHandlerProxy);
-					}
-				}
-	
-				$(document)
-					.on('mousemove', this.mousemoveProxy = proxy(this, 'mousemove'))
-					.on('mouseup', this.mouseupProxy = proxy(this, 'mouseup'))
-					.on('selectstart', this.preventDefault); // prevents native selection in IE<=8
-	
-				if (ev) {
-					this.originX = ev.pageX;
-					this.originY = ev.pageY;
+			if (ev.type === 'mousedown') {
+				if (!isPrimaryMouseButton(ev)) {
+					return;
 				}
 				else {
-					// if no starting information was given, origin will be the topleft corner of the screen.
-					// if so, dx/dy in the future will be the absolute coordinates.
-					this.originX = 0;
-					this.originY = 0;
+					ev.preventDefault(); // prevents native selection in most browsers
 				}
+			}
 	
-				this.isListening = true;
-				this.listenStart(ev);
+			if (!this.isInteracting) {
+	
+				// process options
+				extraOptions = extraOptions || {};
+				this.delay = firstDefined(extraOptions.delay, this.options.delay, 0);
+				this.minDistance = firstDefined(extraOptions.distance, this.options.distance, 0);
+				this.subjectEl = this.options.subjectEl;
+	
+				this.isInteracting = true;
+				this.isTouch = isTouch;
+				this.isDelayEnded = false;
+				this.isDistanceSurpassed = false;
+	
+				this.originX = getEvX(ev);
+				this.originY = getEvY(ev);
+				this.scrollEl = getScrollParent($(ev.target));
+	
+				this.bindHandlers();
+				this.initAutoScroll();
+				this.handleInteractionStart(ev);
+				this.startDelay(ev);
+	
+				if (!this.minDistance) {
+					this.handleDistanceSurpassed(ev);
+				}
 			}
 		},
 	
 	
-		// Called when drag listening has started (but a real drag has not necessarily began)
-		listenStart: function(ev) {
-			this.trigger('listenStart', ev);
+		handleInteractionStart: function(ev) {
+			this.trigger('interactionStart', ev);
 		},
 	
 	
-		// Called when the user moves the mouse
-		mousemove: function(ev) {
-			var dx = ev.pageX - this.originX;
-			var dy = ev.pageY - this.originY;
-			var minDistance;
+		endInteraction: function(ev) {
+			if (this.isInteracting) {
+				this.endDrag(ev);
+	
+				if (this.delayTimeoutId) {
+					clearTimeout(this.delayTimeoutId);
+					this.delayTimeoutId = null;
+				}
+	
+				this.destroyAutoScroll();
+				this.unbindHandlers();
+	
+				this.isInteracting = false;
+				this.handleInteractionEnd(ev);
+			}
+		},
+	
+	
+		handleInteractionEnd: function(ev) {
+			this.trigger('interactionEnd', ev);
+		},
+	
+	
+		// Binding To DOM
+		// -----------------------------------------------------------------------------------------------------------------
+	
+	
+		bindHandlers: function() {
+			var _this = this;
+			var touchStartIgnores = 1;
+	
+			if (this.isTouch) {
+				this.listenTo($(document), {
+					touchmove: this.handleTouchMove,
+					touchend: this.endInteraction,
+					touchcancel: this.endInteraction,
+	
+					// Sometimes touchend doesn't fire
+					// (can't figure out why. touchcancel doesn't fire either. has to do with scrolling?)
+					// If another touchstart happens, we know it's bogus, so cancel the drag.
+					// touchend will continue to be broken until user does a shorttap/scroll, but this is best we can do.
+					touchstart: function(ev) {
+						if (touchStartIgnores) { // bindHandlers is called from within a touchstart,
+							touchStartIgnores--; // and we don't want this to fire immediately, so ignore.
+						}
+						else {
+							_this.endInteraction(ev);
+						}
+					}
+				});
+	
+				if (this.scrollEl) {
+					this.listenTo(this.scrollEl, 'scroll', this.handleTouchScroll);
+				}
+			}
+			else {
+				this.listenTo($(document), {
+					mousemove: this.handleMouseMove,
+					mouseup: this.endInteraction
+				});
+			}
+	
+			this.listenTo($(document), {
+				selectstart: preventDefault, // don't allow selection while dragging
+				contextmenu: preventDefault // long taps would open menu on Chrome dev tools
+			});
+		},
+	
+	
+		unbindHandlers: function() {
+			this.stopListeningTo($(document));
+	
+			if (this.scrollEl) {
+				this.stopListeningTo(this.scrollEl);
+			}
+		},
+	
+	
+		// Drag (high-level)
+		// -----------------------------------------------------------------------------------------------------------------
+	
+	
+		// extraOptions ignored if drag already started
+		startDrag: function(ev, extraOptions) {
+			this.startInteraction(ev, extraOptions); // ensure interaction began
+	
+			if (!this.isDragging) {
+				this.isDragging = true;
+				this.handleDragStart(ev);
+			}
+		},
+	
+	
+		handleDragStart: function(ev) {
+			this.trigger('dragStart', ev);
+			this.initHrefHack();
+		},
+	
+	
+		handleMove: function(ev) {
+			var dx = getEvX(ev) - this.originX;
+			var dy = getEvY(ev) - this.originY;
+			var minDistance = this.minDistance;
 			var distanceSq; // current distance from the origin, squared
 	
-			if (!this.isDragging) { // if not already dragging...
-				// then start the drag if the minimum distance criteria is met
-				minDistance = this.options.distance || 1;
+			if (!this.isDistanceSurpassed) {
 				distanceSq = dx * dx + dy * dy;
 				if (distanceSq >= minDistance * minDistance) { // use pythagorean theorem
-					this.startDrag(ev);
+					this.handleDistanceSurpassed(ev);
 				}
 			}
 	
 			if (this.isDragging) {
-				this.drag(dx, dy, ev); // report a drag, even if this mousemove initiated the drag
+				this.handleDrag(dx, dy, ev);
 			}
 		},
 	
 	
-		// Call this to initiate a legitimate drag.
-		// This function is called internally from this class, but can also be called explicitly from outside
-		startDrag: function(ev) {
+		// Called while the mouse is being moved and when we know a legitimate drag is taking place
+		handleDrag: function(dx, dy, ev) {
+			this.trigger('drag', dx, dy, ev);
+			this.updateAutoScroll(ev); // will possibly cause scrolling
+		},
 	
-			if (!this.isListening) { // startDrag must have manually initiated
-				this.startListening();
+	
+		endDrag: function(ev) {
+			if (this.isDragging) {
+				this.isDragging = false;
+				this.handleDragEnd(ev);
+			}
+		},
+	
+	
+		handleDragEnd: function(ev) {
+			this.trigger('dragEnd', ev);
+			this.destroyHrefHack();
+		},
+	
+	
+		// Delay
+		// -----------------------------------------------------------------------------------------------------------------
+	
+	
+		startDelay: function(initialEv) {
+			var _this = this;
+	
+			if (this.delay) {
+				this.delayTimeoutId = setTimeout(function() {
+					_this.handleDelayEnd(initialEv);
+				}, this.delay);
+			}
+			else {
+				this.handleDelayEnd(initialEv);
+			}
+		},
+	
+	
+		handleDelayEnd: function(initialEv) {
+			this.isDelayEnded = true;
+	
+			if (this.isDistanceSurpassed) {
+				this.startDrag(initialEv);
+			}
+		},
+	
+	
+		// Distance
+		// -----------------------------------------------------------------------------------------------------------------
+	
+	
+		handleDistanceSurpassed: function(ev) {
+			this.isDistanceSurpassed = true;
+	
+			if (this.isDelayEnded) {
+				this.startDrag(ev);
+			}
+		},
+	
+	
+		// Mouse / Touch
+		// -----------------------------------------------------------------------------------------------------------------
+	
+	
+		handleTouchMove: function(ev) {
+			// prevent inertia and touchmove-scrolling while dragging
+			if (this.isDragging) {
+				ev.preventDefault();
 			}
 	
+			this.handleMove(ev);
+		},
+	
+	
+		handleMouseMove: function(ev) {
+			this.handleMove(ev);
+		},
+	
+	
+		// Scrolling (unrelated to auto-scroll)
+		// -----------------------------------------------------------------------------------------------------------------
+	
+	
+		handleTouchScroll: function(ev) {
+			// if the drag is being initiated by touch, but a scroll happens before
+			// the drag-initiating delay is over, cancel the drag
 			if (!this.isDragging) {
-				this.isDragging = true;
-				this.dragStart(ev);
+				this.endInteraction(ev);
 			}
 		},
 	
 	
-		// Called when the actual drag has started (went beyond minDistance)
-		dragStart: function(ev) {
-			var subjectEl = this.subjectEl;
+		// <A> HREF Hack
+		// -----------------------------------------------------------------------------------------------------------------
 	
-			this.trigger('dragStart', ev);
+	
+		initHrefHack: function() {
+			var subjectEl = this.subjectEl;
 	
 			// remove a mousedown'd <a>'s href so it is not visited (IE8 bug)
 			if ((this.subjectHref = subjectEl ? subjectEl.attr('href') : null)) {
@@ -3085,75 +3415,21 @@ return /******/ (function(modules) { // webpackBootstrap
 		},
 	
 	
-		// Called while the mouse is being moved and when we know a legitimate drag is taking place
-		drag: function(dx, dy, ev) {
-			this.trigger('drag', dx, dy, ev);
-			this.updateScroll(ev); // will possibly cause scrolling
-		},
-	
-	
-		// Called when the user does a mouseup
-		mouseup: function(ev) {
-			this.stopListening(ev);
-		},
-	
-	
-		// Called when the drag is over. Will not cause listening to stop however.
-		// A concluding 'cellOut' event will NOT be triggered.
-		stopDrag: function(ev) {
-			if (this.isDragging) {
-				this.stopScrolling();
-				this.dragStop(ev);
-				this.isDragging = false;
-			}
-		},
-	
-	
-		// Called when dragging has been stopped
-		dragStop: function(ev) {
-			var _this = this;
-	
-			this.trigger('dragStop', ev);
+		destroyHrefHack: function() {
+			var subjectEl = this.subjectEl;
+			var subjectHref = this.subjectHref;
 	
 			// restore a mousedown'd <a>'s href (for IE8 bug)
 			setTimeout(function() { // must be outside of the click's execution
-				if (_this.subjectHref) {
-					_this.subjectEl.attr('href', _this.subjectHref);
+				if (subjectHref) {
+					subjectEl.attr('href', subjectHref);
 				}
 			}, 0);
 		},
 	
 	
-		// Call this to stop listening to the user's mouse events
-		stopListening: function(ev) {
-			this.stopDrag(ev); // if there's a current drag, kill it
-	
-			if (this.isListening) {
-	
-				// remove the scroll handler if there is a scrollEl
-				if (this.scrollEl) {
-					this.scrollEl.off('scroll', this.scrollHandlerProxy);
-					this.scrollHandlerProxy = null;
-				}
-	
-				$(document)
-					.off('mousemove', this.mousemoveProxy)
-					.off('mouseup', this.mouseupProxy)
-					.off('selectstart', this.preventDefault);
-	
-				this.mousemoveProxy = null;
-				this.mouseupProxy = null;
-	
-				this.isListening = false;
-				this.listenStop(ev);
-			}
-		},
-	
-	
-		// Called when drag listening has stopped
-		listenStop: function(ev) {
-			this.trigger('listenStop', ev);
-		},
+		// Utils
+		// -----------------------------------------------------------------------------------------------------------------
 	
 	
 		// Triggers a callback. Calls a function in the option hash of the same name.
@@ -3162,30 +3438,71 @@ return /******/ (function(modules) { // webpackBootstrap
 			if (this.options[name]) {
 				this.options[name].apply(this, Array.prototype.slice.call(arguments, 1));
 			}
+			// makes _methods callable by event name. TODO: kill this
+			if (this['_' + name]) {
+				this['_' + name].apply(this, Array.prototype.slice.call(arguments, 1));
+			}
+		}
+	
+	
+	});
+	
+	;;
+	/*
+	this.scrollEl is set in DragListener
+	*/
+	DragListener.mixin({
+	
+		isAutoScroll: false,
+	
+		scrollBounds: null, // { top, bottom, left, right }
+		scrollTopVel: null, // pixels per second
+		scrollLeftVel: null, // pixels per second
+		scrollIntervalId: null, // ID of setTimeout for scrolling animation loop
+	
+		// defaults
+		scrollSensitivity: 30, // pixels from edge for scrolling to start
+		scrollSpeed: 200, // pixels per second, at maximum speed
+		scrollIntervalMs: 50, // millisecond wait between scroll increment
+	
+	
+		initAutoScroll: function() {
+			var scrollEl = this.scrollEl;
+	
+			this.isAutoScroll =
+				this.options.scroll &&
+				scrollEl &&
+				!scrollEl.is(window) &&
+				!scrollEl.is(document);
+	
+			if (this.isAutoScroll) {
+				// debounce makes sure rapid calls don't happen
+				this.listenTo(scrollEl, 'scroll', debounce(this.handleDebouncedScroll, 100));
+			}
 		},
 	
 	
-		// Stops a given mouse event from doing it's native browser action. In our case, text selection.
-		preventDefault: function(ev) {
-			ev.preventDefault();
+		destroyAutoScroll: function() {
+			this.endAutoScroll(); // kill any animation loop
+	
+			// remove the scroll handler if there is a scrollEl
+			if (this.isAutoScroll) {
+				this.stopListeningTo(this.scrollEl, 'scroll'); // will probably get removed by unbindHandlers too :(
+			}
 		},
-	
-	
-		/* Scrolling
-		------------------------------------------------------------------------------------------------------------------*/
 	
 	
 		// Computes and stores the bounding rectangle of scrollEl
 		computeScrollBounds: function() {
-			var el = this.scrollEl;
-	
-			this.scrollBounds = el ? getOuterRect(el) : null;
+			if (this.isAutoScroll) {
+				this.scrollBounds = getOuterRect(this.scrollEl);
 				// TODO: use getClientRect in future. but prevents auto scrolling when on top of scrollbars
+			}
 		},
 	
 	
 		// Called when the dragging is in progress and scrolling should be updated
-		updateScroll: function(ev) {
+		updateAutoScroll: function(ev) {
 			var sensitivity = this.scrollSensitivity;
 			var bounds = this.scrollBounds;
 			var topCloseness, bottomCloseness;
@@ -3196,10 +3513,10 @@ return /******/ (function(modules) { // webpackBootstrap
 			if (bounds) { // only scroll if scrollEl exists
 	
 				// compute closeness to edges. valid range is from 0.0 - 1.0
-				topCloseness = (sensitivity - (ev.pageY - bounds.top)) / sensitivity;
-				bottomCloseness = (sensitivity - (bounds.bottom - ev.pageY)) / sensitivity;
-				leftCloseness = (sensitivity - (ev.pageX - bounds.left)) / sensitivity;
-				rightCloseness = (sensitivity - (bounds.right - ev.pageX)) / sensitivity;
+				topCloseness = (sensitivity - (getEvY(ev) - bounds.top)) / sensitivity;
+				bottomCloseness = (sensitivity - (bounds.bottom - getEvY(ev))) / sensitivity;
+				leftCloseness = (sensitivity - (getEvX(ev) - bounds.left)) / sensitivity;
+				rightCloseness = (sensitivity - (bounds.right - getEvX(ev))) / sensitivity;
 	
 				// translate vertical closeness into velocity.
 				// mouse must be completely in bounds for velocity to happen.
@@ -3286,38 +3603,36 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 			// if scrolled all the way, which causes the vels to be zero, stop the animation loop
 			if (!this.scrollTopVel && !this.scrollLeftVel) {
-				this.stopScrolling();
+				this.endAutoScroll();
 			}
 		},
 	
 	
 		// Kills any existing scrolling animation loop
-		stopScrolling: function() {
+		endAutoScroll: function() {
 			if (this.scrollIntervalId) {
 				clearInterval(this.scrollIntervalId);
 				this.scrollIntervalId = null;
 	
-				// when all done with scrolling, recompute positions since they probably changed
-				this.scrollStop();
+				this.handleScrollEnd();
 			}
 		},
 	
 	
 		// Get called when the scrollEl is scrolled (NOTE: this is delayed via debounce)
-		scrollHandler: function() {
+		handleDebouncedScroll: function() {
 			// recompute all coordinates, but *only* if this is *not* part of our scrolling animation
 			if (!this.scrollIntervalId) {
-				this.scrollStop();
+				this.handleScrollEnd();
 			}
 		},
 	
 	
 		// Called when scrolling has stopped, whether through auto scroll, or the user scrolling
-		scrollStop: function() {
+		handleScrollEnd: function() {
 		}
 	
 	});
-	
 	;;
 	
 	/* Tracks mouse movements over a component and raises events about which hit the mouse is over.
@@ -3346,18 +3661,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		// Called when drag listening starts (but a real drag has not necessarily began).
 		// ev might be undefined if dragging was started manually.
-		listenStart: function(ev) {
+		handleInteractionStart: function(ev) {
 			var subjectEl = this.subjectEl;
 			var subjectRect;
 			var origPoint;
 			var point;
 	
-			DragListener.prototype.listenStart.apply(this, arguments); // call the super-method
-	
 			this.computeCoords();
 	
 			if (ev) {
-				origPoint = { left: ev.pageX, top: ev.pageY };
+				origPoint = { left: getEvX(ev), top: getEvY(ev) };
 				point = origPoint;
 	
 				// constrain the point to bounds of the element being dragged
@@ -3387,61 +3700,64 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.origHit = null;
 				this.coordAdjust = null;
 			}
+	
+			// call the super-method. do it after origHit has been computed
+			DragListener.prototype.handleInteractionStart.apply(this, arguments);
 		},
 	
 	
 		// Recomputes the drag-critical positions of elements
 		computeCoords: function() {
 			this.component.prepareHits();
-			this.computeScrollBounds(); // why is this here???
+			this.computeScrollBounds(); // why is this here??????
 		},
 	
 	
 		// Called when the actual drag has started
-		dragStart: function(ev) {
+		handleDragStart: function(ev) {
 			var hit;
 	
-			DragListener.prototype.dragStart.apply(this, arguments); // call the super-method
+			DragListener.prototype.handleDragStart.apply(this, arguments); // call the super-method
 	
 			// might be different from this.origHit if the min-distance is large
-			hit = this.queryHit(ev.pageX, ev.pageY);
+			hit = this.queryHit(getEvX(ev), getEvY(ev));
 	
 			// report the initial hit the mouse is over
 			// especially important if no min-distance and drag starts immediately
 			if (hit) {
-				this.hitOver(hit);
+				this.handleHitOver(hit);
 			}
 		},
 	
 	
 		// Called when the drag moves
-		drag: function(dx, dy, ev) {
+		handleDrag: function(dx, dy, ev) {
 			var hit;
 	
-			DragListener.prototype.drag.apply(this, arguments); // call the super-method
+			DragListener.prototype.handleDrag.apply(this, arguments); // call the super-method
 	
-			hit = this.queryHit(ev.pageX, ev.pageY);
+			hit = this.queryHit(getEvX(ev), getEvY(ev));
 	
 			if (!isHitsEqual(hit, this.hit)) { // a different hit than before?
 				if (this.hit) {
-					this.hitOut();
+					this.handleHitOut();
 				}
 				if (hit) {
-					this.hitOver(hit);
+					this.handleHitOver(hit);
 				}
 			}
 		},
 	
 	
 		// Called when dragging has been stopped
-		dragStop: function() {
-			this.hitDone();
-			DragListener.prototype.dragStop.apply(this, arguments); // call the super-method
+		handleDragEnd: function() {
+			this.handleHitDone();
+			DragListener.prototype.handleDragEnd.apply(this, arguments); // call the super-method
 		},
 	
 	
 		// Called when a the mouse has just moved over a new hit
-		hitOver: function(hit) {
+		handleHitOver: function(hit) {
 			var isOrig = isHitsEqual(hit, this.origHit);
 	
 			this.hit = hit;
@@ -3451,26 +3767,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 		// Called when the mouse has just moved out of a hit
-		hitOut: function() {
+		handleHitOut: function() {
 			if (this.hit) {
 				this.trigger('hitOut', this.hit);
-				this.hitDone();
+				this.handleHitDone();
 				this.hit = null;
 			}
 		},
 	
 	
 		// Called after a hitOut. Also called before a dragStop
-		hitDone: function() {
+		handleHitDone: function() {
 			if (this.hit) {
 				this.trigger('hitDone', this.hit);
 			}
 		},
 	
 	
-		// Called when drag listening has stopped
-		listenStop: function() {
-			DragListener.prototype.listenStop.apply(this, arguments); // call the super-method
+		// Called when the interaction ends, whether there was a real drag or not
+		handleInteractionEnd: function() {
+			DragListener.prototype.handleInteractionEnd.apply(this, arguments); // call the super-method
 	
 			this.origHit = null;
 			this.hit = null;
@@ -3480,8 +3796,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 		// Called when scrolling has stopped, whether through auto scroll, or the user scrolling
-		scrollStop: function() {
-			DragListener.prototype.scrollStop.apply(this, arguments); // call the super-method
+		handleScrollEnd: function() {
+			DragListener.prototype.handleScrollEnd.apply(this, arguments); // call the super-method
 	
 			this.computeCoords(); // hits' absolute positions will be in new places. recompute
 		},
@@ -3536,7 +3852,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/* Creates a clone of an element and lets it track the mouse as it moves
 	----------------------------------------------------------------------------------------------------------------------*/
 	
-	var MouseFollower = Class.extend({
+	var MouseFollower = Class.extend(ListenerMixin, {
 	
 		options: null,
 	
@@ -3548,15 +3864,13 @@ return /******/ (function(modules) { // webpackBootstrap
 		top0: null,
 		left0: null,
 	
-		// the initial position of the mouse
-		mouseY0: null,
-		mouseX0: null,
+		// the absolute coordinates of the initiating touch/mouse action
+		y0: null,
+		x0: null,
 	
 		// the number of pixels the mouse has moved from its initial position
 		topDelta: null,
 		leftDelta: null,
-	
-		mousemoveProxy: null, // document mousemove handler, bound to the MouseFollower's `this`
 	
 		isFollowing: false,
 		isHidden: false,
@@ -3574,8 +3888,8 @@ return /******/ (function(modules) { // webpackBootstrap
 			if (!this.isFollowing) {
 				this.isFollowing = true;
 	
-				this.mouseY0 = ev.pageY;
-				this.mouseX0 = ev.pageX;
+				this.y0 = getEvY(ev);
+				this.x0 = getEvX(ev);
 				this.topDelta = 0;
 				this.leftDelta = 0;
 	
@@ -3583,7 +3897,12 @@ return /******/ (function(modules) { // webpackBootstrap
 					this.updatePosition();
 				}
 	
-				$(document).on('mousemove', this.mousemoveProxy = proxy(this, 'mousemove'));
+				if (getEvIsTouch(ev)) {
+					this.listenTo($(document), 'touchmove', this.handleMove);
+				}
+				else {
+					this.listenTo($(document), 'mousemove', this.handleMove);
+				}
 			}
 		},
 	
@@ -3608,7 +3927,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			if (this.isFollowing && !this.isAnimating) { // disallow more than one stop animation at a time
 				this.isFollowing = false;
 	
-				$(document).off('mousemove', this.mousemoveProxy);
+				this.stopListeningTo($(document));
 	
 				if (shouldRevert && revertDuration && !this.isHidden) { // do a revert animation?
 					this.isAnimating = true;
@@ -3634,6 +3953,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			if (!el) {
 				this.sourceEl.width(); // hack to force IE8 to compute correct bounding box
 				el = this.el = this.sourceEl.clone()
+					.addClass(this.options.additionalClass || '')
 					.css({
 						position: 'absolute',
 						visibility: '', // in case original element was hidden (commonly through hideEvents())
@@ -3645,8 +3965,13 @@ return /******/ (function(modules) { // webpackBootstrap
 						height: this.sourceEl.height(), // explicit width in case there was a 'bottom' value
 						opacity: this.options.opacity || '',
 						zIndex: this.options.zIndex
-					})
-					.appendTo(this.parentEl);
+					});
+	
+				// we don't want long taps or any mouse interaction causing selection/menus.
+				// would use preventSelection(), but that prevents selectstart, causing problems.
+				el.addClass('fc-unselectable');
+	
+				el.appendTo(this.parentEl);
 			}
 	
 			return el;
@@ -3686,9 +4011,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 		// Gets called when the user moves the mouse
-		mousemove: function(ev) {
-			this.topDelta = ev.pageY - this.mouseY0;
-			this.leftDelta = ev.pageX - this.mouseX0;
+		handleMove: function(ev) {
+			this.topDelta = getEvY(ev) - this.y0;
+			this.leftDelta = getEvX(ev) - this.x0;
 	
 			if (!this.isHidden) {
 				this.updatePosition();
@@ -3723,7 +4048,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/* An abstract class comprised of a "grid" of areas that each represent a specific datetime
 	----------------------------------------------------------------------------------------------------------------------*/
 	
-	var Grid = FC.Grid = Class.extend({
+	var Grid = FC.Grid = Class.extend(ListenerMixin, {
 	
 		view: null, // a View object
 		isRTL: null, // shortcut to the view's isRTL option
@@ -3733,8 +4058,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		el: null, // the containing element
 		elsByFill: null, // a hash of jQuery element sets used for rendering each fill. Keyed by fill name.
-	
-		externalDragStartProxy: null, // binds the Grid's scope to externalDragStart (in DayGrid.events)
 	
 		// derived from options
 		eventTimeFormat: null,
@@ -3748,13 +4071,16 @@ return /******/ (function(modules) { // webpackBootstrap
 		// TODO: port isTimeScale into same system?
 		largeUnit: null,
 	
+		dayDragListener: null,
+		segDragListener: null,
+		segResizeListener: null,
+		externalDragListener: null,
+	
 	
 		constructor: function(view) {
 			this.view = view;
 			this.isRTL = view.opt('isRTL');
-	
 			this.elsByFill = {};
-			this.externalDragStartProxy = proxy(this, 'externalDragStart');
 		},
 	
 	
@@ -3887,20 +4213,15 @@ return /******/ (function(modules) { // webpackBootstrap
 		// Sets the container element that the grid should render inside of.
 		// Does other DOM-related initializations.
 		setElement: function(el) {
-			var _this = this;
-	
 			this.el = el;
+			preventSelection(el);
 	
-			// attach a handler to the grid's root element.
-			// jQuery will take care of unregistering them when removeElement gets called.
-			el.on('mousedown', function(ev) {
-				if (
-					!$(ev.target).is('.fc-event-container *, .fc-more') && // not an an event element, or "more.." link
-					!$(ev.target).closest('.fc-popover').length // not on a popover (like the "more.." events one)
-				) {
-					_this.dayMousedown(ev);
-				}
-			});
+			if (this.view.calendar.isTouch) {
+				this.bindDayHandler('touchstart', this.dayTouchStart);
+			}
+			else {
+				this.bindDayHandler('mousedown', this.dayMousedown);
+			}
 	
 			// attach event-element-related handlers. in Grid.events
 			// same garbage collection note as above.
@@ -3910,10 +4231,27 @@ return /******/ (function(modules) { // webpackBootstrap
 		},
 	
 	
+		bindDayHandler: function(name, handler) {
+			var _this = this;
+	
+			// attach a handler to the grid's root element.
+			// jQuery will take care of unregistering them when removeElement gets called.
+			this.el.on(name, function(ev) {
+				if (
+					!$(ev.target).is('.fc-event-container *, .fc-more') && // not an an event element, or "more.." link
+					!$(ev.target).closest('.fc-popover').length // not on a popover (like the "more.." events one)
+				) {
+					return handler.call(_this, ev);
+				}
+			});
+		},
+	
+	
 		// Removes the grid's container element from the DOM. Undoes any other DOM-related attachments.
 		// DOES NOT remove any content beforehand (doesn't clear events or call unrenderDates), unlike View
 		removeElement: function() {
 			this.unbindGlobalHandlers();
+			this.clearDragListeners();
 	
 			this.el.remove();
 	
@@ -3946,18 +4284,39 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		// Binds DOM handlers to elements that reside outside the grid, such as the document
 		bindGlobalHandlers: function() {
-			$(document).on('dragstart sortstart', this.externalDragStartProxy); // jqui
+			this.listenTo($(document), {
+				dragstart: this.externalDragStart, // jqui
+				sortstart: this.externalDragStart // jqui
+			});
 		},
 	
 	
 		// Unbinds DOM handlers from elements that reside outside the grid
 		unbindGlobalHandlers: function() {
-			$(document).off('dragstart sortstart', this.externalDragStartProxy); // jqui
+			this.stopListeningTo($(document));
 		},
 	
 	
 		// Process a mousedown on an element that represents a day. For day clicking and selecting.
 		dayMousedown: function(ev) {
+			this.clearDragListeners();
+			this.buildDayDragListener().startInteraction(ev, {
+				//distance: 5, // needs more work if we want dayClick to fire correctly
+			});
+		},
+	
+	
+		dayTouchStart: function(ev) {
+			this.clearDragListeners();
+			this.buildDayDragListener().startInteraction(ev, {
+				delay: this.view.opt('longPressDelay')
+			});
+		},
+	
+	
+		// Creates a listener that tracks the user's drag across day elements.
+		// For day clicking and selecting.
+		buildDayDragListener: function() {
 			var _this = this;
 			var view = this.view;
 			var isSelectable = view.opt('selectable');
@@ -3967,15 +4326,22 @@ return /******/ (function(modules) { // webpackBootstrap
 			// this listener tracks a mousedown on a day element, and a subsequent drag.
 			// if the drag ends on the same day, it is a 'dayClick'.
 			// if 'selectable' is enabled, this listener also detects selections.
-			var dragListener = new HitDragListener(this, {
-				//distance: 5, // needs more work if we want dayClick to fire correctly
+			var dragListener = this.dayDragListener = new HitDragListener(this, {
 				scroll: view.opt('dragScroll'),
+				interactionStart: function() {
+					dayClickHit = dragListener.origHit;
+				},
 				dragStart: function() {
 					view.unselect(); // since we could be rendering a new selection, we want to clear any old one
 				},
 				hitOver: function(hit, isOrig, origHit) {
 					if (origHit) { // click needs to have started on a hit
-						dayClickHit = isOrig ? hit : null; // single-hit selection is a day click
+	
+						// if user dragged to another cell at any point, it can no longer be a dayClick
+						if (!isOrig) {
+							dayClickHit = null;
+						}
+	
 						if (isSelectable) {
 							selectionSpan = _this.computeSelection(
 								_this.getHitSpan(origHit),
@@ -3996,7 +4362,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					_this.unrenderSelection();
 					enableCursor();
 				},
-				listenStop: function(ev) {
+				interactionEnd: function(ev) {
 					if (dayClickHit) {
 						view.triggerDayClick(
 							_this.getHitSpan(dayClickHit),
@@ -4009,10 +4375,30 @@ return /******/ (function(modules) { // webpackBootstrap
 						view.reportSelection(selectionSpan, ev);
 					}
 					enableCursor();
+					_this.dayDragListener = null;
 				}
 			});
 	
-			dragListener.mousedown(ev); // start listening, which will eventually initiate a dragStart
+			return dragListener;
+		},
+	
+	
+		// Kills all in-progress dragging.
+		// Useful for when public API methods that result in re-rendering are invoked during a drag.
+		// Also useful for when touch devices misbehave and don't fire their touchend.
+		clearDragListeners: function() {
+			if (this.dayDragListener) {
+				this.dayDragListener.endInteraction(); // will clear this.dayDragListener
+			}
+			if (this.segDragListener) {
+				this.segDragListener.endInteraction(); // will clear this.segDragListener
+			}
+			if (this.segResizeListener) {
+				this.segResizeListener.endInteraction(); // will clear this.segResizeListener
+			}
+			if (this.externalDragListener) {
+				this.externalDragListener.endInteraction(); // will clear this.externalDragListener
+			}
 		},
 	
 	
@@ -4022,10 +4408,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 		// Renders a mock event at the given event location, which contains zoned start/end properties.
+		// Returns all mock event elements.
 		renderEventLocationHelper: function(eventLocation, sourceSeg) {
 			var fakeEvent = this.fabricateHelperEvent(eventLocation, sourceSeg);
 	
-			this.renderHelper(fakeEvent, sourceSeg); // do the actual rendering
+			return this.renderHelper(fakeEvent, sourceSeg); // do the actual rendering
 		},
 	
 	
@@ -4053,6 +4440,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 		// Renders a mock event. Given zoned event date properties.
+		// Must return all mock event elements.
 		renderHelper: function(eventLocation, sourceSeg) {
 			// subclasses must implement
 		},
@@ -4332,7 +4720,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		// Unrenders all events currently rendered on the grid
 		unrenderEvents: function() {
-			this.triggerSegMouseout(); // trigger an eventMouseout if user's mouse is over an event
+			this.handleSegMouseout(); // trigger an eventMouseout if user's mouse is over an event
+			this.clearDragListeners();
 	
 			this.unrenderFgSegs();
 			this.unrenderBgSegs();
@@ -4460,46 +4849,42 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		// Attaches event-element-related handlers to the container element and leverage bubbling
 		bindSegHandlers: function() {
+			if (this.view.calendar.isTouch) {
+				this.bindSegHandler('touchstart', this.handleSegTouchStart);
+			}
+			else {
+				this.bindSegHandler('mouseenter', this.handleSegMouseover);
+				this.bindSegHandler('mouseleave', this.handleSegMouseout);
+				this.bindSegHandler('mousedown', this.handleSegMousedown);
+			}
+	
+			this.bindSegHandler('click', this.handleSegClick);
+		},
+	
+	
+		// Executes a handler for any a user-interaction on a segment.
+		// Handler gets called with (seg, ev), and with the `this` context of the Grid
+		bindSegHandler: function(name, handler) {
 			var _this = this;
-			var view = this.view;
 	
-			$.each(
-				{
-					mouseenter: function(seg, ev) {
-						_this.triggerSegMouseover(seg, ev);
-					},
-					mouseleave: function(seg, ev) {
-						_this.triggerSegMouseout(seg, ev);
-					},
-					click: function(seg, ev) {
-						return view.trigger('eventClick', this, seg.event, ev); // can return `false` to cancel
-					},
-					mousedown: function(seg, ev) {
-						if ($(ev.target).is('.fc-resizer') && view.isEventResizable(seg.event)) {
-							_this.segResizeMousedown(seg, ev, $(ev.target).is('.fc-start-resizer'));
-						}
-						else if (view.isEventDraggable(seg.event)) {
-							_this.segDragMousedown(seg, ev);
-						}
-					}
-				},
-				function(name, func) {
-					// attach the handler to the container element and only listen for real event elements via bubbling
-					_this.el.on(name, '.fc-event-container > *', function(ev) {
-						var seg = $(this).data('fc-seg'); // grab segment data. put there by View::renderEvents
+			this.el.on(name, '.fc-event-container > *', function(ev) {
+				var seg = $(this).data('fc-seg'); // grab segment data. put there by View::renderEvents
 	
-						// only call the handlers if there is not a drag/resize in progress
-						if (seg && !_this.isDraggingSeg && !_this.isResizingSeg) {
-							return func.call(this, seg, ev); // `this` will be the event element
-						}
-					});
+				// only call the handlers if there is not a drag/resize in progress
+				if (seg && !_this.isDraggingSeg && !_this.isResizingSeg) {
+					return handler.call(_this, seg, ev); // context will be the Grid
 				}
-			);
+			});
+		},
+	
+	
+		handleSegClick: function(seg, ev) {
+			return this.view.trigger('eventClick', seg.el[0], seg.event, ev); // can return `false` to cancel
 		},
 	
 	
 		// Updates internal state and triggers handlers for when an event element is moused over
-		triggerSegMouseover: function(seg, ev) {
+		handleSegMouseover: function(seg, ev) {
 			if (!this.mousedOverSeg) {
 				this.mousedOverSeg = seg;
 				this.view.trigger('eventMouseover', seg.el[0], seg.event, ev);
@@ -4509,7 +4894,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		// Updates internal state and triggers handlers for when an event element is moused out.
 		// Can be given no arguments, in which case it will mouseout the segment that was previously moused over.
-		triggerSegMouseout: function(seg, ev) {
+		handleSegMouseout: function(seg, ev) {
 			ev = ev || {}; // if given no args, make a mock mouse event
 	
 			if (this.mousedOverSeg) {
@@ -4520,45 +4905,112 @@ return /******/ (function(modules) { // webpackBootstrap
 		},
 	
 	
+		handleSegTouchStart: function(seg, ev) {
+			var view = this.view;
+			var event = seg.event;
+			var isSelected = view.isEventSelected(event);
+			var isDraggable = view.isEventDraggable(event);
+			var isResizable = view.isEventResizable(event);
+			var isResizing = false;
+			var dragListener;
+	
+			if (isSelected && isResizable) {
+				// only allow resizing of the event is selected
+				isResizing = this.startSegResize(seg, ev);
+			}
+	
+			if (!isResizing && (isDraggable || isResizable)) { // allowed to be selected?
+				this.clearDragListeners();
+	
+				dragListener = isDraggable ?
+					this.buildSegDragListener(seg) :
+					new DragListener(); // seg isn't draggable, but let's use a generic DragListener
+					                    // simply for the delay, so it can be selected.
+	
+				dragListener._dragStart = function() { // TODO: better way of binding
+					// if not previously selected, will fire after a delay. then, select the event
+					if (!isSelected) {
+						view.selectEvent(event);
+					}
+				};
+	
+				dragListener.startInteraction(ev, {
+					delay: isSelected ? 0 : this.view.opt('longPressDelay') // do delay if not already selected
+				});
+			}
+		},
+	
+	
+		handleSegMousedown: function(seg, ev) {
+			var isResizing = this.startSegResize(seg, ev, { distance: 5 });
+	
+			if (!isResizing && this.view.isEventDraggable(seg.event)) {
+				this.clearDragListeners();
+				this.buildSegDragListener(seg)
+					.startInteraction(ev, {
+						distance: 5
+					});
+			}
+		},
+	
+	
+		// returns boolean whether resizing actually started or not.
+		// assumes the seg allows resizing.
+		// `dragOptions` are optional.
+		startSegResize: function(seg, ev, dragOptions) {
+			if ($(ev.target).is('.fc-resizer')) {
+				this.clearDragListeners();
+				this.buildSegResizeListener(seg, $(ev.target).is('.fc-start-resizer'))
+					.startInteraction(ev, dragOptions);
+				return true;
+			}
+			return false;
+		},
+	
+	
+	
 		/* Event Dragging
 		------------------------------------------------------------------------------------------------------------------*/
 	
 	
-		// Called when the user does a mousedown on an event, which might lead to dragging.
+		// Builds a listener that will track user-dragging on an event segment.
 		// Generic enough to work with any type of Grid.
-		segDragMousedown: function(seg, ev) {
+		buildSegDragListener: function(seg) {
 			var _this = this;
 			var view = this.view;
 			var calendar = view.calendar;
 			var el = seg.el;
 			var event = seg.event;
+			var isDragging;
+			var mouseFollower; // A clone of the original element that will move with the mouse
 			var dropLocation; // zoned event date properties
-	
-			// A clone of the original element that will move with the mouse
-			var mouseFollower = new MouseFollower(seg.el, {
-				parentEl: view.el,
-				opacity: view.opt('dragOpacity'),
-				revertDuration: view.opt('dragRevertDuration'),
-				zIndex: 2 // one above the .fc-view
-			});
 	
 			// Tracks mouse movement over the *view's* coordinate map. Allows dragging and dropping between subcomponents
 			// of the view.
-			var dragListener = new HitDragListener(view, {
-				distance: 5,
+			var dragListener = this.segDragListener = new HitDragListener(view, {
 				scroll: view.opt('dragScroll'),
 				subjectEl: el,
 				subjectCenter: true,
-				listenStart: function(ev) {
+				interactionStart: function(ev) {
+					isDragging = false;
+					mouseFollower = new MouseFollower(seg.el, {
+						additionalClass: 'fc-dragging',
+						parentEl: view.el,
+						opacity: dragListener.isTouch ? null : view.opt('dragOpacity'),
+						revertDuration: view.opt('dragRevertDuration'),
+						zIndex: 2 // one above the .fc-view
+					});
 					mouseFollower.hide(); // don't show until we know this is a real drag
 					mouseFollower.start(ev);
 				},
 				dragStart: function(ev) {
-					_this.triggerSegMouseout(seg, ev); // ensure a mouseout on the manipulated event has been reported
+					isDragging = true;
+					_this.handleSegMouseout(seg, ev); // ensure a mouseout on the manipulated event has been reported
 					_this.segDragStart(seg, ev);
 					view.hideEvent(event); // hide all event segments. our mouseFollower will take over
 				},
 				hitOver: function(hit, isOrig, origHit) {
+					var dragHelperEls;
 	
 					// starting hit could be forced (DayGrid.limit)
 					if (seg.hit) {
@@ -4578,7 +5030,13 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 	
 					// if a valid drop location, have the subclass render a visual indication
-					if (dropLocation && view.renderDrag(dropLocation, seg)) {
+					if (dropLocation && (dragHelperEls = view.renderDrag(dropLocation, seg))) {
+	
+						dragHelperEls.addClass('fc-dragging');
+						if (!dragListener.isTouch) {
+							_this.applyDragOpacity(dragHelperEls);
+						}
+	
 						mouseFollower.hide(); // if the subclass is already using a mock event "helper", hide our own
 					}
 					else {
@@ -4594,27 +5052,26 @@ return /******/ (function(modules) { // webpackBootstrap
 					mouseFollower.show(); // show in case we are moving out of all hits
 					dropLocation = null;
 				},
-				hitDone: function() { // Called after a hitOut OR before a dragStop
+				hitDone: function() { // Called after a hitOut OR before a dragEnd
 					enableCursor();
 				},
-				dragStop: function(ev) {
+				interactionEnd: function(ev) {
 					// do revert animation if hasn't changed. calls a callback when finished (whether animation or not)
 					mouseFollower.stop(!dropLocation, function() {
-						view.unrenderDrag();
-						view.showEvent(event);
-						_this.segDragStop(seg, ev);
-	
+						if (isDragging) {
+							view.unrenderDrag();
+							view.showEvent(event);
+							_this.segDragStop(seg, ev);
+						}
 						if (dropLocation) {
 							view.reportEventDrop(event, dropLocation, this.largeUnit, el, ev);
 						}
 					});
-				},
-				listenStop: function() {
-					mouseFollower.stop(); // put in listenStop in case there was a mousedown but the drag never started
+					_this.segDragListener = null;
 				}
 			});
 	
-			dragListener.mousedown(ev); // start listening, which will eventually lead to a dragStart
+			return dragListener;
 		},
 	
 	
@@ -4730,8 +5187,8 @@ return /******/ (function(modules) { // webpackBootstrap
 			var dropLocation; // a null value signals an unsuccessful drag
 	
 			// listener that tracks mouse movement over date-associated pixel regions
-			var dragListener = new HitDragListener(this, {
-				listenStart: function() {
+			var dragListener = _this.externalDragListener = new HitDragListener(this, {
+				interactionStart: function() {
 					_this.isDraggingExternal = true;
 				},
 				hitOver: function(hit) {
@@ -4755,17 +5212,16 @@ return /******/ (function(modules) { // webpackBootstrap
 				hitOut: function() {
 					dropLocation = null; // signal unsuccessful
 				},
-				hitDone: function() { // Called after a hitOut OR before a dragStop
+				hitDone: function() { // Called after a hitOut OR before a dragEnd
 					enableCursor();
 					_this.unrenderDrag();
 				},
-				dragStop: function() {
+				interactionEnd: function(ev) {
 					if (dropLocation) { // element was dropped on a valid hit
 						_this.view.reportExternalDrop(meta, dropLocation, el, ev, ui);
 					}
-				},
-				listenStop: function() {
 					_this.isDraggingExternal = false;
+					_this.externalDragListener = null;
 				}
 			});
 	
@@ -4806,6 +5262,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		// `dropLocation` contains hypothetical start/end/allDay values the event would have if dropped. end can be null.
 		// `seg` is the internal segment object that is being dragged. If dragging an external element, `seg` is null.
 		// A truthy returned value indicates this method has rendered a helper element.
+		// Must return elements used for any mock events.
 		renderDrag: function(dropLocation, seg) {
 			// subclasses must implement
 		},
@@ -4821,24 +5278,28 @@ return /******/ (function(modules) { // webpackBootstrap
 		------------------------------------------------------------------------------------------------------------------*/
 	
 	
-		// Called when the user does a mousedown on an event's resizer, which might lead to resizing.
+		// Creates a listener that tracks the user as they resize an event segment.
 		// Generic enough to work with any type of Grid.
-		segResizeMousedown: function(seg, ev, isStart) {
+		buildSegResizeListener: function(seg, isStart) {
 			var _this = this;
 			var view = this.view;
 			var calendar = view.calendar;
 			var el = seg.el;
 			var event = seg.event;
 			var eventEnd = calendar.getEventEnd(event);
+			var isDragging;
 			var resizeLocation; // zoned event date properties. falsy if invalid resize
 	
 			// Tracks mouse movement over the *grid's* coordinate map
-			var dragListener = new HitDragListener(this, {
-				distance: 5,
+			var dragListener = this.segResizeListener = new HitDragListener(this, {
 				scroll: view.opt('dragScroll'),
 				subjectEl: el,
+				interactionStart: function() {
+					isDragging = false;
+				},
 				dragStart: function(ev) {
-					_this.triggerSegMouseout(seg, ev); // ensure a mouseout on the manipulated event has been reported
+					isDragging = true;
+					_this.handleSegMouseout(seg, ev); // ensure a mouseout on the manipulated event has been reported
 					_this.segResizeStart(seg, ev);
 				},
 				hitOver: function(hit, isOrig, origHit) {
@@ -4873,16 +5334,18 @@ return /******/ (function(modules) { // webpackBootstrap
 					view.showEvent(event);
 					enableCursor();
 				},
-				dragStop: function(ev) {
-					_this.segResizeStop(seg, ev);
-	
+				interactionEnd: function(ev) {
+					if (isDragging) {
+						_this.segResizeStop(seg, ev);
+					}
 					if (resizeLocation) { // valid date to resize to?
 						view.reportEventResize(event, resizeLocation, this.largeUnit, el, ev);
 					}
+					_this.segResizeListener = null;
 				}
 			});
 	
-			dragListener.mousedown(ev); // start listening, which will eventually lead to a dragStart
+			return dragListener;
 		},
 	
 	
@@ -4959,6 +5422,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		// Renders a visual indication of an event being resized.
 		// `range` has the updated dates of the event. `seg` is the original segment object involved in the drag.
+		// Must return elements used for any mock events.
 		renderEventResize: function(range, seg) {
 			// subclasses must implement
 		},
@@ -5004,6 +5468,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		// Generic utility for generating the HTML classNames for an event segment's element
 		getSegClasses: function(seg, isDraggable, isResizable) {
+			var view = this.view;
 			var event = seg.event;
 			var classes = [
 				'fc-event',
@@ -5019,6 +5484,11 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 			if (isResizable) {
 				classes.push('fc-resizable');
+			}
+	
+			// event is currently selected? attach a className.
+			if (view.isEventSelected(event)) {
+				classes.push('fc-selected');
 			}
 	
 			return classes;
@@ -6003,10 +6473,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			// if a segment from the same calendar but another component is being dragged, render a helper event
 			if (seg && !seg.el.closest(this.el).length) {
 	
-				this.renderEventLocationHelper(eventLocation, seg);
-				this.applyDragOpacity(this.helperEls);
-	
-				return true; // a helper has been rendered
+				return this.renderEventLocationHelper(eventLocation, seg); // returns mock event elements
 			}
 		},
 	
@@ -6025,7 +6492,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		// Renders a visual indication of an event being resized
 		renderEventResize: function(eventLocation, seg) {
 			this.renderHighlight(this.eventToSpan(eventLocation));
-			this.renderEventLocationHelper(eventLocation, seg);
+			return this.renderEventLocationHelper(eventLocation, seg); // returns mock event elements
 		},
 	
 	
@@ -6071,7 +6538,9 @@ return /******/ (function(modules) { // webpackBootstrap
 				helperNodes.push(skeletonEl[0]);
 			});
 	
-			this.helperEls = $(helperNodes); // array -> jQuery set
+			return ( // must return the elements rendered
+				this.helperEls = $(helperNodes) // array -> jQuery set
+			);
 		},
 	
 	
@@ -6857,6 +7326,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		labelInterval: null, // duration of how often a label should be displayed for a slot
 	
 		colEls: null, // cells elements in the day-row background
+		slatContainerEl: null, // div that wraps all the slat rows
 		slatEls: null, // elements running horizontally across all columns
 		nowIndicatorEls: null,
 	
@@ -6876,7 +7346,8 @@ return /******/ (function(modules) { // webpackBootstrap
 		renderDates: function() {
 			this.el.html(this.renderHtml());
 			this.colEls = this.el.find('.fc-day');
-			this.slatEls = this.el.find('.fc-slats tr');
+			this.slatContainerEl = this.el.find('.fc-slats');
+			this.slatEls = this.slatContainerEl.find('tr');
 	
 			this.colCoordCache = new CoordCache({
 				els: this.colEls,
@@ -7155,6 +7626,11 @@ return /******/ (function(modules) { // webpackBootstrap
 		},
 	
 	
+		getTotalSlatHeight: function() {
+			return this.slatContainerEl.outerHeight();
+		},
+	
+	
 		// Computes the top coordinate, relative to the bounds of the grid, of the given date.
 		// A `startOfDayDate` must be given for avoiding ambiguity over how to treat midnight.
 		computeDateTop: function(date, startOfDayDate) {
@@ -7203,13 +7679,10 @@ return /******/ (function(modules) { // webpackBootstrap
 		renderDrag: function(eventLocation, seg) {
 	
 			if (seg) { // if there is event information for this drag, render a helper event
-				this.renderEventLocationHelper(eventLocation, seg);
 	
-				for (var i = 0; i < this.helperSegs.length; i++) {
-					this.applyDragOpacity(this.helperSegs[i].el);
-				}
-	
-				return true; // signal that a helper has been rendered
+				// returns mock event elements
+				// signal that a helper has been rendered
+				return this.renderEventLocationHelper(eventLocation, seg);
 			}
 			else {
 				// otherwise, just render a highlight
@@ -7231,7 +7704,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		// Renders a visual indication of an event being resized
 		renderEventResize: function(eventLocation, seg) {
-			this.renderEventLocationHelper(eventLocation, seg);
+			return this.renderEventLocationHelper(eventLocation, seg); // returns mock event elements
 		},
 	
 	
@@ -7247,7 +7720,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		// Renders a mock "helper" event. `sourceSeg` is the original segment object and might be null (an external drag)
 		renderHelper: function(event, sourceSeg) {
-			this.renderHelperSegs(this.eventToSegs(event), sourceSeg);
+			return this.renderHelperSegs(this.eventToSegs(event), sourceSeg); // returns mock event elements
 		},
 	
 	
@@ -7441,6 +7914,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 		renderHelperSegs: function(segs, sourceSeg) {
+			var helperEls = [];
 			var i, seg;
 			var sourceEl;
 	
@@ -7458,9 +7932,12 @@ return /******/ (function(modules) { // webpackBootstrap
 						'margin-right': sourceEl.css('margin-right')
 					});
 				}
+				helperEls.push(seg.el[0]);
 			}
 	
 			this.helperSegs = segs;
+	
+			return $(helperEls); // must return rendered helpers
 		},
 	
 	
@@ -7971,7 +8448,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/* An abstract class from which other views inherit from
 	----------------------------------------------------------------------------------------------------------------------*/
 	
-	var View = FC.View = Class.extend({
+	var View = FC.View = Class.extend(EmitterMixin, ListenerMixin, {
 	
 		type: null, // subclass' view name (string)
 		name: null, // deprecated. use `type` instead
@@ -7998,12 +8475,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		isRTL: false,
 		isSelected: false, // boolean whether a range of time is user-selected or not
+		selectedEvent: null,
 	
 		eventOrderSpecs: null, // criteria for ordering events when they have same date/time
-	
-		// subclasses can optionally use a scroll container
-		scrollerEl: null, // the element that will most likely scroll when content is too tall
-		scrollTop: null, // cached vertical scroll value
 	
 		// classNames styled by jqui themes
 		widgetHeaderClass: null,
@@ -8013,9 +8487,6 @@ return /******/ (function(modules) { // webpackBootstrap
 		// for date utils, computed from options
 		nextDayThreshold: null,
 		isHiddenDayHash: null,
-	
-		// document handlers, bound to `this` object
-		documentMousedownProxy: null, // TODO: doesn't work with touch
 	
 		// now indicator
 		isNowIndicatorRendered: null,
@@ -8038,8 +8509,6 @@ return /******/ (function(modules) { // webpackBootstrap
 			this.isRTL = this.opt('isRTL');
 	
 			this.eventOrderSpecs = parseFieldSpecs(this.opt('eventOrder'));
-	
-			this.documentMousedownProxy = proxy(this, 'documentMousedown');
 	
 			this.initialize();
 		},
@@ -8366,13 +8835,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		// Binds DOM handlers to elements that reside outside the view container, such as the document
 		bindGlobalHandlers: function() {
-			$(document).on('mousedown', this.documentMousedownProxy);
+			this.listenTo($(document), 'mousedown', this.handleDocumentMousedown);
+			this.listenTo($(document), 'touchstart', this.handleDocumentTouchStart);
+			this.listenTo($(document), 'touchend', this.handleDocumentTouchEnd);
 		},
 	
 	
 		// Unbinds DOM handlers from elements that reside outside the view container
 		unbindGlobalHandlers: function() {
-			$(document).off('mousedown', this.documentMousedownProxy);
+			this.stopListeningTo($(document));
 		},
 	
 	
@@ -8540,27 +9011,6 @@ return /******/ (function(modules) { // webpackBootstrap
 		------------------------------------------------------------------------------------------------------------------*/
 	
 	
-		// Given the total height of the view, return the number of pixels that should be used for the scroller.
-		// Utility for subclasses.
-		computeScrollerHeight: function(totalHeight) {
-			var scrollerEl = this.scrollerEl;
-			var both;
-			var otherHeight; // cumulative height of everything that is not the scrollerEl in the view (header+borders)
-	
-			both = this.el.add(scrollerEl);
-	
-			// fuckin IE8/9/10/11 sometimes returns 0 for dimensions. this weird hack was the only thing that worked
-			both.css({
-				position: 'relative', // cause a reflow, which will force fresh dimension recalculation
-				left: -1 // ensure reflow in case the el was already relative. negative is less likely to cause new scroll
-			});
-			otherHeight = this.el.outerHeight() - scrollerEl.height(); // grab the dimensions
-			both.css({ position: '', left: '' }); // undo hack
-	
-			return totalHeight - otherHeight;
-		},
-	
-	
 		// Computes the initial pre-configured scroll state prior to allowing the user to change it.
 		// Given the scroll state from the previous rendering. If first time rendering, given null.
 		computeInitialScroll: function(previousScrollState) {
@@ -8570,17 +9020,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		// Retrieves the view's current natural scroll state. Can return an arbitrary format.
 		queryScroll: function() {
-			if (this.scrollerEl) {
-				return this.scrollerEl.scrollTop(); // operates on scrollerEl by default
-			}
+			// subclasses must implement
 		},
 	
 	
 		// Sets the view's scroll state. Will accept the same format computeInitialScroll and queryScroll produce.
 		setScroll: function(scrollState) {
-			if (this.scrollerEl) {
-				return this.scrollerEl.scrollTop(scrollState); // operates on scrollerEl by default
-			}
+			// subclasses must implement
 		},
 	
 	
@@ -8795,7 +9241,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 		// Renders a visual indication of a event or external-element drag over the given drop zone.
-		// If an external-element, seg will be `null`
+		// If an external-element, seg will be `null`.
+		// Must return elements used for any mock events.
 		renderDrag: function(dropLocation, seg) {
 			// subclasses must implement
 		},
@@ -8858,7 +9305,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		},
 	
 	
-		/* Selection
+		/* Selection (time range)
 		------------------------------------------------------------------------------------------------------------------*/
 	
 	
@@ -8916,17 +9363,82 @@ return /******/ (function(modules) { // webpackBootstrap
 		},
 	
 	
-		// Handler for unselecting when the user clicks something and the 'unselectAuto' setting is on
-		documentMousedown: function(ev) {
+		/* Event Selection
+		------------------------------------------------------------------------------------------------------------------*/
+	
+	
+		selectEvent: function(event) {
+			if (!this.selectedEvent || this.selectedEvent !== event) {
+				this.unselectEvent();
+				this.renderedEventSegEach(function(seg) {
+					seg.el.addClass('fc-selected');
+				}, event);
+				this.selectedEvent = event;
+			}
+		},
+	
+	
+		unselectEvent: function() {
+			if (this.selectedEvent) {
+				this.renderedEventSegEach(function(seg) {
+					seg.el.removeClass('fc-selected');
+				}, this.selectedEvent);
+				this.selectedEvent = null;
+			}
+		},
+	
+	
+		isEventSelected: function(event) {
+			// event references might change on refetchEvents(), while selectedEvent doesn't,
+			// so compare IDs
+			return this.selectedEvent && this.selectedEvent._id === event._id;
+		},
+	
+	
+		/* Mouse / Touch Unselecting (time range & event unselection)
+		------------------------------------------------------------------------------------------------------------------*/
+		// TODO: move consistently to down/start or up/end?
+	
+	
+		handleDocumentMousedown: function(ev) {
+			// touch devices fire simulated mouse events on a "click".
+			// only process mousedown if we know this isn't a touch device.
+			if (!this.calendar.isTouch && isPrimaryMouseButton(ev)) {
+				this.processRangeUnselect(ev);
+				this.processEventUnselect(ev);
+			}
+		},
+	
+	
+		handleDocumentTouchStart: function(ev) {
+			this.processRangeUnselect(ev);
+		},
+	
+	
+		handleDocumentTouchEnd: function(ev) {
+			// TODO: don't do this if because of touch-scrolling
+			this.processEventUnselect(ev);
+		},
+	
+	
+		processRangeUnselect: function(ev) {
 			var ignore;
 	
-			// is there a selection, and has the user made a proper left click?
-			if (this.isSelected && this.opt('unselectAuto') && isPrimaryMouseButton(ev)) {
-	
+			// is there a time-range selection?
+			if (this.isSelected && this.opt('unselectAuto')) {
 				// only unselect if the clicked element is not identical to or inside of an 'unselectCancel' element
 				ignore = this.opt('unselectCancel');
 				if (!ignore || !$(ev.target).closest(ignore).length) {
 					this.unselect(ev);
+				}
+			}
+		},
+	
+	
+		processEventUnselect: function(ev) {
+			if (this.selectedEvent) {
+				if (!$(ev.target).closest('.fc-selected').length) {
+					this.unselectEvent();
 				}
 			}
 		},
@@ -9046,6 +9558,127 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	;;
 	
+	/*
+	Embodies a div that has potential scrollbars
+	*/
+	var Scroller = FC.Scroller = Class.extend({
+	
+		el: null, // the guaranteed outer element
+		scrollEl: null, // the element with the scrollbars
+		overflowX: null,
+		overflowY: null,
+	
+	
+		constructor: function(options) {
+			options = options || {};
+			this.overflowX = options.overflowX || options.overflow || 'auto';
+			this.overflowY = options.overflowY || options.overflow || 'auto';
+		},
+	
+	
+		render: function() {
+			this.el = this.renderEl();
+			this.applyOverflow();
+		},
+	
+	
+		renderEl: function() {
+			return (this.scrollEl = $('<div class="fc-scroller"></div>'));
+		},
+	
+	
+		// sets to natural height, unlocks overflow
+		clear: function() {
+			this.setHeight('auto');
+			this.applyOverflow();
+		},
+	
+	
+		destroy: function() {
+			this.el.remove();
+		},
+	
+	
+		// Overflow
+		// -----------------------------------------------------------------------------------------------------------------
+	
+	
+		applyOverflow: function() {
+			this.scrollEl.css({
+				'overflow-x': this.overflowX,
+				'overflow-y': this.overflowY
+			});
+		},
+	
+	
+		// Causes any 'auto' overflow values to resolves to 'scroll' or 'hidden'.
+		// Useful for preserving scrollbar widths regardless of future resizes.
+		// Can pass in scrollbarWidths for optimization.
+		lockOverflow: function(scrollbarWidths) {
+			var overflowX = this.overflowX;
+			var overflowY = this.overflowY;
+	
+			scrollbarWidths = scrollbarWidths || this.getScrollbarWidths();
+	
+			if (overflowX === 'auto') {
+				overflowX = (
+						scrollbarWidths.top || scrollbarWidths.bottom || // horizontal scrollbars?
+						// OR scrolling pane with massless scrollbars?
+						this.scrollEl[0].scrollWidth - 1 > this.scrollEl[0].clientWidth
+							// subtract 1 because of IE off-by-one issue
+					) ? 'scroll' : 'hidden';
+			}
+	
+			if (overflowY === 'auto') {
+				overflowY = (
+						scrollbarWidths.left || scrollbarWidths.right || // vertical scrollbars?
+						// OR scrolling pane with massless scrollbars?
+						this.scrollEl[0].scrollHeight - 1 > this.scrollEl[0].clientHeight
+							// subtract 1 because of IE off-by-one issue
+					) ? 'scroll' : 'hidden';
+			}
+	
+			this.scrollEl.css({ 'overflow-x': overflowX, 'overflow-y': overflowY });
+		},
+	
+	
+		// Getters / Setters
+		// -----------------------------------------------------------------------------------------------------------------
+	
+	
+		setHeight: function(height) {
+			this.scrollEl.height(height);
+		},
+	
+	
+		getScrollTop: function() {
+			return this.scrollEl.scrollTop();
+		},
+	
+	
+		setScrollTop: function(top) {
+			this.scrollEl.scrollTop(top);
+		},
+	
+	
+		getClientWidth: function() {
+			return this.scrollEl[0].clientWidth;
+		},
+	
+	
+		getClientHeight: function() {
+			return this.scrollEl[0].clientHeight;
+		},
+	
+	
+		getScrollbarWidths: function() {
+			return getScrollbarWidths(this.scrollEl);
+		}
+	
+	});
+	
+	;;
+	
 	var Calendar = FC.Calendar = Class.extend({
 	
 		dirDefaults: null, // option defaults related to LTR or RTL
@@ -9056,6 +9689,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		view: null, // current View object
 		header: null,
 		loadingLevel: 0, // number of simultaneous loading tasks
+		isTouch: false,
 	
 	
 		// a lot of this class' OOP logic is scoped within this constructor function,
@@ -9101,6 +9735,10 @@ return /******/ (function(modules) { // webpackBootstrap
 				overrides
 			]);
 			populateInstanceComputableOptions(this.options);
+	
+			this.isTouch = this.options.isTouch != null ?
+				this.options.isTouch :
+				FC.isTouch;
 	
 			this.viewSpecCache = {}; // somewhat unrelated
 		},
@@ -9300,7 +9938,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	
 	
-	Calendar.mixin(Emitter);
+	Calendar.mixin(EmitterMixin);
 	
 	
 	function Calendar_constructor(element, overrides) {
@@ -9558,6 +10196,10 @@ return /******/ (function(modules) { // webpackBootstrap
 			tm = options.theme ? 'ui' : 'fc';
 			element.addClass('fc');
 	
+			element.addClass(
+				t.isTouch ? 'fc-touch' : 'fc-cursor'
+			);
+	
 			if (options.isRTL) {
 				element.addClass('fc-rtl');
 			}
@@ -9600,7 +10242,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 			header.removeElement();
 			content.remove();
-			element.removeClass('fc fc-ltr fc-rtl fc-unthemed ui-widget');
+			element.removeClass('fc fc-touch fc-cursor fc-ltr fc-rtl fc-unthemed ui-widget');
 	
 			if (windowResizeProxy) {
 				$(window).unbind('resize', windowResizeProxy);
@@ -10061,7 +10703,9 @@ return /******/ (function(modules) { // webpackBootstrap
 		dayPopoverFormat: 'LL',
 		
 		handleWindowResize: true,
-		windowResizeDelay: 200 // milliseconds before an updateSize happens
+		windowResizeDelay: 200, // milliseconds before an updateSize happens
+	
+		longPressDelay: 1000
 		
 	};
 	
@@ -11629,6 +12273,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var BasicView = FC.BasicView = View.extend({
 	
+		scroller: null,
+	
 		dayGridClass: DayGrid, // class the dayGrid will be instantiated from (overridable by subclasses)
 		dayGrid: null, // the main subcomponent that does most of the heavy lifting
 	
@@ -11643,6 +12289,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		initialize: function() {
 			this.dayGrid = this.instantiateDayGrid();
+	
+			this.scroller = new Scroller({
+				overflowX: 'hidden',
+				overflowY: 'auto'
+			});
 		},
 	
 	
@@ -11695,9 +12346,12 @@ return /******/ (function(modules) { // webpackBootstrap
 			this.el.addClass('fc-basic-view').html(this.renderSkeletonHtml());
 			this.renderHead();
 	
-			this.scrollerEl = this.el.find('.fc-day-grid-container');
+			this.scroller.render();
+			var dayGridContainerEl = this.scroller.el.addClass('fc-day-grid-container');
+			var dayGridEl = $('<div class="fc-day-grid" />').appendTo(dayGridContainerEl);
+			this.el.find('.fc-body > tr > td').append(dayGridContainerEl);
 	
-			this.dayGrid.setElement(this.el.find('.fc-day-grid'));
+			this.dayGrid.setElement(dayGridEl);
 			this.dayGrid.renderDates(this.hasRigidRows());
 		},
 	
@@ -11716,6 +12370,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		unrenderDates: function() {
 			this.dayGrid.unrenderDates();
 			this.dayGrid.removeElement();
+			this.scroller.destroy();
 		},
 	
 	
@@ -11736,11 +12391,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					'</thead>' +
 					'<tbody class="fc-body">' +
 						'<tr>' +
-							'<td class="' + this.widgetContentClass + '">' +
-								'<div class="fc-day-grid-container">' +
-									'<div class="fc-day-grid"/>' +
-								'</div>' +
-							'</td>' +
+							'<td class="' + this.widgetContentClass + '"></td>' +
 						'</tr>' +
 					'</tbody>' +
 				'</table>';
@@ -11783,9 +12434,10 @@ return /******/ (function(modules) { // webpackBootstrap
 		setHeight: function(totalHeight, isAuto) {
 			var eventLimit = this.opt('eventLimit');
 			var scrollerHeight;
+			var scrollbarWidths;
 	
 			// reset all heights to be natural
-			unsetScroller(this.scrollerEl);
+			this.scroller.clear();
 			uncompensateScroll(this.headRowEl);
 	
 			this.dayGrid.removeSegPopover(); // kill the "more" popover if displayed
@@ -11795,6 +12447,8 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.dayGrid.limitRows(eventLimit); // limit the levels first so the height can redistribute after
 			}
 	
+			// distribute the height to the rows
+			// (totalHeight is a "recommended" value if isAuto)
 			scrollerHeight = this.computeScrollerHeight(totalHeight);
 			this.setGridHeight(scrollerHeight, isAuto);
 	
@@ -11803,14 +12457,30 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.dayGrid.limitRows(eventLimit); // limit the levels after the grid's row heights have been set
 			}
 	
-			if (!isAuto && setPotentialScroller(this.scrollerEl, scrollerHeight)) { // using scrollbars?
+			if (!isAuto) { // should we force dimensions of the scroll container?
 	
-				compensateScroll(this.headRowEl, getScrollbarWidths(this.scrollerEl));
+				this.scroller.setHeight(scrollerHeight);
+				scrollbarWidths = this.scroller.getScrollbarWidths();
 	
-				// doing the scrollbar compensation might have created text overflow which created more height. redo
-				scrollerHeight = this.computeScrollerHeight(totalHeight);
-				this.scrollerEl.height(scrollerHeight);
+				if (scrollbarWidths.left || scrollbarWidths.right) { // using scrollbars?
+	
+					compensateScroll(this.headRowEl, scrollbarWidths);
+	
+					// doing the scrollbar compensation might have created text overflow which created more height. redo
+					scrollerHeight = this.computeScrollerHeight(totalHeight);
+					this.scroller.setHeight(scrollerHeight);
+				}
+	
+				// guarantees the same scrollbar widths
+				this.scroller.lockOverflow(scrollbarWidths);
 			}
+		},
+	
+	
+		// given a desired total height of the view, returns what the height of the scroller should be
+		computeScrollerHeight: function(totalHeight) {
+			return totalHeight -
+				subtractInnerElHeight(this.el, this.scroller.el); // everything that's NOT the scroller
 		},
 	
 	
@@ -11822,6 +12492,20 @@ return /******/ (function(modules) { // webpackBootstrap
 			else {
 				distributeHeight(this.dayGrid.rowEls, height, true); // true = compensate for height-hogging rows
 			}
+		},
+	
+	
+		/* Scroll
+		------------------------------------------------------------------------------------------------------------------*/
+	
+	
+		queryScroll: function() {
+			return this.scroller.getScrollTop();
+		},
+	
+	
+		setScroll: function(top) {
+			this.scroller.setScrollTop(top);
 		},
 	
 	
@@ -12060,6 +12744,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var AgendaView = FC.AgendaView = View.extend({
 	
+		scroller: null,
+	
 		timeGridClass: TimeGrid, // class used to instantiate the timeGrid. subclasses can override
 		timeGrid: null, // the main time-grid subcomponent of this view
 	
@@ -12069,11 +12755,10 @@ return /******/ (function(modules) { // webpackBootstrap
 		axisWidth: null, // the width of the time axis running down the side
 	
 		headContainerEl: null, // div that hold's the timeGrid's rendered date header
-		noScrollRowEls: null, // set of fake row elements that must compensate when scrollerEl has scrollbars
+		noScrollRowEls: null, // set of fake row elements that must compensate when scroller has scrollbars
 	
 		// when the time-grid isn't tall enough to occupy the given height, we render an <hr> underneath
 		bottomRuleEl: null,
-		bottomRuleHeight: null,
 	
 	
 		initialize: function() {
@@ -12082,6 +12767,11 @@ return /******/ (function(modules) { // webpackBootstrap
 			if (this.opt('allDaySlot')) { // should we display the "all-day" area?
 				this.dayGrid = this.instantiateDayGrid(); // the all-day subcomponent of this view
 			}
+	
+			this.scroller = new Scroller({
+				overflowX: 'hidden',
+				overflowY: 'auto'
+			});
 		},
 	
 	
@@ -12122,10 +12812,12 @@ return /******/ (function(modules) { // webpackBootstrap
 			this.el.addClass('fc-agenda-view').html(this.renderSkeletonHtml());
 			this.renderHead();
 	
-			// the element that wraps the time-grid that will probably scroll
-			this.scrollerEl = this.el.find('.fc-time-grid-container');
+			this.scroller.render();
+			var timeGridWrapEl = this.scroller.el.addClass('fc-time-grid-container');
+			var timeGridEl = $('<div class="fc-time-grid" />').appendTo(timeGridWrapEl);
+			this.el.find('.fc-body > tr > td').append(timeGridWrapEl);
 	
-			this.timeGrid.setElement(this.el.find('.fc-time-grid'));
+			this.timeGrid.setElement(timeGridEl);
 			this.timeGrid.renderDates();
 	
 			// the <hr> that sometimes displays under the time-grid
@@ -12162,6 +12854,8 @@ return /******/ (function(modules) { // webpackBootstrap
 				this.dayGrid.unrenderDates();
 				this.dayGrid.removeElement();
 			}
+	
+			this.scroller.destroy();
 		},
 	
 	
@@ -12183,9 +12877,6 @@ return /******/ (function(modules) { // webpackBootstrap
 									'<hr class="fc-divider ' + this.widgetHeaderClass + '"/>' :
 									''
 									) +
-								'<div class="fc-time-grid-container">' +
-									'<div class="fc-time-grid"/>' +
-								'</div>' +
 							'</td>' +
 						'</tr>' +
 					'</tbody>' +
@@ -12265,16 +12956,11 @@ return /******/ (function(modules) { // webpackBootstrap
 		setHeight: function(totalHeight, isAuto) {
 			var eventLimit;
 			var scrollerHeight;
-	
-			if (this.bottomRuleHeight === null) {
-				// calculate the height of the rule the very first time
-				this.bottomRuleHeight = this.bottomRuleEl.outerHeight();
-			}
-			this.bottomRuleEl.hide(); // .show() will be called later if this <hr> is necessary
+			var scrollbarWidths;
 	
 			// reset all dimensions back to the original state
-			this.scrollerEl.css('overflow', '');
-			unsetScroller(this.scrollerEl);
+			this.bottomRuleEl.hide(); // .show() will be called later if this <hr> is necessary
+			this.scroller.clear(); // sets height to 'auto' and clears overflow
 			uncompensateScroll(this.noScrollRowEls);
 	
 			// limit number of events in the all-day area
@@ -12290,26 +12976,44 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 			}
 	
-			if (!isAuto) { // should we force dimensions of the scroll container, or let the contents be natural height?
+			if (!isAuto) { // should we force dimensions of the scroll container?
 	
 				scrollerHeight = this.computeScrollerHeight(totalHeight);
-				if (setPotentialScroller(this.scrollerEl, scrollerHeight)) { // using scrollbars?
+				this.scroller.setHeight(scrollerHeight);
+				scrollbarWidths = this.scroller.getScrollbarWidths();
+	
+				if (scrollbarWidths.left || scrollbarWidths.right) { // using scrollbars?
 	
 					// make the all-day and header rows lines up
-					compensateScroll(this.noScrollRowEls, getScrollbarWidths(this.scrollerEl));
+					compensateScroll(this.noScrollRowEls, scrollbarWidths);
 	
 					// the scrollbar compensation might have changed text flow, which might affect height, so recalculate
 					// and reapply the desired height to the scroller.
 					scrollerHeight = this.computeScrollerHeight(totalHeight);
-					this.scrollerEl.height(scrollerHeight);
+					this.scroller.setHeight(scrollerHeight);
 				}
-				else { // no scrollbars
-					// still, force a height and display the bottom rule (marks the end of day)
-					this.scrollerEl.height(scrollerHeight).css('overflow', 'hidden'); // in case <hr> goes outside
+	
+				// guarantees the same scrollbar widths
+				this.scroller.lockOverflow(scrollbarWidths);
+	
+				// if there's any space below the slats, show the horizontal rule.
+				// this won't cause any new overflow, because lockOverflow already called.
+				if (this.timeGrid.getTotalSlatHeight() < scrollerHeight) {
 					this.bottomRuleEl.show();
 				}
 			}
 		},
+	
+	
+		// given a desired total height of the view, returns what the height of the scroller should be
+		computeScrollerHeight: function(totalHeight) {
+			return totalHeight -
+				subtractInnerElHeight(this.el, this.scroller.el); // everything that's NOT the scroller
+		},
+	
+	
+		/* Scroll
+		------------------------------------------------------------------------------------------------------------------*/
 	
 	
 		// Computes the initial pre-configured scroll state prior to allowing the user to change it
@@ -12325,6 +13029,16 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 	
 			return top;
+		},
+	
+	
+		queryScroll: function() {
+			return this.scroller.getScrollTop();
+		},
+	
+	
+		setScroll: function(top) {
+			this.scroller.setScrollTop(top);
 		},
 	
 	
@@ -20122,7 +20836,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;//! moment-timezone.js
-	//! version : 0.5.3
+	//! version : 0.5.4
 	//! author : Tim Wood
 	//! license : MIT
 	//! github.com/moment/moment-timezone
@@ -20147,7 +20861,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			return moment;
 		}
 	
-		var VERSION = "0.5.3",
+		var VERSION = "0.5.4",
 			zones = {},
 			links = {},
 			names = {},
@@ -20355,7 +21069,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		ZoneScore.prototype.scoreOffsetAt = function (offsetAt) {
 			this.offsetScore += Math.abs(this.zone.offset(offsetAt.at) - offsetAt.offset);
-			if (this.zone.abbr(offsetAt.at).match(/[A-Z]/g).join('') !== offsetAt.abbr) {
+			if (this.zone.abbr(offsetAt.at).replace(/[^A-Z]/g, '') !== offsetAt.abbr) {
 				this.abbrScore++;
 			}
 		};
@@ -20448,11 +21162,13 @@ return /******/ (function(modules) { // webpackBootstrap
 			// use Intl API when available and returning valid time zone
 			try {
 				var intlName = Intl.DateTimeFormat().resolvedOptions().timeZone;
-				var name = names[normalizeName(intlName)];
-				if (name) {
-					return name;
+				if (intlName){
+					var name = names[normalizeName(intlName)];
+					if (name) {
+						return name;
+					}
+					logError("Moment Timezone found " + intlName + " from the Intl api, but did not have that data loaded.");
 				}
-				logError("Moment Timezone found " + intlName + " from the Intl api, but did not have that data loaded.");
 			} catch (e) {
 				// Intl unavailable, fall back to manual guessing.
 			}
@@ -20717,7 +21433,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		}
 	
 		loadData({
-			"version": "2016c",
+			"version": "2016d",
 			"zones": [
 				"Africa/Abidjan|GMT|0|0||48e5",
 				"Africa/Khartoum|EAT|-30|0||51e5",
@@ -20746,7 +21462,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				"America/Denver|MST MDT|70 60|01010101010101010101010|1BQV0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0|26e5",
 				"America/Campo_Grande|AMST AMT|30 40|01010101010101010101010|1BIr0 1zd0 On0 1zd0 Rb0 1zd0 Lz0 1C10 Lz0 1C10 On0 1zd0 On0 1zd0 On0 1zd0 On0 1C10 Lz0 1C10 Lz0 1C10|77e4",
 				"America/Cancun|CST CDT EST|60 50 50|010101010102|1C1k0 1nX0 11B0 1nX0 11B0 1nX0 14p0 1lb0 14p0 1lb0 Dd0|63e4",
-				"America/Caracas|VET|4u|0||29e5",
+				"America/Caracas|VET VET|4u 40|01|1QMT0|29e5",
 				"America/Cayenne|GFT|30|0||58e3",
 				"America/Chicago|CST CDT|60 50|01010101010101010101010|1BQU0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0|92e5",
 				"America/Chihuahua|MST MDT|70 60|01010101010101010101010|1C1l0 1nX0 11B0 1nX0 11B0 1nX0 14p0 1lb0 14p0 1lb0 14p0 1lb0 14p0 1nX0 11B0 1nX0 11B0 1nX0 14p0 1lb0 14p0 1lb0|81e4",
@@ -20787,10 +21503,10 @@ return /******/ (function(modules) { // webpackBootstrap
 				"Antarctica/Troll|UTC CEST|0 -20|01010101010101010101010|1BWp0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00|40",
 				"Antarctica/Vostok|VOST|-60|0||25",
 				"Asia/Baghdad|AST|-30|0||66e5",
-				"Asia/Almaty|ALMT|-60|0||15e5",
+				"Asia/Almaty|+06|-60|0||15e5",
 				"Asia/Amman|EET EEST|-20 -30|010101010101010101010|1BVy0 1qM0 11A0 1o00 11A0 4bX0 Dd0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0|25e5",
 				"Asia/Anadyr|ANAT ANAST ANAT|-c0 -c0 -b0|0120|1BWe0 1qN0 WM0|13e3",
-				"Asia/Aqtobe|AQTT|-50|0||27e4",
+				"Asia/Aqtobe|+05|-50|0||27e4",
 				"Asia/Ashgabat|TMT|-50|0||41e4",
 				"Asia/Baku|AZT AZST|-40 -50|0101010101010|1BWo0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00|27e5",
 				"Asia/Bangkok|ICT|-70|0||15e6",
@@ -20824,16 +21540,14 @@ return /******/ (function(modules) { // webpackBootstrap
 				"Asia/Khandyga|VLAT VLAST VLAT YAKT YAKT|-a0 -b0 -b0 -a0 -90|010234|1BWg0 1qM0 WM0 17V0 7zD0|66e2",
 				"Asia/Krasnoyarsk|KRAT KRAST KRAT|-70 -80 -80|01020|1BWj0 1qM0 WM0 8Hz0|10e5",
 				"Asia/Kuala_Lumpur|MYT|-80|0||71e5",
-				"Asia/Magadan|MAGT MAGST MAGT MAGT|-b0 -c0 -c0 -a0|01023|1BWf0 1qM0 WM0 8Hz0|95e3",
+				"Asia/Magadan|MAGT MAGST MAGT MAGT|-b0 -c0 -c0 -a0|010230|1BWf0 1qM0 WM0 8Hz0 3Cq0|95e3",
 				"Asia/Makassar|WITA|-80|0||15e5",
 				"Asia/Manila|PHT|-80|0||24e6",
 				"Europe/Athens|EET EEST|-20 -30|01010101010101010101010|1BWp0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00|35e5",
 				"Asia/Novokuznetsk|KRAT NOVST NOVT NOVT|-70 -70 -60 -70|01230|1BWj0 1qN0 WM0 8Hz0|55e4",
 				"Asia/Novosibirsk|NOVT NOVST NOVT|-60 -70 -70|01020|1BWk0 1qM0 WM0 8Hz0|15e5",
 				"Asia/Omsk|OMST OMSST OMST|-60 -70 -70|01020|1BWk0 1qM0 WM0 8Hz0|12e5",
-				"Asia/Oral|ORAT|-50|0||27e4",
 				"Asia/Pyongyang|KST KST|-90 -8u|01|1P4D0|29e5",
-				"Asia/Qyzylorda|QYZT|-60|0||73e4",
 				"Asia/Rangoon|MMT|-6u|0||48e5",
 				"Asia/Sakhalin|SAKT SAKST SAKT|-a0 -b0 -b0|010202|1BWg0 1qM0 WM0 8Hz0 3rd0|58e4",
 				"Asia/Tashkent|UZT|-50|0||23e5",
@@ -20844,6 +21558,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				"Asia/Tehran|IRST IRDT|-3u -4u|01010101010101010101010|1BTUu 1dz0 1cp0 1dz0 1cp0 1dz0 1cN0 1dz0 1cp0 1dz0 1cp0 1dz0 1cp0 1dz0 1cN0 1dz0 1cp0 1dz0 1cp0 1dz0 1cp0 1dz0|14e6",
 				"Asia/Thimphu|BTT|-60|0||79e3",
 				"Asia/Tokyo|JST|-90|0||38e6",
+				"Asia/Tomsk|+06 +07|-60 -70|010101|1BWk0 1qM0 WM0 8Hz0 3Qp0|10e5",
 				"Asia/Ulaanbaatar|ULAT ULAST|-80 -90|0101010101010|1O8G0 1cJ0 1cP0 1cJ0 1cP0 1fx0 1cP0 1cJ0 1cP0 1cJ0 1cP0 1cJ0|12e5",
 				"Asia/Ust-Nera|MAGT MAGST MAGT VLAT VLAT|-b0 -c0 -c0 -b0 -a0|010234|1BWf0 1qM0 WM0 17V0 7zD0|65e2",
 				"Asia/Vladivostok|VLAT VLAST VLAT|-a0 -b0 -b0|01020|1BWg0 1qM0 WM0 8Hz0|60e4",
@@ -20896,6 +21611,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				"Europe/London|GMT BST|0 -10|01010101010101010101010|1BWp0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00|10e6",
 				"Europe/Chisinau|EET EEST|-20 -30|01010101010101010101010|1BWo0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00|67e4",
 				"Europe/Kaliningrad|EET EEST FET|-20 -30 -30|01020|1BWo0 1qM0 WM0 8Hz0|44e4",
+				"Europe/Kirov|+03 +04|-30 -40|01010|1BWn0 1qM0 WM0 8Hz0|48e4",
 				"Europe/Minsk|EET EEST FET MSK|-20 -30 -30 -30|01023|1BWo0 1qM0 WM0 8Hy0|19e5",
 				"Europe/Moscow|MSK MSD MSK|-30 -40 -40|01020|1BWn0 1qM0 WM0 8Hz0|16e6",
 				"Europe/Samara|SAMT SAMST SAMT|-40 -40 -30|0120|1BWm0 1qN0 WM0|12e5",
@@ -21163,7 +21879,9 @@ return /******/ (function(modules) { // webpackBootstrap
 				"America/Santo_Domingo|America/Virgin",
 				"America/Sao_Paulo|Brazil/East",
 				"America/St_Johns|Canada/Newfoundland",
+				"Asia/Almaty|Asia/Qyzylorda",
 				"Asia/Aqtobe|Asia/Aqtau",
+				"Asia/Aqtobe|Asia/Oral",
 				"Asia/Ashgabat|Asia/Ashkhabad",
 				"Asia/Baghdad|Asia/Aden",
 				"Asia/Baghdad|Asia/Bahrain",
@@ -21538,7 +22256,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	__webpack_require__(32);
 	
 	/*
-	 * Utily functions for Booking.js
+	 * Utily functions
 	 */
 	
 	module.exports = {
@@ -21598,7 +22316,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 	
 	/*
-	 * Default configuration for for Booking.js
+	 * Default configuration
 	 */
 	
 	var primary = {
@@ -21826,7 +22544,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 	// module
-	exports.push([module.id, "/*!\n * FullCalendar v2.6.1 Stylesheet\n * Docs & License: http://fullcalendar.io/\n * (c) 2015 Adam Shaw\n */.fc{direction:ltr;text-align:left}.fc-rtl{text-align:right}body .fc{font-size:1em}.fc-unthemed .fc-divider,.fc-unthemed .fc-popover,.fc-unthemed .fc-row,.fc-unthemed tbody,.fc-unthemed td,.fc-unthemed th,.fc-unthemed thead{border-color:#ddd}.fc-unthemed .fc-popover{background-color:#fff}.fc-unthemed .fc-divider,.fc-unthemed .fc-popover .fc-header{background:#eee}.fc-unthemed .fc-popover .fc-header .fc-close{color:#666}.fc-unthemed .fc-today{background:#fcf8e3}.fc-highlight{background:#bce8f1}.fc-bgevent,.fc-highlight{opacity:.3;filter:alpha(opacity=30)}.fc-bgevent{background:#8fdf82}.fc-nonbusiness{background:#d7d7d7}.fc-icon{display:inline-block;width:1em;height:1em;line-height:1em;font-size:1em;text-align:center;overflow:hidden;font-family:Courier New,Courier,monospace;-webkit-touch-callout:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.fc-icon:after{position:relative;margin:0 -1em}.fc-icon-left-single-arrow:after{content:\"\\2039\";font-weight:700;font-size:200%;top:-7%;left:3%}.fc-icon-right-single-arrow:after{content:\"\\203A\";font-weight:700;font-size:200%;top:-7%;left:-3%}.fc-icon-left-double-arrow:after{content:\"\\AB\";font-size:160%;top:-7%}.fc-icon-right-double-arrow:after{content:\"\\BB\";font-size:160%;top:-7%}.fc-icon-left-triangle:after{content:\"\\25C4\";font-size:125%;top:3%;left:-2%}.fc-icon-right-triangle:after{content:\"\\25BA\";font-size:125%;top:3%;left:2%}.fc-icon-down-triangle:after{content:\"\\25BC\";font-size:125%;top:2%}.fc-icon-x:after{content:\"\\D7\";font-size:200%;top:6%}.fc button{box-sizing:border-box;margin:0;height:2.1em;padding:0 .6em;font-size:1em;white-space:nowrap;cursor:pointer}.fc button::-moz-focus-inner{margin:0;padding:0}.fc-state-default{border:1px solid}.fc-state-default.fc-corner-left{border-top-left-radius:4px;border-bottom-left-radius:4px}.fc-state-default.fc-corner-right{border-top-right-radius:4px;border-bottom-right-radius:4px}.fc button .fc-icon{position:relative;top:-.05em;margin:0 .2em;vertical-align:middle}.fc-state-default{background-color:#f5f5f5;background-image:-webkit-gradient(linear,0 0,0 100%,from(#fff),to(#e6e6e6));background-image:-webkit-linear-gradient(top,#fff,#e6e6e6);background-image:linear-gradient(180deg,#fff,#e6e6e6);background-repeat:repeat-x;border-color:#e6e6e6 #e6e6e6 #bfbfbf;border-color:rgba(0,0,0,.1) rgba(0,0,0,.1) rgba(0,0,0,.25);color:#333;text-shadow:0 1px 1px hsla(0,0%,100%,.75);box-shadow:inset 0 1px 0 hsla(0,0%,100%,.2),0 1px 2px rgba(0,0,0,.05)}.fc-state-active,.fc-state-disabled,.fc-state-down,.fc-state-hover{color:#333;background-color:#e6e6e6}.fc-state-hover{color:#333;text-decoration:none;background-position:0 -15px;-webkit-transition:background-position .1s linear;transition:background-position .1s linear}.fc-state-active,.fc-state-down{background-color:#ccc;background-image:none;box-shadow:inset 0 2px 4px rgba(0,0,0,.15),0 1px 2px rgba(0,0,0,.05)}.fc-state-disabled{cursor:default;background-image:none;opacity:.65;filter:alpha(opacity=65);box-shadow:none}.fc-button-group{display:inline-block}.fc .fc-button-group>*{float:left;margin:0 0 0 -1px}.fc .fc-button-group>:first-child{margin-left:0}.fc-popover{position:absolute;box-shadow:0 2px 6px rgba(0,0,0,.15)}.fc-popover .fc-header{padding:2px 4px}.fc-popover .fc-header .fc-title{margin:0 2px}.fc-popover .fc-header .fc-close{cursor:pointer}.fc-ltr .fc-popover .fc-header .fc-title,.fc-rtl .fc-popover .fc-header .fc-close{float:left}.fc-ltr .fc-popover .fc-header .fc-close,.fc-rtl .fc-popover .fc-header .fc-title{float:right}.fc-unthemed .fc-popover{border-width:1px;border-style:solid}.fc-unthemed .fc-popover .fc-header .fc-close{font-size:.9em;margin-top:2px}.fc-popover>.ui-widget-header+.ui-widget-content{border-top:0}.fc-divider{border-style:solid;border-width:1px}hr.fc-divider{height:0;margin:0;padding:0 0 2px;border-width:1px 0}.fc-clear{clear:both}.fc-bg,.fc-bgevent-skeleton,.fc-helper-skeleton,.fc-highlight-skeleton{position:absolute;top:0;left:0;right:0}.fc-bg{bottom:0}.fc-bg table{height:100%}.fc table{width:100%;table-layout:fixed;border-collapse:collapse;border-spacing:0;font-size:1em}.fc th{text-align:center}.fc td,.fc th{border-style:solid;border-width:1px;padding:0;vertical-align:top}.fc td.fc-today{border-style:double}.fc .fc-row{border-style:solid;border-width:0}.fc-row table{border-left:0 hidden transparent;border-right:0 hidden transparent;border-bottom:0 hidden transparent}.fc-row:first-child table{border-top:0 hidden transparent}.fc-row{position:relative}.fc-row .fc-bg{z-index:1}.fc-row .fc-bgevent-skeleton,.fc-row .fc-highlight-skeleton{bottom:0}.fc-row .fc-bgevent-skeleton table,.fc-row .fc-highlight-skeleton table{height:100%}.fc-row .fc-bgevent-skeleton td,.fc-row .fc-highlight-skeleton td{border-color:transparent}.fc-row .fc-bgevent-skeleton{z-index:2}.fc-row .fc-highlight-skeleton{z-index:3}.fc-row .fc-content-skeleton{position:relative;z-index:4;padding-bottom:2px}.fc-row .fc-helper-skeleton{z-index:5}.fc-row .fc-content-skeleton td,.fc-row .fc-helper-skeleton td{background:none;border-color:transparent;border-bottom:0}.fc-row .fc-content-skeleton tbody td,.fc-row .fc-helper-skeleton tbody td{border-top:0}.fc-scroller{overflow-y:scroll;overflow-x:hidden}.fc-scroller>*{position:relative;width:100%;overflow:hidden}.fc-event{position:relative;display:block;font-size:.85em;line-height:1.3;border-radius:3px;border:1px solid #3a87ad;background-color:#3a87ad;font-weight:400}.fc-event,.fc-event:hover,.ui-widget .fc-event{color:#fff;text-decoration:none}.fc-event.fc-draggable,.fc-event[href]{cursor:pointer}.fc-not-allowed,.fc-not-allowed .fc-event{cursor:not-allowed}.fc-event .fc-bg{z-index:1;background:#fff;opacity:.25;filter:alpha(opacity=25)}.fc-event .fc-content{position:relative;z-index:2}.fc-event .fc-resizer{position:absolute;z-index:3}.fc-ltr .fc-h-event.fc-not-start,.fc-rtl .fc-h-event.fc-not-end{margin-left:0;border-left-width:0;padding-left:1px;border-top-left-radius:0;border-bottom-left-radius:0}.fc-ltr .fc-h-event.fc-not-end,.fc-rtl .fc-h-event.fc-not-start{margin-right:0;border-right-width:0;padding-right:1px;border-top-right-radius:0;border-bottom-right-radius:0}.fc-h-event .fc-resizer{top:-1px;bottom:-1px;left:-1px;right:-1px;width:5px}.fc-ltr .fc-h-event .fc-start-resizer,.fc-ltr .fc-h-event .fc-start-resizer:after,.fc-ltr .fc-h-event .fc-start-resizer:before,.fc-rtl .fc-h-event .fc-end-resizer,.fc-rtl .fc-h-event .fc-end-resizer:after,.fc-rtl .fc-h-event .fc-end-resizer:before{right:auto;cursor:w-resize}.fc-ltr .fc-h-event .fc-end-resizer,.fc-ltr .fc-h-event .fc-end-resizer:after,.fc-ltr .fc-h-event .fc-end-resizer:before,.fc-rtl .fc-h-event .fc-start-resizer,.fc-rtl .fc-h-event .fc-start-resizer:after,.fc-rtl .fc-h-event .fc-start-resizer:before{left:auto;cursor:e-resize}.fc-day-grid-event{margin:1px 2px 0;padding:0 1px}.fc-day-grid-event .fc-content{white-space:nowrap;overflow:hidden}.fc-day-grid-event .fc-time{font-weight:700}.fc-day-grid-event .fc-resizer{left:-3px;right:-3px;width:7px}a.fc-more{margin:1px 3px;font-size:.85em;cursor:pointer;text-decoration:none}a.fc-more:hover{text-decoration:underline}.fc-limited{display:none}.fc-day-grid .fc-row{z-index:1}.fc-more-popover{z-index:2;width:220px}.fc-more-popover .fc-event-container{padding:10px}.fc-now-indicator{position:absolute;border:0 solid red}.fc-toolbar{text-align:center;margin-bottom:1em}.fc-toolbar .fc-left{float:left}.fc-toolbar .fc-right{float:right}.fc-toolbar .fc-center{display:inline-block}.fc .fc-toolbar>*>*{float:left;margin-left:.75em}.fc .fc-toolbar>*>:first-child{margin-left:0}.fc-toolbar h2{margin:0}.fc-toolbar button{position:relative}.fc-toolbar .fc-state-hover,.fc-toolbar .ui-state-hover{z-index:2}.fc-toolbar .fc-state-down{z-index:3}.fc-toolbar .fc-state-active,.fc-toolbar .ui-state-active{z-index:4}.fc-toolbar button:focus{z-index:5}.fc-view-container *,.fc-view-container :after,.fc-view-container :before{box-sizing:content-box}.fc-view,.fc-view>table{position:relative;z-index:1}.fc-basicDay-view .fc-content-skeleton,.fc-basicWeek-view .fc-content-skeleton{padding-top:1px;padding-bottom:1em}.fc-basic-view .fc-body .fc-row{min-height:4em}.fc-row.fc-rigid{overflow:hidden}.fc-row.fc-rigid .fc-content-skeleton{position:absolute;top:0;left:0;right:0}.fc-basic-view .fc-day-number,.fc-basic-view .fc-week-number{padding:0 2px}.fc-basic-view td.fc-day-number,.fc-basic-view td.fc-week-number span{padding-top:2px;padding-bottom:2px}.fc-basic-view .fc-week-number{text-align:center}.fc-basic-view .fc-week-number span{display:inline-block;min-width:1.25em}.fc-ltr .fc-basic-view .fc-day-number{text-align:right}.fc-rtl .fc-basic-view .fc-day-number{text-align:left}.fc-day-number.fc-other-month{opacity:.3;filter:alpha(opacity=30)}.fc-agenda-view .fc-day-grid{position:relative;z-index:2}.fc-agenda-view .fc-day-grid .fc-row{min-height:3em}.fc-agenda-view .fc-day-grid .fc-row .fc-content-skeleton{padding-top:1px;padding-bottom:1em}.fc .fc-axis{vertical-align:middle;padding:0 4px;white-space:nowrap}.fc-ltr .fc-axis{text-align:right}.fc-rtl .fc-axis{text-align:left}.ui-widget td.fc-axis{font-weight:400}.fc-time-grid,.fc-time-grid-container{position:relative;z-index:1}.fc-time-grid{min-height:100%}.fc-time-grid table{border:0 hidden transparent}.fc-time-grid>.fc-bg{z-index:1}.fc-time-grid .fc-slats,.fc-time-grid>hr{position:relative;z-index:2}.fc-time-grid .fc-content-col{position:relative}.fc-time-grid .fc-content-skeleton{position:absolute;z-index:3;top:0;left:0;right:0}.fc-time-grid .fc-business-container{position:relative;z-index:1}.fc-time-grid .fc-bgevent-container{position:relative;z-index:2}.fc-time-grid .fc-highlight-container{position:relative;z-index:3}.fc-time-grid .fc-event-container{position:relative;z-index:4}.fc-time-grid .fc-now-indicator-line{z-index:5}.fc-time-grid .fc-helper-container{position:relative;z-index:6}.fc-time-grid .fc-slats td{height:1.5em;border-bottom:0}.fc-time-grid .fc-slats .fc-minor td{border-top-style:dotted}.fc-time-grid .fc-slats .ui-widget-content{background:none}.fc-time-grid .fc-highlight-container{position:relative}.fc-time-grid .fc-highlight{position:absolute;left:0;right:0}.fc-ltr .fc-time-grid .fc-event-container{margin:0 2.5% 0 2px}.fc-rtl .fc-time-grid .fc-event-container{margin:0 2px 0 2.5%}.fc-time-grid .fc-bgevent,.fc-time-grid .fc-event{position:absolute;z-index:1}.fc-time-grid .fc-bgevent{left:0;right:0}.fc-v-event.fc-not-start{border-top-width:0;padding-top:1px;border-top-left-radius:0;border-top-right-radius:0}.fc-v-event.fc-not-end{border-bottom-width:0;padding-bottom:1px;border-bottom-left-radius:0;border-bottom-right-radius:0}.fc-time-grid-event{overflow:hidden}.fc-time-grid-event .fc-time,.fc-time-grid-event .fc-title{padding:0 1px}.fc-time-grid-event .fc-time{font-size:.85em;white-space:nowrap}.fc-time-grid-event.fc-short .fc-content{white-space:nowrap}.fc-time-grid-event.fc-short .fc-time,.fc-time-grid-event.fc-short .fc-title{display:inline-block;vertical-align:top}.fc-time-grid-event.fc-short .fc-time span{display:none}.fc-time-grid-event.fc-short .fc-time:before{content:attr(data-start)}.fc-time-grid-event.fc-short .fc-time:after{content:\"\\A0-\\A0\"}.fc-time-grid-event.fc-short .fc-title{font-size:.85em;padding:0}.fc-time-grid-event .fc-resizer{left:0;right:0;bottom:0;height:8px;overflow:hidden;line-height:8px;font-size:11px;font-family:monospace;text-align:center;cursor:s-resize}.fc-time-grid-event .fc-resizer:after{content:\"=\"}.fc-time-grid .fc-now-indicator-line{border-top-width:1px;left:0;right:0}.fc-time-grid .fc-now-indicator-arrow{margin-top:-5px}.fc-ltr .fc-time-grid .fc-now-indicator-arrow{left:0;border-width:5px 0 5px 6px;border-top-color:transparent;border-bottom-color:transparent}.fc-rtl .fc-time-grid .fc-now-indicator-arrow{right:0;border-width:5px 6px 5px 0;border-top-color:transparent;border-bottom-color:transparent}", ""]);
+	exports.push([module.id, "/*!\n * FullCalendar v2.7.1 Stylesheet\n * Docs & License: http://fullcalendar.io/\n * (c) 2016 Adam Shaw\n */.fc{direction:ltr;text-align:left}.fc-rtl{text-align:right}body .fc{font-size:1em}.fc-unthemed .fc-content,.fc-unthemed .fc-divider,.fc-unthemed .fc-popover,.fc-unthemed .fc-row,.fc-unthemed tbody,.fc-unthemed td,.fc-unthemed th,.fc-unthemed thead{border-color:#ddd}.fc-unthemed .fc-popover{background-color:#fff}.fc-unthemed .fc-divider,.fc-unthemed .fc-popover .fc-header{background:#eee}.fc-unthemed .fc-popover .fc-header .fc-close{color:#666}.fc-unthemed .fc-today{background:#fcf8e3}.fc-highlight{background:#bce8f1}.fc-bgevent,.fc-highlight{opacity:.3;filter:alpha(opacity=30)}.fc-bgevent{background:#8fdf82}.fc-nonbusiness{background:#d7d7d7}.fc-icon{display:inline-block;height:1em;line-height:1em;font-size:1em;text-align:center;overflow:hidden;font-family:Courier New,Courier,monospace;-webkit-touch-callout:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.fc-icon:after{position:relative}.fc-icon-left-single-arrow:after{content:\"\\2039\";font-weight:700;font-size:200%;top:-7%}.fc-icon-right-single-arrow:after{content:\"\\203A\";font-weight:700;font-size:200%;top:-7%}.fc-icon-left-double-arrow:after{content:\"\\AB\";font-size:160%;top:-7%}.fc-icon-right-double-arrow:after{content:\"\\BB\";font-size:160%;top:-7%}.fc-icon-left-triangle:after{content:\"\\25C4\";font-size:125%;top:3%}.fc-icon-right-triangle:after{content:\"\\25BA\";font-size:125%;top:3%}.fc-icon-down-triangle:after{content:\"\\25BC\";font-size:125%;top:2%}.fc-icon-x:after{content:\"\\D7\";font-size:200%;top:6%}.fc button{box-sizing:border-box;margin:0;height:2.1em;padding:0 .6em;font-size:1em;white-space:nowrap;cursor:pointer}.fc button::-moz-focus-inner{margin:0;padding:0}.fc-state-default{border:1px solid}.fc-state-default.fc-corner-left{border-top-left-radius:4px;border-bottom-left-radius:4px}.fc-state-default.fc-corner-right{border-top-right-radius:4px;border-bottom-right-radius:4px}.fc button .fc-icon{position:relative;top:-.05em;margin:0 .2em;vertical-align:middle}.fc-state-default{background-color:#f5f5f5;background-image:-webkit-gradient(linear,0 0,0 100%,from(#fff),to(#e6e6e6));background-image:-webkit-linear-gradient(top,#fff,#e6e6e6);background-image:linear-gradient(180deg,#fff,#e6e6e6);background-repeat:repeat-x;border-color:#e6e6e6 #e6e6e6 #bfbfbf;border-color:rgba(0,0,0,.1) rgba(0,0,0,.1) rgba(0,0,0,.25);color:#333;text-shadow:0 1px 1px hsla(0,0%,100%,.75);box-shadow:inset 0 1px 0 hsla(0,0%,100%,.2),0 1px 2px rgba(0,0,0,.05)}.fc-state-active,.fc-state-disabled,.fc-state-down,.fc-state-hover{color:#333;background-color:#e6e6e6}.fc-state-hover{color:#333;text-decoration:none;background-position:0 -15px;-webkit-transition:background-position .1s linear;transition:background-position .1s linear}.fc-state-active,.fc-state-down{background-color:#ccc;background-image:none;box-shadow:inset 0 2px 4px rgba(0,0,0,.15),0 1px 2px rgba(0,0,0,.05)}.fc-state-disabled{cursor:default;background-image:none;opacity:.65;filter:alpha(opacity=65);box-shadow:none}.fc-button-group{display:inline-block}.fc .fc-button-group>*{float:left;margin:0 0 0 -1px}.fc .fc-button-group>:first-child{margin-left:0}.fc-popover{position:absolute;box-shadow:0 2px 6px rgba(0,0,0,.15)}.fc-popover .fc-header{padding:2px 4px}.fc-popover .fc-header .fc-title{margin:0 2px}.fc-popover .fc-header .fc-close{cursor:pointer}.fc-ltr .fc-popover .fc-header .fc-title,.fc-rtl .fc-popover .fc-header .fc-close{float:left}.fc-ltr .fc-popover .fc-header .fc-close,.fc-rtl .fc-popover .fc-header .fc-title{float:right}.fc-unthemed .fc-popover{border-width:1px;border-style:solid}.fc-unthemed .fc-popover .fc-header .fc-close{font-size:.9em;margin-top:2px}.fc-popover>.ui-widget-header+.ui-widget-content{border-top:0}.fc-divider{border-style:solid;border-width:1px}hr.fc-divider{height:0;margin:0;padding:0 0 2px;border-width:1px 0}.fc-clear{clear:both}.fc-bg,.fc-bgevent-skeleton,.fc-helper-skeleton,.fc-highlight-skeleton{position:absolute;top:0;left:0;right:0}.fc-bg{bottom:0}.fc-bg table{height:100%}.fc table{width:100%;table-layout:fixed;border-collapse:collapse;border-spacing:0;font-size:1em}.fc th{text-align:center}.fc td,.fc th{border-style:solid;border-width:1px;padding:0;vertical-align:top}.fc td.fc-today{border-style:double}.fc .fc-row{border-style:solid;border-width:0}.fc-row table{border-left:0 hidden transparent;border-right:0 hidden transparent;border-bottom:0 hidden transparent}.fc-row:first-child table{border-top:0 hidden transparent}.fc-row{position:relative}.fc-row .fc-bg{z-index:1}.fc-row .fc-bgevent-skeleton,.fc-row .fc-highlight-skeleton{bottom:0}.fc-row .fc-bgevent-skeleton table,.fc-row .fc-highlight-skeleton table{height:100%}.fc-row .fc-bgevent-skeleton td,.fc-row .fc-highlight-skeleton td{border-color:transparent}.fc-row .fc-bgevent-skeleton{z-index:2}.fc-row .fc-highlight-skeleton{z-index:3}.fc-row .fc-content-skeleton{position:relative;z-index:4;padding-bottom:2px}.fc-row .fc-helper-skeleton{z-index:5}.fc-row .fc-content-skeleton td,.fc-row .fc-helper-skeleton td{background:none;border-color:transparent;border-bottom:0}.fc-row .fc-content-skeleton tbody td,.fc-row .fc-helper-skeleton tbody td{border-top:0}.fc-scroller{-webkit-overflow-scrolling:touch}.fc-scroller>.fc-day-grid,.fc-scroller>.fc-time-grid{position:relative;width:100%}.fc-event{position:relative;display:block;font-size:.85em;line-height:1.3;border-radius:3px;border:1px solid #3a87ad;background-color:#3a87ad;font-weight:400}.fc-event,.fc-event:hover,.ui-widget .fc-event{color:#fff;text-decoration:none}.fc-event.fc-draggable,.fc-event[href]{cursor:pointer}.fc-not-allowed,.fc-not-allowed .fc-event{cursor:not-allowed}.fc-event .fc-bg{z-index:1;background:#fff;opacity:.25;filter:alpha(opacity=25)}.fc-event .fc-content{position:relative;z-index:2}.fc-event .fc-resizer{position:absolute;z-index:4}.fc-touch .fc-event .fc-resizer{display:none}.fc-touch .fc-event.fc-selected .fc-resizer{display:block}.fc-expander{position:relative}.fc-touch .fc-event .fc-resizer:before,.fc-touch .fc-expander:before{content:\"\";position:absolute;z-index:9999;top:50%;left:50%;width:40px;height:40px;margin-left:-20px;margin-top:-20px}.fc-event.fc-selected{z-index:9999!important;box-shadow:0 2px 5px rgba(0,0,0,.2)}.fc-event.fc-selected.fc-dragging{box-shadow:0 2px 7px rgba(0,0,0,.3)}.fc-h-event.fc-selected:before{content:\"\";position:absolute;z-index:3;top:-10px;bottom:-10px;left:0;right:0}.fc-ltr .fc-h-event.fc-not-start,.fc-rtl .fc-h-event.fc-not-end{margin-left:0;border-left-width:0;padding-left:1px;border-top-left-radius:0;border-bottom-left-radius:0}.fc-ltr .fc-h-event.fc-not-end,.fc-rtl .fc-h-event.fc-not-start{margin-right:0;border-right-width:0;padding-right:1px;border-top-right-radius:0;border-bottom-right-radius:0}.fc-ltr .fc-h-event .fc-start-resizer,.fc-rtl .fc-h-event .fc-end-resizer{cursor:w-resize;left:-1px}.fc-ltr .fc-h-event .fc-end-resizer,.fc-rtl .fc-h-event .fc-start-resizer{cursor:e-resize;right:-1px}.fc-cursor .fc-h-event .fc-resizer{width:7px;top:-1px;bottom:-1px}.fc-touch .fc-h-event .fc-resizer{border-radius:4px;border-width:1px;width:6px;height:6px;border-style:solid;border-color:inherit;background:#fff;top:50%;margin-top:-4px}.fc-touch.fc-ltr .fc-h-event .fc-start-resizer,.fc-touch.fc-rtl .fc-h-event .fc-end-resizer{margin-left:-4px}.fc-touch.fc-ltr .fc-h-event .fc-end-resizer,.fc-touch.fc-rtl .fc-h-event .fc-start-resizer{margin-right:-4px}.fc-day-grid-event{margin:1px 2px 0;padding:0 1px}.fc-day-grid-event.fc-selected:after{content:\"\";position:absolute;z-index:1;top:-1px;right:-1px;bottom:-1px;left:-1px;background:#000;opacity:.25;filter:alpha(opacity=25)}.fc-day-grid-event .fc-content{white-space:nowrap;overflow:hidden}.fc-day-grid-event .fc-time{font-weight:700}.fc-cursor.fc-ltr .fc-day-grid-event .fc-start-resizer,.fc-cursor.fc-rtl .fc-day-grid-event .fc-end-resizer{margin-left:-2px}.fc-cursor.fc-ltr .fc-day-grid-event .fc-end-resizer,.fc-cursor.fc-rtl .fc-day-grid-event .fc-start-resizer{margin-right:-2px}a.fc-more{margin:1px 3px;font-size:.85em;cursor:pointer;text-decoration:none}a.fc-more:hover{text-decoration:underline}.fc-limited{display:none}.fc-day-grid .fc-row{z-index:1}.fc-more-popover{z-index:2;width:220px}.fc-more-popover .fc-event-container{padding:10px}.fc-now-indicator{position:absolute;border:0 solid red}.fc-unselectable{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:rgba(0,0,0,0)}.fc-toolbar{text-align:center;margin-bottom:1em}.fc-toolbar .fc-left{float:left}.fc-toolbar .fc-right{float:right}.fc-toolbar .fc-center{display:inline-block}.fc .fc-toolbar>*>*{float:left;margin-left:.75em}.fc .fc-toolbar>*>:first-child{margin-left:0}.fc-toolbar h2{margin:0}.fc-toolbar button{position:relative}.fc-toolbar .fc-state-hover,.fc-toolbar .ui-state-hover{z-index:2}.fc-toolbar .fc-state-down{z-index:3}.fc-toolbar .fc-state-active,.fc-toolbar .ui-state-active{z-index:4}.fc-toolbar button:focus{z-index:5}.fc-view-container *,.fc-view-container :after,.fc-view-container :before{box-sizing:content-box}.fc-view,.fc-view>table{position:relative;z-index:1}.fc-basicDay-view .fc-content-skeleton,.fc-basicWeek-view .fc-content-skeleton{padding-top:1px;padding-bottom:1em}.fc-basic-view .fc-body .fc-row{min-height:4em}.fc-row.fc-rigid{overflow:hidden}.fc-row.fc-rigid .fc-content-skeleton{position:absolute;top:0;left:0;right:0}.fc-basic-view .fc-day-number,.fc-basic-view .fc-week-number{padding:0 2px}.fc-basic-view td.fc-day-number,.fc-basic-view td.fc-week-number span{padding-top:2px;padding-bottom:2px}.fc-basic-view .fc-week-number{text-align:center}.fc-basic-view .fc-week-number span{display:inline-block;min-width:1.25em}.fc-ltr .fc-basic-view .fc-day-number{text-align:right}.fc-rtl .fc-basic-view .fc-day-number{text-align:left}.fc-day-number.fc-other-month{opacity:.3;filter:alpha(opacity=30)}.fc-agenda-view .fc-day-grid{position:relative;z-index:2}.fc-agenda-view .fc-day-grid .fc-row{min-height:3em}.fc-agenda-view .fc-day-grid .fc-row .fc-content-skeleton{padding-top:1px;padding-bottom:1em}.fc .fc-axis{vertical-align:middle;padding:0 4px;white-space:nowrap}.fc-ltr .fc-axis{text-align:right}.fc-rtl .fc-axis{text-align:left}.ui-widget td.fc-axis{font-weight:400}.fc-time-grid,.fc-time-grid-container{position:relative;z-index:1}.fc-time-grid{min-height:100%}.fc-time-grid table{border:0 hidden transparent}.fc-time-grid>.fc-bg{z-index:1}.fc-time-grid .fc-slats,.fc-time-grid>hr{position:relative;z-index:2}.fc-time-grid .fc-content-col{position:relative}.fc-time-grid .fc-content-skeleton{position:absolute;z-index:3;top:0;left:0;right:0}.fc-time-grid .fc-business-container{position:relative;z-index:1}.fc-time-grid .fc-bgevent-container{position:relative;z-index:2}.fc-time-grid .fc-highlight-container{position:relative;z-index:3}.fc-time-grid .fc-event-container{position:relative;z-index:4}.fc-time-grid .fc-now-indicator-line{z-index:5}.fc-time-grid .fc-helper-container{position:relative;z-index:6}.fc-time-grid .fc-slats td{height:1.5em;border-bottom:0}.fc-time-grid .fc-slats .fc-minor td{border-top-style:dotted}.fc-time-grid .fc-slats .ui-widget-content{background:none}.fc-time-grid .fc-highlight-container{position:relative}.fc-time-grid .fc-highlight{position:absolute;left:0;right:0}.fc-ltr .fc-time-grid .fc-event-container{margin:0 2.5% 0 2px}.fc-rtl .fc-time-grid .fc-event-container{margin:0 2px 0 2.5%}.fc-time-grid .fc-bgevent,.fc-time-grid .fc-event{position:absolute;z-index:1}.fc-time-grid .fc-bgevent{left:0;right:0}.fc-v-event.fc-not-start{border-top-width:0;padding-top:1px;border-top-left-radius:0;border-top-right-radius:0}.fc-v-event.fc-not-end{border-bottom-width:0;padding-bottom:1px;border-bottom-left-radius:0;border-bottom-right-radius:0}.fc-time-grid-event{overflow:hidden}.fc-time-grid-event.fc-selected{overflow:visible}.fc-time-grid-event.fc-selected .fc-bg{display:none}.fc-time-grid-event .fc-content{overflow:hidden}.fc-time-grid-event .fc-time,.fc-time-grid-event .fc-title{padding:0 1px}.fc-time-grid-event .fc-time{font-size:.85em;white-space:nowrap}.fc-time-grid-event.fc-short .fc-content{white-space:nowrap}.fc-time-grid-event.fc-short .fc-time,.fc-time-grid-event.fc-short .fc-title{display:inline-block;vertical-align:top}.fc-time-grid-event.fc-short .fc-time span{display:none}.fc-time-grid-event.fc-short .fc-time:before{content:attr(data-start)}.fc-time-grid-event.fc-short .fc-time:after{content:\"\\A0-\\A0\"}.fc-time-grid-event.fc-short .fc-title{font-size:.85em;padding:0}.fc-cursor .fc-time-grid-event .fc-resizer{left:0;right:0;bottom:0;height:8px;overflow:hidden;line-height:8px;font-size:11px;font-family:monospace;text-align:center;cursor:s-resize}.fc-cursor .fc-time-grid-event .fc-resizer:after{content:\"=\"}.fc-touch .fc-time-grid-event .fc-resizer{border-radius:5px;border-width:1px;width:8px;height:8px;border-style:solid;border-color:inherit;background:#fff;left:50%;margin-left:-5px;bottom:-5px}.fc-time-grid .fc-now-indicator-line{border-top-width:1px;left:0;right:0}.fc-time-grid .fc-now-indicator-arrow{margin-top:-5px}.fc-ltr .fc-time-grid .fc-now-indicator-arrow{left:0;border-width:5px 0 5px 6px;border-top-color:transparent;border-bottom-color:transparent}.fc-rtl .fc-time-grid .fc-now-indicator-arrow{right:0;border-width:5px 6px 5px 0;border-top-color:transparent;border-bottom-color:transparent}", ""]);
 	
 	// exports
 
@@ -22254,7 +22972,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.push([module.id, "@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);", ""]);
 	
 	// module
-	exports.push([module.id, "/*!\n * Booking.js\n * http://booking.timekit.io\n * (c) 2015 Timekit Inc.\n */.bookingjs{position:relative;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;font-size:13px;border-radius:4px;background-color:#fff;box-shadow:rgba(0,0,0,.2) 0 2px 4px 0;margin:60px auto 20px;z-index:10;opacity:0;color:#333}.bookingjs.show{-webkit-transition:opacity .3s ease;transition:opacity .3s ease;opacity:1}.is-small.has-avatar.has-displayname .bookingjs-calendar .fc-toolbar{padding-bottom:24px}.is-small .bookingjs-calendar .fc-toolbar>.fc-right>button.fc-today-button{position:absolute;left:15px}.bookingjs-timezonehelper{color:#aeaeae;text-align:center;padding:7px 10px;background-color:#fbfbfb;border-top:1px solid #ececec;min-height:15px;z-index:20;border-radius:0 0 4px 4px}.bookingjs-timezoneicon{width:10px;margin-right:5px}.bookingjs-avatar{position:absolute;top:-50px;left:50%;-webkit-transform:translateX(-50%);transform:translateX(-50%);border-radius:150px;border:3px solid #fff;box-shadow:0 1px 3px 0 rgba(0,0,0,.13);overflow:hidden;z-index:40;background-color:#fff}.is-small .bookingjs-avatar{top:-40px}.bookingjs-avatar img{max-width:100%;vertical-align:middle;display:inline-block;width:80px;height:80px}.is-small .bookingjs-avatar img{width:70px;height:70px}.bookingjs-displayname{position:absolute;top:0;left:0;padding:15px 20px;color:#333;font-weight:600}.is-small .bookingjs-displayname{text-align:center;width:100%;box-sizing:border-box}.is-small.has-avatar .bookingjs-displayname{top:44px;padding:0 20px}.bookingjs-bookpage{position:absolute;height:100%;width:100%;top:0;left:0;background-color:#fbfbfb;z-index:30;opacity:0;-webkit-transition:opacity .2s ease;transition:opacity .2s ease;border-radius:4px}.bookingjs-bookpage.show{opacity:1}.bookingjs-bookpage-close{position:absolute;top:0;right:0;padding:18px;-webkit-transition:opacity .2s ease;transition:opacity .2s ease;opacity:.3}.bookingjs-bookpage-close:hover{opacity:1}.bookingjs-bookpage-date,.bookingjs-bookpage h2{text-align:center;font-size:34px;font-weight:400;margin-top:70px;margin-bottom:10px}.is-small .bookingjs-bookpage-date,.is-small .bookingjs-bookpage h2{font-size:27px;margin-top:60px}.bookingjs-bookpage-time,.bookingjs-bookpage h3{text-align:center;font-size:17px;font-weight:400;margin-bottom:50px;margin-top:10px}.is-small .bookingjs-bookpage-time,.is-small .bookingjs-bookpage h3{font-size:15px;margin-bottom:35px}.bookingjs-closeicon{width:15px}.bookingjs-form{width:350px;position:relative;margin:0 auto;text-align:center}.is-small .bookingjs-form{width:90%}.bookingjs-form-box{position:relative;box-shadow:0 1px 3px 0 rgba(0,0,0,.1);overflow:hidden;background-color:#fff;line-height:0}.bookingjs-form-success-message{position:absolute;top:-999px;left:0;right:0;padding:30px;background-color:#fff;opacity:0;-webkit-transition:opacity .3s ease;transition:opacity .3s ease;line-height:normal}.is-small .bookingjs-form-success-message{padding:22px 10px}.bookingjs-form-success-message .title{font-size:20px;display:block;margin-bottom:25px}.bookingjs-form-success-message .body{display:block}.bookingjs-form-success-message .body .booked-email{color:#aeaeae}.bookingjs-form.success .bookingjs-form-success-message{opacity:1;top:0;bottom:0}.bookingjs-form-input,.bookingjs-form input,.bookingjs-form input:invalid textarea,.bookingjs-form textarea:invalid{-webkit-transition:box-shadow .2s ease;transition:box-shadow .2s ease;width:100%;padding:15px 25px;margin:0;border:0 solid #ececec;font-size:1em;box-shadow:inset 0 0 1px 1px hsla(0,0%,100%,0);text-align:left;box-sizing:border-box;line-height:normal;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;color:#333}.bookingjs-form-input:focus,.bookingjs-form input:focus,.bookingjs-form input:invalid textarea:focus,.bookingjs-form textarea:invalid:focus{outline:0;box-shadow:inset 0 0 1px 1px #689ad8}.bookingjs-form-input.hidden,.bookingjs-form input.hidden,.bookingjs-form input:invalid textarea.hidden,.bookingjs-form textarea:invalid.hidden{display:none}.bookingjs-form-input:-moz-read-only,.bookingjs-form input:-moz-read-only,.bookingjs-form input:invalid textarea:-moz-read-only,.bookingjs-form textarea:invalid:-moz-read-only{cursor:not-allowed;font-style:italic}.bookingjs-form-input:read-only,.bookingjs-form input:invalid textarea:read-only,.bookingjs-form input:read-only,.bookingjs-form textarea:invalid:read-only{cursor:not-allowed;font-style:italic}.bookingjs-form-input:-moz-read-only:focus,.bookingjs-form input:-moz-read-only:focus,.bookingjs-form input:invalid textarea:-moz-read-only:focus,.bookingjs-form textarea:invalid:-moz-read-only:focus{box-shadow:inset 0 0 1px 1px #d8d8d8}.bookingjs-form-input:read-only:focus,.bookingjs-form input:invalid textarea:read-only:focus,.bookingjs-form input:read-only:focus,.bookingjs-form textarea:invalid:read-only:focus{box-shadow:inset 0 0 1px 1px #d8d8d8}.bookingjs-form-button{position:relative;-webkit-transition:background-color .2s,max-width .3s;transition:background-color .2s,max-width .3s;display:inline-block;padding:13px 25px;background-color:#689ad8;text-transform:uppercase;box-shadow:0 1px 3px 0 rgba(0,0,0,.15);color:#fff;border:0;border-radius:3px;font-size:1.1em;font-weight:600;margin-top:30px;cursor:pointer;height:44px;outline:0;text-align:center;max-width:200px}.bookingjs-form-button .error-text,.bookingjs-form-button .loading-text,.bookingjs-form-button .success-text{-webkit-transition:opacity .3s ease;transition:opacity .3s ease;position:absolute;top:13px;left:50%;-webkit-transform:translateX(-50%);transform:translateX(-50%);opacity:0}.bookingjs-form-button .inactive-text{white-space:nowrap;opacity:1}.bookingjs-form-button .loading-text svg{height:19px;width:19px;-webkit-animation:spin .6s infinite linear;animation:spin .6s infinite linear}.bookingjs-form-button .error-text svg{height:15px;width:15px;margin-top:2px}.bookingjs-form-button .success-text svg{height:15px;margin-top:2px;-webkit-transform:scale(0);transform:scale(0);-webkit-transition:-webkit-transform .6s ease;transition:-webkit-transform .6s ease;transition:transform .6s ease;transition:transform .6s ease,-webkit-transform .6s ease}.bookingjs-form-button:focus,.bookingjs-form-button:hover{background-color:#3f7fce}.bookingjs-form-button.button-shake{-webkit-animation:shake .5s 1 ease;animation:shake .5s 1 ease}.bookingjs-form.loading .bookingjs-form-button,.bookingjs-form.loading .bookingjs-form-button:hover{max-width:80px;background-color:#b1b1b1;cursor:not-allowed}.bookingjs-form.loading .bookingjs-form-button .inactive-text,.bookingjs-form.loading .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.loading .bookingjs-form-button .loading-text,.bookingjs-form.loading .bookingjs-form-button:hover .loading-text{opacity:1}.bookingjs-form.error .bookingjs-form-button,.bookingjs-form.error .bookingjs-form-button:hover{max-width:80px;background-color:#d83b46;cursor:not-allowed}.bookingjs-form.error .bookingjs-form-button .inactive-text,.bookingjs-form.error .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.error .bookingjs-form-button .error-text,.bookingjs-form.error .bookingjs-form-button:hover .error-text{opacity:1}.bookingjs-form.success .bookingjs-form-button,.bookingjs-form.success .bookingjs-form-button:hover{max-width:80px;background-color:#5baf56;cursor:not-allowed}.bookingjs-form.success .bookingjs-form-button .inactive-text,.bookingjs-form.success .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.success .bookingjs-form-button .success-text,.bookingjs-form.success .bookingjs-form-button:hover .success-text{opacity:1}.bookingjs-form.success .bookingjs-form-button .success-text svg,.bookingjs-form.success .bookingjs-form-button:hover .success-text svg{-webkit-transform:scale(1);transform:scale(1)}.bookingjs-poweredby{position:absolute;bottom:0;left:0;right:0;text-align:center;padding:7px 10px}.bookingjs-poweredby a{-webkit-transition:color .2s ease;transition:color .2s ease;color:#aeaeae;text-decoration:none}.bookingjs-poweredby a svg path{-webkit-transition:fill .2s ease;transition:fill .2s ease;fill:#aeaeae}.bookingjs-poweredby a:hover{color:#333}.bookingjs-poweredby a:hover svg path{fill:#333}.bookingjs-timekiticon{width:13px;margin-right:5px;vertical-align:sub}", ""]);
+	exports.push([module.id, "/*!\n * Booking.js\n * http://timekit.io\n * (c) 2015 Timekit Inc.\n */.bookingjs{position:relative;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;font-size:13px;border-radius:4px;background-color:#fff;box-shadow:rgba(0,0,0,.2) 0 2px 4px 0;margin:20px auto;z-index:10;opacity:0;color:#333;border-top:1px solid #ececec}.bookingjs.show{-webkit-transition:opacity .3s ease;transition:opacity .3s ease;opacity:1}.bookingjs.has-avatar{margin-top:60px}.is-small.has-avatar.has-displayname .bookingjs-calendar .fc-toolbar{padding-bottom:24px}.is-small .bookingjs-calendar .fc-toolbar>.fc-right>button.fc-today-button{position:absolute;left:15px}.bookingjs-timezonehelper{color:#aeaeae;text-align:center;padding:7px 10px;background-color:#fbfbfb;border-top:1px solid #ececec;min-height:15px;z-index:20;border-radius:0 0 4px 4px}.bookingjs-timezoneicon{width:10px;margin-right:5px}.bookingjs-avatar{position:absolute;top:-50px;left:50%;-webkit-transform:translateX(-50%);transform:translateX(-50%);border-radius:150px;border:3px solid #fff;box-shadow:0 1px 3px 0 rgba(0,0,0,.13);overflow:hidden;z-index:40;background-color:#fff}.is-small .bookingjs-avatar{top:-40px}.bookingjs-avatar img{max-width:100%;vertical-align:middle;display:inline-block;width:80px;height:80px}.is-small .bookingjs-avatar img{width:70px;height:70px}.bookingjs-displayname{position:absolute;top:0;left:0;padding:15px 20px;color:#333;font-weight:600}.is-small .bookingjs-displayname{text-align:center;width:100%;box-sizing:border-box}.is-small.has-avatar .bookingjs-displayname{top:44px;padding:0 20px}.bookingjs-bookpage{position:absolute;height:100%;width:100%;top:0;left:0;background-color:#fbfbfb;z-index:30;opacity:0;-webkit-transition:opacity .2s ease;transition:opacity .2s ease;border-radius:4px}.bookingjs-bookpage.show{opacity:1}.bookingjs-bookpage-close{position:absolute;top:0;right:0;padding:18px;-webkit-transition:opacity .2s ease;transition:opacity .2s ease;opacity:.3}.bookingjs-bookpage-close:hover{opacity:1}.bookingjs-bookpage-date,.bookingjs-bookpage h2{text-align:center;font-size:34px;font-weight:400;margin-top:70px;margin-bottom:10px}.is-small .bookingjs-bookpage-date,.is-small .bookingjs-bookpage h2{font-size:27px;margin-top:60px}.bookingjs-bookpage-time,.bookingjs-bookpage h3{text-align:center;font-size:17px;font-weight:400;margin-bottom:50px;margin-top:10px}.is-small .bookingjs-bookpage-time,.is-small .bookingjs-bookpage h3{font-size:15px;margin-bottom:35px}.bookingjs-closeicon{width:15px}.bookingjs-form{width:350px;position:relative;margin:0 auto;text-align:center}.is-small .bookingjs-form{width:90%}.bookingjs-form-box{position:relative;box-shadow:0 1px 3px 0 rgba(0,0,0,.1);overflow:hidden;background-color:#fff;line-height:0}.bookingjs-form-success-message{position:absolute;top:-999px;left:0;right:0;padding:30px;background-color:#fff;opacity:0;-webkit-transition:opacity .3s ease;transition:opacity .3s ease;line-height:normal}.is-small .bookingjs-form-success-message{padding:22px 10px}.bookingjs-form-success-message .title{font-size:20px;display:block;margin-bottom:25px}.bookingjs-form-success-message .body{display:block}.bookingjs-form-success-message .body .booked-email{color:#aeaeae}.bookingjs-form.success .bookingjs-form-success-message{opacity:1;top:0;bottom:0}.bookingjs-form-input,.bookingjs-form input,.bookingjs-form input:invalid textarea,.bookingjs-form textarea:invalid{-webkit-transition:box-shadow .2s ease;transition:box-shadow .2s ease;width:100%;padding:15px 25px;margin:0;border:0 solid #ececec;font-size:1em;box-shadow:inset 0 0 1px 1px hsla(0,0%,100%,0);text-align:left;box-sizing:border-box;line-height:normal;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;color:#333}.bookingjs-form-input:focus,.bookingjs-form input:focus,.bookingjs-form input:invalid textarea:focus,.bookingjs-form textarea:invalid:focus{outline:0;box-shadow:inset 0 0 1px 1px #689ad8}.bookingjs-form-input.hidden,.bookingjs-form input.hidden,.bookingjs-form input:invalid textarea.hidden,.bookingjs-form textarea:invalid.hidden{display:none}.bookingjs-form-input:-moz-read-only,.bookingjs-form input:-moz-read-only,.bookingjs-form input:invalid textarea:-moz-read-only,.bookingjs-form textarea:invalid:-moz-read-only{cursor:not-allowed;font-style:italic}.bookingjs-form-input:read-only,.bookingjs-form input:invalid textarea:read-only,.bookingjs-form input:read-only,.bookingjs-form textarea:invalid:read-only{cursor:not-allowed;font-style:italic}.bookingjs-form-input:-moz-read-only:focus,.bookingjs-form input:-moz-read-only:focus,.bookingjs-form input:invalid textarea:-moz-read-only:focus,.bookingjs-form textarea:invalid:-moz-read-only:focus{box-shadow:inset 0 0 1px 1px #d8d8d8}.bookingjs-form-input:read-only:focus,.bookingjs-form input:invalid textarea:read-only:focus,.bookingjs-form input:read-only:focus,.bookingjs-form textarea:invalid:read-only:focus{box-shadow:inset 0 0 1px 1px #d8d8d8}.bookingjs-form-button{position:relative;-webkit-transition:background-color .2s,max-width .3s;transition:background-color .2s,max-width .3s;display:inline-block;padding:13px 25px;background-color:#689ad8;text-transform:uppercase;box-shadow:0 1px 3px 0 rgba(0,0,0,.15);color:#fff;border:0;border-radius:3px;font-size:1.1em;font-weight:600;margin-top:30px;cursor:pointer;height:44px;outline:0;text-align:center;max-width:200px}.bookingjs-form-button .error-text,.bookingjs-form-button .loading-text,.bookingjs-form-button .success-text{-webkit-transition:opacity .3s ease;transition:opacity .3s ease;position:absolute;top:13px;left:50%;-webkit-transform:translateX(-50%);transform:translateX(-50%);opacity:0}.bookingjs-form-button .inactive-text{white-space:nowrap;opacity:1}.bookingjs-form-button .loading-text svg{height:19px;width:19px;-webkit-animation:spin .6s infinite linear;animation:spin .6s infinite linear}.bookingjs-form-button .error-text svg{height:15px;width:15px;margin-top:2px}.bookingjs-form-button .success-text svg{height:15px;margin-top:2px;-webkit-transform:scale(0);transform:scale(0);-webkit-transition:-webkit-transform .6s ease;transition:-webkit-transform .6s ease;transition:transform .6s ease;transition:transform .6s ease,-webkit-transform .6s ease}.bookingjs-form-button:focus,.bookingjs-form-button:hover{background-color:#3f7fce}.bookingjs-form-button.button-shake{-webkit-animation:shake .5s 1 ease;animation:shake .5s 1 ease}.bookingjs-form.loading .bookingjs-form-button,.bookingjs-form.loading .bookingjs-form-button:hover{max-width:80px;background-color:#b1b1b1;cursor:not-allowed}.bookingjs-form.loading .bookingjs-form-button .inactive-text,.bookingjs-form.loading .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.loading .bookingjs-form-button .loading-text,.bookingjs-form.loading .bookingjs-form-button:hover .loading-text{opacity:1}.bookingjs-form.error .bookingjs-form-button,.bookingjs-form.error .bookingjs-form-button:hover{max-width:80px;background-color:#d83b46;cursor:not-allowed}.bookingjs-form.error .bookingjs-form-button .inactive-text,.bookingjs-form.error .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.error .bookingjs-form-button .error-text,.bookingjs-form.error .bookingjs-form-button:hover .error-text{opacity:1}.bookingjs-form.success .bookingjs-form-button,.bookingjs-form.success .bookingjs-form-button:hover{max-width:80px;background-color:#5baf56;cursor:not-allowed}.bookingjs-form.success .bookingjs-form-button .inactive-text,.bookingjs-form.success .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.success .bookingjs-form-button .success-text,.bookingjs-form.success .bookingjs-form-button:hover .success-text{opacity:1}.bookingjs-form.success .bookingjs-form-button .success-text svg,.bookingjs-form.success .bookingjs-form-button:hover .success-text svg{-webkit-transform:scale(1);transform:scale(1)}.bookingjs-poweredby{position:absolute;bottom:0;left:0;right:0;text-align:center;padding:7px 10px}.bookingjs-poweredby a{-webkit-transition:color .2s ease;transition:color .2s ease;color:#aeaeae;text-decoration:none}.bookingjs-poweredby a svg path{-webkit-transition:fill .2s ease;transition:fill .2s ease;fill:#aeaeae}.bookingjs-poweredby a:hover{color:#333}.bookingjs-poweredby a:hover svg path{fill:#333}.bookingjs-timekitlogo{width:15px;height:15px;margin-right:5px;vertical-align:sub}", ""]);
 	
 	// exports
 
@@ -23132,13 +23850,13 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	var H = __webpack_require__(46);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-poweredby\">");t.b("\n" + i);t.b("  <a href=\"http://booking.timekit.io\" target=\"_blank\">");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("timekitIcon",c,p,0)));t.b("\n" + i);t.b("    <span>Powered by Timekit</span>");t.b("\n" + i);t.b("  </a>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-poweredby\">\n  <a href=\"http://booking.timekit.io\" target=\"_blank\">\n    {{& timekitIcon }}\n    <span>Powered by Timekit</span>\n  </a>\n</div>\n", H);return T; }();
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-poweredby\">");t.b("\n" + i);t.b("  <a href=\"http://timekit.io?utm_medium=link&utm_source=");t.b(t.v(t.f("campaignSource",c,p,0)));t.b("&utm_campaign=");t.b(t.v(t.f("campaignName",c,p,0)));t.b("&utm_content=powered-by\" target=\"_blank\">");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("timekitLogo",c,p,0)));t.b("\n" + i);t.b("    <span>Powered by Timekit</span>");t.b("\n" + i);t.b("  </a>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-poweredby\">\n  <a href=\"http://timekit.io?utm_medium=link&utm_source={{ campaignSource }}&utm_campaign={{ campaignName }}&utm_content=powered-by\" target=\"_blank\">\n    {{& timekitLogo }}\n    <span>Powered by Timekit</span>\n  </a>\n</div>\n", H);return T; }();
 
 /***/ },
 /* 58 */
 /***/ function(module, exports) {
 
-	module.exports = "<svg class=\"bookingjs-timekiticon\" viewBox=\"0 0 495 594\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>Full vector path</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"Artboard-8\" sketch:type=\"MSArtboardGroup\" transform=\"translate(-979.000000, -549.000000)\" fill=\"#AEAEAE\"><g id=\"Full-vector-path\" sketch:type=\"MSLayerGroup\" transform=\"translate(979.000000, 549.000000)\"><path d=\"M32.6783606,348.314972 L81.9095347,309.666147 L178.242802,387.91348 C213.042282,416.179589 268.948833,417.207556 304.79022,390.230569 L411.868735,309.63503 L461.989416,351.164228 L294.687237,477.088734 C265.004826,499.430003 217.635083,498.547293 188.834846,475.15411 L32.6783606,348.314972 Z M19.2354438,359.039602 C-6.62593762,382.117664 -5.82713003,417.651408 21.8567615,440.137832 L188.814783,575.750588 C217.626101,599.152772 265.020127,600.031261 294.666324,577.71725 L471.933566,444.292269 C501.091173,422.346008 502.419289,385.92569 475.267328,362.197265 L304.79022,490.511467 C268.948833,517.488455 213.042282,516.460488 178.242802,488.194379 L19.2354438,359.039602 Z M95.4596929,299.028626 L198.50357,218.134257 C227.693194,195.219007 274.527519,195.836287 303.106573,219.516436 L398.57111,298.61683 L294.687237,376.807835 C265.004826,399.149104 217.635083,398.266394 188.834846,374.873211 L95.4596929,299.028626 Z\" id=\"Base-layer\" sketch:type=\"MSShapeGroup\"></path><path d=\"M45.8421644,258.72646 L32.470588,247.865309 L198.50357,117.521482 C227.708304,94.5943704 274.527519,95.223512 303.106573,118.903661 L462.199296,250.725357 L448.401633,261.110541 L292.387775,131.839944 C269.89295,113.20109 231.857075,112.695864 208.877526,130.735908 L45.8421644,258.72646 Z M32.2967277,269.367817 L19.0412272,258.600949 C-6.62061571,281.684165 -5.74436993,317.105855 21.8366979,339.50876 L188.834846,475.15411 C217.635083,498.547293 265.004826,499.430003 294.687237,477.088734 L471.912654,343.695235 C501.008799,321.795234 502.426315,285.506694 475.470948,261.763118 L461.699258,272.12874 L463.151849,273.332334 C483.387128,290.098964 482.810002,314.466035 461.809671,330.272501 L284.584254,463.666001 C261.076006,481.360119 222.242635,480.64608 199.426891,462.113841 L32.4287426,326.468491 C12.2129453,310.048076 12.2096732,285.628236 32.2967277,269.367817 Z\" id=\"Middle-layer\" sketch:type=\"MSShapeGroup\"></path><path d=\"M303.106573,18.6227621 L473.870647,160.115153 C502.470886,183.812855 501.573077,221.089616 471.912654,243.414336 L294.687237,376.807835 C265.004826,399.149104 217.635083,398.266394 188.834846,374.873211 L21.8366979,239.227861 C-6.94564818,215.84921 -6.64628574,178.293025 22.5453033,155.376233 L198.50357,17.2405832 C227.708304,-5.6865285 274.527519,-5.05738689 303.106573,18.6227621 Z M292.387775,31.5590447 C269.89295,12.9201909 231.857075,12.4149656 208.877526,30.4550095 L32.9192595,168.590659 C12.2117199,184.847067 12.006219,209.599262 32.4287426,226.187592 L199.426891,361.832942 C222.242635,380.365181 261.076006,381.07922 284.584254,363.385102 L461.809671,229.991603 C482.810002,214.185136 483.387128,189.818065 463.151849,173.051435 L292.387775,31.5590447 Z\" id=\"Top-layer\" sketch:type=\"MSShapeGroup\"></path></g></g></g></svg>"
+	module.exports = "<svg class=\"bookingjs-timekitlogo\" viewBox=\"0 0 495 594\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>Full vector path</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"Artboard-8\" sketch:type=\"MSArtboardGroup\" transform=\"translate(-979.000000, -549.000000)\" fill=\"#AEAEAE\"><g id=\"Full-vector-path\" sketch:type=\"MSLayerGroup\" transform=\"translate(979.000000, 549.000000)\"><path d=\"M32.6783606,348.314972 L81.9095347,309.666147 L178.242802,387.91348 C213.042282,416.179589 268.948833,417.207556 304.79022,390.230569 L411.868735,309.63503 L461.989416,351.164228 L294.687237,477.088734 C265.004826,499.430003 217.635083,498.547293 188.834846,475.15411 L32.6783606,348.314972 Z M19.2354438,359.039602 C-6.62593762,382.117664 -5.82713003,417.651408 21.8567615,440.137832 L188.814783,575.750588 C217.626101,599.152772 265.020127,600.031261 294.666324,577.71725 L471.933566,444.292269 C501.091173,422.346008 502.419289,385.92569 475.267328,362.197265 L304.79022,490.511467 C268.948833,517.488455 213.042282,516.460488 178.242802,488.194379 L19.2354438,359.039602 Z M95.4596929,299.028626 L198.50357,218.134257 C227.693194,195.219007 274.527519,195.836287 303.106573,219.516436 L398.57111,298.61683 L294.687237,376.807835 C265.004826,399.149104 217.635083,398.266394 188.834846,374.873211 L95.4596929,299.028626 Z\" id=\"Base-layer\" sketch:type=\"MSShapeGroup\"></path><path d=\"M45.8421644,258.72646 L32.470588,247.865309 L198.50357,117.521482 C227.708304,94.5943704 274.527519,95.223512 303.106573,118.903661 L462.199296,250.725357 L448.401633,261.110541 L292.387775,131.839944 C269.89295,113.20109 231.857075,112.695864 208.877526,130.735908 L45.8421644,258.72646 Z M32.2967277,269.367817 L19.0412272,258.600949 C-6.62061571,281.684165 -5.74436993,317.105855 21.8366979,339.50876 L188.834846,475.15411 C217.635083,498.547293 265.004826,499.430003 294.687237,477.088734 L471.912654,343.695235 C501.008799,321.795234 502.426315,285.506694 475.470948,261.763118 L461.699258,272.12874 L463.151849,273.332334 C483.387128,290.098964 482.810002,314.466035 461.809671,330.272501 L284.584254,463.666001 C261.076006,481.360119 222.242635,480.64608 199.426891,462.113841 L32.4287426,326.468491 C12.2129453,310.048076 12.2096732,285.628236 32.2967277,269.367817 Z\" id=\"Middle-layer\" sketch:type=\"MSShapeGroup\"></path><path d=\"M303.106573,18.6227621 L473.870647,160.115153 C502.470886,183.812855 501.573077,221.089616 471.912654,243.414336 L294.687237,376.807835 C265.004826,399.149104 217.635083,398.266394 188.834846,374.873211 L21.8366979,239.227861 C-6.94564818,215.84921 -6.64628574,178.293025 22.5453033,155.376233 L198.50357,17.2405832 C227.708304,-5.6865285 274.527519,-5.05738689 303.106573,18.6227621 Z M292.387775,31.5590447 C269.89295,12.9201909 231.857075,12.4149656 208.877526,30.4550095 L32.9192595,168.590659 C12.2117199,184.847067 12.006219,209.599262 32.4287426,226.187592 L199.426891,361.832942 C222.242635,380.365181 261.076006,381.07922 284.584254,363.385102 L461.809671,229.991603 C482.810002,214.185136 483.387128,189.818065 463.151849,173.051435 L292.387775,31.5590447 Z\" id=\"Top-layer\" sketch:type=\"MSShapeGroup\"></path></g></g></g></svg>"
 
 /***/ }
 /******/ ])

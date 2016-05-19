@@ -1,7 +1,7 @@
 'use strict';
 
 /*
- * Default configuration for for Booking.js
+ * Default configuration
  */
 
 var primary = {

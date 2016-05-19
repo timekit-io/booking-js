@@ -7,9 +7,9 @@ module.exports = {
     devtool: 'source-map',
     output: {
         path: './dist',
-        filename: 'hour-widget.js',
+        filename: 'booking.js',
         libraryTarget: 'umd',
-        library: 'HourWidget'
+        library: 'TimekitBooking'
     },
     externals: {
         'jquery': 'jQuery'

@@ -38,7 +38,7 @@ describe('Advanced configuration', function() {
 
       setTimeout(function() {
 
-        var scrollable = $('.hourwidget-calendar').find('.fc-scroller');
+        var scrollable = $('.bookingjs-calendar').find('.fc-scroller');
         var scrollTop = scrollable.scrollTop();
         expect(scrollTop).not.toBe(321);
 
@@ -67,7 +67,7 @@ describe('Advanced configuration', function() {
 
       setTimeout(function() {
 
-        var scrollable = $('.hourwidget-calendar').find('.fc-scroller');
+        var scrollable = $('.bookingjs-calendar').find('.fc-scroller');
         var scrollTop = scrollable.scrollTop();
         expect(scrollTop).toBe(321);
 

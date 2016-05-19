@@ -8,10 +8,10 @@ var mockAjax = require('./utils/mockAjax');
 /**
  * Basic configuration of the library
  */
-describe('Basic configuration', function() {
+describe('Hour compatibility configuration', function() {
 
   beforeEach(function(){
-    loadFixtures('main.html');
+    loadFixtures('hour-compatibility.html');
     jasmine.Ajax.install();
     mockAjax.all();
   });
@@ -20,7 +20,7 @@ describe('Basic configuration', function() {
     jasmine.Ajax.uninstall();
   });
 
-  it('should be able to set the name', function() {
+  it('should be able to load with hourwidget div ID', function() {
 
     var config = {
       name: 'Demo Name'
@@ -31,23 +31,6 @@ describe('Basic configuration', function() {
     expect($('.bookingjs-displayname')).toBeVisible();
     expect($('.bookingjs-displayname')).toContainElement('span');
     expect($('.bookingjs-displayname span')).toContainText(config.name);
-
-  });
-
-  it('should be able to set an avatar image', function() {
-
-    var config = {
-      avatar: '/base/misc/avatar-doc.jpg'
-    }
-    createWidget(config);
-
-    expect($('.bookingjs-avatar')).toBeInDOM();
-    expect($('.bookingjs-avatar')).toBeVisible();
-    expect($('.bookingjs-avatar')).toContainElement('img');
-
-    var source = $('.bookingjs-avatar img').prop('src');
-    var contains = source.indexOf(config.avatar) > -1;
-    expect(contains).toBe(true);
 
   });
 

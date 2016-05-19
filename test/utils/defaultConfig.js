@@ -7,6 +7,6 @@ module.exports = {
   calendar: '22f86f0c-ee80-470c-95e8-dadd9d05edd2',
   email:    'marty.mcfly@timekit.io',
   timekitConfig: {
-    app: 'hourwidget-demo'
+    app: 'bookingjs-demo'
   }
 }

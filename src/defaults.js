@@ -6,7 +6,7 @@
 
 var primary = {
 
-  targetEl: '#hourwidget',
+  targetEl: '#bookingjs',
   name: '',
   avatar: '',
   autoload: true,
@@ -55,7 +55,7 @@ var primary = {
     }
   },
   timekitConfig: {
-    app: 'hour-embed'
+    app: 'bookingjs'
   },
   timekitFindTime: {
     future: '4 weeks',

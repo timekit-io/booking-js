@@ -2,18 +2,18 @@
 <html>
  <head>
   <meta charset="UTF-8">
-  <title>Hour Widget autoload example</title>
+  <title>Booking.js autoload example</title>
   <style type="text/css">
     body { background-color: #E6E6E6; max-width: 700px; margin: 0 auto; }
   </style>
  </head>
  <body>
 
-  <div id="hourwidget">
+  <div id="bookingjs">
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-    <script type="text/javascript" src="../dist/hour-widget.js" defer></script>
+    <script type="text/javascript" src="../dist/booking.js" defer></script>
     <script type="text/javascript">
-      window.hourWidgetConfig = {
+      window.timekitBookingConfig = {
         name:     'Marty McFly',
         email:    'marty.mcfly@timekit.io',
         apiToken: 'XT1JO879JF1qUXXzmETD5ucgxaDwsFsd',
@@ -21,7 +21,7 @@
         avatar:   '../misc/avatar-mcfly.png',
         autoload: true,
         timekitConfig: {
-          app: 'hour-demo'
+          app: 'bookingjs-demo'
         }
       };
     </script>

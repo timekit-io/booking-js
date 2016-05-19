@@ -1,12 +1,12 @@
 'use strict';
 
 /*!
- * Hour Widget
- * Version: 2.0.0
- * http://hourhq.com
+ * Booking.js
+ * Version: 1.8.0
+ * http://timekit.io
  *
  * Copyright 2015 Timekit, Inc.
- * Hour Widget is freely distributable under the MIT license.
+ * Booking.js is freely distributable under the MIT license.
  *
  */
 
@@ -23,7 +23,7 @@ var utils         = require('./utils');
 var defaultConfig = require('./defaults');
 
 // Main library
-function HourWidget() {
+function TimekitBooking() {
 
   // Library config
   var config = {};
@@ -45,10 +45,9 @@ function HourWidget() {
   var prepareDOM = function() {
 
     rootTarget = $(config.targetEl);
-    if (rootTarget.length === 0) {
-      utils.logError('No target DOM element was found (' + config.targetEl + ')');
-    }
-    rootTarget.addClass('hourwidget');
+    if (rootTarget.length === 0) rootTarget = $('#hourwidget'); // TODO temprorary fix for hour widget migrations
+    if (rootTarget.length === 0) utils.logError('No target DOM element was found (' + config.targetEl + ')');
+    rootTarget.addClass('bookingjs');
     rootTarget.children(':not(script)').remove();
 
   };
@@ -217,7 +216,7 @@ function HourWidget() {
 
     $.extend(true, args, config.fullCalendar);
 
-    calendarTarget = $('<div class="hourwidget-calendar empty-calendar">');
+    calendarTarget = $('<div class="bookingjs-calendar empty-calendar">');
     rootTarget.append(calendarTarget);
 
     calendarTarget.fullCalendar(args);
@@ -319,12 +318,12 @@ function HourWidget() {
       formFields: fieldsTemplate
     }));
 
-    bookingPageTarget.children('.hourwidget-bookpage-close').click(function(e) {
+    bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
       e.preventDefault();
       hideBookingPage();
     });
 
-    var form = bookingPageTarget.children('.hourwidget-form');
+    var form = bookingPageTarget.children('.bookingjs-form');
 
     form.submit(function(e) {
       submitBookingForm(this, e);
@@ -372,7 +371,7 @@ function HourWidget() {
 
     // Abort if form is submitting, have submitted or does not validate
     if(formElement.hasClass('loading') || formElement.hasClass('success') || formElement.hasClass('error') || !e.target.checkValidity()) {
-      var submitButton = formElement.find('.hourwidget-form-button');
+      var submitButton = formElement.find('.bookingjs-form-button');
       submitButton.addClass('button-shake');
       setTimeout(function() {
         submitButton.removeClass('button-shake');
@@ -401,7 +400,7 @@ function HourWidget() {
 
       utils.doCallback('createBookingFailed', config, response);
 
-      var submitButton = formElement.find('.hourwidget-form-button');
+      var submitButton = formElement.find('.bookingjs-form-button');
       submitButton.addClass('button-shake');
       setTimeout(function() {
         submitButton.removeClass('button-shake');
@@ -459,8 +458,8 @@ function HourWidget() {
     };
 
     return timekit
+    .include('attributes', 'event')
     .headers(requestHeaders)
-    .include('attributes')
     .createBooking(args);
 
   };
@@ -470,13 +469,13 @@ function HourWidget() {
 
     var campaignName = 'widget'
     var campaignSource = window.location.hostname.replace(/\./g, '-')
-    if (config.widgetSlug) campaignName = 'hosted-widget'
-    if (config.widgetId) campaignName = 'embedded-widget'
+    if (config.widgetSlug) { campaignName = 'hosted-widget'; }
+    if (config.widgetId) { campaignName = 'embedded-widget'; }
 
     var template = require('./templates/poweredby.html');
-    var hourLogo = require('!svg-inline!./assets/hour-logo.svg');
+    var timekitLogo = require('!svg-inline!./assets/timekit-logo.svg');
     var poweredTarget = $(template.render({
-      hourLogo: hourLogo,
+      timekitLogo: timekitLogo,
       campaignName: campaignName,
       campaignSource: campaignSource
     }));
@@ -495,11 +494,7 @@ function HourWidget() {
 
     // Check whether a config is supplied
     if(suppliedConfig === undefined || typeof suppliedConfig !== 'object' || $.isEmptyObject(suppliedConfig)) {
-      if (window.hourWidgetConfig !== undefined) {
-        suppliedConfig = window.hourWidgetConfig;
-      } else {
-        utils.logError('No configuration was supplied or found. Please supply a config object upon library initialization');
-      }
+      utils.logError('No configuration was supplied or found. Please supply a config object upon library initialization');
     }
 
     // Extend the default config with supplied settings
@@ -607,16 +602,18 @@ function HourWidget() {
     if (suppliedConfig.widgetId) {
       return timekit
       .getEmbedWidget({ id: suppliedConfig.widgetId })
-      .catch(function (response) {
+      .catch(function () {
         utils.logError('The widget could not be found, please double-check your widgetId');
       })
     }
     if (suppliedConfig.widgetSlug) {
       return timekit
       .getHostedWidget({ slug: suppliedConfig.widgetSlug })
-      .catch(function (response) {
+      .catch(function () {
         utils.logError('The widget could not be found, please double-check your widgetSlug');
       })
+    } else {
+      utils.logError('No widget configuration, widgetSlug or widgetId found');
     }
 
   }
@@ -658,12 +655,14 @@ function HourWidget() {
 }
 
 // Autoload if config is available on window, else export function
-if (window && window.hourWidgetConfig && window.hourWidgetConfig.autoload !== false) {
+// TODO temprorary fix for hour widget migrations
+var globalLibraryConfig = window.timekitBookingConfig || window.hourWidgetConfig
+if (window && globalLibraryConfig && globalLibraryConfig.autoload !== false) {
   $(window).load(function(){
-    var instance = new HourWidget();
-    instance.init(window.hourWidgetConfig);
+    var instance = new TimekitBooking();
+    instance.init(globalLibraryConfig);
     module.exports = instance;
   });
 } else {
-  module.exports = HourWidget;
+  module.exports = TimekitBooking;
 }

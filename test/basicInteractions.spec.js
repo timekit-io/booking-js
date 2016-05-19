@@ -25,8 +25,8 @@ describe('Basic interaction', function() {
 
     createWidget();
 
-    expect($('.hourwidget-calendar')).toBeInDOM();
-    expect($('.hourwidget-calendar')).toBeVisible();
+    expect($('.bookingjs-calendar')).toBeInDOM();
+    expect($('.bookingjs-calendar')).toBeVisible();
 
     setTimeout(function() {
 
@@ -34,10 +34,10 @@ describe('Basic interaction', function() {
 
       setTimeout(function() {
 
-        expect($('.hourwidget-bookpage')).toBeInDOM();
-        expect($('.hourwidget-bookpage')).toBeVisible();
+        expect($('.bookingjs-bookpage')).toBeInDOM();
+        expect($('.bookingjs-bookpage')).toBeVisible();
 
-        var pageTime = $('.hourwidget-bookpage-time').text();
+        var pageTime = $('.bookingjs-bookpage-time').text();
         var contains = pageTime.indexOf(calEventStart) > -1;
         expect(contains).toBe(true);
 
@@ -58,14 +58,14 @@ describe('Basic interaction', function() {
 
       setTimeout(function() {
 
-        expect($('.hourwidget-bookpage')).toBeInDOM();
-        expect($('.hourwidget-bookpage')).toBeVisible();
+        expect($('.bookingjs-bookpage')).toBeInDOM();
+        expect($('.bookingjs-bookpage')).toBeVisible();
 
-        $('.hourwidget-bookpage-close').click();
+        $('.bookingjs-bookpage-close').click();
 
         setTimeout(function() {
 
-          expect($('.hourwidget-bookpage').length).toBe(0);
+          expect($('.bookingjs-bookpage').length).toBe(0);
 
           done();
 
@@ -87,14 +87,14 @@ describe('Basic interaction', function() {
 
         var inputs = interact.fillSubmit();
 
-        expect($('.hourwidget-form').hasClass('loading')).toBe(true);
+        expect($('.bookingjs-form').hasClass('loading')).toBe(true);
 
         setTimeout(function() {
 
-          expect($('.hourwidget-form').hasClass('success')).toBe(true);
-          expect($('.hourwidget-form-success-message')).toBeVisible();
+          expect($('.bookingjs-form').hasClass('success')).toBe(true);
+          expect($('.bookingjs-form-success-message')).toBeVisible();
 
-          var successMessage = $('.hourwidget-form-success-message').html();
+          var successMessage = $('.bookingjs-form-success-message').html();
           var contains = successMessage.indexOf(inputs.email) > -1;
           expect(contains).toBe(true);
 

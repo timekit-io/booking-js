@@ -1,11 +1,11 @@
 {
-  "name": "hour-widget",
-  "version": "2.0.0",
+  "name": "timekit-booking",
+  "version": "1.8.0",
   "description": "Make a beautiful embeddable booking widget in minutes",
-  "main": "dist/hour-widget.js",
+  "main": "dist/booking.min.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/timekit/booking.git"
+    "url": "https://github.com/timekit-io/booking-js.git"
   },
   "scripts": {
     "test": "karma start --single-run",
@@ -41,6 +41,6 @@
     "moment": "^2.10.6",
     "moment-timezone": "^0.5.0",
     "sprintf-js": "^1.0.3",
-    "timekit-sdk": "timekit-io/js-sdk#widget-endpoints"
+    "timekit-sdk": "^1.3.0"
   }
 }

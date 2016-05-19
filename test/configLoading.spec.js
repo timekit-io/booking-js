@@ -2,7 +2,6 @@
 
 jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 
-var baseConfig = require('./utils/defaultConfig');
 var mockAjax = require('./utils/mockAjax');
 
 /**

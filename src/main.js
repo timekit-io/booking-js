@@ -469,8 +469,8 @@ function TimekitBooking() {
 
     var campaignName = 'widget'
     var campaignSource = window.location.hostname.replace(/\./g, '-')
-    if (config.widgetSlug) campaignName = 'hosted-widget'
-    if (config.widgetId) campaignName = 'embedded-widget'
+    if (config.widgetSlug) { campaignName = 'hosted-widget'; }
+    if (config.widgetId) { campaignName = 'embedded-widget'; }
 
     var template = require('./templates/poweredby.html');
     var timekitLogo = require('!svg-inline!./assets/timekit-logo.svg');
@@ -602,14 +602,14 @@ function TimekitBooking() {
     if (suppliedConfig.widgetId) {
       return timekit
       .getEmbedWidget({ id: suppliedConfig.widgetId })
-      .catch(function (response) {
+      .catch(function () {
         utils.logError('The widget could not be found, please double-check your widgetId');
       })
     }
     if (suppliedConfig.widgetSlug) {
       return timekit
       .getHostedWidget({ slug: suppliedConfig.widgetSlug })
-      .catch(function (response) {
+      .catch(function () {
         utils.logError('The widget could not be found, please double-check your widgetSlug');
       })
     } else {

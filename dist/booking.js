@@ -550,11 +550,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    // Check whether a config is supplied
 	    if(suppliedConfig === undefined || typeof suppliedConfig !== 'object' || $.isEmptyObject(suppliedConfig)) {
-	      if (window.timekitBookingConfig !== undefined) {
-	        suppliedConfig = window.timekitBookingConfig;
-	      } else {
-	        utils.logError('No configuration was supplied or found. Please supply a config object upon library initialization');
-	      }
+	      utils.logError('No configuration was supplied or found. Please supply a config object upon library initialization');
 	    }
 	
 	    // Extend the default config with supplied settings
@@ -672,6 +668,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      .catch(function (response) {
 	        utils.logError('The widget could not be found, please double-check your widgetSlug');
 	      })
+	    } else {
+	      utils.logError('No widget configuration, widgetSlug or widgetId found');
 	    }
 	
 	  }
@@ -713,10 +711,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	
 	// Autoload if config is available on window, else export function
-	if (window && window.timekitBookingConfig && window.timekitBookingConfig.autoload !== false) {
+	// TODO temprorary fix for hour widget migrations
+	var globalLibraryConfig = window.timekitBookingConfig || window.hourWidgetConfig
+	if (window && globalLibraryConfig && globalLibraryConfig.autoload !== false) {
 	  $(window).load(function(){
 	    var instance = new TimekitBooking();
-	    instance.init(window.timekitBookingConfig);
+	    instance.init(globalLibraryConfig);
 	    module.exports = instance;
 	  });
 	} else {

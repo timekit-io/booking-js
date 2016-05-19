@@ -122,7 +122,7 @@ var bookingConfirmDecline = {
     action: 'create',
     event: {
       invite: true,
-      my_rsvp: 'needsAction',
+      my_rsvp: 'accepted',
       sync_provider: true
     }
   },

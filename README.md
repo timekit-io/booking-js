@@ -179,7 +179,7 @@ timekitCreateBooking: {
   event: {    
     where:        'Online',        // Default, you may want to customize this to a specific location, TBD or whatever fits
     invite:       true,            // Default, makes sure that participants (the visitor) is sent a Google invite
-    my_rsvp:      'needsAction',   // Default, makes sure that the host also will be able to RSVP to the created event
+    my_rsvp:      'accepted',      // Default, makes sure that the host has accepted the created event in Google
     start:        data.start,      // Inserted dynamically from the chosen timeslot
     end:          data.end,        // Inserted dynamically from the chosen timeslot
     what:         config.name + ' x '+ data.name, // Inserted dynamically based on the host and visitors names (you can replace it with a static string)

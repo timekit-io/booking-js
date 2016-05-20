@@ -427,7 +427,7 @@ function TimekitBooking() {
         where: 'TBD',
         description: '',
         calendar_id: config.calendar,
-        participants: [config.email, data.email]
+        participants: [data.email]
       },
       customer: {
         name: data.name,

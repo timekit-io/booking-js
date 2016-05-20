@@ -17,8 +17,8 @@ Maintainer: Lasse Boisen Andersen ([la@timekit.io](mailto:la@timekit.io)). PR's 
 
 You can use the widget in two different ways:
 
-1) For non-developers, **[Hour](http://hourhq.com)** is a simple and easy to use availability and booking system made for sales & support scenarios.
-2) For developers, **[Timekit](http://timekit.io)** provides you with a modular and flexible API platform that allows you to integrate availability and bookings deep into your own product.
+1. For non-developers, **[Hour](http://hourhq.com)** is a simple and easy to use availability and booking system made for sales & support scenarios.  
+2. For developers, **[Timekit](http://timekit.io)** provides you with a modular and flexible API platform that allows you to integrate availability and bookings deep into your own product.
 
 *This repo is mainly for community contributions and the curious soul that would like to customize the widget.*
 
@@ -179,7 +179,7 @@ timekitCreateBooking: {
   event: {    
     where:        'Online',        // Default, you may want to customize this to a specific location, TBD or whatever fits
     invite:       true,            // Default, makes sure that participants (the visitor) is sent a Google invite
-    my_rsvp:      'needsAction',   // Default, makes sure that the host also will be able to RSVP to the created event
+    my_rsvp:      'accepted',      // Default, makes sure that the host has accepted the created event in Google
     start:        data.start,      // Inserted dynamically from the chosen timeslot
     end:          data.end,        // Inserted dynamically from the chosen timeslot
     what:         config.name + ' x '+ data.name, // Inserted dynamically based on the host and visitors names (you can replace it with a static string)

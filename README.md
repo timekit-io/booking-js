@@ -17,8 +17,8 @@ Maintainer: Lasse Boisen Andersen ([la@timekit.io](mailto:la@timekit.io)). PR's 
 
 You can use the widget in two different ways:
 
-1) For non-developers, **[Hour](http://hourhq.com)** is a simple and easy to use availability and booking system made for sales & support scenarios.
-2) For developers, **[Timekit](http://timekit.io)** provides you with a modular and flexible API platform that allows you to integrate availability and bookings deep into your own product.
+1. For non-developers, **[Hour](http://hourhq.com)** is a simple and easy to use availability and booking system made for sales & support scenarios.  
+2. For developers, **[Timekit](http://timekit.io)** provides you with a modular and flexible API platform that allows you to integrate availability and bookings deep into your own product.
 
 *This repo is mainly for community contributions and the curious soul that would like to customize the widget.*
 

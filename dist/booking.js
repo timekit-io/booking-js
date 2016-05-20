@@ -58,7 +58,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	/*!
 	 * Booking.js
-	 * Version: 1.8.0
+	 * Version: 1.8.1
 	 * http://timekit.io
 	 *
 	 * Copyright 2015 Timekit, Inc.
@@ -483,7 +483,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        where: 'TBD',
 	        description: '',
 	        calendar_id: config.calendar,
-	        participants: [config.email, data.email]
+	        participants: [data.email]
 	      },
 	      customer: {
 	        name: data.name,
@@ -22437,7 +22437,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    action: 'create',
 	    event: {
 	      invite: true,
-	      my_rsvp: 'needsAction',
+	      my_rsvp: 'accepted',
 	      sync_provider: true
 	    }
 	  },

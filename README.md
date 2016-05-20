@@ -3,7 +3,7 @@
 [![Circle CI](https://img.shields.io/circleci/project/timekit-io/booking-js.svg)](https://circleci.com/gh/timekit-io/booking-js)
 [![Codacy Badge](https://api.codacy.com/project/badge/grade/feb445801acf454a95b1690a75959893)](https://www.codacy.com/app/laander/booking-js)
 
-**Latest release:**  [v1.8.0](https://github.com/timekit-io/booking-js/releases)
+**Latest release:**  [v1.8.1](https://github.com/timekit-io/booking-js/releases)
 
 > Make a beautiful embeddable booking widget in minutes.
 
@@ -17,8 +17,8 @@ Maintainer: Lasse Boisen Andersen ([la@timekit.io](mailto:la@timekit.io)). PR's 
 
 You can use the widget in two different ways:
 
-1. For non-developers, **[Hour](http://hourhq.com)** is a simple and easy to use availability and booking system made for sales & support scenarios.  
-2. For developers, **[Timekit](http://timekit.io)** provides you with a modular and flexible API platform that allows you to integrate availability and bookings deep into your own product.
+1. For non-developers: **[Hour](http://hourhq.com)** is a simple and easy to use availability and booking system made for sales & support scenarios.  
+2. For developers: **[Timekit](http://timekit.io)** provides you with a modular and flexible API platform that allows you to integrate availability and bookings deep into your own product.
 
 *This repo is mainly for community contributions and the curious soul that would like to customize the widget.*
 
@@ -34,11 +34,17 @@ Bundled together with the library:
 - [moment](https://momentjs.com) - parse, validate, manipulate, and display dates in JavaScript
 - [timekit-js-sdk](https://github.com/timekit-io/js-sdk) - JavaScript SDK for the Timekit.io API
 
+## Module loading
+
+**CDN**  
+To ensure that we can push out updates, improvements and bugfixes to the library, we recommend that you load the library through our CDN. It's hosted on Amazon Cloudfront so it's snappy enough for production.  
+`https://cdn.timekit.io/booking-js/v1/booking.min.js`
+
+**UMD through NPM**  
+The module is published on NPM and can be require'd as a CommonJS, AMD or in a script tag.  
+`npm install timekit-booking`
+
 ## Usage
-
-To ensure that we can push out updates, improvements and bugfixes to the library, you should load the library through our CDN. It's hosted on Amazon Cloudfront so it's snappy enough for production.
-
-See `/examples` for implementation examples or use the following:
 
 **Autoload**  
 The simplest and most universally compatible usage is with autoload. This will defer the loading of the library until the whole document has loaded and then look for `window.timekitBookingConfig` - if found, the library is loaded automatically. Note that in single page applications, you should not use this approach.

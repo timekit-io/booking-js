@@ -438,6 +438,7 @@ function TimekitBooking() {
 
     if (config.bookingFields.location.enabled) { args.event.where = data.location; }
     if (config.bookingFields.comment.enabled) {
+      args.event.comment = data.comment;
       args.event.description += config.bookingFields.comment.placeholder + ': ' + data.comment + '\n';
     }
     if (config.bookingFields.phone.enabled) {

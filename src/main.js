@@ -178,14 +178,15 @@ function TimekitBooking() {
       utils.doCallback('getUserTimezoneSuccessful', config, response);
 
       var hostTzOffset = response.data.utc_offset;
-      var tzOffsetDiff = Math.abs(localTzOffset - hostTzOffset);
+      var tzOffsetDiff = localTzOffset - hostTzOffset;
+      var tzOffsetDiffAbs = Math.abs(localTzOffset - hostTzOffset);
       var tzDirection = (tzOffsetDiff > 0 ? 'ahead' : 'behind');
 
       var template = require('./templates/timezone-helper.html');
       var newTimezoneHelperTarget = $(template.render({
         timezoneIcon: timezoneIcon,
-        timezoneDifference: (tzOffsetDiff === 0 ? false : true),
-        timezoneDifferent: interpolate.sprintf(config.localization.strings.timezoneHelperDifferent, tzOffsetDiff, tzDirection, config.name),
+        timezoneDifference: (tzOffsetDiffAbs === 0 ? false : true),
+        timezoneDifferent: interpolate.sprintf(config.localization.strings.timezoneHelperDifferent, tzOffsetDiffAbs, tzDirection, config.name),
         timezoneSame: interpolate.sprintf(config.localization.strings.timezoneHelperSame, config.name)
       }));
 

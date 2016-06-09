@@ -14,6 +14,10 @@ var primary = {
   showCredits: true,
   goToFirstEvent: true,
   bookingGraph: 'instant',
+  possibleLengths: {
+    'Normal': '1 hour',
+    'Long': '2 hour'
+  },
   bookingFields: {
     name: {
       placeholder: 'Full name',

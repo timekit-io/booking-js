@@ -19,7 +19,6 @@
     "css-loader": "^0.21.0",
     "jasmine": "^2.3.2",
     "jasmine-jquery": "^2.1.1",
-    "jquery": "^2.1.4",
     "karma": "^0.13.0",
     "karma-chrome-launcher": "^0.1.12",
     "karma-jasmine": "^0.3.5",
@@ -36,6 +35,7 @@
     "webpack": "^1.12.2"
   },
   "dependencies": {
+    "jquery": "^2.1.4",
     "console-polyfill": "^0.2.2",
     "fullcalendar": "^2.4.0",
     "moment": "^2.10.6",

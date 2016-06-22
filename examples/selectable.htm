@@ -24,12 +24,18 @@
           app: 'bookingjs-demo'
         },
         timekitFindTime: {
-          length: '2 hours',
+          length: '1 hours',
           filters: {
-            and: [
-              { "business_hours": {"timezone": "America/Los_angeles"} }
+            or: [
+              { "specific_time": {start: 17, end: 24 }},
+              { "specific_time": {start: 0, end: 9 }},
+              { "specific_day_and_time": {"day": "Wednesday", "start": 10, "end": 12}},
+              { "specific_day_and_time": {"day": "Monday", "start": 16, "end": 24}}
             ]
           }
+        },
+        fullCalendar: {
+          timezone: "America/Los_Angeles"
         }
       });
     </script>

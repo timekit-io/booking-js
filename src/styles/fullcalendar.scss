@@ -2,6 +2,7 @@
 
 $textColor:       #333;
 $bgColor:         #FBFBFB;
+$bgEventColor:    #e4e4e4;
 $borderColor:     #ececec;
 $subtleColor:     darken($borderColor, 20%);
 $primaryColor:    #689AD8;
@@ -150,6 +151,10 @@ $primaryDarkColor: darken($primaryColor, 10%);
   .fc-bg {
     opacity: 0;
   }
+}
+
+.fc-bgevent {
+  background: $bgEventColor;
 }
 
 .fc-day-grid-event {

@@ -208,6 +208,7 @@ function TimekitBooking() {
       defaultView: sizing.view,
       height: sizing.height,
       eventClick: showBookingPage,
+      select: selectedTimerange,
       windowResize: function() {
         var sizing = decideCalendarSize();
         calendarTarget.fullCalendar('changeView', sizing.view);
@@ -226,6 +227,14 @@ function TimekitBooking() {
     utils.doCallback('fullCalendarInitialized', config);
 
   };
+
+  // When selectageLength is enabled, show bookingpage with selected timerange
+  var selectedTimerange = function(start, end) {
+    showBookingPage({
+      start: start,
+      end: end
+    })
+  }
 
   // Fires when window is resized and calendar must adhere
   var decideCalendarSize = function() {
@@ -257,10 +266,13 @@ function TimekitBooking() {
   // Render the supplied calendar events in FullCalendar
   var renderCalendarEvents = function(eventData) {
 
-    calendarTarget.fullCalendar('addEventSource', {
+    var eventSourceData =  {
       events: eventData
-    });
+    }
 
+    if(config.selectableLength) eventSourceData.rendering = 'background';
+
+    calendarTarget.fullCalendar('addEventSource', eventSourceData);
     calendarTarget.removeClass('empty-calendar');
 
   };
@@ -516,6 +528,13 @@ function TimekitBooking() {
       presetsConfig = defaultConfig.presets.bookingInstant;
     } else if(newConfig.bookingGraph === 'confirm_decline') {
       presetsConfig = defaultConfig.presets.bookingConfirmDecline;
+    }
+    finalConfig = $.extend(true, {}, presetsConfig, finalConfig);
+
+    // Apply selectableLength presets
+    presetsConfig = {};
+    if(newConfig.selectableLength === true) {
+      presetsConfig = defaultConfig.presets.selectableLength;
     }
     finalConfig = $.extend(true, {}, presetsConfig, finalConfig);
 

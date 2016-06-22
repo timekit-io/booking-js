@@ -14,6 +14,7 @@ var primary = {
   showCredits: true,
   goToFirstEvent: true,
   bookingGraph: 'instant',
+  selectableLength: false,
   possibleLengths: {
     'Normal': '1 hour',
     'Long': '2 hour'
@@ -186,6 +187,20 @@ var timeDateFormat12hmdysun = {
 
 };
 
+// Preset: selectableLength = true
+var selectableLength = {
+
+  goToFirstEvent: false,
+  fullCalendar: {
+    selectable: true,
+    selectHelper: true,
+    selectOverlap: function(event) {
+      return event.rendering == 'background';
+    }
+  }
+
+};
+
 // Export objects
 module.exports = {
   primary: primary,
@@ -193,6 +208,7 @@ module.exports = {
     timeDateFormat24hdmymon:  timeDateFormat24hdmymon,
     timeDateFormat12hmdysun:  timeDateFormat12hmdysun,
     bookingInstant: bookingInstant,
-    bookingConfirmDecline: bookingConfirmDecline
+    bookingConfirmDecline: bookingConfirmDecline,
+    selectableLength: selectableLength
   }
 };

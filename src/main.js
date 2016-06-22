@@ -32,6 +32,7 @@ function TimekitBooking() {
   var rootTarget;
   var calendarTarget;
   var bookingPageTarget;
+  var durationPageTarget;
 
   // Inject style dependencies
   var includeStyles = function() {
@@ -292,6 +293,57 @@ function TimekitBooking() {
   };
 
   // Event handler when a timeslot is clicked in FullCalendar
+  var showDurationPage = function(currentLength) {
+
+    utils.doCallback('showDurationPage', config, currentLength);
+
+    var template = require('./templates/duration-page.html');
+
+    durationPageTarget = $(template.render({
+      closeIcon:            require('!svg-inline!./assets/close-icon.svg'),
+    }));
+
+    durationPageTarget.children('.bookingjs-durationpage-button').click(function(e) {
+      e.preventDefault();
+      hideDurationPage();
+    });
+
+    durationPageTarget.children('.bookingjs-pagelayout-close').click(function(e) {
+      e.preventDefault();
+      hideDurationPage();
+    });
+
+    $(document).on('keyup', function(e) {
+      // escape key maps to keycode `27`
+      if (e.keyCode === 27) {
+        hideDurationPage();
+      }
+    });
+
+    rootTarget.append(durationPageTarget);
+
+    setTimeout(function(){
+      durationPageTarget.addClass('show');
+    }, 100);
+
+  };
+
+  // Remove the booking page DOM node
+  var hideDurationPage = function() {
+
+    utils.doCallback('closeDurationPage', config);
+
+    durationPageTarget.removeClass('show');
+
+    setTimeout(function(){
+      durationPageTarget.remove();
+    }, 200);
+
+    $(document).off('keyup');
+
+  };
+
+  // Event handler when a timeslot is clicked in FullCalendar
   var showBookingPage = function(eventData) {
 
     utils.doCallback('showBookingPage', config, eventData);
@@ -319,7 +371,7 @@ function TimekitBooking() {
       formFields: fieldsTemplate
     }));
 
-    bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
+    bookingPageTarget.children('.bookingjs-pagelayout-close').click(function(e) {
       e.preventDefault();
       hideBookingPage();
     });
@@ -570,6 +622,11 @@ function TimekitBooking() {
     // Print out display name
     if (config.name) {
       renderDisplayName();
+    }
+
+    // Print out display name
+    if (config.possibleLengths) {
+      showDurationPage();
     }
 
     utils.doCallback('renderCompleted', config);

@@ -131,7 +131,7 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
 
   // Book page
 
-  &-bookpage {
+  &-pagelayout {
     position: absolute;
     height: 100%;
     width: 100%;
@@ -160,6 +160,15 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
       }
     }
 
+  }
+
+  &-closeicon {
+    height: 15px;
+    width: 15px;
+  }
+
+  &-bookpage {
+
     &-date,
     h2 {
       text-align: center;
@@ -187,11 +196,6 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
         margin-bottom: 35px;
       }
     }
-  }
-
-  &-closeicon {
-    height: 15px;
-    width: 15px;
   }
 
   // Book page form

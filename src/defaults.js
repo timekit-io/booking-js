@@ -14,10 +14,6 @@ var primary = {
   showCredits: true,
   goToFirstEvent: true,
   bookingGraph: 'instant',
-  possibleLengths: {
-    'Normal': '1 hour',
-    'Long': '2 hour'
-  },
   bookingFields: {
     name: {
       placeholder: 'Full name',
@@ -91,7 +87,9 @@ var primary = {
       successMessageTitle: 'Thanks!',
       timezoneHelperLoading: 'Loading..',
       timezoneHelperDifferent: 'Your timezone is %s hours %s of %s (calendar shown in your local time)',
-      timezoneHelperSame: 'You are in the same timezone as %s'
+      timezoneHelperSame: 'You are in the same timezone as %s',
+      durationTitle: 'Hi there!',
+      durationMessage: 'Please select duration below:'
     }
   },
   callbacks: {}

@@ -293,17 +293,21 @@ function TimekitBooking() {
   };
 
   // Event handler when a timeslot is clicked in FullCalendar
-  var showDurationPage = function(currentLength) {
+  var showDurationPage = function(currentLength, firstTime) {
 
     utils.doCallback('showDurationPage', config, currentLength);
 
     var template = require('./templates/duration-page.html');
 
     durationPageTarget = $(template.render({
-      closeIcon:            require('!svg-inline!./assets/close-icon.svg'),
+      closeIcon:       require('!svg-inline!./assets/close-icon.svg'),
+      durationTitle:   config.localization.strings.durationTitle,
+      durationMessage: config.localization.strings.durationMessage,
+      lengths:         config.possibleLengths,
+      firstTime:       firstTime
     }));
 
-    durationPageTarget.children('.bookingjs-durationpage-button').click(function(e) {
+    durationPageTarget.find('.bookingjs-durationpage-button').click(function(e) {
       e.preventDefault();
       hideDurationPage();
     });
@@ -312,6 +316,11 @@ function TimekitBooking() {
       e.preventDefault();
       hideDurationPage();
     });
+
+    // Show powered by Timekit message
+    if (config.showCredits) {
+      renderPoweredByMessage(durationPageTarget);
+    }
 
     $(document).on('keyup', function(e) {
       // escape key maps to keycode `27`
@@ -626,7 +635,7 @@ function TimekitBooking() {
 
     // Print out display name
     if (config.possibleLengths) {
-      showDurationPage();
+      showDurationPage(null, true);
     }
 
     utils.doCallback('renderCompleted', config);

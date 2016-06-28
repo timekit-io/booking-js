@@ -1,5 +1,7 @@
 <div class="bookingjs-durationpage bookingjs-pagelayout {{# firstTime}} show {{/ firstTime }}">
-  <a class="bookingjs-pagelayout-close" href="#">{{& closeIcon }}</a>
+  {{^ firstTime}}
+    <a class="bookingjs-pagelayout-close" href="#">{{& closeIcon }}</a>
+  {{/ firstTime }}
   <h2 class="bookingjs-bookpage-date">{{ durationTitle }}</h2>
   <p class="bookingjs-durationpage-message">{{ durationMessage }}</p>
   <div class="bookingjs-durationpage-list">

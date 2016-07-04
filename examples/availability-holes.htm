@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="UTF-8">
+  <title>Booking.js availability holes</title>
+  <style type="text/css">
+    body { background-color: #E6E6E6; max-width: 700px; margin: 0 auto; }
+  </style>
+ </head>
+ <body>
+
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <script type="text/javascript" src="../dist/booking.js"></script>
+  <div id="bookingjs">
+    <script type="text/javascript">
+      TimekitBooking().init({
+        name:     'Doc Brown',
+        email:    'marty.mcfly@timekit.io',
+        apiToken: 'qtDze9JMn2p8oZOM6wvdFSgSYJ8jg4aY',
+        calendar: 'c16e28ee-0a0f-4b33-9830-9b75dfa7a828',
+        avatar:   '../misc/avatar-doc.jpg',
+        timekitConfig: {
+          app: 'bookingjs-demo'
+        },
+        timekitFindTime: {
+          length: '2 hours',
+          filters: {
+            'or': [
+              { 'specific_time': { start: '12', end: '18' } },
+            ]
+          }
+        }
+      });
+    </script>
+  </div>
+
+</body>
+</html>

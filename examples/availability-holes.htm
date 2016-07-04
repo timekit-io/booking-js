@@ -20,15 +20,34 @@
         calendar: 'c16e28ee-0a0f-4b33-9830-9b75dfa7a828',
         avatar:   '../misc/avatar-doc.jpg',
         timekitConfig: {
-          app: 'bookingjs-demo'
+          app: 'admin',
+          apiBaseUrl: 'http://api-localhost.timekit.io/',
+          inputTimestampFormat: 'Y-m-d h:i:s'
         },
         timekitFindTime: {
-          length: '2 hours',
+          emails: [],
+          calendar_ids: ['c16e28ee-0a0f-4b33-9830-9b75dfa7a828'],
+          length: '1 hour',
           filters: {
             'or': [
-              { 'specific_time': { start: '12', end: '18' } },
-            ]
-          }
+              //{ 'specific_time': { start: '12', end: '18' }},
+              { 'between_timestamps': { start: '2016-07-07 15:00:30', end: '2016-07-07 18:00:30'}},
+              //{ 'between_timestamps': { start: '2016-07-06 11:00:00', end: '2016-07-06 18:00:00'}},
+              // { 'block_specific_time': { start: '13:30', end: '18' }}
+            ],
+            // 'and': [
+            //   // { 'specific_calendar': { calendar: 'c16e28ee-0a0f-4b33-9830-9b75dfa7a828'}},
+            // ],
+            // 'not': [
+            //   { 'specific_time': { start: '13', end: '14' }},
+            //   { 'weekend': {}}
+            // ]
+          },
+          // all_solutions: true,
+          ignore_all_day_events: true,
+          future: '3 months',
+          // buffer: '15 minutes',
+          start: '1 days'
         }
       });
     </script>

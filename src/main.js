@@ -102,6 +102,61 @@ function TimekitBooking() {
 
   };
 
+  // Fetch availabile time through Timekit SDK
+  var timekitGetBookings = function() {
+
+    var args = {};
+
+    // Only add email to findtime if no calendars or users are explicitly specified
+    if (!config.timekitFindTime.calendar_ids && !config.timekitFindTime.user_ids) {
+      args.emails = [config.email];
+    }
+    $.extend(args, config.timekitFindTime);
+
+    utils.doCallback('findTimeStarted', config, args);
+
+    timekit
+    .include('attributes')
+    .makeRequest({
+      url: '/bookings/search',
+      method: 'get',
+      params: {
+        search: 'graph:group_host;state:tentative'
+      }
+    })
+    .then(function(response){
+
+      let slots = response.data.map((item) => {
+        return {
+          start: item.attributes.event_info.start,
+          end: item.attributes.event_info.end,
+          booking: item
+        }
+      })
+
+      console.log(slots)
+
+      // utils.doCallback('findTimeSuccessful', config, response);
+      //
+      // Go to first event if enabled
+      if(config.goToFirstEvent && response.data.length > 0) {
+        var firstEventStart = response.data[0].start;
+        var firstEventStartHour = moment(firstEventStart).format('H');
+        goToDate(firstEventStart);
+        scrollToTime(firstEventStartHour);
+      }
+      //
+      // Render available timeslots in FullCalendar
+      renderCalendarEvents(slots);
+
+    }).catch(function(response){
+      // utils.doCallback('findTimeFailed', config, response);
+      utils.logError('An error with Timekit GetBookings occured, context: ' + response);
+    });
+
+  };
+
+
   // Tells FullCalendar to go to a specifc date
   var goToDate = function(date) {
 
@@ -327,7 +382,7 @@ function TimekitBooking() {
     var form = bookingPageTarget.children('.bookingjs-form');
 
     form.submit(function(e) {
-      submitBookingForm(this, e);
+      submitBookingForm(this, e, eventData);
     });
 
     // Show powered by Timekit message
@@ -364,7 +419,7 @@ function TimekitBooking() {
   };
 
   // Event handler on form submit
-  var submitBookingForm = function(form, e) {
+  var submitBookingForm = function(form, e, eventData) {
 
     e.preventDefault();
 
@@ -390,7 +445,7 @@ function TimekitBooking() {
     utils.doCallback('submitBookingForm', config, values);
 
     // Call create event endpoint
-    timekitCreateBooking(values).then(function(response){
+    timekitCreateBooking(values, eventData).then(function(response){
 
       utils.doCallback('createBookingSuccessful', config, response);
 
@@ -418,7 +473,7 @@ function TimekitBooking() {
   };
 
   // Create new booking
-  var timekitCreateBooking = function(data) {
+  var timekitCreateBooking = function(data, eventData) {
 
     var args = {
       event: {
@@ -451,6 +506,12 @@ function TimekitBooking() {
     }
 
     $.extend(true, args, config.timekitCreateBooking);
+
+    if (config.bookingGraph === 'group_customer') {
+      console.log(eventData)
+      delete args.event
+      args.confirm = { host_booking_id: eventData.booking.id }
+    }
 
     utils.doCallback('createBookingStarted', config, args);
 
@@ -516,6 +577,8 @@ function TimekitBooking() {
       presetsConfig = defaultConfig.presets.bookingInstant;
     } else if(newConfig.bookingGraph === 'confirm_decline') {
       presetsConfig = defaultConfig.presets.bookingConfirmDecline;
+    } else if(newConfig.bookingGraph === 'group_customer') {
+      presetsConfig = defaultConfig.presets.bookingGroupCustomer;
     }
     finalConfig = $.extend(true, {}, presetsConfig, finalConfig);
 
@@ -555,7 +618,8 @@ function TimekitBooking() {
     initializeCalendar();
 
     // Get availability through Timekit SDK
-    timekitFindTime();
+    if (config.bookingGraph === 'group_customer') timekitGetBookings();
+    else timekitFindTime();
 
     // Show timezone helper if enabled
     if (config.localization.showTimezoneHelper) {

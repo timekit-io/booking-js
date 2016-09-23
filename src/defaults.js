@@ -138,6 +138,21 @@ var bookingConfirmDecline = {
 
 };
 
+// Preset: bookingGraph = 'group_customer'
+var bookingGroupCustomer = {
+
+  timekitCreateBooking: {
+    graph: 'group_customer',
+    action: 'confirm',
+  },
+  localization: {
+    strings: {
+      successMessageBody: "You have reserved a seat at the booking. Check your email for further instructions. <br /><br />Have a great day!"
+    }
+  }
+
+};
+
 // Preset: timeDateFormat = '24h-dmy-mon'
 var timeDateFormat24hdmymon = {
 
@@ -193,6 +208,7 @@ module.exports = {
     timeDateFormat24hdmymon:  timeDateFormat24hdmymon,
     timeDateFormat12hmdysun:  timeDateFormat12hmdysun,
     bookingInstant: bookingInstant,
-    bookingConfirmDecline: bookingConfirmDecline
+    bookingConfirmDecline: bookingConfirmDecline,
+    bookingGroupCustomer: bookingGroupCustomer
   }
 };

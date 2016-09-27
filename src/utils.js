@@ -14,8 +14,8 @@ module.exports = {
 
   doCallback: function(hook, config, arg, deprecated) {
     if(this.isFunction(config.callbacks[hook])) {
-      config.callbacks[hook](arg);
       if (deprecated) { this.logDeprecated(hook + ' callback has been replaced, please see docs'); }
+      return config.callbacks[hook](arg);
     }
   },
 

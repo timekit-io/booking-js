@@ -190,10 +190,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	      })
 	
-	      console.log(slots)
+	      utils.doCallback('getBookingsSuccessful', config, response);
 	
-	      // utils.doCallback('findTimeSuccessful', config, response);
-	      //
 	      // Go to first event if enabled
 	      if(config.goToFirstEvent && response.data.length > 0) {
 	        var firstEventStart = response.data[0].start;
@@ -201,12 +199,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        goToDate(firstEventStart);
 	        scrollToTime(firstEventStartHour);
 	      }
-	      //
+	
 	      // Render available timeslots in FullCalendar
 	      renderCalendarEvents(slots);
 	
 	    }).catch(function(response){
-	      // utils.doCallback('findTimeFailed', config, response);
+	      utils.doCallback('getBookingsFailed', config, response);
 	      utils.logError('An error with Timekit GetBookings occured, context: ' + response);
 	    });
 	
@@ -503,30 +501,42 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // Call create event endpoint
 	    timekitCreateBooking(values, eventData).then(function(response){
 	
-	      utils.doCallback('createBookingSuccessful', config, response);
-	
-	      formElement.find('.booked-email').html(values.email);
-	      formElement.removeClass('loading').addClass('success');
+	      var callbackResult = utils.doCallback('createBookingSuccessful', config, response);
+	      console.log(callbackResult)
+	      Promise.resolve(callbackResult)
+	      .then(function() {
+	        formElement.find('.booked-email').html(values.email);
+	        formElement.removeClass('loading').addClass('success');
+	      })
+	      .catch(function() {
+	        showBookingFailed(formElement)
+	      })
 	
 	    }).catch(function(response){
 	
 	      utils.doCallback('createBookingFailed', config, response);
 	
-	      var submitButton = formElement.find('.bookingjs-form-button');
-	      submitButton.addClass('button-shake');
-	      setTimeout(function() {
-	        submitButton.removeClass('button-shake');
-	      }, 500);
-	
-	      formElement.removeClass('loading').addClass('error');
-	      setTimeout(function() {
-	        formElement.removeClass('error');
-	      }, 2000);
+	      showBookingFailed(formElement)
 	
 	      utils.logError('An error with Timekit createBooking occured, context: ' + response);
 	    });
 	
 	  };
+	
+	  var showBookingFailed = function (formElement) {
+	
+	    var submitButton = formElement.find('.bookingjs-form-button');
+	    submitButton.addClass('button-shake');
+	    setTimeout(function() {
+	      submitButton.removeClass('button-shake');
+	    }, 500);
+	
+	    formElement.removeClass('loading').addClass('error');
+	    setTimeout(function() {
+	      formElement.removeClass('error');
+	    }, 2000);
+	
+	  }
 	
 	  // Create new booking
 	  var timekitCreateBooking = function(data, eventData) {
@@ -564,9 +574,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    $.extend(true, args, config.timekitCreateBooking);
 	
 	    if (config.bookingGraph === 'group_customer') {
-	      console.log(eventData)
 	      delete args.event
 	      args.confirm = { host_booking_id: eventData.booking.id }
+	    }
+	    if (config.bookingGraph === 'group_customer_payment') {
+	      delete args.event
+	      args.create = { host_booking_id: eventData.booking.id }
 	    }
 	
 	    utils.doCallback('createBookingStarted', config, args);
@@ -620,22 +633,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    // Apply timeDateFormat presets
 	    var presetsConfig = {};
-	    if(newConfig.localization.timeDateFormat === '24h-dmy-mon') {
-	      presetsConfig = defaultConfig.presets.timeDateFormat24hdmymon;
-	    } else if(newConfig.localization.timeDateFormat === '12h-mdy-sun') {
-	      presetsConfig = defaultConfig.presets.timeDateFormat12hmdysun;
-	    }
+	    var timeDateFormatPreset = defaultConfig.presets.timeDateFormat[newConfig.localization.timeDateFormat];
+	    if(timeDateFormatPreset) presetsConfig = timeDateFormatPreset;
 	    var finalConfig = $.extend(true, {}, presetsConfig, newConfig);
 	
 	    // Apply bookingGraph presets
 	    presetsConfig = {};
-	    if(newConfig.bookingGraph === 'instant') {
-	      presetsConfig = defaultConfig.presets.bookingInstant;
-	    } else if(newConfig.bookingGraph === 'confirm_decline') {
-	      presetsConfig = defaultConfig.presets.bookingConfirmDecline;
-	    } else if(newConfig.bookingGraph === 'group_customer') {
-	      presetsConfig = defaultConfig.presets.bookingGroupCustomer;
-	    }
+	    var bookingGraphPreset = defaultConfig.presets.bookingGraph[newConfig.bookingGraph];
+	    if(bookingGraphPreset) presetsConfig = bookingGraphPreset;
 	    finalConfig = $.extend(true, {}, presetsConfig, finalConfig);
 	
 	    // Check for required settings
@@ -674,7 +679,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    initializeCalendar();
 	
 	    // Get availability through Timekit SDK
-	    if (config.bookingGraph === 'group_customer') timekitGetBookings();
+	    if (config.bookingGraph === 'group_customer' || config.bookingGraph === 'group_customer_payment') timekitGetBookings();
 	    else timekitFindTime();
 	
 	    // Show timezone helper if enabled
@@ -19486,7 +19491,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_RESULT__;var require;/* WEBPACK VAR INJECTION */(function(process, setImmediate, global, module) {/*!
+	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process, setImmediate, global, module) {/*!
 	 * @overview es6-promise - a tiny implementation of Promises/A+.
 	 * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
 	 * @license   Licensed under MIT license
@@ -22332,8 +22337,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  doCallback: function(hook, config, arg, deprecated) {
 	    if(this.isFunction(config.callbacks[hook])) {
-	      config.callbacks[hook](arg);
 	      if (deprecated) { this.logDeprecated(hook + ' callback has been replaced, please see docs'); }
+	      return config.callbacks[hook](arg);
 	    }
 	  },
 	
@@ -22533,6 +22538,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	};
 	
+	// Preset: bookingGraph = 'group_customer_payment'
+	var bookingGroupCustomerPayment = {
+	
+	  timekitCreateBooking: {
+	    graph: 'group_customer_payment',
+	    action: 'create',
+	  },
+	  localization: {
+	    strings: {
+	      successMessageTitle: 'Payment required',
+	      successMessageBody: "We have reserved a seat until you have paid for the event. You have 5 minutes to pay.<br /><br />Thank you."
+	    }
+	  }
+	
+	};
+	
 	// Preset: timeDateFormat = '24h-dmy-mon'
 	var timeDateFormat24hdmymon = {
 	
@@ -22585,11 +22606,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = {
 	  primary: primary,
 	  presets: {
-	    timeDateFormat24hdmymon:  timeDateFormat24hdmymon,
-	    timeDateFormat12hmdysun:  timeDateFormat12hmdysun,
-	    bookingInstant: bookingInstant,
-	    bookingConfirmDecline: bookingConfirmDecline,
-	    bookingGroupCustomer: bookingGroupCustomer
+	    timeDateFormat: {
+	      '24h-dmy-mon': timeDateFormat24hdmymon,
+	      '12h-mdy-sun': timeDateFormat12hmdysun
+	    },
+	    bookingGraph: {
+	      'instant': bookingInstant,
+	      'confirm_decline': bookingConfirmDecline,
+	      'group_customer': bookingGroupCustomer,
+	      'group_customer_payment': bookingGroupCustomerPayment
+	    }
 	  }
 	};
 

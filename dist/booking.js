@@ -575,11 +575,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    if (config.bookingGraph === 'group_customer') {
 	      delete args.event
-	      args.confirm = { host_booking_id: eventData.booking.id }
+	      args.related = { host_booking_id: eventData.booking.id }
 	    }
 	    if (config.bookingGraph === 'group_customer_payment') {
 	      delete args.event
-	      args.create = { host_booking_id: eventData.booking.id }
+	      args.related = { host_booking_id: eventData.booking.id }
 	    }
 	
 	    utils.doCallback('createBookingStarted', config, args);
@@ -22528,7 +22528,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  timekitCreateBooking: {
 	    graph: 'group_customer',
-	    action: 'confirm',
+	    action: 'create',
 	  },
 	  localization: {
 	    strings: {
@@ -22547,8 +22547,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	  localization: {
 	    strings: {
-	      successMessageTitle: 'Payment required',
-	      successMessageBody: "We have reserved a seat until you have paid for the event. You have 5 minutes to pay.<br /><br />Thank you."
+	      successMessageBody: "We have received your payment and reserved a seat for you.<br /><br />Have a great day!"
 	    }
 	  }
 	

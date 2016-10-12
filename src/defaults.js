@@ -143,7 +143,7 @@ var bookingGroupCustomer = {
 
   timekitCreateBooking: {
     graph: 'group_customer',
-    action: 'confirm',
+    action: 'create',
   },
   localization: {
     strings: {

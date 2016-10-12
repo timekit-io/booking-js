@@ -519,11 +519,11 @@ function TimekitBooking() {
 
     if (config.bookingGraph === 'group_customer') {
       delete args.event
-      args.confirm = { host_booking_id: eventData.booking.id }
+      args.related = { host_booking_id: eventData.booking.id }
     }
     if (config.bookingGraph === 'group_customer_payment') {
       delete args.event
-      args.create = { host_booking_id: eventData.booking.id }
+      args.related = { host_booking_id: eventData.booking.id }
     }
 
     utils.doCallback('createBookingStarted', config, args);

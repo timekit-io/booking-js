@@ -58,7 +58,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	/*!
 	 * Booking.js
-	 * Version: 1.8.2
+	 * Version: 1.9.0
 	 * http://timekit.io
 	 *
 	 * Copyright 2015 Timekit, Inc.
@@ -111,6 +111,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Setup the Timekit SDK with correct config
 	  var timekitSetupConfig = function() {
 	
+	    if (config.app) config.timekitConfig.app = config.app
 	    timekit.configure(config.timekitConfig);
 	
 	  };
@@ -701,12 +702,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  // Expose methods
 	  return {
-	    setConfig: setConfig,
-	    getConfig: getConfig,
-	    render:    render,
-	    init:      init,
-	    destroy:   destroy,
-	    fullCalendar: fullCalendar
+	    setConfig:    setConfig,
+	    getConfig:    getConfig,
+	    render:       render,
+	    init:         init,
+	    destroy:      destroy,
+	    fullCalendar: fullCalendar,
+	    timekitSdk:   timekit
 	  };
 	
 	}

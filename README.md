@@ -3,7 +3,7 @@
 [![Circle CI](https://img.shields.io/circleci/project/timekit-io/booking-js.svg)](https://circleci.com/gh/timekit-io/booking-js)
 [![Codacy Badge](https://api.codacy.com/project/badge/grade/feb445801acf454a95b1690a75959893)](https://www.codacy.com/app/laander/booking-js)
 
-**Latest release:**  [v1.8.2](https://github.com/timekit-io/booking-js/releases)
+**Latest release:**  [v1.9.0](https://github.com/timekit-io/booking-js/releases)
 
 > Make a beautiful embeddable booking widget in minutes.
 
@@ -15,12 +15,14 @@ Maintainer: Lasse Boisen Andersen ([la@timekit.io](mailto:la@timekit.io)). PR's 
 
 ## Get started
 
-You can use the widget in two different ways:
+Visit [Timekit.io](https://www.timekit.io) to get started!  
 
-1. For non-developers: **[Hour](http://hourhq.com)** is a simple and easy to use availability and booking system made for sales & support scenarios.  
-2. For developers: **[Timekit](http://timekit.io)** provides you with a modular and flexible API platform that allows you to integrate availability and bookings deep into your own product.
+You can use the widget in two different ways:  
 
-*This repo is mainly for community contributions and the curious soul that would like to customize the widget.*
+1. For non-developers where the widget is configured in our UI admin panel. For this, you'll never need to touch any code - just follow the admin panel to get your embed code or hosted url.  
+2. For developers where you can configure the widget on-the-fly for multi-user usage and more control. In this way, you don't need to generate a widget for each user through the Timekit admin. Timekit provides you with a modular and flexible API platform that allows you to integrate availability and bookings deep into your own product.  
+
+*This repo is mainly for community contributions, docs and the curious soul that would like to customize the widget.*
 
 ## Dependencies
 
@@ -55,6 +57,7 @@ The simplest and most universally compatible usage is with autoload. This will d
   <script type="text/javascript" src="//cdn.timekit.io/booking-js/v1/booking.min.js" defer></script>
   <script type="text/javascript">
     window.timekitBookingConfig = {
+      app:      'your-app-slug-here',
       email:    'marty.mcfly@timekit.io',
       apiToken: 'bNpbFHRmrfZbtS5nEtCVl8sY5vUkOFCL',
       calendar: '8687f058-5b52-4fa4-885c-9294e52ab7d4',
@@ -75,6 +78,7 @@ If you intent to run multiple instances or want more control, just create a new 
   <script type="text/javascript">
     var widget = new TimekitBooking();
     widget.init({
+      app:      'your-app-slug-here',
       email:    'marty.mcfly@timekit.io',
       apiToken: 'bNpbFHRmrfZbtS5nEtCVl8sY5vUkOFCL',
       calendar: '8687f058-5b52-4fa4-885c-9294e52ab7d4'
@@ -88,9 +92,9 @@ If you intent to run multiple instances or want more control, just create a new 
 The widget connects to the Timekit API behind the scenes and requires a Timekit account.
 
 You can either connect with a Google account (recommended) or create a plain account (you'd have to enter availability and pull out events through the API).  
-Visit the [setup wizard here](http://booking.timekit.io/setup).
+Visit the [setup wizard on Timekit](http://timekit.io).
 
-The `email` and `apiToken` setting is the key part here. When you specify domain and generate credentials in the [setup wizard](http://booking.timekit.io/setup), you get a special client-token with limited access. It's only capable of hitting certain endpoints so your account stays secure when using the widget in a public browser environment.
+The `app`, `email` and `apiToken` settings are the key part here. When you've registered an app, created a user and generated a widget credentials, you get a special client-token with limited access. It's only capable of hitting certain endpoints so your account stays secure when using the widget in a public browser environment.
 
 ## Configuration
 
@@ -102,6 +106,7 @@ Booking.js is made for various use-cases, so it's really extensible and customiz
 {
 
   // Required
+  app:                      '',   // Your Timekit registered app slug
   email:                    '',   // Your Timekit user's email (used for auth)
   apiToken:                 '',   // Your Timekit user's apiToken (as generated through the wizard)
   calendar:                 '',   // Your Timekit calendar ID that bookings should end up in
@@ -144,9 +149,11 @@ Booking.js is made for various use-cases, so it's really extensible and customiz
 
 You can pass any of the [Timekit JS SDK](https://github.com/timekit-io/js-sdk) settings directly to the widget. This is mostly relevant if you're building a tighter integration with Timekit and have your own app registered on the platform.
 
+As a shorthand, the app slug can be set using a root-level `app` config key too.
+
 ```javascript
 timekitConfig: {
-  app:          'bookingjs' // Default
+  app:          'your-app-slug-here' // Specify your app slug
 }
 ```
 

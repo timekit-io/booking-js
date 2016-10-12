@@ -55,6 +55,7 @@ function TimekitBooking() {
   // Setup the Timekit SDK with correct config
   var timekitSetupConfig = function() {
 
+    if (config.app) config.timekitConfig.app = config.app
     timekit.configure(config.timekitConfig);
 
   };
@@ -645,12 +646,13 @@ function TimekitBooking() {
 
   // Expose methods
   return {
-    setConfig: setConfig,
-    getConfig: getConfig,
-    render:    render,
-    init:      init,
-    destroy:   destroy,
-    fullCalendar: fullCalendar
+    setConfig:    setConfig,
+    getConfig:    getConfig,
+    render:       render,
+    init:         init,
+    destroy:      destroy,
+    fullCalendar: fullCalendar,
+    timekitSdk:   timekit
   };
 
 }

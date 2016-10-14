@@ -1,6 +1,6 @@
 {
   "name": "timekit-booking",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "description": "Make a beautiful embeddable booking widget in minutes",
   "main": "dist/booking.min.js",
   "repository": {
@@ -9,8 +9,7 @@
   },
   "scripts": {
     "test": "karma start --single-run",
-    "compile": "webpack",
-    "compile:production": "webpack --config webpack.config.min.js"
+    "build": "webpack && webpack --config webpack.config.min.js"
   },
   "author": "Timekit Inc.",
   "license": "MIT",

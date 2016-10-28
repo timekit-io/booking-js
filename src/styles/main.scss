@@ -120,7 +120,8 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
 
     .is-small & {
       text-align: center;
-      width: 100%;
+      left: 90px;
+      right: 90px;
       box-sizing: border-box;
     }
     .is-small.has-avatar & {

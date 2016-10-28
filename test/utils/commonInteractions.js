@@ -3,6 +3,11 @@
 // Set of shorthands for common interactions
 module.exports = {
 
+  clickNextArrow: function () {
+    var calEvent = $('.fc-next-button')[0];
+    $(calEvent).click();
+  },
+
   clickEvent: function() {
     var calEvent = $('.fc-time-grid-event')[0];
     var calEventStart = $(calEvent).find('.fc-time').attr('data-start');

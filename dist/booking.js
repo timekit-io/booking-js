@@ -1,10 +1,10 @@
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
-		module.exports = factory(require("jQuery"));
+		module.exports = factory(require("jquery"));
 	else if(typeof define === 'function' && define.amd)
-		define(["jQuery"], factory);
+		define(["jquery"], factory);
 	else if(typeof exports === 'object')
-		exports["TimekitBooking"] = factory(require("jQuery"));
+		exports["TimekitBooking"] = factory(require("jquery"));
 	else
 		root["TimekitBooking"] = factory(root["jQuery"]);
 })(this, function(__WEBPACK_EXTERNAL_MODULE_1__) {

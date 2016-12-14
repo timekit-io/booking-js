@@ -378,6 +378,7 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
       background-color: #5BAF56;
       cursor: not-allowed;
 
+      &.selfclosing { cursor: pointer; }
       .inactive-text { opacity: 0; }
       .success-text { opacity: 1; }
 

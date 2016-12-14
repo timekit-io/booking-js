@@ -371,10 +371,16 @@ function TimekitBooking() {
     e.preventDefault();
 
     var formElement = $(form);
+    var submitButton = formElement.find('.bookingjs-form-button');
+
+    // Hide booking details
+    if(submitButton.hasClass('selfclosing')) {
+      hideBookingPage();
+      return;
+    }
 
     // Abort if form is submitting, have submitted or does not validate
     if(formElement.hasClass('loading') || formElement.hasClass('success') || formElement.hasClass('error') || !e.target.checkValidity()) {
-      var submitButton = formElement.find('.bookingjs-form-button');
       submitButton.addClass('button-shake');
       setTimeout(function() {
         submitButton.removeClass('button-shake');
@@ -398,6 +404,7 @@ function TimekitBooking() {
 
       formElement.find('.booked-email').html(values.email);
       formElement.removeClass('loading').addClass('success');
+      if(config.closeFormOnSuccessButtonClick){ submitButton.addClass('selfclosing') }
 
     }).catch(function(response){
 

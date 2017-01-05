@@ -129,7 +129,6 @@ Booking.js is made for various use-cases, so it's really extensible and customiz
   avatar:                   '',   // Provide an image URL for a circular image avatar
   autoload:                 true, // Auto initialization if config object is found on window var
   includeStyles:            true, // Inject fullCalendar and library styles in <head>
-  showCredits:              true, // Display a "Powered by Timekit" attribution footer (thanks!)
   goToFirstEvent:           true, // Display and scroll to the first upcoming event in the calendar (to avoid showing a blank calendar)
   bookingGraph:             'instant', // Set which booking flow graph that should be used (also supports "confirm_decline", see below)
 

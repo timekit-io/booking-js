@@ -49,11 +49,11 @@
   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
   <script type="text/javascript" src="../dist/booking.js"></script>
   <div class="buttons">
-    <a href="#" class="button" data-title="Timetravel to the future" data-duration="1 hour">
+    <a href="#" class="button" data-duration="1 hour">
       <span class="button__title">Haircut and dying</span>
       <span class="button__duration">1 hour</span>
     </a>
-    <a href="#" class="button" data-title="Timetravel to the future" data-duration="2 hours">
+    <a href="#" class="button" data-duration="2 hours">
       <span class="button__title">The full monty</span>
       <span class="button__duration">2 hours</span>
     </a>
@@ -63,16 +63,15 @@
       // register event hooks to buttons
       $('.button').click(function(e) {
         e.preventDefault();
+        var button = $(this);
         var allButtons = $('.button');
         allButtons.removeClass('button--selected');
-        var button = $(this);
         button.addClass('button--selected');
-        var buttonTitle = button.attr('data-title')
         var buttonDuration = button.attr('data-duration')
-        initalizeWidget(buttonTitle, buttonDuration);
+        initalizeWidget(buttonDuration);
       })
       // initialize booking.js with passed settings
-      function initalizeWidget(title, duration) {
+      function initalizeWidget(duration) {
         var widget = new TimekitBooking();
         widget.init({
           name:     'Doc Brown',

@@ -13,6 +13,7 @@ var primary = {
   includeStyles: true,
   showCredits: true,
   goToFirstEvent: true,
+  closeFormOnSuccessButtonClick: true,
   bookingGraph: 'instant',
   possibleLengths: {
     'Normal': '1 hour',

@@ -141,12 +141,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      utils.doCallback('findTimeSuccessful', config, response);
 	
 	      // Go to first event if enabled
-	      if(config.goToFirstEvent && response.data.length > 0) {
-	        var firstEventStart = response.data[0].start;
-	        var firstEventStartHour = moment(firstEventStart).format('H');
-	        goToDate(firstEventStart);
-	        scrollToTime(firstEventStartHour);
-	      }
+	      if(config.goToFirstEvent && response.data.length > 0) goToFirstEvent(response.data[0].start);
 	
 	      // Render available timeslots in FullCalendar
 	      renderCalendarEvents(response.data);
@@ -159,62 +154,48 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 	
 	  // Fetch availabile time through Timekit SDK
-	  var timekitGetBookings = function() {
+	  var timekitGetBookingSlots = function() {
 	
-	    var args = {};
-	
-	    // Only add email to findtime if no calendars or users are explicitly specified
-	    if (!config.timekitFindTime.calendar_ids && !config.timekitFindTime.user_ids) {
-	      args.emails = [config.email];
-	    }
-	    $.extend(args, config.timekitFindTime);
-	
-	    utils.doCallback('findTimeStarted', config, args);
+	    utils.doCallback('GetBookingSlotsStarted', config);
 	
 	    timekit
-	    .include('attributes')
 	    .makeRequest({
-	      url: '/bookings/search',
-	      method: 'get',
-	      params: {
-	        search: 'graph:group_host;state:tentative'
-	      }
+	      url: '/bookings/groups',
+	      method: 'get'
 	    })
 	    .then(function(response){
 	
-	      let slots = response.data.map((item) => {
+	      var slots = response.data.map(function (item) {
 	        return {
+	          title: item.attributes.event_info.what,
 	          start: item.attributes.event_info.start,
 	          end: item.attributes.event_info.end,
 	          booking: item
 	        }
 	      })
 	
-	      utils.doCallback('getBookingsSuccessful', config, response);
+	      utils.doCallback('getBookingSlotsSuccessful', config, response);
 	
 	      // Go to first event if enabled
-	      if(config.goToFirstEvent && response.data.length > 0) {
-	        var firstEventStart = response.data[0].start;
-	        var firstEventStartHour = moment(firstEventStart).format('H');
-	        goToDate(firstEventStart);
-	        scrollToTime(firstEventStartHour);
-	      }
+	      if(config.goToFirstEvent && response.data.length > 0) goToFirstEvent(response.data[0].attributes.event_info.start);
 	
 	      // Render available timeslots in FullCalendar
 	      renderCalendarEvents(slots);
 	
 	    }).catch(function(response){
-	      utils.doCallback('getBookingsFailed', config, response);
+	      utils.doCallback('getBookingSlotsFailed', config, response);
 	      utils.logError('An error with Timekit GetBookings occured, context: ' + response);
 	    });
 	
 	  };
 	
+	  // Go to the first timeslot in a list of timeslots
+	  var goToFirstEvent = function(firstEventStart) {
 	
-	  // Tells FullCalendar to go to a specifc date
-	  var goToDate = function(date) {
+	    calendarTarget.fullCalendar('gotoDate', firstEventStart);
 	
-	    calendarTarget.fullCalendar('gotoDate', date);
+	    var firstEventStartHour = moment(firstEventStart).format('H');
+	    scrollToTime(firstEventStartHour);
 	
 	  };
 	
@@ -366,6 +347,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Render the supplied calendar events in FullCalendar
 	  var renderCalendarEvents = function(eventData) {
 	
+	    console.log(eventData)
+	
 	    calendarTarget.fullCalendar('addEventSource', {
 	      events: eventData
 	    });
@@ -501,16 +484,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // Call create event endpoint
 	    timekitCreateBooking(values, eventData).then(function(response){
 	
-	      var callbackResult = utils.doCallback('createBookingSuccessful', config, response);
-	      console.log(callbackResult)
-	      Promise.resolve(callbackResult)
-	      .then(function() {
-	        formElement.find('.booked-email').html(values.email);
-	        formElement.removeClass('loading').addClass('success');
-	      })
-	      .catch(function() {
-	        showBookingFailed(formElement)
-	      })
+	      utils.doCallback('createBookingSuccessful', config, response);
+	
+	      formElement.find('.booked-email').html(values.email);
+	      formElement.removeClass('loading').addClass('success');
 	
 	    }).catch(function(response){
 	
@@ -573,13 +550,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    $.extend(true, args, config.timekitCreateBooking);
 	
-	    if (config.bookingGraph === 'group_customer') {
+	    if (config.bookingGraph === 'group_customer' || config.bookingGraph === 'group_customer_payment') {
 	      delete args.event
-	      args.related = { host_booking_id: eventData.booking.id }
-	    }
-	    if (config.bookingGraph === 'group_customer_payment') {
-	      delete args.event
-	      args.related = { host_booking_id: eventData.booking.id }
+	      args.related = { owner_booking_id: eventData.booking.id }
 	    }
 	
 	    utils.doCallback('createBookingStarted', config, args);
@@ -679,7 +652,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    initializeCalendar();
 	
 	    // Get availability through Timekit SDK
-	    if (config.bookingGraph === 'group_customer' || config.bookingGraph === 'group_customer_payment') timekitGetBookings();
+	    if (config.bookingGraph === 'group_customer' || config.bookingGraph === 'group_customer_payment') timekitGetBookingSlots();
 	    else timekitFindTime();
 	
 	    // Show timezone helper if enabled
@@ -22338,7 +22311,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  doCallback: function(hook, config, arg, deprecated) {
 	    if(this.isFunction(config.callbacks[hook])) {
 	      if (deprecated) { this.logDeprecated(hook + ' callback has been replaced, please see docs'); }
-	      return config.callbacks[hook](arg);
+	      config.callbacks[hook](arg);
 	    }
 	  },
 	
@@ -23002,7 +22975,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 	// module
-	exports.push([module.id, ".fc-view-container{background-color:#fbfbfb;color:#333}.fc-row.fc-widget-header{border-bottom:1px solid #ececec}.fc-row.fc-widget-header .fc-day-header{text-transform:uppercase;font-size:.9em;font-weight:600}.fc-axis,.fc-row.fc-widget-header .fc-day-header:first-line{color:#b9b9b9}.fc-axis{font-size:.9em}.fc-state-default{text-shadow:none;box-shadow:none;background-image:none;background-color:#fff;border-color:#fff}.fc-button{text-transform:uppercase;font-weight:600;font-size:1.1em;border:0;outline:none}.fc-button:active,.fc-button:focus,.fc-button:hover,.fc-button:visited{outline:none;border:0;background-color:transparent}.fc-content-skeleton{border-top:1px solid #ddd}.fc .fc-toolbar{padding:0;margin-bottom:0;border-bottom:1px solid #ececec}.fc .fc-toolbar>*>button{padding:15px 17px;height:auto;outline:0;margin-left:0;-webkit-transition:opacity .2s ease;transition:opacity .2s ease;opacity:.3}.fc .fc-toolbar>*>button:hover{opacity:1}.fc .fc-toolbar>*>button.fc-state-disabled{-webkit-transition:opacity 0s;transition:opacity 0s;opacity:0}.fc .fc-toolbar>*>button.fc-prev-button{padding-right:8px}.fc .fc-toolbar>*>button.fc-next-button{padding-left:8px}.fc .fc-toolbar>*>button .fc-icon{font-size:1.1em}.fc .fc-toolbar>.fc-right>button.fc-today-button{padding:15px 5px}.fc-unthemed .fc-today{background:#fff}.fc-body>tr>.fc-widget-content,.fc-head>tr>.fc-widget-header{border:0!important}.fc th{border-color:#fff;padding:5px}.fc-unthemed .fc-divider,.fc-unthemed .fc-popover .fc-header{background-color:transparent}.empty-calendar .fc-event{opacity:0}.fc-event{-webkit-transition:all .2s,opacity .6s;transition:all .2s,opacity .6s;border:none;border-left:3px solid #689ad8;padding:3px;background-color:#fff;border-radius:4px;color:#333;margin:1px 0;box-shadow:0 1px 2px rgba(0,0,0,.07);cursor:pointer;margin-bottom:2px;opacity:1}.fc-event:hover{color:#fff;background-color:#689ad8;border-left:3px solid #689ad8;box-shadow:0 1px 3px rgba(0,0,0,.15)}.fc-event .fc-bg{opacity:0}.fc-day-grid-event{padding:15px;margin:5px}.fc-day-grid-event .fc-time{font-weight:600}.fc-time-grid .fc-slats .fc-minor td{border-top-style:none}.fc-time-grid .fc-slats td{border-top-color:#fbfbfb}.fc-time-grid .fc-slats td.fc-axis{border-top-color:#ececec}.fc-time-grid-event.fc-short .fc-content{font-size:.7em;line-height:.2em}.fc-time-grid-event.fc-short .fc-time:after{content:''}.fc-time-grid-event .fc-time{font-size:1.1em;padding:5px}.fc-unthemed .fc-divider,.fc-unthemed .fc-popover,.fc-unthemed .fc-row,.fc-unthemed tbody,.fc-unthemed td,.fc-unthemed th,.fc-unthemed thead{border-color:#ececec}.fc-agendaMonthly-view .fc-event{color:#fff}.fc-now-indicator{border-color:rgba(255,0,0,.5)}", ""]);
+	exports.push([module.id, ".fc-view-container{background-color:#fbfbfb;color:#333}.fc-row.fc-widget-header{border-bottom:1px solid #ececec}.fc-row.fc-widget-header .fc-day-header{text-transform:uppercase;font-size:.9em;font-weight:600}.fc-axis,.fc-row.fc-widget-header .fc-day-header:first-line{color:#b9b9b9}.fc-axis{font-size:.9em}.fc-state-default{text-shadow:none;box-shadow:none;background-image:none;background-color:#fff;border-color:#fff}.fc-button{text-transform:uppercase;font-weight:600;font-size:1.1em;border:0;outline:none}.fc-button:active,.fc-button:focus,.fc-button:hover,.fc-button:visited{outline:none;border:0;background-color:transparent}.fc-content-skeleton{border-top:1px solid #ddd}.fc .fc-toolbar{padding:0;margin-bottom:0;border-bottom:1px solid #ececec}.fc .fc-toolbar>*>button{padding:15px 17px;height:auto;outline:0;margin-left:0;-webkit-transition:opacity .2s ease;transition:opacity .2s ease;opacity:.3}.fc .fc-toolbar>*>button:hover{opacity:1}.fc .fc-toolbar>*>button.fc-state-disabled{-webkit-transition:opacity 0s;transition:opacity 0s;opacity:0}.fc .fc-toolbar>*>button.fc-prev-button{padding-right:8px}.fc .fc-toolbar>*>button.fc-next-button{padding-left:8px}.fc .fc-toolbar>*>button .fc-icon{font-size:1.1em}.fc .fc-toolbar>.fc-right>button.fc-today-button{padding:15px 5px}.fc-unthemed .fc-today{background:#fff}.fc-body>tr>.fc-widget-content,.fc-head>tr>.fc-widget-header{border:0!important}.fc th{border-color:#fff;padding:5px}.fc-unthemed .fc-divider,.fc-unthemed .fc-popover .fc-header{background-color:transparent}.empty-calendar .fc-event{opacity:0}.fc-event{-webkit-transition:all .2s,opacity .6s;transition:all .2s,opacity .6s;border:none;border-left:3px solid #689ad8;padding:3px;background-color:#fff;border-radius:4px;color:#333;margin:1px 0;box-shadow:0 1px 2px rgba(0,0,0,.07);cursor:pointer;margin-bottom:2px;opacity:1}.fc-event:hover{color:#fff;background-color:#689ad8;border-left:3px solid #689ad8;box-shadow:0 1px 3px rgba(0,0,0,.15)}.fc-event .fc-bg{opacity:0}.fc-day-grid-event{padding:15px;margin:5px}.fc-day-grid-event .fc-time{font-weight:600}.fc-day-grid-event .fc-title{padding:0 5px 5px;font-weight:700}.fc-time-grid .fc-slats .fc-minor td{border-top-style:none}.fc-time-grid .fc-slats td{border-top-color:#fbfbfb}.fc-time-grid .fc-slats td.fc-axis{border-top-color:#ececec}.fc-time-grid-event.fc-short .fc-content{font-size:.7em;line-height:.2em}.fc-time-grid-event.fc-short .fc-time:after{content:''}.fc-time-grid-event .fc-time{font-size:1.1em;padding:5px}.fc-time-grid-event .fc-title{padding:0 5px 5px;font-weight:700}.fc-unthemed .fc-divider,.fc-unthemed .fc-popover,.fc-unthemed .fc-row,.fc-unthemed tbody,.fc-unthemed td,.fc-unthemed th,.fc-unthemed thead{border-color:#ececec}.fc-agendaMonthly-view .fc-event{color:#fff}.fc-now-indicator{border-color:rgba(255,0,0,.5)}", ""]);
 	
 	// exports
 

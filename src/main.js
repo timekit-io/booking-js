@@ -109,7 +109,7 @@ function TimekitBooking() {
     })
     .then(function(response){
 
-      let slots = response.data.map((item) => {
+      var slots = response.data.map(function (item) {
         return {
           title: item.attributes.event_info.what,
           start: item.attributes.event_info.start,

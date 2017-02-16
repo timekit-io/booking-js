@@ -100,24 +100,12 @@ function TimekitBooking() {
   // Fetch availabile time through Timekit SDK
   var timekitGetBookingSlots = function() {
 
-    var args = {};
-
-    // Only add email to findtime if no calendars or users are explicitly specified
-    if (!config.timekitFindTime.calendar_ids && !config.timekitFindTime.user_ids) {
-      args.emails = [config.email];
-    }
-    $.extend(args, config.timekitFindTime);
-
-    utils.doCallback('findTimeStarted', config, args);
+    utils.doCallback('GetBookingSlotsStarted', config, args);
 
     timekit
-    .include('attributes')
     .makeRequest({
-      url: '/bookings/search',
-      method: 'get',
-      params: {
-        search: 'graph:group_host;state:tentative'
-      }
+      url: '/bookings/groups',
+      method: 'get'
     })
     .then(function(response){
 
@@ -440,16 +428,10 @@ function TimekitBooking() {
     // Call create event endpoint
     timekitCreateBooking(values, eventData).then(function(response){
 
-      var callbackResult = utils.doCallback('createBookingSuccessful', config, response);
-      console.log(callbackResult)
-      Promise.resolve(callbackResult)
-      .then(function() {
-        formElement.find('.booked-email').html(values.email);
-        formElement.removeClass('loading').addClass('success');
-      })
-      .catch(function() {
-        showBookingFailed(formElement)
-      })
+      utils.doCallback('createBookingSuccessful', config, response);
+
+      formElement.find('.booked-email').html(values.email);
+      formElement.removeClass('loading').addClass('success');
 
     }).catch(function(response){
 
@@ -512,13 +494,9 @@ function TimekitBooking() {
 
     $.extend(true, args, config.timekitCreateBooking);
 
-    if (config.bookingGraph === 'group_customer') {
+    if (config.bookingGraph === 'group_customer' || config.bookingGraph === 'group_customer_payment') {
       delete args.event
-      args.related = { host_booking_id: eventData.booking.id }
-    }
-    if (config.bookingGraph === 'group_customer_payment') {
-      delete args.event
-      args.related = { host_booking_id: eventData.booking.id }
+      args.related = { owner_booking_id: eventData.booking.id }
     }
 
     utils.doCallback('createBookingStarted', config, args);

@@ -85,12 +85,7 @@ function TimekitBooking() {
       utils.doCallback('findTimeSuccessful', config, response);
 
       // Go to first event if enabled
-      if(config.goToFirstEvent && response.data.length > 0) {
-        var firstEventStart = response.data[0].start;
-        var firstEventStartHour = moment(firstEventStart).format('H');
-        goToDate(firstEventStart);
-        scrollToTime(firstEventStartHour);
-      }
+      if(config.goToFirstEvent) goToFirstEvent(response.data);
 
       // Render available timeslots in FullCalendar
       renderCalendarEvents(response.data);
@@ -103,7 +98,7 @@ function TimekitBooking() {
   };
 
   // Fetch availabile time through Timekit SDK
-  var timekitGetBookings = function() {
+  var timekitGetBookingSlots = function() {
 
     var args = {};
 
@@ -134,31 +129,31 @@ function TimekitBooking() {
         }
       })
 
-      utils.doCallback('getBookingsSuccessful', config, response);
+      utils.doCallback('getBookingSlotsSuccessful', config, response);
 
       // Go to first event if enabled
-      if(config.goToFirstEvent && response.data.length > 0) {
-        var firstEventStart = response.data[0].start;
-        var firstEventStartHour = moment(firstEventStart).format('H');
-        goToDate(firstEventStart);
-        scrollToTime(firstEventStartHour);
-      }
+      if(config.goToFirstEvent) goToFirstEvent(response.data);
 
       // Render available timeslots in FullCalendar
       renderCalendarEvents(slots);
 
     }).catch(function(response){
-      utils.doCallback('getBookingsFailed', config, response);
+      utils.doCallback('getBookingSlotsFailed', config, response);
       utils.logError('An error with Timekit GetBookings occured, context: ' + response);
     });
 
   };
 
+  // Go to the first timeslot in a list of timeslots
+  var goToFirstEvent = function(timeslots) {
 
-  // Tells FullCalendar to go to a specifc date
-  var goToDate = function(date) {
+    if (timeslots.length === 0) return
 
-    calendarTarget.fullCalendar('gotoDate', date);
+    var firstEventStart = timeslots[0].start;
+    calendarTarget.fullCalendar('gotoDate', firstEventStart);
+
+    var firstEventStartHour = moment(firstEventStart).format('H');
+    scrollToTime(firstEventStartHour);
 
   };
 
@@ -623,7 +618,7 @@ function TimekitBooking() {
     initializeCalendar();
 
     // Get availability through Timekit SDK
-    if (config.bookingGraph === 'group_customer' || config.bookingGraph === 'group_customer_payment') timekitGetBookings();
+    if (config.bookingGraph === 'group_customer' || config.bookingGraph === 'group_customer_payment') timekitGetBookingSlots();
     else timekitFindTime();
 
     // Show timezone helper if enabled

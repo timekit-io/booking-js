@@ -2,7 +2,7 @@
 
 /*!
  * Booking.js
- * Version: 1.8.2
+ * Version: 1.9.3
  * http://timekit.io
  *
  * Copyright 2015 Timekit, Inc.
@@ -55,6 +55,7 @@ function TimekitBooking() {
   // Setup the Timekit SDK with correct config
   var timekitSetupConfig = function() {
 
+    if (config.app) config.timekitConfig.app = config.app
     timekit.configure(config.timekitConfig);
 
   };
@@ -270,16 +271,17 @@ function TimekitBooking() {
 
     if (rootWidth < 480) {
       view = 'basicDay';
-      height = 335;
+      height = 380;
       rootTarget.addClass('is-small');
+      if (config.avatar) { height -= 15; }
     } else {
       rootTarget.removeClass('is-small');
     }
 
     if (config.bookingFields.comment.enabled) {  height += 84; }
-    if (config.bookingFields.phone.enabled) {    height += 48; }
-    if (config.bookingFields.voip.enabled) {     height += 48; }
-    if (config.bookingFields.location.enabled) { height += 48; }
+    if (config.bookingFields.phone.enabled) {    height += 64; }
+    if (config.bookingFields.voip.enabled) {     height += 64; }
+    if (config.bookingFields.location.enabled) { height += 64; }
 
     return {
       height: height,
@@ -687,12 +689,13 @@ function TimekitBooking() {
 
   // Expose methods
   return {
-    setConfig: setConfig,
-    getConfig: getConfig,
-    render:    render,
-    init:      init,
-    destroy:   destroy,
-    fullCalendar: fullCalendar
+    setConfig:    setConfig,
+    getConfig:    getConfig,
+    render:       render,
+    init:         init,
+    destroy:      destroy,
+    fullCalendar: fullCalendar,
+    timekitSdk:   timekit
   };
 
 }

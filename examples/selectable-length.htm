@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="UTF-8">
+  <title>Booking.js single instance example</title>
+  <style type="text/css">
+    body {
+      background-color: #E6E6E6;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .buttons {
+      padding: 30px;
+      font-family: Helvetica, arial, sans-serif;
+      text-align: center;
+    }
+    .button {
+      display: inline-block;
+      width: 280px;
+      margin-bottom: 15px;
+      padding: 25px 35px;
+      background-color: white;
+      border-radius: 4px;
+      text-decoration: none;
+      box-shadow: 0px 3px 20px rgba(0,0,0,0.07);
+      transition: box-shadow 0.5s ease;
+      text-align: left;
+    }
+    .button--selected {
+      box-shadow: 0px 3px 30px rgba(0,0,0,0.20);
+    }
+    .button:hover .button__title,
+    .button--selected .button__title {
+      color: #2e5bec;
+    }
+    .button__title {
+      color: #000;
+      font-size: 19px;
+      line-height: 27px;
+    }
+    .button__duration {
+      float: right;
+      color: #999;
+      line-height: 27px;
+    }
+  </style>
+ </head>
+ <body>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <script type="text/javascript" src="../dist/booking.js"></script>
+  <div class="buttons">
+    <a href="#" class="button" data-duration="1 hour">
+      <span class="button__title">Haircut and dying</span>
+      <span class="button__duration">1 hour</span>
+    </a>
+    <a href="#" class="button" data-duration="2 hours">
+      <span class="button__title">The full monty</span>
+      <span class="button__duration">2 hours</span>
+    </a>
+  </div>
+  <div id="bookingjs">
+    <script type="text/javascript">
+      // register event hooks to buttons
+      $('.button').click(function(e) {
+        e.preventDefault();
+        var button = $(this);
+        var allButtons = $('.button');
+        allButtons.removeClass('button--selected');
+        button.addClass('button--selected');
+        var buttonDuration = button.attr('data-duration')
+        initalizeWidget(buttonDuration);
+      })
+      // initialize booking.js with passed settings
+      function initalizeWidget(duration) {
+        var widget = new TimekitBooking();
+        widget.init({
+          name:     'Doc Brown',
+          email:    'marty.mcfly@timekit.io',
+          apiToken: 'XT1JO879JF1qUXXzmETD5ucgxaDwsFsd',
+          calendar: '22f86f0c-ee80-470c-95e8-dadd9d05edd2',
+          avatar:   '../misc/avatar-doc.jpg',
+          timekitConfig: {
+            app: 'bookingjs-demo'
+          },
+          timekitFindTime: {
+            length: duration
+          }
+        });
+      }
+    </script>
+  </div>
+</body>
+</html>

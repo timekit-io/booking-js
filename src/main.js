@@ -85,7 +85,7 @@ function TimekitBooking() {
       utils.doCallback('findTimeSuccessful', config, response);
 
       // Go to first event if enabled
-      if(config.goToFirstEvent) goToFirstEvent(response.data);
+      if(config.goToFirstEvent && response.data.length > 0) goToFirstEvent(response.data[0].start);
 
       // Render available timeslots in FullCalendar
       renderCalendarEvents(response.data);
@@ -100,7 +100,7 @@ function TimekitBooking() {
   // Fetch availabile time through Timekit SDK
   var timekitGetBookingSlots = function() {
 
-    utils.doCallback('GetBookingSlotsStarted', config, args);
+    utils.doCallback('GetBookingSlotsStarted', config);
 
     timekit
     .makeRequest({
@@ -111,6 +111,7 @@ function TimekitBooking() {
 
       let slots = response.data.map((item) => {
         return {
+          title: item.attributes.event_info.what,
           start: item.attributes.event_info.start,
           end: item.attributes.event_info.end,
           booking: item
@@ -120,7 +121,7 @@ function TimekitBooking() {
       utils.doCallback('getBookingSlotsSuccessful', config, response);
 
       // Go to first event if enabled
-      if(config.goToFirstEvent) goToFirstEvent(response.data);
+      if(config.goToFirstEvent && response.data.length > 0) goToFirstEvent(response.data[0].attributes.event_info.start);
 
       // Render available timeslots in FullCalendar
       renderCalendarEvents(slots);
@@ -133,11 +134,8 @@ function TimekitBooking() {
   };
 
   // Go to the first timeslot in a list of timeslots
-  var goToFirstEvent = function(timeslots) {
+  var goToFirstEvent = function(firstEventStart) {
 
-    if (timeslots.length === 0) return
-
-    var firstEventStart = timeslots[0].start;
     calendarTarget.fullCalendar('gotoDate', firstEventStart);
 
     var firstEventStartHour = moment(firstEventStart).format('H');
@@ -292,6 +290,8 @@ function TimekitBooking() {
 
   // Render the supplied calendar events in FullCalendar
   var renderCalendarEvents = function(eventData) {
+
+    console.log(eventData)
 
     calendarTarget.fullCalendar('addEventSource', {
       events: eventData

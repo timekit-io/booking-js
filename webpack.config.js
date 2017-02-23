@@ -28,6 +28,9 @@ module.exports = {
         ]
     },
     plugins: [
-        new webpack.ContextReplacementPlugin(/moment[\/\\]locale$/, /en-gb/)
+        new webpack.ContextReplacementPlugin(/moment[\/\\]locale$/, /en-gb/),
+        new webpack.ProvidePlugin({
+          Promise: 'es6-promise-promise'
+        })
     ]
 };

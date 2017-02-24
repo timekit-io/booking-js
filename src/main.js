@@ -153,8 +153,9 @@ function TimekitBooking() {
     }
 
     // Get height of each hour row
-    var slotDuration = calendarTarget.fullCalendar('option', 'slotDuration')
-    var slotDurationMinutes = slotDuration.slice(3, 5)
+    var slotDuration = calendarTarget.fullCalendar('option', 'slotDuration');
+    var slotDurationMinutes = 30;
+    if (slotDuration) slotDurationMinutes = slotDuration.slice(3, 5);
     var hours = calendarTarget.find('.fc-slats .fc-minor');
     var hourHeight = $(hours[0]).height() * (60 / slotDurationMinutes);
 

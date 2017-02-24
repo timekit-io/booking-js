@@ -204,7 +204,7 @@ var timeDateFormat12hmdysun = {
       },
       agenda: {
         columnFormat: 'ddd\n M/D',
-        slotLabelFormat: 'ha'
+        slotLabelFormat: 'h:mma'
       }
     },
   },

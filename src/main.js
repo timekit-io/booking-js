@@ -85,11 +85,11 @@ function TimekitBooking() {
 
       utils.doCallback('findTimeSuccessful', config, response);
 
-      // Go to first event if enabled
-      if(config.goToFirstEvent && response.data.length > 0) goToFirstEvent(response.data[0].start);
-
       // Render available timeslots in FullCalendar
       renderCalendarEvents(response.data);
+
+      // Go to first event if enabled
+      if(config.goToFirstEvent && response.data.length > 0) goToFirstEvent(response.data[0].start);
 
     }).catch(function(response){
       utils.doCallback('findTimeFailed', config, response);
@@ -121,11 +121,11 @@ function TimekitBooking() {
 
       utils.doCallback('getBookingSlotsSuccessful', config, response);
 
-      // Go to first event if enabled
-      if(config.goToFirstEvent && response.data.length > 0) goToFirstEvent(response.data[0].attributes.event_info.start);
-
       // Render available timeslots in FullCalendar
       renderCalendarEvents(slots);
+
+      // Go to first event if enabled
+      if(config.goToFirstEvent && response.data.length > 0) goToFirstEvent(response.data[0].attributes.event_info.start);
 
     }).catch(function(response){
       utils.doCallback('getBookingSlotsFailed', config, response);
@@ -153,8 +153,10 @@ function TimekitBooking() {
     }
 
     // Get height of each hour row
+    var slotDuration = calendarTarget.fullCalendar('option', 'slotDuration')
+    var slotDurationMinutes = slotDuration.slice(3, 5)
     var hours = calendarTarget.find('.fc-slats .fc-minor');
-    var hourHeight = $(hours[0]).height() * 2;
+    var hourHeight = $(hours[0]).height() * (60 / slotDurationMinutes);
 
     // If minTime is set in fullCalendar config, subtract that from the scollTo calculationn
     var minTimeHeight = 0;
@@ -293,7 +295,13 @@ function TimekitBooking() {
   // Render the supplied calendar events in FullCalendar
   var renderCalendarEvents = function(eventData) {
 
-    console.log(eventData)
+    var firstEventStart = moment(eventData[0].start)
+    var firstEventEnd = moment(eventData[0].end)
+    var firstEventDuration = firstEventEnd.diff(firstEventStart, 'minutes')
+
+    if (firstEventDuration <= 60) {
+      calendarTarget.fullCalendar('option', 'slotDuration', '00:15:00')
+    }
 
     calendarTarget.fullCalendar('addEventSource', {
       events: eventData

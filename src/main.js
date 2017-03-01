@@ -507,6 +507,9 @@ function TimekitBooking() {
       }
     };
 
+    // if a remote widget (has ID) is used, pass that reference when creating booking
+    if (config.widgetId) args.widget_id = config.widgetId
+
     if (config.bookingFields.location.enabled) { args.event.where = data.location; }
     if (config.bookingFields.comment.enabled) {
       args.event.description += config.bookingFields.comment.placeholder + ': ' + data.comment + '\n';
@@ -658,7 +661,11 @@ function TimekitBooking() {
     // Load remote config
     return loadRemoteConfig(suppliedConfig)
     .then(function (response) {
-      var mergedConfig = $.extend(true, {}, response.data.config, suppliedConfig);
+      // save widget ID from remote to reference it when creating bookings
+      var remoteConfig = response.data.config
+      if (response.data.id) remoteConfig.widgetId = response.data.id
+      // merge with supplied config for overwriting settings
+      var mergedConfig = $.extend(true, {}, remoteConfig, suppliedConfig);
       start(mergedConfig)
     })
 

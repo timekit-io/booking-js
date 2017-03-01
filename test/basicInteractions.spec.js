@@ -106,4 +106,38 @@ describe('Basic interaction', function() {
 
   });
 
+  fit('should be able to book an event, close page and refresh availability', function(done) {
+
+    createWidget();
+
+    setTimeout(function() {
+
+      interact.clickEvent();
+
+      setTimeout(function() {
+
+        var inputs = interact.fillSubmit();
+
+        setTimeout(function() {
+
+          expect($('.bookingjs-form').hasClass('success')).toBe(true);
+          var request = jasmine.Ajax.requests.mostRecent();
+          expect(request.url).toBe('https://api.timekit.io/v2/bookings?include=attributes,event');
+
+          $('.bookingjs-bookpage-close').click();
+
+          setTimeout(function() {
+
+            expect($('.bookingjs-bookpage').length).toBe(0);
+            var request = jasmine.Ajax.requests.mostRecent();
+            expect(request.url).toBe('https://api.timekit.io/v2/findtime');
+
+            done();
+          }, 200);
+        }, 200);
+      }, 500);
+    }, 500);
+
+  });
+
 });

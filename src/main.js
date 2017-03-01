@@ -381,13 +381,14 @@ function TimekitBooking() {
       formFields: fieldsTemplate
     }));
 
+    var form = bookingPageTarget.children('.bookingjs-form');
+
     bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
       e.preventDefault();
       hideBookingPage();
-      getAvailability();
+      var bookingHasBeenCreated = $(form).hasClass('success');
+      if (bookingHasBeenCreated) getAvailability();
     });
-
-    var form = bookingPageTarget.children('.bookingjs-form');
 
     form.submit(function(e) {
       submitBookingForm(this, e, eventData);

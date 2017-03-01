@@ -106,7 +106,38 @@ describe('Basic interaction', function() {
 
   });
 
-  fit('should be able to book an event, close page and refresh availability', function(done) {
+  it('should be able to book an event and pass widget ID', function(done) {
+
+    createWidget({
+      widgetSlug: 'my-widget-slug'
+    });
+
+    setTimeout(function() {
+
+      interact.clickEvent();
+
+      setTimeout(function() {
+
+        var inputs = interact.fillSubmit();
+
+        expect($('.bookingjs-form').hasClass('loading')).toBe(true);
+
+        setTimeout(function() {
+
+          expect($('.bookingjs-form').hasClass('success')).toBe(true);
+
+          var request = jasmine.Ajax.requests.mostRecent();
+
+          expect(JSON.parse(request.params).widget_id).toBeDefined()
+          done();
+
+        }, 200);
+      }, 500);
+    }, 500);
+
+  });
+
+  it('should be able to book an event, close page and refresh availability', function(done) {
 
     createWidget();
 

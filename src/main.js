@@ -548,8 +548,8 @@ function TimekitBooking() {
 
     var campaignName = 'widget'
     var campaignSource = window.location.hostname.replace(/\./g, '-')
-    if (config.widgetSlug) { campaignName = 'hosted-widget'; }
     if (config.widgetId) { campaignName = 'embedded-widget'; }
+    if (config.widgetSlug) { campaignName = 'hosted-widget'; }
 
     var template = require('./templates/poweredby.html');
     var timekitLogo = require('!svg-inline!./assets/timekit-logo.svg');

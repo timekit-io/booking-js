@@ -190,6 +190,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  };
 	
+	  // Universal functional to retrieve availability through either findtime or group booking slots
+	  var getAvailability = function() {
+	
+	    calendarTarget.fullCalendar('removeEventSources');
+	
+	    if (config.bookingGraph === 'group_customer' || config.bookingGraph === 'group_customer_payment') {
+	      // If in group bookings mode, fetch slots
+	      timekitGetBookingSlots();
+	    } else {
+	      // If in normal single-participant mode, call findtime
+	      timekitFindTime();
+	    }
+	  }
+	
 	  // Go to the first timeslot in a list of timeslots
 	  var goToFirstEvent = function(firstEventStart) {
 	
@@ -337,10 +351,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	      rootTarget.removeClass('is-small');
 	    }
 	
-	    if (config.bookingFields.comment.enabled) {  height += 84; }
-	    if (config.bookingFields.phone.enabled) {    height += 64; }
-	    if (config.bookingFields.voip.enabled) {     height += 64; }
-	    if (config.bookingFields.location.enabled) { height += 64; }
+	    if (config.bookingFields.comment.enabled) {    height += 84; }
+	    if (config.bookingFields.phone.enabled) {      height += 64; }
+	    if (config.bookingFields.voip.enabled) {       height += 64; }
+	    if (config.bookingFields.location.enabled) {   height += 64; }
+	    if (!config.localization.showTimezoneHelper) { height += 33; }
 	
 	    return {
 	      height: height,
@@ -422,12 +437,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	      formFields: fieldsTemplate
 	    }));
 	
+	    var form = bookingPageTarget.children('.bookingjs-form');
+	
 	    bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
 	      e.preventDefault();
 	      hideBookingPage();
+	      var bookingHasBeenCreated = $(form).hasClass('success');
+	      if (bookingHasBeenCreated) getAvailability();
 	    });
-	
-	    var form = bookingPageTarget.children('.bookingjs-form');
 	
 	    form.submit(function(e) {
 	      submitBookingForm(this, e, eventData);
@@ -546,6 +563,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    };
 	
+	    // if a remote widget (has ID) is used, pass that reference when creating booking
+	    if (config.widgetId) args.widget_id = config.widgetId
+	
 	    if (config.bookingFields.location.enabled) { args.event.where = data.location; }
 	    if (config.bookingFields.comment.enabled) {
 	      args.event.description += config.bookingFields.comment.placeholder + ': ' + data.comment + '\n';
@@ -584,8 +604,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    var campaignName = 'widget'
 	    var campaignSource = window.location.hostname.replace(/\./g, '-')
-	    if (config.widgetSlug) { campaignName = 'hosted-widget'; }
 	    if (config.widgetId) { campaignName = 'embedded-widget'; }
+	    if (config.widgetSlug) { campaignName = 'hosted-widget'; }
 	
 	    var template = __webpack_require__(58);
 	    var timekitLogo = __webpack_require__(59);
@@ -663,8 +683,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    initializeCalendar();
 	
 	    // Get availability through Timekit SDK
-	    if (config.bookingGraph === 'group_customer' || config.bookingGraph === 'group_customer_payment') timekitGetBookingSlots();
-	    else timekitFindTime();
+	    getAvailability();
 	
 	    // Show timezone helper if enabled
 	    if (config.localization.showTimezoneHelper) {
@@ -698,7 +717,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // Load remote config
 	    return loadRemoteConfig(suppliedConfig)
 	    .then(function (response) {
-	      var mergedConfig = $.extend(true, {}, response.data.config, suppliedConfig);
+	      // save widget ID from remote to reference it when creating bookings
+	      var remoteConfig = response.data.config
+	      if (response.data.id) remoteConfig.widgetId = response.data.id
+	      // merge with supplied config for overwriting settings
+	      var mergedConfig = $.extend(true, {}, remoteConfig, suppliedConfig);
 	      start(mergedConfig)
 	    })
 	

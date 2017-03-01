@@ -648,8 +648,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    finalConfig = $.extend(true, {}, presetsConfig, finalConfig);
 	
 	    // Check for required settings
-	    if(!finalConfig.email || !finalConfig.apiToken || !finalConfig.calendar) {
-	      utils.logError('A required config setting was missing ("email", "apiToken" or "calendar")');
+	    if (!finalConfig.email) {
+	      utils.logError('A required config setting ("email") was missing');
+	    }
+	    if (!finalConfig.apiToken) {
+	      utils.logError('A required config setting ("apiToken") was missing');
+	    }
+	    if (!finalConfig.calendar && finalConfig.bookingGraph !== 'group_customer' && finalConfig.bookingGraph !== 'group_customer_payment') {
+	      utils.logError('A required config setting ("calendar") was missing');
 	    }
 	
 	    // Set new config to instance config

@@ -295,10 +295,11 @@ function TimekitBooking() {
       rootTarget.removeClass('is-small');
     }
 
-    if (config.bookingFields.comment.enabled) {  height += 84; }
-    if (config.bookingFields.phone.enabled) {    height += 64; }
-    if (config.bookingFields.voip.enabled) {     height += 64; }
-    if (config.bookingFields.location.enabled) { height += 64; }
+    if (config.bookingFields.comment.enabled) {    height += 84; }
+    if (config.bookingFields.phone.enabled) {      height += 64; }
+    if (config.bookingFields.voip.enabled) {       height += 64; }
+    if (config.bookingFields.location.enabled) {   height += 64; }
+    if (!config.localization.showTimezoneHelper) { height += 33; }
 
     return {
       height: height,

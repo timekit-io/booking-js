@@ -134,6 +134,20 @@ function TimekitBooking() {
 
   };
 
+  // Universal functional to retrieve availability through either findtime or group booking slots
+  var getAvailability = function() {
+
+    calendarTarget.fullCalendar('removeEventSources');
+
+    if (config.bookingGraph === 'group_customer' || config.bookingGraph === 'group_customer_payment') {
+      // If in group bookings mode, fetch slots
+      timekitGetBookingSlots();
+    } else {
+      // If in normal single-participant mode, call findtime
+      timekitFindTime();
+    }
+  }
+
   // Go to the first timeslot in a list of timeslots
   var goToFirstEvent = function(firstEventStart) {
 
@@ -369,6 +383,7 @@ function TimekitBooking() {
     bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
       e.preventDefault();
       hideBookingPage();
+      getAvailability();
     });
 
     var form = bookingPageTarget.children('.bookingjs-form');
@@ -607,8 +622,7 @@ function TimekitBooking() {
     initializeCalendar();
 
     // Get availability through Timekit SDK
-    if (config.bookingGraph === 'group_customer' || config.bookingGraph === 'group_customer_payment') timekitGetBookingSlots();
-    else timekitFindTime();
+    getAvailability();
 
     // Show timezone helper if enabled
     if (config.localization.showTimezoneHelper) {

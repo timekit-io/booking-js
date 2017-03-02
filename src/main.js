@@ -315,7 +315,7 @@ function TimekitBooking() {
     var firstEventEnd = moment(eventData[0].end)
     var firstEventDuration = firstEventEnd.diff(firstEventStart, 'minutes')
 
-    if (firstEventDuration <= 60) {
+    if (firstEventDuration <= 90) {
       calendarTarget.fullCalendar('option', 'slotDuration', '00:15:00')
     }
 

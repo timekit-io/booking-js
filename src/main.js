@@ -103,11 +103,18 @@ function TimekitBooking() {
 
     utils.doCallback('GetBookingSlotsStarted', config);
 
-    timekit
-    .makeRequest({
+    let requestData = {
       url: '/bookings/groups',
       method: 'get'
-    })
+    }
+
+    // scope group booking slots by widget ID if possible
+    if (config.widgetId) requestData.params = {
+      search: 'widget.id:' + config.widgetId
+    }
+
+    timekit
+    .makeRequest(requestData)
     .then(function(response){
 
       var slots = response.data.map(function (item) {

@@ -159,11 +159,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    utils.doCallback('GetBookingSlotsStarted', config);
 	
-	    timekit
-	    .makeRequest({
+	    var requestData = {
 	      url: '/bookings/groups',
 	      method: 'get'
-	    })
+	    }
+	
+	    // scope group booking slots by widget ID if possible
+	    if (config.widgetId) requestData.params = {
+	      search: 'widget.id:' + config.widgetId
+	    }
+	
+	    timekit
+	    .makeRequest(requestData)
 	    .then(function(response){
 	
 	      var slots = response.data.map(function (item) {
@@ -371,7 +378,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var firstEventEnd = moment(eventData[0].end)
 	    var firstEventDuration = firstEventEnd.diff(firstEventStart, 'minutes')
 	
-	    if (firstEventDuration <= 60) {
+	    if (firstEventDuration <= 90) {
 	      calendarTarget.fullCalendar('option', 'slotDuration', '00:15:00')
 	    }
 	

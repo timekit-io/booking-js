@@ -103,7 +103,7 @@ function TimekitBooking() {
 
     utils.doCallback('GetBookingSlotsStarted', config);
 
-    let requestData = {
+    var requestData = {
       url: '/bookings/groups',
       method: 'get'
     }

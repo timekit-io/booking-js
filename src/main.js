@@ -648,7 +648,7 @@ function TimekitBooking() {
     if (!finalConfig.apiToken) {
       utils.logError('A required config setting ("apiToken") was missing');
     }
-    if (!finalConfig.calendar && finalConfig.bookingGraph !== 'group_customer' && finalConfig.bookingGraph !== 'group_customer_payment') {
+    if (!finalConfig.calendar && finalConfig.bookingGraph !== 'group_customer' && finalConfig.bookingGraph !== 'group_customer_payment' && !finalConfig.timekitFindTimeTeam) {
       utils.logError('A required config setting ("calendar") was missing');
     }
 

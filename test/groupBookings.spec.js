@@ -43,7 +43,7 @@ describe('Group bookings', function() {
           expect($('.bookingjs-form-success-message')).toBeVisible();
 
           var successMessage = $('.bookingjs-form-success-message').html();
-          var contains = successMessage.indexOf('You have reserved a seat at the booking') > -1;
+          var contains = successMessage.indexOf('Your seat has been reserved') > -1;
           expect(contains).toBe(true);
 
           done();

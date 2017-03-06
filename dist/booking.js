@@ -151,6 +151,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  };
 	
+	  // Fetch availabile team time through Timekit SDK
+	  var timekitFindTimeTeam = function() {
+	
+	    var requestData = {
+	      url: '/findtime/team',
+	      method: 'post',
+	      data: config.timekitFindTimeTeam
+	    }
+	
+	    $.extend(requestData, config.timekitFindTimeTeam);
+	
+	    utils.doCallback('findTimeTeamStarted', config, requestData);
+	
+	    timekit.makeRequest(requestData)
+	    .then(function(response){
+	
+	      utils.doCallback('findTimeTeamSuccessful', config, response);
+	
+	      // Render available timeslots in FullCalendar
+	      if(response.data.length > 0) renderCalendarEvents(response.data);
+	
+	    }).catch(function(response){
+	      utils.doCallback('findTimeTeamFailed', config, response);
+	      utils.logError('An error with Timekit FindTimeTeam occured, context: ' + response);
+	    });
+	
+	  };
+	
 	  // Fetch availabile time through Timekit SDK
 	  var timekitGetBookingSlots = function() {
 	
@@ -199,6 +227,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (config.bookingGraph === 'group_customer' || config.bookingGraph === 'group_customer_payment') {
 	      // If in group bookings mode, fetch slots
 	      timekitGetBookingSlots();
+	    } else if (config.timekitFindTimeTeam) {
+	      // If in team availability mode, call findtime team
+	      timekitFindTimeTeam();
 	    } else {
 	      // If in normal single-participant mode, call findtime
 	      timekitFindTime();
@@ -585,9 +616,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    $.extend(true, args, config.timekitCreateBooking);
 	
+	    // Handle group booking specifics
 	    if (config.bookingGraph === 'group_customer' || config.bookingGraph === 'group_customer_payment') {
 	      delete args.event
 	      args.related = { owner_booking_id: eventData.booking.id }
+	    }
+	
+	    // Handle team availability specifics
+	    if (eventData.users) {
+	      var designatedUser = eventData.users[0]
+	      var teamUser = $.grep(config.timekitFindTimeTeam, function(index, user) {
+	        return designatedUser.email === user._email
+	      })
+	      if (teamUser.length < 1 || !teamUser[0]._calendar) {
+	        utils.logError('Encountered an error when picking designated team user to receive booking');
+	      } else {
+	        timekit.asUser(designatedUser.email, designatedUser.token)
+	        args.event.calendar_id = teamUser[0]._calendar
+	      }
 	    }
 	
 	    utils.doCallback('createBookingStarted', config, args);
@@ -658,7 +704,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (!finalConfig.apiToken) {
 	      utils.logError('A required config setting ("apiToken") was missing');
 	    }
-	    if (!finalConfig.calendar && finalConfig.bookingGraph !== 'group_customer' && finalConfig.bookingGraph !== 'group_customer_payment') {
+	    if (!finalConfig.calendar && finalConfig.bookingGraph !== 'group_customer' && finalConfig.bookingGraph !== 'group_customer_payment' && !finalConfig.timekitFindTimeTeam) {
 	      utils.logError('A required config setting ("calendar") was missing');
 	    }
 	

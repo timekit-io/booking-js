@@ -85,16 +85,11 @@ function TimekitBooking() {
 
       utils.doCallback('findTimeSuccessful', config, response);
 
-      // Go to first event if enabled
-      if(config.goToFirstEvent && response.data.length > 0) {
-        var firstEventStart = response.data[0].start;
-        var firstEventStartHour = moment(firstEventStart).format('H');
-        goToDate(firstEventStart);
-        scrollToTime(firstEventStartHour);
-      }
-
       // Render available timeslots in FullCalendar
       renderCalendarEvents(response.data);
+
+      // Go to first event if enabled
+      if(config.goToFirstEvent && response.data.length > 0) goToFirstEvent(response.data[0].start);
 
     }).catch(function(response){
       utils.doCallback('findTimeFailed', config, response);
@@ -103,10 +98,70 @@ function TimekitBooking() {
 
   };
 
-  // Tells FullCalendar to go to a specifc date
-  var goToDate = function(date) {
+  // Fetch availabile time through Timekit SDK
+  var timekitGetBookingSlots = function() {
 
-    calendarTarget.fullCalendar('gotoDate', date);
+    utils.doCallback('GetBookingSlotsStarted', config);
+
+    var requestData = {
+      url: '/bookings/groups',
+      method: 'get'
+    }
+
+    // scope group booking slots by widget ID if possible
+    if (config.widgetId) requestData.params = {
+      search: 'widget.id:' + config.widgetId
+    }
+
+    timekit
+    .makeRequest(requestData)
+    .then(function(response){
+
+      var slots = response.data.map(function (item) {
+        return {
+          title: item.attributes.event_info.what,
+          start: item.attributes.event_info.start,
+          end: item.attributes.event_info.end,
+          booking: item
+        }
+      })
+
+      utils.doCallback('getBookingSlotsSuccessful', config, response);
+
+      // Render available timeslots in FullCalendar
+      renderCalendarEvents(slots);
+
+      // Go to first event if enabled
+      if(config.goToFirstEvent && response.data.length > 0) goToFirstEvent(response.data[0].attributes.event_info.start);
+
+    }).catch(function(response){
+      utils.doCallback('getBookingSlotsFailed', config, response);
+      utils.logError('An error with Timekit GetBookings occured, context: ' + response);
+    });
+
+  };
+
+  // Universal functional to retrieve availability through either findtime or group booking slots
+  var getAvailability = function() {
+
+    calendarTarget.fullCalendar('removeEventSources');
+
+    if (config.bookingGraph === 'group_customer' || config.bookingGraph === 'group_customer_payment') {
+      // If in group bookings mode, fetch slots
+      timekitGetBookingSlots();
+    } else {
+      // If in normal single-participant mode, call findtime
+      timekitFindTime();
+    }
+  }
+
+  // Go to the first timeslot in a list of timeslots
+  var goToFirstEvent = function(firstEventStart) {
+
+    calendarTarget.fullCalendar('gotoDate', firstEventStart);
+
+    var firstEventStartHour = moment(firstEventStart).format('H');
+    scrollToTime(firstEventStartHour);
 
   };
 
@@ -119,8 +174,11 @@ function TimekitBooking() {
     }
 
     // Get height of each hour row
+    var slotDuration = calendarTarget.fullCalendar('option', 'slotDuration');
+    var slotDurationMinutes = 30;
+    if (slotDuration) slotDurationMinutes = slotDuration.slice(3, 5);
     var hours = calendarTarget.find('.fc-slats .fc-minor');
-    var hourHeight = $(hours[0]).height() * 2;
+    var hourHeight = $(hours[0]).height() * (60 / slotDurationMinutes);
 
     // If minTime is set in fullCalendar config, subtract that from the scollTo calculationn
     var minTimeHeight = 0;
@@ -244,10 +302,11 @@ function TimekitBooking() {
       rootTarget.removeClass('is-small');
     }
 
-    if (config.bookingFields.comment.enabled) {  height += 84; }
-    if (config.bookingFields.phone.enabled) {    height += 64; }
-    if (config.bookingFields.voip.enabled) {     height += 64; }
-    if (config.bookingFields.location.enabled) { height += 64; }
+    if (config.bookingFields.comment.enabled) {    height += 84; }
+    if (config.bookingFields.phone.enabled) {      height += 64; }
+    if (config.bookingFields.voip.enabled) {       height += 64; }
+    if (config.bookingFields.location.enabled) {   height += 64; }
+    if (!config.localization.showTimezoneHelper) { height += 33; }
 
     return {
       height: height,
@@ -258,6 +317,14 @@ function TimekitBooking() {
 
   // Render the supplied calendar events in FullCalendar
   var renderCalendarEvents = function(eventData) {
+
+    var firstEventStart = moment(eventData[0].start)
+    var firstEventEnd = moment(eventData[0].end)
+    var firstEventDuration = firstEventEnd.diff(firstEventStart, 'minutes')
+
+    if (firstEventDuration <= 90) {
+      calendarTarget.fullCalendar('option', 'slotDuration', '00:15:00')
+    }
 
     calendarTarget.fullCalendar('addEventSource', {
       events: eventData
@@ -321,15 +388,17 @@ function TimekitBooking() {
       formFields: fieldsTemplate
     }));
 
+    var form = bookingPageTarget.children('.bookingjs-form');
+
     bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
       e.preventDefault();
       hideBookingPage();
+      var bookingHasBeenCreated = $(form).hasClass('success');
+      if (bookingHasBeenCreated) getAvailability();
     });
 
-    var form = bookingPageTarget.children('.bookingjs-form');
-
     form.submit(function(e) {
-      submitBookingForm(this, e);
+      submitBookingForm(this, e, eventData);
     });
 
     // Show powered by Timekit message
@@ -366,7 +435,7 @@ function TimekitBooking() {
   };
 
   // Event handler on form submit
-  var submitBookingForm = function(form, e) {
+  var submitBookingForm = function(form, e, eventData) {
 
     e.preventDefault();
 
@@ -392,7 +461,7 @@ function TimekitBooking() {
     utils.doCallback('submitBookingForm', config, values);
 
     // Call create event endpoint
-    timekitCreateBooking(values).then(function(response){
+    timekitCreateBooking(values, eventData).then(function(response){
 
       utils.doCallback('createBookingSuccessful', config, response);
 
@@ -403,24 +472,30 @@ function TimekitBooking() {
 
       utils.doCallback('createBookingFailed', config, response);
 
-      var submitButton = formElement.find('.bookingjs-form-button');
-      submitButton.addClass('button-shake');
-      setTimeout(function() {
-        submitButton.removeClass('button-shake');
-      }, 500);
-
-      formElement.removeClass('loading').addClass('error');
-      setTimeout(function() {
-        formElement.removeClass('error');
-      }, 2000);
+      showBookingFailed(formElement)
 
       utils.logError('An error with Timekit createBooking occured, context: ' + response);
     });
 
   };
 
+  var showBookingFailed = function (formElement) {
+
+    var submitButton = formElement.find('.bookingjs-form-button');
+    submitButton.addClass('button-shake');
+    setTimeout(function() {
+      submitButton.removeClass('button-shake');
+    }, 500);
+
+    formElement.removeClass('loading').addClass('error');
+    setTimeout(function() {
+      formElement.removeClass('error');
+    }, 2000);
+
+  }
+
   // Create new booking
-  var timekitCreateBooking = function(data) {
+  var timekitCreateBooking = function(data, eventData) {
 
     var args = {
       event: {
@@ -439,6 +514,9 @@ function TimekitBooking() {
       }
     };
 
+    // if a remote widget (has ID) is used, pass that reference when creating booking
+    if (config.widgetId) args.widget_id = config.widgetId
+
     if (config.bookingFields.location.enabled) { args.event.where = data.location; }
     if (config.bookingFields.comment.enabled) {
       args.event.description += config.bookingFields.comment.placeholder + ': ' + data.comment + '\n';
@@ -453,6 +531,11 @@ function TimekitBooking() {
     }
 
     $.extend(true, args, config.timekitCreateBooking);
+
+    if (config.bookingGraph === 'group_customer' || config.bookingGraph === 'group_customer_payment') {
+      delete args.event
+      args.related = { owner_booking_id: eventData.booking.id }
+    }
 
     utils.doCallback('createBookingStarted', config, args);
 
@@ -472,8 +555,8 @@ function TimekitBooking() {
 
     var campaignName = 'widget'
     var campaignSource = window.location.hostname.replace(/\./g, '-')
-    if (config.widgetSlug) { campaignName = 'hosted-widget'; }
     if (config.widgetId) { campaignName = 'embedded-widget'; }
+    if (config.widgetSlug) { campaignName = 'hosted-widget'; }
 
     var template = require('./templates/poweredby.html');
     var timekitLogo = require('!svg-inline!./assets/timekit-logo.svg');
@@ -505,25 +588,25 @@ function TimekitBooking() {
 
     // Apply timeDateFormat presets
     var presetsConfig = {};
-    if(newConfig.localization.timeDateFormat === '24h-dmy-mon') {
-      presetsConfig = defaultConfig.presets.timeDateFormat24hdmymon;
-    } else if(newConfig.localization.timeDateFormat === '12h-mdy-sun') {
-      presetsConfig = defaultConfig.presets.timeDateFormat12hmdysun;
-    }
+    var timeDateFormatPreset = defaultConfig.presets.timeDateFormat[newConfig.localization.timeDateFormat];
+    if(timeDateFormatPreset) presetsConfig = timeDateFormatPreset;
     var finalConfig = $.extend(true, {}, presetsConfig, newConfig);
 
     // Apply bookingGraph presets
     presetsConfig = {};
-    if(newConfig.bookingGraph === 'instant') {
-      presetsConfig = defaultConfig.presets.bookingInstant;
-    } else if(newConfig.bookingGraph === 'confirm_decline') {
-      presetsConfig = defaultConfig.presets.bookingConfirmDecline;
-    }
+    var bookingGraphPreset = defaultConfig.presets.bookingGraph[newConfig.bookingGraph];
+    if(bookingGraphPreset) presetsConfig = bookingGraphPreset;
     finalConfig = $.extend(true, {}, presetsConfig, finalConfig);
 
     // Check for required settings
-    if(!finalConfig.email || !finalConfig.apiToken || !finalConfig.calendar) {
-      utils.logError('A required config setting was missing ("email", "apiToken" or "calendar")');
+    if (!finalConfig.email) {
+      utils.logError('A required config setting ("email") was missing');
+    }
+    if (!finalConfig.apiToken) {
+      utils.logError('A required config setting ("apiToken") was missing');
+    }
+    if (!finalConfig.calendar && finalConfig.bookingGraph !== 'group_customer' && finalConfig.bookingGraph !== 'group_customer_payment') {
+      utils.logError('A required config setting ("calendar") was missing');
     }
 
     // Set new config to instance config
@@ -557,7 +640,7 @@ function TimekitBooking() {
     initializeCalendar();
 
     // Get availability through Timekit SDK
-    timekitFindTime();
+    getAvailability();
 
     // Show timezone helper if enabled
     if (config.localization.showTimezoneHelper) {
@@ -591,7 +674,11 @@ function TimekitBooking() {
     // Load remote config
     return loadRemoteConfig(suppliedConfig)
     .then(function (response) {
-      var mergedConfig = $.extend(true, {}, response.data.config, suppliedConfig);
+      // save widget ID from remote to reference it when creating bookings
+      var remoteConfig = response.data.config
+      if (response.data.id) remoteConfig.widgetId = response.data.id
+      // merge with supplied config for overwriting settings
+      var mergedConfig = $.extend(true, {}, remoteConfig, suppliedConfig);
       start(mergedConfig)
     })
 

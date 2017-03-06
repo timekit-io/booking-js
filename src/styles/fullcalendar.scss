@@ -159,6 +159,11 @@ $primaryDarkColor: darken($primaryColor, 10%);
   .fc-time {
     font-weight: 600;
   }
+
+  .fc-title {
+    padding: 0 5px 5px;
+    font-weight: bold;
+  }
 }
 
 .fc-time-grid .fc-slats {
@@ -193,6 +198,11 @@ $primaryDarkColor: darken($primaryColor, 10%);
   .fc-time {
     font-size: 1.1em;
     padding: 5px;
+  }
+
+  .fc-title {
+    padding: 0 5px 5px;
+    font-weight: bold;
   }
 }
 

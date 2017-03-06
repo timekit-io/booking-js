@@ -138,6 +138,36 @@ var bookingConfirmDecline = {
 
 };
 
+// Preset: bookingGraph = 'group_customer'
+var bookingGroupCustomer = {
+
+  timekitCreateBooking: {
+    graph: 'group_customer',
+    action: 'create',
+  },
+  localization: {
+    strings: {
+      successMessageBody: "Your seat has been reserved and we've sent you a confirmation by email. <br /><br />Have a great day!"
+    }
+  }
+
+};
+
+// Preset: bookingGraph = 'group_customer_payment'
+var bookingGroupCustomerPayment = {
+
+  timekitCreateBooking: {
+    graph: 'group_customer_payment',
+    action: 'create',
+  },
+  localization: {
+    strings: {
+      successMessageBody: "We have received your payment and reserved a seat for you.<br /><br />Have a great day!"
+    }
+  }
+
+};
+
 // Preset: timeDateFormat = '24h-dmy-mon'
 var timeDateFormat24hdmymon = {
 
@@ -174,7 +204,7 @@ var timeDateFormat12hmdysun = {
       },
       agenda: {
         columnFormat: 'ddd\n M/D',
-        slotLabelFormat: 'ha'
+        slotLabelFormat: 'h:mma'
       }
     },
   },
@@ -190,9 +220,15 @@ var timeDateFormat12hmdysun = {
 module.exports = {
   primary: primary,
   presets: {
-    timeDateFormat24hdmymon:  timeDateFormat24hdmymon,
-    timeDateFormat12hmdysun:  timeDateFormat12hmdysun,
-    bookingInstant: bookingInstant,
-    bookingConfirmDecline: bookingConfirmDecline
+    timeDateFormat: {
+      '24h-dmy-mon': timeDateFormat24hdmymon,
+      '12h-mdy-sun': timeDateFormat12hmdysun
+    },
+    bookingGraph: {
+      'instant': bookingInstant,
+      'confirm_decline': bookingConfirmDecline,
+      'group_customer': bookingGroupCustomer,
+      'group_customer_payment': bookingGroupCustomerPayment
+    }
   }
 };

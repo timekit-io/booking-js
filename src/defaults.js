@@ -147,7 +147,7 @@ var bookingGroupCustomer = {
   },
   localization: {
     strings: {
-      successMessageBody: "Your seat has been reserved and we've send you a confirmation by email. <br /><br />Have a great day!"
+      successMessageBody: "Your seat has been reserved and we've sent you a confirmation by email. <br /><br />Have a great day!"
     }
   }
 

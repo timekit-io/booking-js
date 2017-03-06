@@ -118,7 +118,7 @@ describe('Basic interaction', function() {
 
       setTimeout(function() {
 
-        var inputs = interact.fillSubmit();
+        interact.fillSubmit();
 
         expect($('.bookingjs-form').hasClass('loading')).toBe(true);
 
@@ -147,7 +147,7 @@ describe('Basic interaction', function() {
 
       setTimeout(function() {
 
-        var inputs = interact.fillSubmit();
+        interact.fillSubmit();
 
         setTimeout(function() {
 

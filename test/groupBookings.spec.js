@@ -33,7 +33,7 @@ describe('Group bookings', function() {
 
       setTimeout(function() {
 
-        var inputs = interact.fillSubmit();
+        interact.fillSubmit();
 
         expect($('.bookingjs-form').hasClass('loading')).toBe(true);
 

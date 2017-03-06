@@ -78,7 +78,7 @@ describe('Advanced configuration', function() {
 
   });
 
-  fit('should be able to load even though no timeslots are available', function(done) {
+  it('should be able to load even though no timeslots are available', function(done) {
 
     mockAjax.findTimeWithNoTimeslots();
 

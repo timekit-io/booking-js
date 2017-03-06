@@ -114,10 +114,7 @@ function TimekitBooking() {
       utils.doCallback('findTimeTeamSuccessful', config, response);
 
       // Render available timeslots in FullCalendar
-      renderCalendarEvents(response.data);
-
-      // Go to first event if enabled
-      if(config.goToFirstEvent && response.data.length > 0) goToFirstEvent(response.data[0].start);
+      if(response.data.length > 0) renderCalendarEvents(response.data);
 
     }).catch(function(response){
       utils.doCallback('findTimeTeamFailed', config, response);
@@ -563,9 +560,24 @@ function TimekitBooking() {
 
     $.extend(true, args, config.timekitCreateBooking);
 
+    // Handle group booking specifics
     if (config.bookingGraph === 'group_customer' || config.bookingGraph === 'group_customer_payment') {
       delete args.event
       args.related = { owner_booking_id: eventData.booking.id }
+    }
+
+    // Handle team availability specifics
+    if (eventData.users) {
+      var designatedUser = eventData.users[0]
+      var teamUser = $.grep(config.timekitFindTimeTeam, function(index, user) {
+        return designatedUser.email === user._email
+      })
+      if (teamUser.length < 1 || !teamUser[0]._calendar) {
+        utils.logError('Encountered an error when picking designated team user to receive booking');
+      } else {
+        timekit.asUser(designatedUser.email, designatedUser.token)
+        args.event.calendar_id = teamUser[0]._calendar
+      }
     }
 
     utils.doCallback('createBookingStarted', config, args);

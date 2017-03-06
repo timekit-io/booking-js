@@ -98,6 +98,37 @@ function TimekitBooking() {
 
   };
 
+  // Fetch availabile team time through Timekit SDK
+  var timekitFindTimeTeam = function() {
+
+    var requestData = {
+      url: '/findtime/team',
+      method: 'post',
+      data: config.timekitFindTimeTeam
+    }
+
+    $.extend(requestData, config.timekitFindTimeTeam);
+
+    utils.doCallback('findTimeTeamStarted', config, requestData);
+
+    timekit.makeRequest(requestData)
+    .then(function(response){
+
+      utils.doCallback('findTimeTeamSuccessful', config, response);
+
+      // Render available timeslots in FullCalendar
+      renderCalendarEvents(response.data);
+
+      // Go to first event if enabled
+      if(config.goToFirstEvent && response.data.length > 0) goToFirstEvent(response.data[0].start);
+
+    }).catch(function(response){
+      utils.doCallback('findTimeTeamFailed', config, response);
+      utils.logError('An error with Timekit FindTimeTeam occured, context: ' + response);
+    });
+
+  };
+
   // Fetch availabile time through Timekit SDK
   var timekitGetBookingSlots = function() {
 
@@ -149,6 +180,9 @@ function TimekitBooking() {
     if (config.bookingGraph === 'group_customer' || config.bookingGraph === 'group_customer_payment') {
       // If in group bookings mode, fetch slots
       timekitGetBookingSlots();
+    } else if (config.timekitFindTimeTeam) {
+      // If in team availability mode, call findtime team
+      timekitFindTimeTeam();
     } else {
       // If in normal single-participant mode, call findtime
       timekitFindTime();

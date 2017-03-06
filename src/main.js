@@ -86,10 +86,7 @@ function TimekitBooking() {
       utils.doCallback('findTimeSuccessful', config, response);
 
       // Render available timeslots in FullCalendar
-      renderCalendarEvents(response.data);
-
-      // Go to first event if enabled
-      if(config.goToFirstEvent && response.data.length > 0) goToFirstEvent(response.data[0].start);
+      if(response.data.length > 0) renderCalendarEvents(response.data);
 
     }).catch(function(response){
       utils.doCallback('findTimeFailed', config, response);
@@ -129,10 +126,7 @@ function TimekitBooking() {
       utils.doCallback('getBookingSlotsSuccessful', config, response);
 
       // Render available timeslots in FullCalendar
-      renderCalendarEvents(slots);
-
-      // Go to first event if enabled
-      if(config.goToFirstEvent && response.data.length > 0) goToFirstEvent(response.data[0].attributes.event_info.start);
+      if(slots.length > 0) renderCalendarEvents(slots);
 
     }).catch(function(response){
       utils.doCallback('getBookingSlotsFailed', config, response);
@@ -331,6 +325,9 @@ function TimekitBooking() {
     });
 
     calendarTarget.removeClass('empty-calendar');
+
+    // Go to first event if enabled
+    if (config.goToFirstEvent) goToFirstEvent(eventData[0].start);
 
   };
 

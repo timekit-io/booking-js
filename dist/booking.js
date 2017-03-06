@@ -58,7 +58,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	/*!
 	 * Booking.js
-	 * Version: 1.9.3
+	 * Version: 1.10.0
 	 * http://timekit.io
 	 *
 	 * Copyright 2015 Timekit, Inc.
@@ -22813,7 +22813,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	  localization: {
 	    strings: {
-	      successMessageBody: "You have reserved a seat at the booking. Check your email for further instructions. <br /><br />Have a great day!"
+	      successMessageBody: "Your seat has been reserved and we've sent you a confirmation by email. <br /><br />Have a great day!"
 	    }
 	  }
 	

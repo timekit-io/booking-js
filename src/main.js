@@ -664,7 +664,7 @@ function TimekitBooking() {
   var init = function(suppliedConfig) {
 
     // Start from local config
-    if (!suppliedConfig.widgetId && !suppliedConfig.widgetSlug) {
+    if ((!suppliedConfig.widgetId && !suppliedConfig.widgetSlug) || suppliedConfig.disableRemoteLoad) {
       return start(suppliedConfig)
     }
 

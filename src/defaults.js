@@ -10,6 +10,7 @@ var primary = {
   name: '',
   avatar: '',
   autoload: true,
+  disableRemoteLoad: false,
   includeStyles: true,
   showCredits: true,
   goToFirstEvent: true,

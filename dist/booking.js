@@ -142,10 +142,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      utils.doCallback('findTimeSuccessful', config, response);
 	
 	      // Render available timeslots in FullCalendar
-	      renderCalendarEvents(response.data);
-	
-	      // Go to first event if enabled
-	      if(config.goToFirstEvent && response.data.length > 0) goToFirstEvent(response.data[0].start);
+	      if(response.data.length > 0) renderCalendarEvents(response.data);
 	
 	    }).catch(function(response){
 	      utils.doCallback('findTimeFailed', config, response);
@@ -185,10 +182,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      utils.doCallback('getBookingSlotsSuccessful', config, response);
 	
 	      // Render available timeslots in FullCalendar
-	      renderCalendarEvents(slots);
-	
-	      // Go to first event if enabled
-	      if(config.goToFirstEvent && response.data.length > 0) goToFirstEvent(response.data[0].attributes.event_info.start);
+	      if(slots.length > 0) renderCalendarEvents(slots);
 	
 	    }).catch(function(response){
 	      utils.doCallback('getBookingSlotsFailed', config, response);
@@ -387,6 +381,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    });
 	
 	    calendarTarget.removeClass('empty-calendar');
+	
+	    // Go to first event if enabled
+	    if (config.goToFirstEvent) goToFirstEvent(eventData[0].start);
 	
 	  };
 	
@@ -723,7 +720,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var init = function(suppliedConfig) {
 	
 	    // Start from local config
-	    if (!suppliedConfig.widgetId && !suppliedConfig.widgetSlug) {
+	    if ((!suppliedConfig.widgetId && !suppliedConfig.widgetSlug) || suppliedConfig.disableRemoteLoad) {
 	      return start(suppliedConfig)
 	    }
 	
@@ -22676,6 +22673,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  name: '',
 	  avatar: '',
 	  autoload: true,
+	  disableRemoteLoad: false,
 	  includeStyles: true,
 	  showCredits: true,
 	  goToFirstEvent: true,

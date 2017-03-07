@@ -44,6 +44,20 @@ module.exports = {
 
   },
 
+  // Find time endpoint with no results
+  findTimeWithNoTimeslots: function() {
+
+    jasmine.Ajax.stubRequest(
+      'https://api.timekit.io/v2/findtime'
+    ).andReturn({
+      status: 200,
+      statusText: 'HTTP/1.1 200 OK',
+      contentType: 'application/json',
+      responseText: '{"data":[]}'
+    });
+
+  },
+
   // Get user timezone endpoint
   userTimezone: function() {
 

@@ -78,4 +78,21 @@ describe('Advanced configuration', function() {
 
   });
 
+  it('should be able to load even though no timeslots are available', function(done) {
+
+    mockAjax.findTimeWithNoTimeslots();
+
+    createWidget();
+
+    setTimeout(function() {
+
+      var availableTimeslots = $('.fc-time-grid-event')
+      expect(availableTimeslots.length).toBe(0)
+
+      done();
+
+    }, 300);
+
+  });
+
 });

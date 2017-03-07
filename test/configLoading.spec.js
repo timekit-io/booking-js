@@ -86,7 +86,7 @@ describe('Config loading', function() {
     }, 50)
   });
 
-  fit('should be able to load local config with widget ID set by disabling remote load', function(done) {
+  it('should be able to load local config with widget ID set by disabling remote load', function(done) {
 
     var config = {
       widgetId: '12345',

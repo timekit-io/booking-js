@@ -2,7 +2,7 @@
 
 /*!
  * Booking.js
- * Version: 1.10.0
+ * Version: 1.10.1
  * http://timekit.io
  *
  * Copyright 2015 Timekit, Inc.
@@ -710,7 +710,7 @@ function TimekitBooking() {
   var init = function(suppliedConfig) {
 
     // Start from local config
-    if (!suppliedConfig.widgetId && !suppliedConfig.widgetSlug) {
+    if ((!suppliedConfig.widgetId && !suppliedConfig.widgetSlug) || suppliedConfig.disableRemoteLoad) {
       return start(suppliedConfig)
     }
 

@@ -3,6 +3,7 @@
 jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 
 var mockAjax = require('./utils/mockAjax');
+var createWidget = require('./utils/createWidget');
 
 /**
  * Intilialize the library with plain build
@@ -80,6 +81,25 @@ describe('Config loading', function() {
       expect(request.url).toBe('https://api.timekit.io/v2/widgets/embed/12345');
       expect(widget.getConfig().email).toBeDefined();
       expect($('.bookingjs-calendar')).toBeInDOM();
+      done();
+
+    }, 50)
+  });
+
+  it('should be able to load local config with widget ID set by disabling remote load', function(done) {
+
+    var config = {
+      widgetId: '12345',
+      disableRemoteLoad: true
+    }
+    var widget = createWidget(config);
+
+    setTimeout(function() {
+
+      var request = jasmine.Ajax.requests.first();
+
+      expect(request.url).toBe('https://api.timekit.io/v2/findtime');
+      expect(widget.getConfig().widgetId).toBe('12345');
       done();
 
     }, 50)

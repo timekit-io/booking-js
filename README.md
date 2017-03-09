@@ -38,14 +38,14 @@ Bundled together with the library:
 
 ## Module loading
 
-**CDN**  
+#### CDN
 To ensure that we can push out updates, improvements and bugfixes to the library, we recommend that you load the library through our CDN. It's hosted on Amazon Cloudfront so it's snappy enough for production.  
 ```html
 <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 <script type="text/javascript" src="//cdn.timekit.io/booking-js/v1/booking.min.js" defer></script>
 ```
 
-**UMD through NPM**  
+#### UMD through NPM
 The module is published on NPM and can be require'd as a CommonJS, AMD or in a script tag.  
 `npm install timekit-booking`
 ```javascript
@@ -60,7 +60,7 @@ var widget = new TimekitBooking();
 
 ## Usage
 
-**Autoload**  
+#### Autoload
 The simplest and most universally compatible usage is with autoload. This will defer the loading of the library until the whole document has loaded and then look for `window.timekitBookingConfig` - if found, the library is loaded automatically. Note that in single page applications, you should not use this approach (see next section).
 
 ```html
@@ -80,7 +80,7 @@ The simplest and most universally compatible usage is with autoload. This will d
 </div>
 ```
 
-**Instantiation**  
+#### Instantiation
 If you intent to run multiple instances or want more control over initialization order, create a new instance. This is ideal for usage in single page applications like Angular.js, where you'd injecting `<div id="bookingjs">` async in your template and control it through JS in your controller/directive/component code.
 
 ```html

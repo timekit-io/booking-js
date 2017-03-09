@@ -104,7 +104,9 @@ function TimekitBooking() {
       data: config.timekitFindTimeTeam
     }
 
-    $.extend(requestData, config.timekitFindTimeTeam);
+    $.each(config.timekitFindTimeTeam, function (index, item) {
+      $.extend(item, config.timekitFindTime);
+    })
 
     utils.doCallback('findTimeTeamStarted', config, requestData);
 

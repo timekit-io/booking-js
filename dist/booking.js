@@ -160,7 +160,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	      data: config.timekitFindTimeTeam
 	    }
 	
-	    $.extend(requestData, config.timekitFindTimeTeam);
+	    $.each(config.timekitFindTimeTeam, function (index, item) {
+	      $.extend(item, config.timekitFindTime);
+	    })
+	
+	    console.log(config.timekitFindTimeTeam)
 	
 	    utils.doCallback('findTimeTeamStarted', config, requestData);
 	
@@ -22724,10 +22728,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  showCredits: true,
 	  goToFirstEvent: true,
 	  bookingGraph: 'instant',
-	  possibleLengths: {
-	    'Normal': '1 hour',
-	    'Long': '2 hour'
-	  },
 	  bookingFields: {
 	    name: {
 	      placeholder: 'Full name',

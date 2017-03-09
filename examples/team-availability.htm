@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="UTF-8">
+  <title>Booking.js single instance example</title>
+  <style type="text/css">
+    body { background-color: #E6E6E6; max-width: 700px; margin: 0 auto; }
+  </style>
+ </head>
+ <body>
+
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <script type="text/javascript" src="../dist/booking.js"></script>
+  <div id="bookingjs">
+    <script type="text/javascript">
+      TimekitBooking().init({
+        name:     'Doc Brown',
+        email:    'marty.mcfly@timekit.io',
+        apiToken: 'XT1JO879JF1qUXXzmETD5ucgxaDwsFsd',
+        calendar: '22f86f0c-ee80-470c-95e8-dadd9d05edd2',
+        avatar:   '../misc/avatar-doc.jpg',
+        timekitConfig: {
+          app: 'bookingjs-demo'
+        },
+        timekitFindTimeTeam: [
+          {
+            calendar_ids: ['22f86f0c-ee80-470c-95e8-dadd9d05edd2'] // Marty McFly
+          },
+          {
+            calendar_ids: ['628228b4-04c8-4599-a9d5-29a03797187f'] // Doc Brown
+          }
+        ]
+      });
+    </script>
+  </div>
+
+</body>
+</html>

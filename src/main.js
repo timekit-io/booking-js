@@ -577,7 +577,7 @@ function TimekitBooking() {
       if (teamUser.length < 1 || !teamUser[0]._calendar) {
         utils.logError('Encountered an error when picking designated team user to receive booking');
       } else {
-        timekit.asUser(designatedUser.email, designatedUser.token)
+        timekit = timekit.asUser(designatedUser.email, designatedUser.token)
         args.event.calendar_id = teamUser[0]._calendar
       }
     }

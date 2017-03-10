@@ -571,7 +571,7 @@ function TimekitBooking() {
     // Handle team availability specifics
     if (eventData.users) {
       var designatedUser = eventData.users[0]
-      var teamUser = $.grep(config.timekitFindTimeTeam, function(index, user) {
+      var teamUser = $.grep(config.timekitFindTimeTeam, function(user) {
         return designatedUser.email === user._email
       })
       if (teamUser.length < 1 || !teamUser[0]._calendar) {

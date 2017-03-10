@@ -600,9 +600,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    };
 	
-	    // if a remote widget (has ID) is used, pass that reference when creating booking
-	    if (config.widgetId) args.widget_id = config.widgetId
-	
 	    if (config.bookingFields.location.enabled) { args.event.where = data.location; }
 	    if (config.bookingFields.comment.enabled) {
 	      args.event.description += config.bookingFields.comment.placeholder + ': ' + data.comment + '\n';
@@ -630,9 +627,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var teamUser = $.grep(config.timekitFindTimeTeam, function(user) {
 	        return designatedUser.email === user._email
 	      })
-	      console.log('teamUser', teamUser)
-	      console.log('designatedUser', designatedUser)
-	      console.log('config.timekitFindTimeTeam', config.timekitFindTimeTeam)
 	      if (teamUser.length < 1 || !teamUser[0]._calendar) {
 	        utils.logError('Encountered an error when picking designated team user to receive booking');
 	      } else {
@@ -640,6 +634,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        args.event.calendar_id = teamUser[0]._calendar
 	      }
 	    }
+	
+	    // if a remote widget (has ID) is used, pass that reference when creating booking
+	    // TODO had to be disabled for team availability because not all members own the widget
+	    if (!eventData.users && config.widgetId) args.widget_id = config.widgetId
 	
 	    utils.doCallback('createBookingStarted', config, args);
 	

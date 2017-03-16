@@ -31,7 +31,7 @@ module.exports = {
     plugins: [
         new webpack.ContextReplacementPlugin(/moment[\/\\]locale$/, /en-gb/),
         new webpack.DefinePlugin({
-          'libraryVersion': JSON.stringify(packageJson.version)
+          VERSION: JSON.stringify(packageJson.version)
         })
     ]
 };

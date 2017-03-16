@@ -671,7 +671,7 @@ function TimekitBooking() {
   // Get library version
   var getVersion = function() {
 
-    return libraryVersion;
+    return VERSION;
 
   };
 

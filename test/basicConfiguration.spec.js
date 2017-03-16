@@ -84,4 +84,17 @@ describe('Basic configuration', function() {
 
   });
 
+  it('should be able expose current library version', function(done) {
+
+    var widget = createWidget();
+
+    var widgetVersion = widget.getVersion()
+
+    expect(widgetVersion).toBeDefined()
+    expect(typeof widgetVersion.charAt(1)).toBe('string')
+
+    done()
+
+  });
+
 });

@@ -2,7 +2,6 @@
 
 /*!
  * Booking.js
- * Version: 1.10.1
  * http://timekit.io
  *
  * Copyright 2015 Timekit, Inc.
@@ -669,6 +668,13 @@ function TimekitBooking() {
 
   };
 
+  // Get library version
+  var getVersion = function() {
+
+    return libraryVersion;
+
+  };
+
   // Render method
   var render = function() {
 
@@ -782,6 +788,7 @@ function TimekitBooking() {
   return {
     setConfig:    setConfig,
     getConfig:    getConfig,
+    getVersion:   getVersion,
     render:       render,
     init:         init,
     destroy:      destroy,

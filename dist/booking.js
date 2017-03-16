@@ -58,7 +58,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	/*!
 	 * Booking.js
-	 * Version: 1.10.1
 	 * http://timekit.io
 	 *
 	 * Copyright 2015 Timekit, Inc.
@@ -725,6 +724,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  };
 	
+	  // Get library version
+	  var getVersion = function() {
+	
+	    return ("1.10.1");
+	
+	  };
+	
 	  // Render method
 	  var render = function() {
 	
@@ -838,6 +844,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return {
 	    setConfig:    setConfig,
 	    getConfig:    getConfig,
+	    getVersion:   getVersion,
 	    render:       render,
 	    init:         init,
 	    destroy:      destroy,

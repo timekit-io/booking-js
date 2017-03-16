@@ -478,6 +478,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (bookingHasBeenCreated) getAvailability();
 	    });
 	
+	    if (eventData.users) {
+	      utils.logDebug(['Available users for chosen timeslot:', eventData.users], config);
+	    }
+	
 	    form.submit(function(e) {
 	      submitBookingForm(this, e, eventData);
 	    });
@@ -629,6 +633,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        timekit = timekit.asUser(designatedUser.email, designatedUser.token)
 	        args.event.calendar_id = teamUser[0]._calendar
 	      }
+	      utils.logDebug(['Creating booking for user:', designatedUser], config);
 	    }
 	
 	    // if a remote widget (has ID) is used, pass that reference when creating booking
@@ -22672,14 +22677,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (deprecated) { this.logDeprecated(hook + ' callback has been replaced, please see docs'); }
 	      config.callbacks[hook](arg);
 	    }
+	    this.logDebug(['Trigger callback "' + hook + '" with arguments:', arg], config);
+	  },
+	
+	  logDebug: function(message, config) {
+	    if (config.debug) console.log('TimekitBooking Debug: ', message);
 	  },
 	
 	  logError: function(message) {
-	    console.error('TimekitBooking Error: ' + message);
+	    console.error('TimekitBooking Error: ', message);
 	  },
 	
 	  logDeprecated: function(message) {
-	    console.warn('TimekitBooking Deprecated: ' + message);
+	    console.warn('TimekitBooking Deprecated: ', message);
 	  }
 	
 	};
@@ -22731,6 +22741,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  showCredits: true,
 	  goToFirstEvent: true,
 	  bookingGraph: 'instant',
+	  debug: false,
 	  bookingFields: {
 	    name: {
 	      placeholder: 'Full name',

@@ -103,10 +103,6 @@ function TimekitBooking() {
       data: config.timekitFindTimeTeam
     }
 
-    $.each(config.timekitFindTimeTeam, function (index, item) {
-      $.extend(item, config.timekitFindTime);
-    })
-
     utils.doCallback('findTimeTeamStarted', config, requestData);
 
     timekit.makeRequest(requestData)
@@ -567,11 +563,12 @@ function TimekitBooking() {
     // Handle team availability specifics
     if (eventData.users) {
       var designatedUser = eventData.users[0]
-      var teamUser = $.grep(config.timekitFindTimeTeam, function(user) {
+      var teamUser = $.grep(config.timekitFindTimeTeam.users, function(user) {
         return designatedUser.email === user._email
       })
       if (teamUser.length < 1 || !teamUser[0]._calendar) {
         utils.logError('Encountered an error when picking designated team user to receive booking');
+        return
       } else {
         timekit = timekit.asUser(designatedUser.email, designatedUser.token)
         args.event.calendar_id = teamUser[0]._calendar

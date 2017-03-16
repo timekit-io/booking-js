@@ -422,6 +422,10 @@ function TimekitBooking() {
       if (bookingHasBeenCreated) getAvailability();
     });
 
+    if (eventData.users) {
+      utils.logDebug(['Available users for chosen timeslot:', eventData.users], config);
+    }
+
     form.submit(function(e) {
       submitBookingForm(this, e, eventData);
     });
@@ -573,6 +577,7 @@ function TimekitBooking() {
         timekit = timekit.asUser(designatedUser.email, designatedUser.token)
         args.event.calendar_id = teamUser[0]._calendar
       }
+      utils.logDebug(['Creating booking for user:', designatedUser], config);
     }
 
     // if a remote widget (has ID) is used, pass that reference when creating booking

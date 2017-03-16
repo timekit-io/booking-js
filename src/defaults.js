@@ -15,6 +15,7 @@ var primary = {
   showCredits: true,
   goToFirstEvent: true,
   bookingGraph: 'instant',
+  debug: false,
   bookingFields: {
     name: {
       placeholder: 'Full name',

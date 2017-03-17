@@ -103,6 +103,14 @@ function TimekitBooking() {
       data: config.timekitFindTimeTeam
     }
 
+    $.each(config.timekitFindTimeTeam.users, function (index, item) {
+      $.extend(item, config.timekitFindTime);
+      // Only add email to findtime if no calendars are explicitly specified
+      if (!item.calendar_ids && !item.user_ids) {
+        item.emails = [item._email];
+      }
+    })
+
     utils.doCallback('findTimeTeamStarted', config, requestData);
 
     timekit.makeRequest(requestData)

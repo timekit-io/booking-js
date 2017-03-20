@@ -2,7 +2,6 @@
 
 /*!
  * Booking.js
- * Version: 1.10.1
  * http://timekit.io
  *
  * Copyright 2015 Timekit, Inc.
@@ -95,6 +94,40 @@ function TimekitBooking() {
 
   };
 
+  // Fetch availabile team time through Timekit SDK
+  var timekitFindTimeTeam = function() {
+
+    var requestData = {
+      url: '/findtime/team',
+      method: 'post',
+      data: config.timekitFindTimeTeam
+    }
+
+    $.each(config.timekitFindTimeTeam.users, function (index, item) {
+      $.extend(item, config.timekitFindTime);
+      // Only add email to findtime if no calendars are explicitly specified
+      if (!item.calendar_ids && !item.user_ids) {
+        item.emails = [item._email];
+      }
+    })
+
+    utils.doCallback('findTimeTeamStarted', config, requestData);
+
+    timekit.makeRequest(requestData)
+    .then(function(response){
+
+      utils.doCallback('findTimeTeamSuccessful', config, response);
+
+      // Render available timeslots in FullCalendar
+      if(response.data.length > 0) renderCalendarEvents(response.data);
+
+    }).catch(function(response){
+      utils.doCallback('findTimeTeamFailed', config, response);
+      utils.logError('An error with Timekit FindTimeTeam occured, context: ' + response);
+    });
+
+  };
+
   // Fetch availabile time through Timekit SDK
   var timekitGetBookingSlots = function() {
 
@@ -143,6 +176,9 @@ function TimekitBooking() {
     if (config.bookingGraph === 'group_customer' || config.bookingGraph === 'group_customer_payment') {
       // If in group bookings mode, fetch slots
       timekitGetBookingSlots();
+    } else if (config.timekitFindTimeTeam) {
+      // If in team availability mode, call findtime team
+      timekitFindTimeTeam();
     } else {
       // If in normal single-participant mode, call findtime
       timekitFindTime();
@@ -394,6 +430,10 @@ function TimekitBooking() {
       if (bookingHasBeenCreated) getAvailability();
     });
 
+    if (eventData.users) {
+      utils.logDebug(['Available users for chosen timeslot:', eventData.users], config);
+    }
+
     form.submit(function(e) {
       submitBookingForm(this, e, eventData);
     });
@@ -511,9 +551,6 @@ function TimekitBooking() {
       }
     };
 
-    // if a remote widget (has ID) is used, pass that reference when creating booking
-    if (config.widgetId) args.widget_id = config.widgetId
-
     if (config.bookingFields.location.enabled) { args.event.where = data.location; }
     if (config.bookingFields.comment.enabled) {
       args.event.description += config.bookingFields.comment.placeholder + ': ' + data.comment + '\n';
@@ -529,10 +566,31 @@ function TimekitBooking() {
 
     $.extend(true, args, config.timekitCreateBooking);
 
+    // Handle group booking specifics
     if (config.bookingGraph === 'group_customer' || config.bookingGraph === 'group_customer_payment') {
       delete args.event
       args.related = { owner_booking_id: eventData.booking.id }
     }
+
+    // Handle team availability specifics
+    if (eventData.users) {
+      var designatedUser = eventData.users[0]
+      var teamUser = $.grep(config.timekitFindTimeTeam.users, function(user) {
+        return designatedUser.email === user._email
+      })
+      if (teamUser.length < 1 || !teamUser[0]._calendar) {
+        utils.logError('Encountered an error when picking designated team user to receive booking');
+        return
+      } else {
+        timekit = timekit.asUser(designatedUser.email, designatedUser.token)
+        args.event.calendar_id = teamUser[0]._calendar
+      }
+      utils.logDebug(['Creating booking for user:', designatedUser], config);
+    }
+
+    // if a remote widget (has ID) is used, pass that reference when creating booking
+    // TODO had to be disabled for team availability because not all members own the widget
+    if (!eventData.users && config.widgetId) args.widget_id = config.widgetId
 
     utils.doCallback('createBookingStarted', config, args);
 
@@ -602,7 +660,7 @@ function TimekitBooking() {
     if (!finalConfig.apiToken) {
       utils.logError('A required config setting ("apiToken") was missing');
     }
-    if (!finalConfig.calendar && finalConfig.bookingGraph !== 'group_customer' && finalConfig.bookingGraph !== 'group_customer_payment') {
+    if (!finalConfig.calendar && finalConfig.bookingGraph !== 'group_customer' && finalConfig.bookingGraph !== 'group_customer_payment' && !finalConfig.timekitFindTimeTeam) {
       utils.logError('A required config setting ("calendar") was missing');
     }
 
@@ -617,6 +675,13 @@ function TimekitBooking() {
   var getConfig = function() {
 
     return config;
+
+  };
+
+  // Get library version
+  var getVersion = function() {
+
+    return VERSION;
 
   };
 
@@ -733,6 +798,7 @@ function TimekitBooking() {
   return {
     setConfig:    setConfig,
     getConfig:    getConfig,
+    getVersion:   getVersion,
     render:       render,
     init:         init,
     destroy:      destroy,

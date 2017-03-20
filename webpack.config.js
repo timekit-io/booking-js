@@ -1,6 +1,7 @@
 'use strict';
 
 var webpack = require('webpack');
+var packageJson = require('./package.json')
 
 module.exports = {
     entry: './src/main.js',
@@ -28,6 +29,9 @@ module.exports = {
         ]
     },
     plugins: [
-        new webpack.ContextReplacementPlugin(/moment[\/\\]locale$/, /en-gb/)
+        new webpack.ContextReplacementPlugin(/moment[\/\\]locale$/, /en-gb/),
+        new webpack.DefinePlugin({
+          VERSION: JSON.stringify(packageJson.version)
+        })
     ]
 };

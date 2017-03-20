@@ -3,13 +3,14 @@
 jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 
 var createWidget = require('./utils/createWidget');
+var teamAvailabilityConfig = require('./utils/teamAvailabilityConfig');
 var mockAjax = require('./utils/mockAjax');
 var interact = require('./utils/commonInteractions');
 
 /**
  * Basic interaction of the library
  */
-describe('Group bookings', function() {
+describe('Team availability', function() {
 
   beforeEach(function(){
     loadFixtures('main.html');
@@ -21,11 +22,9 @@ describe('Group bookings', function() {
     jasmine.Ajax.uninstall();
   });
 
-  it('should be able to book a seat', function(done) {
+  it('should be able to book a timeslot', function(done) {
 
-    createWidget({
-      bookingGraph: 'group_customer'
-    });
+    createWidget(teamAvailabilityConfig);
 
     setTimeout(function() {
 
@@ -43,7 +42,7 @@ describe('Group bookings', function() {
           expect($('.bookingjs-form-success-message')).toBeVisible();
 
           var successMessage = $('.bookingjs-form-success-message').html();
-          var contains = successMessage.indexOf('Your seat has been reserved') > -1;
+          var contains = successMessage.indexOf('An invitation has been sent to') > -1;
           expect(contains).toBe(true);
 
           done();

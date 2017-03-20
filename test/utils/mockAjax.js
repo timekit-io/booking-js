@@ -58,6 +58,27 @@ module.exports = {
 
   },
 
+  // Find time team endpoint with results in near future
+  findTimeTeam: function() {
+
+    var today = moment();
+    var tomorrow = moment().add(1, 'day');
+
+    jasmine.Ajax.stubRequest(
+      'https://api.timekit.io/v2/findtime/team'
+    ).andReturn({
+      status: 200,
+      statusText: 'HTTP/1.1 200 OK',
+      contentType: 'application/json',
+      responseText: '{"data":[' +
+        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '","users": [ { "email": "marty.mcfly@timekit.io", "user_id": "bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2", "calendar_ids": [ "22f86f0c-ee80-470c-95e8-dadd9d05edd2" ], "token": "nvHfRSlhvsnlg4rS7Wt28Ty47qdgegwSu3YK7hPW" }, { "email": "doc.brown@timekit.io", "user_id": "gxa0b9fa-36aa-4ae6-8096-f3b20fbed1d2", "calendar_ids": [ "11d86f0c-ee80-470c-95e8-dadd9d05edd2" ], "token": "dwHfRSlhvsnlg4rS7Wt28Ty47qdgegwSu3YK7hPW" } ]},' +
+        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '","users": [ { "email": "marty.mcfly@timekit.io", "user_id": "bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2", "calendar_ids": [ "22f86f0c-ee80-470c-95e8-dadd9d05edd2" ], "token": "nvHfRSlhvsnlg4rS7Wt28Ty47qdgegwSu3YK7hPW" } ]},' +
+        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '","users": [ { "email": "doc.brown@timekit.io", "user_id": "gxa0b9fa-36aa-4ae6-8096-f3b20fbed1d2", "calendar_ids": [ "11d86f0c-ee80-470c-95e8-dadd9d05edd2" ], "token": "dwHfRSlhvsnlg4rS7Wt28Ty47qdgegwSu3YK7hPW" } ]}' +
+      ']}'
+    });
+
+  },
+
   // Get user timezone endpoint
   userTimezone: function() {
 
@@ -141,6 +162,7 @@ module.exports = {
   all: function() {
 
     this.findTime();
+    this.findTimeTeam();
     this.userTimezone();
     this.createBooking();
     this.getHostedWidget();

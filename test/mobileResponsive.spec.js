@@ -6,6 +6,8 @@ var createWidget = require('./utils/createWidget');
 var mockAjax = require('./utils/mockAjax');
 var interact = require('./utils/commonInteractions');
 
+var browserWidth;
+
 /**
  * Tests for mobile and responsive
  */
@@ -15,11 +17,13 @@ describe('Mobile & responsive', function() {
     loadFixtures('main.html');
     jasmine.Ajax.install();
     mockAjax.all();
+    browserWidth = $('body').width();
     $('body').width(400);
   });
 
   afterEach(function() {
     jasmine.Ajax.uninstall();
+    $('body').width(browserWidth);
   });
 
   it('should be able change day in mobile mode by clicking arrows', function(done) {

@@ -90,7 +90,7 @@ function TimekitBooking() {
 
     }).catch(function(response){
       utils.doCallback('findTimeFailed', config, response);
-      utils.logError('An error with Timekit FindTime occured, context: ' + response);
+      utils.logError('An error with Timekit FindTime occured, context: ', response);
     });
 
   };
@@ -247,7 +247,7 @@ function TimekitBooking() {
 
     }).catch(function(response){
       utils.doCallback('getUserTimezoneFailed', config, response);
-      utils.logError('An error with Timekit getUserTimezone occured, context: ' + response);
+      utils.logError('An error with Timekit getUserTimezone occured, context: ', response);
     });
 
   };
@@ -471,7 +471,7 @@ function TimekitBooking() {
 
       showBookingFailed(formElement)
 
-      utils.logError('An error with Timekit createBooking occured, context: ' + response);
+      utils.logError('An error with Timekit createBooking occured, context: ', response);
     });
 
   };

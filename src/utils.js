@@ -19,12 +19,12 @@ module.exports = {
     }
   },
 
-  logError: function(message) {
-    console.error('TimekitBooking Error: ' + message);
+  logError: function(message, context) {
+    console.error('TimekitBooking Error: ', message, context);
   },
 
   logDeprecated: function(message) {
-    console.warn('TimekitBooking Deprecated: ' + message);
+    console.warn('TimekitBooking Deprecated: ', message);
   }
 
 };

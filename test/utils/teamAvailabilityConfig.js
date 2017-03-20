@@ -4,7 +4,6 @@
 module.exports = {
   email:    'marty.mcfly@timekit.io',
   apiToken: 'XT1JO879JF1qUXXzmETD5ucgxaDwsFsd',
-  debug: true,
   timekitConfig: {
     app: 'bookingjs-demo'
   },

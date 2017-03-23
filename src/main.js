@@ -321,6 +321,8 @@ function TimekitBooking() {
     if (!config.disableConfirmPage) {
       showBookingPage(eventData)
     } else {
+      $('.fc-event-clicked').removeClass('fc-event-clicked');
+      $(this).addClass('fc-event-clicked');
       utils.doCallback('clickTimeslot', config, eventData);
     }
   }

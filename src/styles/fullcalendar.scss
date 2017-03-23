@@ -140,7 +140,8 @@ $primaryDarkColor: darken($primaryColor, 10%);
   margin-bottom: 2px;
   opacity: 1;
 
-  &:hover {
+  &:hover,
+  &-clicked {
     color: white;
     background-color: $primaryColor;
     border-left: 3px solid $primaryColor;

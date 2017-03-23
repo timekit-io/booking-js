@@ -296,7 +296,7 @@ function TimekitBooking() {
     var args = {
       defaultView: sizing.view,
       height: sizing.height,
-      eventClick: showBookingPage,
+      eventClick: clickTimeslot,
       windowResize: function() {
         var sizing = decideCalendarSize();
         calendarTarget.fullCalendar('changeView', sizing.view);
@@ -315,6 +315,15 @@ function TimekitBooking() {
     utils.doCallback('fullCalendarInitialized', config);
 
   };
+
+  // Clicking a timeslot
+  var clickTimeslot = function(eventData) {
+    if (!config.disableConfirmPage) {
+      showBookingPage(eventData)
+    } else {
+      utils.doCallback('clickTimeslot', config, eventData);
+    }
+  }
 
   // Fires when window is resized and calendar must adhere
   var decideCalendarSize = function() {
@@ -500,18 +509,13 @@ function TimekitBooking() {
     // Call create event endpoint
     timekitCreateBooking(values, eventData).then(function(response){
 
-      utils.doCallback('createBookingSuccessful', config, response);
-
       formElement.find('.booked-email').html(values.email);
       formElement.removeClass('loading').addClass('success');
 
     }).catch(function(response){
 
-      utils.doCallback('createBookingFailed', config, response);
-
       showBookingFailed(formElement)
 
-      utils.logError('An error with Timekit createBooking occured, context: ' + response);
     });
 
   };
@@ -573,7 +577,7 @@ function TimekitBooking() {
     }
 
     // Handle team availability specifics
-    if (eventData.users) {
+    if (eventData && eventData.users) {
       var designatedUser = eventData.users[0]
       var teamUser = $.grep(config.timekitFindTimeTeam.users, function(user) {
         return designatedUser.email === user._email
@@ -590,7 +594,7 @@ function TimekitBooking() {
 
     // if a remote widget (has ID) is used, pass that reference when creating booking
     // TODO had to be disabled for team availability because not all members own the widget
-    if (!eventData.users && config.widgetId) args.widget_id = config.widgetId
+    if ((!eventData || !eventData.users) && config.widgetId) args.widget_id = config.widgetId
 
     utils.doCallback('createBookingStarted', config, args);
 
@@ -598,11 +602,20 @@ function TimekitBooking() {
       'Timekit-OutputTimestampFormat': 'Y-m-d ' + config.localization.emailTimeFormat + ' (P e)'
     };
 
-    return timekit
-    .include('attributes', 'event')
+    var request = timekit
+    .include('attributes', 'event', 'user')
     .headers(requestHeaders)
     .createBooking(args);
 
+    request
+    .then(function(response){
+      utils.doCallback('createBookingSuccessful', config, response);
+    }).catch(function(response){
+      utils.doCallback('createBookingFailed', config, response);
+      utils.logError('An error with Timekit createBooking occured, context: ' + response);
+    });
+
+    return request;
   };
 
   // Render the powered by Timekit message
@@ -802,6 +815,7 @@ function TimekitBooking() {
     render:       render,
     init:         init,
     destroy:      destroy,
+    timekitCreateBooking: timekitCreateBooking,
     fullCalendar: fullCalendar,
     timekitSdk:   timekit
   };

@@ -50,11 +50,9 @@ describe('Disable booking page', function() {
         expect(clickedTimeslot.start).toBeDefined();
 
         var request = widget.timekitCreateBooking({
-          start: clickedTimeslot.start,
-          end: clickedTimeslot.end,
           name: 'John Doe',
           email: 'test@timekit.io'
-        });
+        }, clickedTimeslot);
 
         expect(request.then).toBeDefined();
         spyOn(request, 'then').and.callThrough();

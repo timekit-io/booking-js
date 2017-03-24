@@ -89,7 +89,7 @@ function TimekitBooking() {
 
     }).catch(function(response){
       utils.doCallback('findTimeFailed', config, response);
-      utils.logError('An error with Timekit FindTime occured, context: ' + response);
+      utils.logError(['An error with Timekit FindTime occured, context:', response]);
     });
 
   };
@@ -123,7 +123,7 @@ function TimekitBooking() {
 
     }).catch(function(response){
       utils.doCallback('findTimeTeamFailed', config, response);
-      utils.logError('An error with Timekit FindTimeTeam occured, context: ' + response);
+      utils.logError(['An error with Timekit FindTimeTeam occured, context:', response]);
     });
 
   };
@@ -163,7 +163,7 @@ function TimekitBooking() {
 
     }).catch(function(response){
       utils.doCallback('getBookingSlotsFailed', config, response);
-      utils.logError('An error with Timekit GetBookings occured, context: ' + response);
+      utils.logError(['An error with Timekit GetBookings occured, context:', response]);
     });
 
   };
@@ -283,7 +283,7 @@ function TimekitBooking() {
 
     }).catch(function(response){
       utils.doCallback('getUserTimezoneFailed', config, response);
-      utils.logError('An error with Timekit getUserTimezone occured, context: ' + response);
+      utils.logError(['An error with Timekit getUserTimezone occured, context:', response]);
     });
 
   };
@@ -418,8 +418,6 @@ function TimekitBooking() {
     bookingPageTarget = $(template.render({
       chosenDate:           moment(eventData.start).format(dateFormat),
       chosenTime:           moment(eventData.start).format(timeFormat) + ' - ' + moment(eventData.end).format(timeFormat),
-      start:                moment(eventData.start).format(),
-      end:                  moment(eventData.end).format(),
       closeIcon:            require('!svg-inline!./assets/close-icon.svg'),
       checkmarkIcon:        require('!svg-inline!./assets/checkmark-icon.svg'),
       loadingIcon:          require('!svg-inline!./assets/loading-spinner.svg'),
@@ -499,19 +497,19 @@ function TimekitBooking() {
       return;
     }
 
-    var values = {};
+    var formData = {};
     $.each(formElement.serializeArray(), function(i, field) {
-        values[field.name] = field.value;
+      formData[field.name] = field.value;
     });
 
     formElement.addClass('loading');
 
-    utils.doCallback('submitBookingForm', config, values);
+    utils.doCallback('submitBookingForm', config, formData);
 
     // Call create event endpoint
-    timekitCreateBooking(values, eventData).then(function(response){
+    timekitCreateBooking(formData, eventData).then(function(response){
 
-      formElement.find('.booked-email').html(values.email);
+      formElement.find('.booked-email').html(formData.email);
       formElement.removeClass('loading').addClass('success');
 
     }).catch(function(response){
@@ -538,36 +536,36 @@ function TimekitBooking() {
   }
 
   // Create new booking
-  var timekitCreateBooking = function(data, eventData) {
+  var timekitCreateBooking = function(formData, eventData) {
 
     var args = {
       event: {
-        start: data.start,
-        end: data.end,
-        what: config.name + ' x ' + data.name,
+        start: eventData.start.format(),
+        end: eventData.end.format(),
+        what: config.name + ' x ' + formData.name,
         where: 'TBD',
         description: '',
         calendar_id: config.calendar,
-        participants: [data.email]
+        participants: [formData.email]
       },
       customer: {
-        name: data.name,
-        email: data.email,
+        name: formData.name,
+        email: formData.email,
         timezone: moment.tz.guess()
       }
     };
 
-    if (config.bookingFields.location.enabled) { args.event.where = data.location; }
+    if (config.bookingFields.location.enabled) { args.event.where = formData.location; }
     if (config.bookingFields.comment.enabled) {
-      args.event.description += config.bookingFields.comment.placeholder + ': ' + data.comment + '\n';
+      args.event.description += config.bookingFields.comment.placeholder + ': ' + formData.comment + '\n';
     }
     if (config.bookingFields.phone.enabled) {
-      args.customer.phone = data.phone;
-      args.event.description += config.bookingFields.phone.placeholder + ': ' + data.phone + '\n';
+      args.customer.phone = formData.phone;
+      args.event.description += config.bookingFields.phone.placeholder + ': ' + formData.phone + '\n';
     }
     if (config.bookingFields.voip.enabled) {
-      args.customer.voip = data.voip;
-      args.event.description += config.bookingFields.voip.placeholder + ': ' + data.voip + '\n';
+      args.customer.voip = formData.voip;
+      args.event.description += config.bookingFields.voip.placeholder + ': ' + formData.voip + '\n';
     }
 
     $.extend(true, args, config.timekitCreateBooking);
@@ -579,13 +577,13 @@ function TimekitBooking() {
     }
 
     // Handle team availability specifics
-    if (eventData && eventData.users) {
+    if (eventData.users) {
       var designatedUser = eventData.users[0]
       var teamUser = $.grep(config.timekitFindTimeTeam.users, function(user) {
         return designatedUser.email === user._email
       })
       if (teamUser.length < 1 || !teamUser[0]._calendar) {
-        utils.logError('Encountered an error when picking designated team user to receive booking');
+        utils.logError(['Encountered an error when picking designated team user to receive booking', designatedUser, config.timekitFindTimeTeam.users]);
         return
       } else {
         timekit = timekit.asUser(designatedUser.email, designatedUser.token)
@@ -596,7 +594,7 @@ function TimekitBooking() {
 
     // if a remote widget (has ID) is used, pass that reference when creating booking
     // TODO had to be disabled for team availability because not all members own the widget
-    if ((!eventData || !eventData.users) && config.widgetId) args.widget_id = config.widgetId
+    if (!eventData.users && config.widgetId) args.widget_id = config.widgetId
 
     utils.doCallback('createBookingStarted', config, args);
 
@@ -613,8 +611,8 @@ function TimekitBooking() {
     .then(function(response){
       utils.doCallback('createBookingSuccessful', config, response);
     }).catch(function(response){
+      utils.logError(['An error with Timekit CreateBooking occured, context:', response]);
       utils.doCallback('createBookingFailed', config, response);
-      utils.logError('An error with Timekit createBooking occured, context: ' + response);
     });
 
     return request;

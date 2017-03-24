@@ -667,7 +667,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    .then(function(response){
 	      utils.doCallback('createBookingSuccessful', config, response);
 	    }).catch(function(response){
-	      utils.logError(['An error with timekitCreateBooking occured, context:', response]);
+	      utils.logError(['An error with Timekit CreateBooking occured, context:', response]);
 	      utils.doCallback('createBookingFailed', config, response);
 	    });
 	
@@ -750,7 +750,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Get library version
 	  var getVersion = function() {
 	
-	    return ("1.11.0");
+	    return ("1.12.0");
 	
 	  };
 	

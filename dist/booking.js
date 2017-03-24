@@ -145,7 +145,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    }).catch(function(response){
 	      utils.doCallback('findTimeFailed', config, response);
-	      utils.logError('An error with Timekit FindTime occured, context: ' + response);
+	      utils.logError(['An error with Timekit FindTime occured, context:', response]);
 	    });
 	
 	  };
@@ -179,7 +179,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    }).catch(function(response){
 	      utils.doCallback('findTimeTeamFailed', config, response);
-	      utils.logError('An error with Timekit FindTimeTeam occured, context: ' + response);
+	      utils.logError(['An error with Timekit FindTimeTeam occured, context:', response]);
 	    });
 	
 	  };
@@ -219,7 +219,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    }).catch(function(response){
 	      utils.doCallback('getBookingSlotsFailed', config, response);
-	      utils.logError('An error with Timekit GetBookings occured, context: ' + response);
+	      utils.logError(['An error with Timekit GetBookings occured, context:', response]);
 	    });
 	
 	  };
@@ -339,7 +339,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    }).catch(function(response){
 	      utils.doCallback('getUserTimezoneFailed', config, response);
-	      utils.logError('An error with Timekit getUserTimezone occured, context: ' + response);
+	      utils.logError(['An error with Timekit getUserTimezone occured, context:', response]);
 	    });
 	
 	  };
@@ -352,7 +352,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var args = {
 	      defaultView: sizing.view,
 	      height: sizing.height,
-	      eventClick: showBookingPage,
+	      eventClick: clickTimeslot,
 	      windowResize: function() {
 	        var sizing = decideCalendarSize();
 	        calendarTarget.fullCalendar('changeView', sizing.view);
@@ -371,6 +371,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    utils.doCallback('fullCalendarInitialized', config);
 	
 	  };
+	
+	  // Clicking a timeslot
+	  var clickTimeslot = function(eventData) {
+	    if (!config.disableConfirmPage) {
+	      showBookingPage(eventData)
+	    } else {
+	      $('.fc-event-clicked').removeClass('fc-event-clicked');
+	      $(this).addClass('fc-event-clicked');
+	      utils.doCallback('clickTimeslot', config, eventData);
+	    }
+	  }
 	
 	  // Fires when window is resized and calendar must adhere
 	  var decideCalendarSize = function() {
@@ -463,8 +474,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    bookingPageTarget = $(template.render({
 	      chosenDate:           moment(eventData.start).format(dateFormat),
 	      chosenTime:           moment(eventData.start).format(timeFormat) + ' - ' + moment(eventData.end).format(timeFormat),
-	      start:                moment(eventData.start).format(),
-	      end:                  moment(eventData.end).format(),
 	      closeIcon:            __webpack_require__(54),
 	      checkmarkIcon:        __webpack_require__(55),
 	      loadingIcon:          __webpack_require__(56),
@@ -544,30 +553,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	      return;
 	    }
 	
-	    var values = {};
+	    var formData = {};
 	    $.each(formElement.serializeArray(), function(i, field) {
-	        values[field.name] = field.value;
+	      formData[field.name] = field.value;
 	    });
 	
 	    formElement.addClass('loading');
 	
-	    utils.doCallback('submitBookingForm', config, values);
+	    utils.doCallback('submitBookingForm', config, formData);
 	
 	    // Call create event endpoint
-	    timekitCreateBooking(values, eventData).then(function(response){
+	    timekitCreateBooking(formData, eventData).then(function(response){
 	
-	      utils.doCallback('createBookingSuccessful', config, response);
-	
-	      formElement.find('.booked-email').html(values.email);
+	      formElement.find('.booked-email').html(formData.email);
 	      formElement.removeClass('loading').addClass('success');
 	
 	    }).catch(function(response){
 	
-	      utils.doCallback('createBookingFailed', config, response);
-	
 	      showBookingFailed(formElement)
 	
-	      utils.logError('An error with Timekit createBooking occured, context: ' + response);
 	    });
 	
 	  };
@@ -588,36 +592,36 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	
 	  // Create new booking
-	  var timekitCreateBooking = function(data, eventData) {
+	  var timekitCreateBooking = function(formData, eventData) {
 	
 	    var args = {
 	      event: {
-	        start: data.start,
-	        end: data.end,
-	        what: config.name + ' x ' + data.name,
+	        start: eventData.start.format(),
+	        end: eventData.end.format(),
+	        what: config.name + ' x ' + formData.name,
 	        where: 'TBD',
 	        description: '',
 	        calendar_id: config.calendar,
-	        participants: [data.email]
+	        participants: [formData.email]
 	      },
 	      customer: {
-	        name: data.name,
-	        email: data.email,
+	        name: formData.name,
+	        email: formData.email,
 	        timezone: moment.tz.guess()
 	      }
 	    };
 	
-	    if (config.bookingFields.location.enabled) { args.event.where = data.location; }
+	    if (config.bookingFields.location.enabled) { args.event.where = formData.location; }
 	    if (config.bookingFields.comment.enabled) {
-	      args.event.description += config.bookingFields.comment.placeholder + ': ' + data.comment + '\n';
+	      args.event.description += config.bookingFields.comment.placeholder + ': ' + formData.comment + '\n';
 	    }
 	    if (config.bookingFields.phone.enabled) {
-	      args.customer.phone = data.phone;
-	      args.event.description += config.bookingFields.phone.placeholder + ': ' + data.phone + '\n';
+	      args.customer.phone = formData.phone;
+	      args.event.description += config.bookingFields.phone.placeholder + ': ' + formData.phone + '\n';
 	    }
 	    if (config.bookingFields.voip.enabled) {
-	      args.customer.voip = data.voip;
-	      args.event.description += config.bookingFields.voip.placeholder + ': ' + data.voip + '\n';
+	      args.customer.voip = formData.voip;
+	      args.event.description += config.bookingFields.voip.placeholder + ': ' + formData.voip + '\n';
 	    }
 	
 	    $.extend(true, args, config.timekitCreateBooking);
@@ -635,7 +639,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return designatedUser.email === user._email
 	      })
 	      if (teamUser.length < 1 || !teamUser[0]._calendar) {
-	        utils.logError('Encountered an error when picking designated team user to receive booking');
+	        utils.logError(['Encountered an error when picking designated team user to receive booking', designatedUser, config.timekitFindTimeTeam.users]);
 	        return
 	      } else {
 	        timekit = timekit.asUser(designatedUser.email, designatedUser.token)
@@ -654,11 +658,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	      'Timekit-OutputTimestampFormat': 'Y-m-d ' + config.localization.emailTimeFormat + ' (P e)'
 	    };
 	
-	    return timekit
-	    .include('attributes', 'event')
+	    var request = timekit
+	    .include('attributes', 'event', 'user')
 	    .headers(requestHeaders)
 	    .createBooking(args);
 	
+	    request
+	    .then(function(response){
+	      utils.doCallback('createBookingSuccessful', config, response);
+	    }).catch(function(response){
+	      utils.logError(['An error with timekitCreateBooking occured, context:', response]);
+	      utils.doCallback('createBookingFailed', config, response);
+	    });
+	
+	    return request;
 	  };
 	
 	  // Render the powered by Timekit message
@@ -858,6 +871,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    render:       render,
 	    init:         init,
 	    destroy:      destroy,
+	    timekitCreateBooking: timekitCreateBooking,
 	    fullCalendar: fullCalendar,
 	    timekitSdk:   timekit
 	  };
@@ -22745,6 +22759,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  avatar: '',
 	  autoload: true,
 	  disableRemoteLoad: false,
+	  disableConfirmPage: false,
 	  includeStyles: true,
 	  showCredits: true,
 	  goToFirstEvent: true,
@@ -23349,7 +23364,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 	// module
-	exports.push([module.id, ".fc-view-container{background-color:#fbfbfb;color:#333}.fc-row.fc-widget-header{border-bottom:1px solid #ececec}.fc-row.fc-widget-header .fc-day-header{text-transform:uppercase;font-size:.9em;font-weight:600}.fc-axis,.fc-row.fc-widget-header .fc-day-header:first-line{color:#b9b9b9}.fc-axis{font-size:.9em}.fc-state-default{text-shadow:none;box-shadow:none;background-image:none;background-color:#fff;border-color:#fff}.fc-button{text-transform:uppercase;font-weight:600;font-size:1.1em;border:0;outline:none}.fc-button:active,.fc-button:focus,.fc-button:hover,.fc-button:visited{outline:none;border:0;background-color:transparent}.fc-content-skeleton{border-top:1px solid #ddd}.fc .fc-toolbar{padding:0;margin-bottom:0;border-bottom:1px solid #ececec}.fc .fc-toolbar>*>button{padding:15px 17px;height:auto;outline:0;margin-left:0;-webkit-transition:opacity .2s ease;transition:opacity .2s ease;opacity:.3}.fc .fc-toolbar>*>button:hover{opacity:1}.fc .fc-toolbar>*>button.fc-state-disabled{-webkit-transition:opacity 0s;transition:opacity 0s;opacity:0}.fc .fc-toolbar>*>button.fc-prev-button{padding-right:8px}.fc .fc-toolbar>*>button.fc-next-button{padding-left:8px}.fc .fc-toolbar>*>button .fc-icon{font-size:1.1em}.fc .fc-toolbar>.fc-right>button.fc-today-button{padding:15px 5px}.fc-unthemed .fc-today{background:#fff}.fc-body>tr>.fc-widget-content,.fc-head>tr>.fc-widget-header{border:0!important}.fc th{border-color:#fff;padding:5px}.fc-unthemed .fc-divider,.fc-unthemed .fc-popover .fc-header{background-color:transparent}.empty-calendar .fc-event{opacity:0}.fc-event{-webkit-transition:all .2s,opacity .6s;transition:all .2s,opacity .6s;border:none;border-left:3px solid #689ad8;padding:3px;background-color:#fff;border-radius:4px;color:#333;margin:1px 0;box-shadow:0 1px 2px rgba(0,0,0,.07);cursor:pointer;margin-bottom:2px;opacity:1}.fc-event:hover{color:#fff;background-color:#689ad8;border-left:3px solid #689ad8;box-shadow:0 1px 3px rgba(0,0,0,.15)}.fc-event .fc-bg{opacity:0}.fc-day-grid-event{padding:15px;margin:5px}.fc-day-grid-event .fc-time{font-weight:600}.fc-day-grid-event .fc-title{padding:0 5px 5px;font-weight:700}.fc-time-grid .fc-slats .fc-minor td{border-top-style:none}.fc-time-grid .fc-slats td{border-top-color:#fbfbfb}.fc-time-grid .fc-slats td.fc-axis{border-top-color:#ececec}.fc-time-grid-event.fc-short .fc-content{font-size:.7em;line-height:.2em}.fc-time-grid-event.fc-short .fc-time:after{content:''}.fc-time-grid-event .fc-time{font-size:1.1em;padding:5px}.fc-time-grid-event .fc-title{padding:0 5px 5px;font-weight:700}.fc-unthemed .fc-divider,.fc-unthemed .fc-popover,.fc-unthemed .fc-row,.fc-unthemed tbody,.fc-unthemed td,.fc-unthemed th,.fc-unthemed thead{border-color:#ececec}.fc-agendaMonthly-view .fc-event{color:#fff}.fc-now-indicator{border-color:rgba(255,0,0,.5)}", ""]);
+	exports.push([module.id, ".fc-view-container{background-color:#fbfbfb;color:#333}.fc-row.fc-widget-header{border-bottom:1px solid #ececec}.fc-row.fc-widget-header .fc-day-header{text-transform:uppercase;font-size:.9em;font-weight:600}.fc-axis,.fc-row.fc-widget-header .fc-day-header:first-line{color:#b9b9b9}.fc-axis{font-size:.9em}.fc-state-default{text-shadow:none;box-shadow:none;background-image:none;background-color:#fff;border-color:#fff}.fc-button{text-transform:uppercase;font-weight:600;font-size:1.1em;border:0;outline:none}.fc-button:active,.fc-button:focus,.fc-button:hover,.fc-button:visited{outline:none;border:0;background-color:transparent}.fc-content-skeleton{border-top:1px solid #ddd}.fc .fc-toolbar{padding:0;margin-bottom:0;border-bottom:1px solid #ececec}.fc .fc-toolbar>*>button{padding:15px 17px;height:auto;outline:0;margin-left:0;-webkit-transition:opacity .2s ease;transition:opacity .2s ease;opacity:.3}.fc .fc-toolbar>*>button:hover{opacity:1}.fc .fc-toolbar>*>button.fc-state-disabled{-webkit-transition:opacity 0s;transition:opacity 0s;opacity:0}.fc .fc-toolbar>*>button.fc-prev-button{padding-right:8px}.fc .fc-toolbar>*>button.fc-next-button{padding-left:8px}.fc .fc-toolbar>*>button .fc-icon{font-size:1.1em}.fc .fc-toolbar>.fc-right>button.fc-today-button{padding:15px 5px}.fc-unthemed .fc-today{background:#fff}.fc-body>tr>.fc-widget-content,.fc-head>tr>.fc-widget-header{border:0!important}.fc th{border-color:#fff;padding:5px}.fc-unthemed .fc-divider,.fc-unthemed .fc-popover .fc-header{background-color:transparent}.empty-calendar .fc-event{opacity:0}.fc-event{-webkit-transition:all .2s,opacity .6s;transition:all .2s,opacity .6s;border:none;border-left:3px solid #689ad8;padding:3px;background-color:#fff;border-radius:4px;color:#333;margin:1px 0;box-shadow:0 1px 2px rgba(0,0,0,.07);cursor:pointer;margin-bottom:2px;opacity:1}.fc-event-clicked,.fc-event:hover{color:#fff;background-color:#689ad8;border-left:3px solid #689ad8;box-shadow:0 1px 3px rgba(0,0,0,.15)}.fc-event .fc-bg{opacity:0}.fc-day-grid-event{padding:15px;margin:5px}.fc-day-grid-event .fc-time{font-weight:600}.fc-day-grid-event .fc-title{padding:0 5px 5px;font-weight:700}.fc-time-grid .fc-slats .fc-minor td{border-top-style:none}.fc-time-grid .fc-slats td{border-top-color:#fbfbfb}.fc-time-grid .fc-slats td.fc-axis{border-top-color:#ececec}.fc-time-grid-event.fc-short .fc-content{font-size:.7em;line-height:.2em}.fc-time-grid-event.fc-short .fc-time:after{content:''}.fc-time-grid-event .fc-time{font-size:1.1em;padding:5px}.fc-time-grid-event .fc-title{padding:0 5px 5px;font-weight:700}.fc-unthemed .fc-divider,.fc-unthemed .fc-popover,.fc-unthemed .fc-row,.fc-unthemed tbody,.fc-unthemed td,.fc-unthemed th,.fc-unthemed thead{border-color:#ececec}.fc-agendaMonthly-view .fc-event{color:#fff}.fc-now-indicator{border-color:rgba(255,0,0,.5)}", ""]);
 	
 	// exports
 
@@ -24276,7 +24291,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	var H = __webpack_require__(47);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-bookpage\">");t.b("\n" + i);t.b("  <a class=\"bookingjs-bookpage-close\" href=\"#\">");t.b(t.t(t.f("closeIcon",c,p,0)));t.b("</a>");t.b("\n" + i);t.b("  <h2 class=\"bookingjs-bookpage-date\">");t.b(t.v(t.f("chosenDate",c,p,0)));t.b("</h2>");t.b("\n" + i);t.b("  <h3 class=\"bookingjs-bookpage-time\">");t.b(t.v(t.f("chosenTime",c,p,0)));t.b("</h3>");t.b("\n" + i);t.b("  <form class=\"bookingjs-form\" action=\"#\">");t.b("\n" + i);t.b("    <div class=\"bookingjs-form-box\">");t.b("\n" + i);t.b("      <div class=\"bookingjs-form-success-message\">");t.b("\n" + i);t.b("        <div class=\"title\">");t.b(t.v(t.f("successMessageTitle",c,p,0)));t.b("</div>");t.b("\n" + i);t.b("        <div class=\"body\">");t.b(t.t(t.f("successMessageBody",c,p,0)));t.b("</div>");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("      <div class=\"bookingjs-form-fields\">");t.b("\n" + i);t.b("        <input class=\"bookingjs-form-input hidden\" type=\"text\" name=\"start\" value=\"");t.b(t.v(t.f("start",c,p,0)));t.b("\" />");t.b("\n" + i);t.b("        <input class=\"bookingjs-form-input hidden\" type=\"text\" name=\"end\" value=\"");t.b(t.v(t.f("end",c,p,0)));t.b("\" />");t.b("\n" + i);t.b(t.rp("<formFields0",c,p,"        "));t.b("      </div>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <button class=\"bookingjs-form-button\" type=\"submit\">");t.b("\n" + i);t.b("      <span class=\"inactive-text\">");t.b(t.v(t.f("submitText",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"loading-text\">");t.b(t.t(t.f("loadingIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"error-text\">");t.b(t.t(t.f("errorIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"success-text\">");t.b(t.t(t.f("checkmarkIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("    </button>");t.b("\n" + i);t.b("  </form>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {"<formFields0":{name:"formFields", partials: {}, subs: {  }}}, subs: {  }}, "<div class=\"bookingjs-bookpage\">\n  <a class=\"bookingjs-bookpage-close\" href=\"#\">{{& closeIcon }}</a>\n  <h2 class=\"bookingjs-bookpage-date\">{{ chosenDate }}</h2>\n  <h3 class=\"bookingjs-bookpage-time\">{{ chosenTime }}</h3>\n  <form class=\"bookingjs-form\" action=\"#\">\n    <div class=\"bookingjs-form-box\">\n      <div class=\"bookingjs-form-success-message\">\n        <div class=\"title\">{{ successMessageTitle }}</div>\n        <div class=\"body\">{{& successMessageBody }}</div>\n      </div>\n      <div class=\"bookingjs-form-fields\">\n        <input class=\"bookingjs-form-input hidden\" type=\"text\" name=\"start\" value=\"{{ start }}\" />\n        <input class=\"bookingjs-form-input hidden\" type=\"text\" name=\"end\" value=\"{{ end }}\" />\n        {{> formFields }}\n      </div>\n    </div>\n    <button class=\"bookingjs-form-button\" type=\"submit\">\n      <span class=\"inactive-text\">{{ submitText }}</span>\n      <span class=\"loading-text\">{{& loadingIcon }}</span>\n      <span class=\"error-text\">{{& errorIcon }}</span>\n      <span class=\"success-text\">{{& checkmarkIcon }}</span>\n    </button>\n  </form>\n</div>\n", H);return T; }();
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-bookpage\">");t.b("\n" + i);t.b("  <a class=\"bookingjs-bookpage-close\" href=\"#\">");t.b(t.t(t.f("closeIcon",c,p,0)));t.b("</a>");t.b("\n" + i);t.b("  <h2 class=\"bookingjs-bookpage-date\">");t.b(t.v(t.f("chosenDate",c,p,0)));t.b("</h2>");t.b("\n" + i);t.b("  <h3 class=\"bookingjs-bookpage-time\">");t.b(t.v(t.f("chosenTime",c,p,0)));t.b("</h3>");t.b("\n" + i);t.b("  <form class=\"bookingjs-form\" action=\"#\">");t.b("\n" + i);t.b("    <div class=\"bookingjs-form-box\">");t.b("\n" + i);t.b("      <div class=\"bookingjs-form-success-message\">");t.b("\n" + i);t.b("        <div class=\"title\">");t.b(t.v(t.f("successMessageTitle",c,p,0)));t.b("</div>");t.b("\n" + i);t.b("        <div class=\"body\">");t.b(t.t(t.f("successMessageBody",c,p,0)));t.b("</div>");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("      <div class=\"bookingjs-form-fields\">");t.b("\n" + i);t.b(t.rp("<formFields0",c,p,"        "));t.b("      </div>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <button class=\"bookingjs-form-button\" type=\"submit\">");t.b("\n" + i);t.b("      <span class=\"inactive-text\">");t.b(t.v(t.f("submitText",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"loading-text\">");t.b(t.t(t.f("loadingIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"error-text\">");t.b(t.t(t.f("errorIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"success-text\">");t.b(t.t(t.f("checkmarkIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("    </button>");t.b("\n" + i);t.b("  </form>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {"<formFields0":{name:"formFields", partials: {}, subs: {  }}}, subs: {  }}, "<div class=\"bookingjs-bookpage\">\n  <a class=\"bookingjs-bookpage-close\" href=\"#\">{{& closeIcon }}</a>\n  <h2 class=\"bookingjs-bookpage-date\">{{ chosenDate }}</h2>\n  <h3 class=\"bookingjs-bookpage-time\">{{ chosenTime }}</h3>\n  <form class=\"bookingjs-form\" action=\"#\">\n    <div class=\"bookingjs-form-box\">\n      <div class=\"bookingjs-form-success-message\">\n        <div class=\"title\">{{ successMessageTitle }}</div>\n        <div class=\"body\">{{& successMessageBody }}</div>\n      </div>\n      <div class=\"bookingjs-form-fields\">\n        {{> formFields }}\n      </div>\n    </div>\n    <button class=\"bookingjs-form-button\" type=\"submit\">\n      <span class=\"inactive-text\">{{ submitText }}</span>\n      <span class=\"loading-text\">{{& loadingIcon }}</span>\n      <span class=\"error-text\">{{& errorIcon }}</span>\n      <span class=\"success-text\">{{& checkmarkIcon }}</span>\n    </button>\n  </form>\n</div>\n", H);return T; }();
 
 /***/ },
 /* 54 */

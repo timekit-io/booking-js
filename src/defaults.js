@@ -11,6 +11,7 @@ var primary = {
   avatar: '',
   autoload: true,
   disableRemoteLoad: false,
+  disableConfirmPage: false,
   includeStyles: true,
   showCredits: true,
   goToFirstEvent: true,

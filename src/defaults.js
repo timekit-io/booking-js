@@ -117,6 +117,26 @@ var bookingInstant = {
 
 };
 
+// Preset: bookingGraph = 'instant_payment'
+var bookingInstantPayment = {
+
+  timekitCreateBooking: {
+    graph: 'instant_payment',
+    action: 'tentative',
+    event: {
+      invite: true,
+      my_rsvp: 'accepted',
+      sync_provider: true
+    }
+  },
+  localization: {
+    strings: {
+      successMessageBody: "We have received your payment and reserved your timeslot.<br /><br />Have a great day!"
+    }
+  }
+
+};
+
 // Preset: bookingGraph = 'confirm_decline'
 var bookingConfirmDecline = {
 
@@ -225,6 +245,7 @@ module.exports = {
     },
     bookingGraph: {
       'instant': bookingInstant,
+      'instant_payment': bookingInstantPayment,
       'confirm_decline': bookingConfirmDecline,
       'group_customer': bookingGroupCustomer,
       'group_customer_payment': bookingGroupCustomerPayment

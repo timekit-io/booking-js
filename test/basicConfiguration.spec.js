@@ -6,9 +6,6 @@ var createWidget = require('./utils/createWidget');
 var mockAjax = require('./utils/mockAjax');
 var interact = require('./utils/commonInteractions');
 
-/**
- * Basic configuration of the library
- */
 describe('Basic configuration', function() {
 
   beforeEach(function(){

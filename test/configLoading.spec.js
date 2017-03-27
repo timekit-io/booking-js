@@ -5,9 +5,6 @@ jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 var mockAjax = require('./utils/mockAjax');
 var createWidget = require('./utils/createWidget');
 
-/**
- * Intilialize the library with plain build
- */
 describe('Config loading', function() {
 
   beforeEach(function(){

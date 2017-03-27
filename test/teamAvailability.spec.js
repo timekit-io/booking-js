@@ -7,9 +7,6 @@ var teamAvailabilityConfig = require('./utils/teamAvailabilityConfig');
 var mockAjax = require('./utils/mockAjax');
 var interact = require('./utils/commonInteractions');
 
-/**
- * Basic interaction of the library
- */
 describe('Team availability', function() {
 
   beforeEach(function(){

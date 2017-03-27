@@ -8,9 +8,6 @@ var interact = require('./utils/commonInteractions');
 
 var browserWidth;
 
-/**
- * Tests for mobile and responsive
- */
 describe('Mobile & responsive', function() {
 
   beforeEach(function(){

@@ -5,6 +5,7 @@ jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 var moment = require('moment');
 var createWidget = require('./utils/createWidget');
 var mockAjax = require('./utils/mockAjax');
+var teamAvailabilityConfig = require('./utils/teamAvailabilityConfig');
 
 /**
  * Advanced configuration of the library
@@ -92,6 +93,41 @@ describe('Advanced configuration', function() {
       done();
 
     }, 300);
+
+  });
+
+  it('should be able override config settings fetched remotely, but before render', function(done) {
+
+    mockAjax.all();
+
+    function updateConfig () {
+      var widgetConfig = widget.getConfig()
+      expect(widgetConfig.name).toBe('Marty McFly')
+      Object.assign(widgetConfig, { name: 'Marty McFly 2' })
+      widget.setConfig(widgetConfig)
+    }
+
+    var widget = new TimekitBooking();
+    var config = {
+      widgetId: '12345',
+      callbacks: {
+        renderStarted: updateConfig
+      }
+    };
+    widget.init(config);
+
+    setTimeout(function() {
+
+      var request = jasmine.Ajax.requests.first();
+      expect(request.url).toBe('https://api.timekit.io/v2/widgets/embed/12345');
+
+      var widgetConfig = widget.getConfig()
+
+      expect(widgetConfig.name).toBe('Marty McFly 2')
+
+      done();
+
+    }, 10)
 
   });
 

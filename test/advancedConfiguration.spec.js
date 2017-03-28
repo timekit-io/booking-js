@@ -96,7 +96,7 @@ describe('Advanced configuration', function() {
 
   });
 
-  it('should be able override config settings fetched remotely, but before render', function(done) {
+  fit('should be able override config settings fetched remotely, but before render', function(done) {
 
     mockAjax.all();
 
@@ -114,9 +114,14 @@ describe('Advanced configuration', function() {
         renderStarted: updateConfig
       }
     };
+
+    spyOn(config.callbacks, 'renderStarted').and.callThrough();
+
     widget.init(config);
 
     setTimeout(function() {
+
+      expect(config.callbacks.renderStarted).toHaveBeenCalled();
 
       var request = jasmine.Ajax.requests.first();
       expect(request.url).toBe('https://api.timekit.io/v2/widgets/embed/12345');
@@ -127,7 +132,7 @@ describe('Advanced configuration', function() {
 
       done();
 
-    }, 10)
+    }, 100)
 
   });
 

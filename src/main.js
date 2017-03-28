@@ -701,6 +701,8 @@ function TimekitBooking() {
   // Render method
   var render = function() {
 
+    utils.doCallback('renderStarted', config);
+
     // Include library styles if enabled
     includeStyles();
 

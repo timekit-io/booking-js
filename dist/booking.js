@@ -757,6 +757,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Render method
 	  var render = function() {
 	
+	    utils.doCallback('renderStarted', config);
+	
 	    // Include library styles if enabled
 	    includeStyles();
 	

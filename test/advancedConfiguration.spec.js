@@ -95,4 +95,44 @@ describe('Advanced configuration', function() {
 
   });
 
+  it('should be able override config settings fetched remotely, but before render', function(done) {
+
+    mockAjax.all();
+
+    function updateConfig () {
+      var widgetConfig = widget.getConfig()
+      expect(widgetConfig.name).toBe('Marty McFly')
+      widgetConfig.name = 'Marty McFly 2'
+      widget.setConfig(widgetConfig)
+    }
+
+    var widget = new TimekitBooking();
+    var config = {
+      widgetId: '12345',
+      callbacks: {
+        renderStarted: updateConfig
+      }
+    };
+
+    spyOn(config.callbacks, 'renderStarted').and.callThrough();
+
+    widget.init(config);
+
+    setTimeout(function() {
+
+      expect(config.callbacks.renderStarted).toHaveBeenCalled();
+
+      var request = jasmine.Ajax.requests.first();
+      expect(request.url).toBe('https://api.timekit.io/v2/widgets/embed/12345');
+
+      var widgetConfig = widget.getConfig()
+
+      expect(widgetConfig.name).toBe('Marty McFly 2')
+
+      done();
+
+    }, 100)
+
+  });
+
 });

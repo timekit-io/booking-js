@@ -5,7 +5,6 @@ jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 var moment = require('moment');
 var createWidget = require('./utils/createWidget');
 var mockAjax = require('./utils/mockAjax');
-var teamAvailabilityConfig = require('./utils/teamAvailabilityConfig');
 
 /**
  * Advanced configuration of the library
@@ -96,14 +95,14 @@ describe('Advanced configuration', function() {
 
   });
 
-  fit('should be able override config settings fetched remotely, but before render', function(done) {
+  it('should be able override config settings fetched remotely, but before render', function(done) {
 
     mockAjax.all();
 
     function updateConfig () {
       var widgetConfig = widget.getConfig()
       expect(widgetConfig.name).toBe('Marty McFly')
-      Object.assign(widgetConfig, { name: 'Marty McFly 2' })
+      widgetConfig.name = 'Marty McFly 2'
       widget.setConfig(widgetConfig)
     }
 

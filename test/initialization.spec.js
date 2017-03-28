@@ -5,9 +5,6 @@ jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 var baseConfig = require('./utils/defaultConfig');
 var mockAjax = require('./utils/mockAjax');
 
-/**
- * Intilialize the library with plain build
- */
 describe('Initialization regular', function() {
 
   beforeEach(function(){
@@ -50,9 +47,6 @@ describe('Initialization regular', function() {
 
 });
 
-/**
- * Intilialize the library with minified build
- */
 describe('Initialization minified', function() {
 
   beforeEach(function(){

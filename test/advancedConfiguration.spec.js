@@ -6,9 +6,6 @@ var moment = require('moment');
 var createWidget = require('./utils/createWidget');
 var mockAjax = require('./utils/mockAjax');
 
-/**
- * Advanced configuration of the library
- */
 describe('Advanced configuration', function() {
 
   beforeEach(function(){

@@ -5,9 +5,6 @@ jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 var createWidget = require('./utils/createWidget');
 var mockAjax = require('./utils/mockAjax');
 
-/**
- * Basic configuration of the library
- */
 describe('Hour compatibility configuration', function() {
 
   beforeEach(function(){

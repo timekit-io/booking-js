@@ -89,7 +89,7 @@ var primary = {
       submitText: 'Book it',
       successMessageTitle: 'Thanks!',
       timezoneHelperLoading: 'Loading..',
-      timezoneHelperDifferent: 'Your timezone is %s hours %s of %s (calendar shown in your local time)',
+      timezoneHelperDifferent: 'Your timezone is %s hours %s %s (calendar shown in your local time)',
       timezoneHelperSame: 'You are in the same timezone as %s'
     }
   },

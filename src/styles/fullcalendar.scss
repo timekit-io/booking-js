@@ -218,3 +218,59 @@ $primaryDarkColor: darken($primaryColor, 10%);
 .fc-now-indicator {
   border-color: rgba(255, 0, 0, 0.5);
 }
+
+// List view
+
+.fc-unthemed .fc-list-view .scroller {
+  padding: 0px 15px;
+}
+
+.fc-list-view {
+  border-width: 0px;
+}
+
+.fc-list-table {
+  width: 80%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.fc-unthemed .fc-list-heading td {
+  background: transparent;
+  border-color: transparent;
+  font-size: 1.1em;
+  padding: 10px 19px 12px 19px;
+}
+
+.fc-list-item {
+  display: block;
+  transition: all .2s,opacity .6s;
+  border: none;
+  border-left: 3px solid $primaryColor;
+  padding: 3px;
+  background-color: #fff;
+  border-radius: 4px;
+  color: #333;
+  margin: 1px 0;
+  box-shadow: 0 1px 2px rgba(0,0,0,.07);
+  cursor: pointer;
+  margin-bottom: 3px;
+
+  &:hover {
+    background: $primaryColor;
+    color: white;
+  }
+
+  td {
+    background: transparent;
+    border-color: transparent;
+  }
+
+  &:hover td {
+    background: transparent;
+  }
+
+  .fc-list-item-marker {
+    display: none;
+  }
+}

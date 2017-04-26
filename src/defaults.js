@@ -17,6 +17,7 @@ var primary = {
   goToFirstEvent: true,
   bookingGraph: 'instant',
   debug: false,
+  availabilityView: 'agendaWeek',
   bookingFields: {
     name: {
       placeholder: 'Full name',
@@ -75,6 +76,12 @@ var primary = {
     views: {
       agenda: {
         displayEventEnd: false
+      },
+      listing: {
+        type: 'list',
+        duration: { days: 365 / 2 },
+        listDayAltFormat: 'dddd',
+        noEventsMessage: 'No timeslots available'
       }
     },
     allDaySlot: false,
@@ -235,6 +242,27 @@ var timeDateFormat12hmdysun = {
 
 };
 
+// Preset: availabilityView = 'agendaWeek'
+var availabilityViewAgendaWeek = {
+
+  fullCalendar: {
+    defaultView: 'agendaWeek'
+  }
+
+}
+
+// Preset: availabilityView = 'listing'
+var availabilityViewListing = {
+
+  fullCalendar: {
+    header: {
+      right: ''
+    },
+    defaultView: 'listing'
+  }
+
+}
+
 // Export objects
 module.exports = {
   primary: primary,
@@ -249,6 +277,10 @@ module.exports = {
       'confirm_decline': bookingConfirmDecline,
       'group_customer': bookingGroupCustomer,
       'group_customer_payment': bookingGroupCustomerPayment
+    },
+    availabilityView: {
+      'agendaWeek': availabilityViewAgendaWeek,
+      'listing': availabilityViewListing
     }
   }
 };

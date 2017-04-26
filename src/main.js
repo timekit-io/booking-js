@@ -291,7 +291,7 @@ function TimekitBooking() {
   // Setup and render FullCalendar
   var initializeCalendar = function() {
 
-    var sizing = decideCalendarSize();
+    var sizing = decideCalendarSize(config.fullCalendar.defaultView);
 
     var args = {
       defaultView: sizing.view,
@@ -328,18 +328,20 @@ function TimekitBooking() {
   }
 
   // Fires when window is resized and calendar must adhere
-  var decideCalendarSize = function() {
+  var decideCalendarSize = function(currentView) {
 
-    var view = 'agendaWeek';
-    var height = 420;
+    var view, height;
     var rootWidth = rootTarget.width();
+    currentView = currentView || calendarTarget.fullCalendar('getView').name
 
     if (rootWidth < 480) {
-      view = 'basicDay';
+      if (currentView === 'agendaWeek') view = 'basicDay';
       height = 380;
       rootTarget.addClass('is-small');
       if (config.avatar) { height -= 15; }
     } else {
+      view = config.fullCalendar.defaultView
+      height = 420;
       rootTarget.removeClass('is-small');
     }
 
@@ -643,6 +645,12 @@ function TimekitBooking() {
     return $.extend(true, {}, defaultConfig.primary, suppliedConfig);
   }
 
+  var applyConfigPreset = function (config, propertyName, propertyObject) {
+    var presetCheck = defaultConfig.presets[propertyName][propertyObject];
+    if (presetCheck) return $.extend(true, {}, config, presetCheck);
+    return config
+  }
+
   // Setup config
   var setConfig = function(suppliedConfig) {
 
@@ -654,31 +662,24 @@ function TimekitBooking() {
     // Extend the default config with supplied settings
     var newConfig = setConfigDefaults(suppliedConfig);
 
-    // Apply timeDateFormat presets
-    var presetsConfig = {};
-    var timeDateFormatPreset = defaultConfig.presets.timeDateFormat[newConfig.localization.timeDateFormat];
-    if(timeDateFormatPreset) presetsConfig = timeDateFormatPreset;
-    var finalConfig = $.extend(true, {}, presetsConfig, newConfig);
-
-    // Apply bookingGraph presets
-    presetsConfig = {};
-    var bookingGraphPreset = defaultConfig.presets.bookingGraph[newConfig.bookingGraph];
-    if(bookingGraphPreset) presetsConfig = bookingGraphPreset;
-    finalConfig = $.extend(true, {}, presetsConfig, finalConfig);
+    // Apply presets
+    newConfig = applyConfigPreset(newConfig, 'timeDateFormat', newConfig.localization.timeDateFormat)
+    newConfig = applyConfigPreset(newConfig, 'bookingGraph', newConfig.bookingGraph)
+    newConfig = applyConfigPreset(newConfig, 'availabilityView', newConfig.availabilityView)
 
     // Check for required settings
-    if (!finalConfig.email) {
+    if (!newConfig.email) {
       utils.logError('A required config setting ("email") was missing');
     }
-    if (!finalConfig.apiToken) {
+    if (!newConfig.apiToken) {
       utils.logError('A required config setting ("apiToken") was missing');
     }
-    if (!finalConfig.calendar && finalConfig.bookingGraph !== 'group_customer' && finalConfig.bookingGraph !== 'group_customer_payment' && !finalConfig.timekitFindTimeTeam) {
+    if (!newConfig.calendar && newConfig.bookingGraph !== 'group_customer' && newConfig.bookingGraph !== 'group_customer_payment' && !newConfig.timekitFindTimeTeam) {
       utils.logError('A required config setting ("calendar") was missing');
     }
 
     // Set new config to instance config
-    config = finalConfig;
+    config = newConfig;
 
     return config;
 

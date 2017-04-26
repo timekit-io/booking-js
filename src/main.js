@@ -14,7 +14,7 @@ var $               = require('jquery');
 window.fullcalendar = require('fullcalendar');
 var moment          = window.moment = require('moment');
 var timekit         = require('timekit-sdk');
-require('moment-timezone/builds/moment-timezone-with-data-2010-2020.js');
+require('moment-timezone/builds/moment-timezone-with-data-2012-2022.js');
 var interpolate     = require('sprintf-js');
 
 // Internal dependencies

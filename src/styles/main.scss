@@ -57,6 +57,10 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
           left: 15px;
         }
       }
+
+      .is-small.has-avatar & .fc-right h2 {
+        display: none;
+      }
     }
   }
 
@@ -118,15 +122,13 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
     color: $textColor;
     font-weight: 600;
 
-    .is-small & {
-      text-align: center;
-      left: 90px;
-      right: 90px;
-      box-sizing: border-box;
-    }
     .is-small.has-avatar & {
       top: 44px;
       padding: 0px 20px;
+      text-align: center;
+      left: 0;
+      right: 0;
+      box-sizing: border-box;
     }
   }
 

@@ -290,6 +290,15 @@ $primaryDarkColor: darken($primaryColor, 10%);
   .fc-list-item-marker {
     display: none;
   }
+
+  .fc-list-item-time {
+    padding-right: 0px;
+    min-width: 110px;
+  }
+
+  .fc-list-item-title  {
+    font-weight: 600;
+  }
 }
 
 .fc-unthemed .fc-list-empty {

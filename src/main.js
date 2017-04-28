@@ -345,6 +345,9 @@ function TimekitBooking() {
       }
     }
 
+    console.log(currentView)
+    console.log(view)
+
     if (config.bookingFields.comment.enabled) {    height += 84; }
     if (config.bookingFields.phone.enabled) {      height += 64; }
     if (config.bookingFields.voip.enabled) {       height += 64; }

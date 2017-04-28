@@ -386,19 +386,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Fires when window is resized and calendar must adhere
 	  var decideCalendarSize = function(currentView) {
 	
-	    var view, height;
-	    var rootWidth = rootTarget.width();
 	    currentView = currentView || calendarTarget.fullCalendar('getView').name
 	
-	    if (rootWidth < 480) {
-	      if (currentView === 'agendaWeek') view = 'basicDay';
+	    var view = config.fullCalendar.defaultView
+	    var height = 420;
+	    rootTarget.removeClass('is-small');
+	
+	    if (rootTarget.width() < 480) {
 	      height = 380;
 	      rootTarget.addClass('is-small');
-	      if (config.avatar) { height -= 15; }
-	    } else {
-	      view = config.fullCalendar.defaultView
-	      height = 420;
-	      rootTarget.removeClass('is-small');
+	      if (config.avatar) height -= 15;
+	      if (currentView === 'agendaWeek' || currentView === 'basicDay') {
+	        view = 'basicDay';
+	      }
 	    }
 	
 	    if (config.bookingFields.comment.enabled) {    height += 84; }

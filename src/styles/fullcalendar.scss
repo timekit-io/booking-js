@@ -296,7 +296,7 @@ $primaryDarkColor: darken($primaryColor, 10%);
     min-width: 110px;
   }
 
-  .fc-list-item-title  {
+  .fc-list-item-title a {
     font-weight: 600;
   }
 }

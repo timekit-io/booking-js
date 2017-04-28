@@ -334,7 +334,6 @@ function TimekitBooking() {
 
     var view = config.fullCalendar.defaultView
     var height = 420;
-    rootTarget.removeClass('is-small');
 
     if (rootTarget.width() < 480) {
       height = 380;
@@ -343,10 +342,9 @@ function TimekitBooking() {
       if (currentView === 'agendaWeek' || currentView === 'basicDay') {
         view = 'basicDay';
       }
+    } else {
+      rootTarget.removeClass('is-small');
     }
-
-    console.log(currentView)
-    console.log(view)
 
     if (config.bookingFields.comment.enabled) {    height += 84; }
     if (config.bookingFields.phone.enabled) {      height += 64; }
@@ -684,6 +682,9 @@ function TimekitBooking() {
     // Set new config to instance config
     config = newConfig;
 
+    utils.logDebug(['Final config:', config], config);
+    utils.logDebug(['Version:', getVersion()], config);
+
     return config;
 
   };
@@ -747,6 +748,8 @@ function TimekitBooking() {
   // Initilization method
   var init = function(suppliedConfig) {
 
+    utils.logDebug(['Supplied config:', suppliedConfig], suppliedConfig);
+
     // Start from local config
     if ((!suppliedConfig.widgetId && !suppliedConfig.widgetSlug) || suppliedConfig.disableRemoteLoad) {
       return start(suppliedConfig)
@@ -760,6 +763,7 @@ function TimekitBooking() {
       if (response.data.id) remoteConfig.widgetId = response.data.id
       // merge with supplied config for overwriting settings
       var mergedConfig = $.extend(true, {}, remoteConfig, suppliedConfig);
+      utils.logDebug(['Remote config:', remoteConfig], mergedConfig);
       start(mergedConfig)
     })
 

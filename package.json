@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "console-polyfill": "^0.2.2",
-    "fullcalendar": "^3.0.0",
+    "fullcalendar": "^3.4.0",
     "moment": "^2.10.6",
     "moment-timezone": "^0.5.0",
     "sprintf-js": "^1.0.3",

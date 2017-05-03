@@ -290,7 +290,6 @@ function TimekitBooking() {
     var sizing = decideCalendarSize(config.fullCalendar.defaultView);
 
     var args = {
-      defaultView: sizing.view,
       height: sizing.height,
       eventClick: clickTimeslot,
       windowResize: function() {
@@ -301,6 +300,7 @@ function TimekitBooking() {
     };
 
     $.extend(true, args, config.fullCalendar);
+    args.defaultView = sizing.view;
 
     calendarTarget = $('<div class="bookingjs-calendar empty-calendar">');
     rootTarget.append(calendarTarget);
@@ -644,7 +644,7 @@ function TimekitBooking() {
 
   var applyConfigPreset = function (config, propertyName, propertyObject) {
     var presetCheck = defaultConfig.presets[propertyName][propertyObject];
-    if (presetCheck) return $.extend(true, {}, config, presetCheck);
+    if (presetCheck) return $.extend(true, {}, presetCheck, config);
     return config
   }
 

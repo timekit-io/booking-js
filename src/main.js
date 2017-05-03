@@ -11,15 +11,19 @@
 
 // External depenencies
 var $               = require('jquery');
+var timekit         = require('timekit-sdk');
+var interpolate     = require('sprintf-js');
 window.fullcalendar = require('fullcalendar');
 var moment          = window.moment = require('moment');
-var timekit         = require('timekit-sdk');
 require('moment-timezone/builds/moment-timezone-with-data-2012-2022.js');
-var interpolate     = require('sprintf-js');
+require('fullcalendar/dist/fullcalendar.css');
 
 // Internal dependencies
 var utils         = require('./utils');
 var defaultConfig = require('./defaults');
+require('./styles/fullcalendar.scss');
+require('./styles/utils.scss');
+require('./styles/main.scss');
 
 // Main library
 function TimekitBooking() {
@@ -31,14 +35,6 @@ function TimekitBooking() {
   var rootTarget;
   var calendarTarget;
   var bookingPageTarget;
-
-  // Inject style dependencies
-  var includeStyles = function() {
-    require('../node_modules/fullcalendar/dist/fullcalendar.css');
-    require('./styles/fullcalendar.scss');
-    require('./styles/utils.scss');
-    require('./styles/main.scss');
-  };
 
   // Make sure DOM element is ready and clean it
   var prepareDOM = function() {
@@ -707,9 +703,6 @@ function TimekitBooking() {
   var render = function() {
 
     utils.doCallback('renderStarted', config);
-
-    // Include library styles if enabled
-    includeStyles();
 
     // Set rootTarget to the target element and clean before child nodes before continuing
     prepareDOM();

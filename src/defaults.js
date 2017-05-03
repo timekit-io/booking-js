@@ -12,7 +12,6 @@ var primary = {
   autoload: true,
   disableRemoteLoad: false,
   disableConfirmPage: false,
-  includeStyles: true,
   showCredits: true,
   goToFirstEvent: true,
   bookingGraph: 'instant',

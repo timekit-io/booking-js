@@ -67,11 +67,6 @@ var primary = {
   timekitCreateBooking: { },
   timekitUpdateBooking: { },
   fullCalendar: {
-    header: {
-      left: '',
-      center: '',
-      right: 'today, prev, next'
-    },
     views: {
       agenda: {
         displayEventEnd: false
@@ -245,6 +240,11 @@ var timeDateFormat12hmdysun = {
 var availabilityViewAgendaWeek = {
 
   fullCalendar: {
+    header: {
+      left: '',
+      center: '',
+      right: 'today, prev, next'
+    },
     defaultView: 'agendaWeek'
   }
 
@@ -255,6 +255,8 @@ var availabilityViewListing = {
 
   fullCalendar: {
     header: {
+      left: '',
+      center: '',
       right: ''
     },
     defaultView: 'listing'

@@ -35,6 +35,7 @@ function TimekitBooking() {
   var rootTarget;
   var calendarTarget;
   var bookingPageTarget;
+  var loadingTarget;
 
   // Make sure DOM element is ready and clean it
   var prepareDOM = function() {
@@ -79,6 +80,7 @@ function TimekitBooking() {
     .then(function(response){
 
       utils.doCallback('findTimeSuccessful', config, response);
+      hideLoadingScreen();
 
       // Render available timeslots in FullCalendar
       if(response.data.length > 0) renderCalendarEvents(response.data);
@@ -86,6 +88,7 @@ function TimekitBooking() {
     }).catch(function(response){
       utils.doCallback('findTimeFailed', config, response);
       utils.logError(['An error with Timekit FindTime occured, context:', response]);
+      hideLoadingScreen();
     });
 
   };
@@ -113,6 +116,7 @@ function TimekitBooking() {
     .then(function(response){
 
       utils.doCallback('findTimeTeamSuccessful', config, response);
+      hideLoadingScreen();
 
       // Render available timeslots in FullCalendar
       if(response.data.length > 0) renderCalendarEvents(response.data);
@@ -120,6 +124,7 @@ function TimekitBooking() {
     }).catch(function(response){
       utils.doCallback('findTimeTeamFailed', config, response);
       utils.logError(['An error with Timekit FindTimeTeam occured, context:', response]);
+      hideLoadingScreen();
     });
 
   };
@@ -153,6 +158,7 @@ function TimekitBooking() {
       })
 
       utils.doCallback('getBookingSlotsSuccessful', config, response);
+      hideLoadingScreen();
 
       // Render available timeslots in FullCalendar
       if(slots.length > 0) renderCalendarEvents(slots);
@@ -160,12 +166,15 @@ function TimekitBooking() {
     }).catch(function(response){
       utils.doCallback('getBookingSlotsFailed', config, response);
       utils.logError(['An error with Timekit GetBookings occured, context:', response]);
+      hideLoadingScreen();
     });
 
   };
 
   // Universal functional to retrieve availability through either findtime or group booking slots
   var getAvailability = function() {
+
+    showLoadingScreen();
 
     calendarTarget.fullCalendar('removeEventSources');
 
@@ -400,6 +409,34 @@ function TimekitBooking() {
 
     rootTarget.addClass('has-displayname');
     rootTarget.append(displayNameTarget);
+
+  };
+
+  // Show loading spinner screen
+  var showLoadingScreen = function() {
+
+    utils.doCallback('showLoadingScreen', config);
+
+    var template = require('./templates/loading.html');
+
+    loadingTarget = $(template.render({
+      loadingIcon: require('!svg-inline!./assets/loading-spinner.svg'),
+    }));
+
+    rootTarget.append(loadingTarget);
+
+  };
+
+  // Remove the booking page DOM node
+  var hideLoadingScreen = function() {
+
+    utils.doCallback('hideLoadingScreen', config);
+
+    loadingTarget.removeClass('show');
+
+    setTimeout(function(){
+      loadingTarget.remove();
+    }, 500);
 
   };
 

@@ -426,4 +426,39 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
     vertical-align: sub;
   }
 
+  &-loading {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    background-color: $bgColor;
+    z-index: 30;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    border-radius: 4px;
+
+    &.show {
+      opacity: 1;
+    }
+
+    &-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+
+      svg {
+        height: 30px;
+        width: 30px;
+        animation: spin 0.6s infinite linear;
+
+        path {
+          fill: $primaryColor;
+        }
+      }
+    }
+
+  }
+
 }

@@ -378,7 +378,7 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
     &.success &-button:hover {
       max-width: 80px;
       background-color: #5BAF56;
-      cursor: not-allowed;
+      cursor: pointer;
 
       .inactive-text { opacity: 0; }
       .success-text { opacity: 1; }

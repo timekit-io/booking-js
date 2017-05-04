@@ -470,9 +470,9 @@ function TimekitBooking() {
 
     bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
       e.preventDefault();
-      hideBookingPage();
       var bookingHasBeenCreated = $(form).hasClass('success');
       if (bookingHasBeenCreated) getAvailability();
+      hideBookingPage();
     });
 
     if (eventData.users) {
@@ -523,8 +523,14 @@ function TimekitBooking() {
 
     var formElement = $(form);
 
+    if(formElement.hasClass('success')) {
+      getAvailability();
+      hideBookingPage();
+      return;
+    }
+
     // Abort if form is submitting, have submitted or does not validate
-    if(formElement.hasClass('loading') || formElement.hasClass('success') || formElement.hasClass('error') || !e.target.checkValidity()) {
+    if(formElement.hasClass('loading') || formElement.hasClass('error') || !e.target.checkValidity()) {
       var submitButton = formElement.find('.bookingjs-form-button');
       submitButton.addClass('button-shake');
       setTimeout(function() {

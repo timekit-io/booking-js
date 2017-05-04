@@ -526,9 +526,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
 	      e.preventDefault();
-	      hideBookingPage();
 	      var bookingHasBeenCreated = $(form).hasClass('success');
 	      if (bookingHasBeenCreated) getAvailability();
+	      hideBookingPage();
 	    });
 	
 	    if (eventData.users) {
@@ -579,8 +579,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    var formElement = $(form);
 	
+	    if(formElement.hasClass('success')) {
+	      getAvailability();
+	      hideBookingPage();
+	      return;
+	    }
+	
 	    // Abort if form is submitting, have submitted or does not validate
-	    if(formElement.hasClass('loading') || formElement.hasClass('success') || formElement.hasClass('error') || !e.target.checkValidity()) {
+	    if(formElement.hasClass('loading') || formElement.hasClass('error') || !e.target.checkValidity()) {
 	      var submitButton = formElement.find('.bookingjs-form-button');
 	      submitButton.addClass('button-shake');
 	      setTimeout(function() {
@@ -3771,7 +3777,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ (function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
-	 * FullCalendar v3.3.1
+	 * FullCalendar v3.4.0
 	 * Docs & License: https://fullcalendar.io/
 	 * (c) 2017 Adam Shaw
 	 */
@@ -3791,7 +3797,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	;;
 	
 	var FC = $.fullCalendar = {
-		version: "3.3.1",
+		version: "3.4.0",
 		// When introducing internal API incompatibilities (where fullcalendar plugins would break),
 		// the minor version of the calendar should be upped (ex: 2.7.2 -> 2.8.0)
 		// and the below integer should be incremented.
@@ -5174,27 +5180,47 @@ return /******/ (function(modules) { // webpackBootstrap
 	// -------------------------------------------------------------------------------------------------
 	
 	newMomentProto.format = function() {
+	
 		if (this._fullCalendar && arguments[0]) { // an enhanced moment? and a format string provided?
 			return formatDate(this, arguments[0]); // our extended formatting
 		}
 		if (this._ambigTime) {
-			return oldMomentFormat(this, 'YYYY-MM-DD');
+			return oldMomentFormat(englishMoment(this), 'YYYY-MM-DD');
 		}
 		if (this._ambigZone) {
-			return oldMomentFormat(this, 'YYYY-MM-DD[T]HH:mm:ss');
+			return oldMomentFormat(englishMoment(this), 'YYYY-MM-DD[T]HH:mm:ss');
 		}
+		if (this._fullCalendar) { // enhanced non-ambig moment?
+			// moment.format() doesn't ensure english, but we want to.
+			return oldMomentFormat(englishMoment(this));
+		}
+	
 		return oldMomentProto.format.apply(this, arguments);
 	};
 	
 	newMomentProto.toISOString = function() {
+	
 		if (this._ambigTime) {
-			return oldMomentFormat(this, 'YYYY-MM-DD');
+			return oldMomentFormat(englishMoment(this), 'YYYY-MM-DD');
 		}
 		if (this._ambigZone) {
-			return oldMomentFormat(this, 'YYYY-MM-DD[T]HH:mm:ss');
+			return oldMomentFormat(englishMoment(this), 'YYYY-MM-DD[T]HH:mm:ss');
 		}
+		if (this._fullCalendar) { // enhanced non-ambig moment?
+			// depending on browser, moment might not output english. ensure english.
+			// https://github.com/moment/moment/blob/2.18.1/src/lib/moment/format.js#L22
+			return oldMomentProto.toISOString.apply(englishMoment(this), arguments);
+		}
+	
 		return oldMomentProto.toISOString.apply(this, arguments);
 	};
+	
+	function englishMoment(mom) {
+		if (mom.locale() !== 'en') {
+			return mom.clone().locale('en');
+		}
+		return mom;
+	}
 	
 	;;
 	(function() {
@@ -5678,198 +5704,647 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	;;
 	
-	/*
-	Wrap jQuery's Deferred Promise object to be slightly more Promise/A+ compliant.
-	With the added non-standard feature of synchronously executing handlers on resolved promises,
-	which doesn't always happen otherwise (esp with nested .then handlers!?),
-	so, this makes things a lot easier, esp because jQuery 3 changed the synchronicity for Deferred objects.
+	var Model = Class.extend(EmitterMixin, ListenerMixin, {
 	
-	TODO: write tests and more comments
-	*/
+		_props: null,
+		_watchers: null,
+		_globalWatchArgs: null,
 	
-	function Promise(executor) {
-		var deferred = $.Deferred();
-		var promise = deferred.promise();
+		constructor: function() {
+			this._watchers = {};
+			this._props = {};
+			this.applyGlobalWatchers();
+		},
 	
-		if (typeof executor === 'function') {
-			executor(
-				function(value) { // resolve
-					if (Promise.immediate) {
-						promise._value = value;
-					}
-					deferred.resolve(value);
-				},
-				function() { // reject
-					deferred.reject();
-				}
-			);
-		}
-		
-		if (Promise.immediate) {
-			var origThen = promise.then;
+		applyGlobalWatchers: function() {
+			var argSets = this._globalWatchArgs || [];
+			var i;
 	
-			promise.then = function(onFulfilled, onRejected) {
-				var state = promise.state();
-				
-				if (state === 'resolved') {
-					if (typeof onFulfilled === 'function') {
-						return Promise.resolve(onFulfilled(promise._value));
-					}
-				}
-				else if (state === 'rejected') {
-					if (typeof onRejected === 'function') {
-						onRejected();
-						return promise; // already rejected
-					}
-				}
+			for (i = 0; i < argSets.length; i++) {
+				this.watch.apply(this, argSets[i]);
+			}
+		},
 	
-				return origThen.call(promise, onFulfilled, onRejected);
-			};
-		}
+		has: function(name) {
+			return name in this._props;
+		},
 	
-		return promise; // instanceof Promise will break :( TODO: make Promise a real class
-	}
-	
-	FC.Promise = Promise;
-	
-	Promise.immediate = true;
-	
-	
-	Promise.resolve = function(value) {
-		if (value && typeof value.resolve === 'function') {
-			return value.promise();
-		}
-		if (value && typeof value.then === 'function') {
-			return value;
-		}
-		else {
-			var deferred = $.Deferred().resolve(value);
-			var promise = deferred.promise();
-	
-			if (Promise.immediate) {
-				var origThen = promise.then;
-	
-				promise._value = value;
-	
-				promise.then = function(onFulfilled, onRejected) {
-					if (typeof onFulfilled === 'function') {
-						return Promise.resolve(onFulfilled(value));
-					}
-					return origThen.call(promise, onFulfilled, onRejected);
-				};
+		get: function(name) {
+			if (name === undefined) {
+				return this._props;
 			}
 	
-			return promise;
-		}
-	};
+			return this._props[name];
+		},
 	
+		set: function(name, val) {
+			var newProps;
 	
-	Promise.reject = function() {
-		return $.Deferred().reject().promise();
-	};
+			if (typeof name === 'string') {
+				newProps = {};
+				newProps[name] = val === undefined ? null : val;
+			}
+			else {
+				newProps = name;
+			}
 	
+			this.setProps(newProps);
+		},
 	
-	Promise.all = function(inputs) {
-		var hasAllValues = false;
-		var values;
-		var i, input;
+		reset: function(newProps) {
+			var oldProps = this._props;
+			var changeset = {}; // will have undefined's to signal unsets
+			var name;
 	
-		if (Promise.immediate) {
-			hasAllValues = true;
-			values = [];
+			for (name in oldProps) {
+				changeset[name] = undefined;
+			}
 	
-			for (i = 0; i < inputs.length; i++) {
-				input = inputs[i];
+			for (name in newProps) {
+				changeset[name] = newProps[name];
+			}
 	
-				if (input && typeof input.state === 'function' && input.state() === 'resolved' && ('_value' in input)) {
-					values.push(input._value);
+			this.setProps(changeset);
+		},
+	
+		unset: function(name) { // accepts a string or array of strings
+			var newProps = {};
+			var names;
+			var i;
+	
+			if (typeof name === 'string') {
+				names = [ name ];
+			}
+			else {
+				names = name;
+			}
+	
+			for (i = 0; i < names.length; i++) {
+				newProps[names[i]] = undefined;
+			}
+	
+			this.setProps(newProps);
+		},
+	
+		setProps: function(newProps) {
+			var changedProps = {};
+			var changedCnt = 0;
+			var name, val;
+	
+			for (name in newProps) {
+				val = newProps[name];
+	
+				// a change in value?
+				// if an object, don't check equality, because might have been mutated internally.
+				// TODO: eventually enforce immutability.
+				if (
+					typeof val === 'object' ||
+					val !== this._props[name]
+				) {
+					changedProps[name] = val;
+					changedCnt++;
 				}
-				else if (input && typeof input.then === 'function') {
-					hasAllValues = false;
-					break;
+			}
+	
+			if (changedCnt) {
+	
+				this.trigger('before:batchChange', changedProps);
+	
+				for (name in changedProps) {
+					val = changedProps[name];
+	
+					this.trigger('before:change', name, val);
+					this.trigger('before:change:' + name, val);
+				}
+	
+				for (name in changedProps) {
+					val = changedProps[name];
+	
+					if (val === undefined) {
+						delete this._props[name];
+					}
+					else {
+						this._props[name] = val;
+					}
+	
+					this.trigger('change:' + name, val);
+					this.trigger('change', name, val);
+				}
+	
+				this.trigger('batchChange', changedProps);
+			}
+		},
+	
+		watch: function(name, depList, startFunc, stopFunc) {
+			var _this = this;
+	
+			this.unwatch(name);
+	
+			this._watchers[name] = this._watchDeps(depList, function(deps) {
+				var res = startFunc.call(_this, deps);
+	
+				if (res && res.then) {
+					_this.unset(name); // put in an unset state while resolving
+					res.then(function(val) {
+						_this.set(name, val);
+					});
 				}
 				else {
-					values.push(input);
+					_this.set(name, res);
 				}
+			}, function() {
+				_this.unset(name);
+	
+				if (stopFunc) {
+					stopFunc.call(_this);
+				}
+			});
+		},
+	
+		unwatch: function(name) {
+			var watcher = this._watchers[name];
+	
+			if (watcher) {
+				delete this._watchers[name];
+				watcher.teardown();
+			}
+		},
+	
+		_watchDeps: function(depList, startFunc, stopFunc) {
+			var _this = this;
+			var queuedChangeCnt = 0;
+			var depCnt = depList.length;
+			var satisfyCnt = 0;
+			var values = {}; // what's passed as the `deps` arguments
+			var bindTuples = []; // array of [ eventName, handlerFunc ] arrays
+			var isCallingStop = false;
+	
+			function onBeforeDepChange(depName, val, isOptional) {
+				queuedChangeCnt++;
+				if (queuedChangeCnt === 1) { // first change to cause a "stop" ?
+					if (satisfyCnt === depCnt) { // all deps previously satisfied?
+						isCallingStop = true;
+						stopFunc();
+						isCallingStop = false;
+					}
+				}
+			}
+	
+			function onDepChange(depName, val, isOptional) {
+	
+				if (val === undefined) { // unsetting a value?
+	
+					// required dependency that was previously set?
+					if (!isOptional && values[depName] !== undefined) {
+						satisfyCnt--;
+					}
+	
+					delete values[depName];
+				}
+				else { // setting a value?
+	
+					// required dependency that was previously unset?
+					if (!isOptional && values[depName] === undefined) {
+						satisfyCnt++;
+					}
+	
+					values[depName] = val;
+				}
+	
+				queuedChangeCnt--;
+				if (!queuedChangeCnt) { // last change to cause a "start"?
+	
+					// now finally satisfied or satisfied all along?
+					if (satisfyCnt === depCnt) {
+	
+						// if the stopFunc initiated another value change, ignore it.
+						// it will be processed by another change event anyway.
+						if (!isCallingStop) {
+							startFunc(values);
+						}
+					}
+				}
+			}
+	
+			// intercept for .on() that remembers handlers
+			function bind(eventName, handler) {
+				_this.on(eventName, handler);
+				bindTuples.push([ eventName, handler ]);
+			}
+	
+			// listen to dependency changes
+			depList.forEach(function(depName) {
+				var isOptional = false;
+	
+				if (depName.charAt(0) === '?') { // TODO: more DRY
+					depName = depName.substring(1);
+					isOptional = true;
+				}
+	
+				bind('before:change:' + depName, function(val) {
+					onBeforeDepChange(depName, val, isOptional);
+				});
+	
+				bind('change:' + depName, function(val) {
+					onDepChange(depName, val, isOptional);
+				});
+			});
+	
+			// process current dependency values
+			depList.forEach(function(depName) {
+				var isOptional = false;
+	
+				if (depName.charAt(0) === '?') { // TODO: more DRY
+					depName = depName.substring(1);
+					isOptional = true;
+				}
+	
+				if (_this.has(depName)) {
+					values[depName] = _this.get(depName);
+					satisfyCnt++;
+				}
+				else if (isOptional) {
+					satisfyCnt++;
+				}
+			});
+	
+			// initially satisfied
+			if (satisfyCnt === depCnt) {
+				startFunc(values);
+			}
+	
+			return {
+				teardown: function() {
+					// remove all handlers
+					for (var i = 0; i < bindTuples.length; i++) {
+						_this.off(bindTuples[i][0], bindTuples[i][1]);
+					}
+					bindTuples = null;
+	
+					// was satisfied, so call stopFunc
+					if (satisfyCnt === depCnt) {
+						stopFunc();
+					}
+				},
+				flash: function() {
+					if (satisfyCnt === depCnt) {
+						stopFunc();
+						startFunc(values);
+					}
+				}
+			};
+		},
+	
+		flash: function(name) {
+			var watcher = this._watchers[name];
+	
+			if (watcher) {
+				watcher.flash();
 			}
 		}
 	
-		if (hasAllValues) {
-			return Promise.resolve(values);
+	});
+	
+	
+	Model.watch = function(/* same arguments as this.watch() */) {
+		var proto = this.prototype;
+	
+		if (!proto._globalWatchArgs) {
+			proto._globalWatchArgs = [];
 		}
-		else {
-			return $.when.apply($.when, inputs).then(function() {
-				return $.when($.makeArray(arguments));
-			});
-		}
+	
+		proto._globalWatchArgs.push(arguments);
 	};
+	
+	
+	FC.Model = Model;
+	
 	
 	;;
 	
-	// TODO: write tests and clean up code
+	var Promise = {
 	
-	function TaskQueue(debounceWait) {
-		var q = []; // array of runFuncs
+		construct: function(executor) {
+			var deferred = $.Deferred();
+			var promise = deferred.promise();
 	
-		function addTask(taskFunc) {
-			return new Promise(function(resolve) {
+			if (typeof executor === 'function') {
+				executor(
+					function(val) { // resolve
+						deferred.resolve(val);
+						attachImmediatelyResolvingThen(promise, val);
+					},
+					function() { // reject
+						deferred.reject();
+						attachImmediatelyRejectingThen(promise);
+					}
+				);
+			}
 	
-				// should run this function when it's taskFunc's turn to run.
-				// responsible for popping itself off the queue.
-				var runFunc = function() {
-					Promise.resolve(taskFunc()) // result might be async, coerce to promise
-						.then(resolve) // resolve TaskQueue::push's promise, for the caller. will receive result of taskFunc.
-						.then(function() {
-							q.shift(); // pop itself off
+			return promise;
+		},
 	
-							// run the next task, if any
-							if (q.length) {
-								q[0]();
-							}
-						});
-				};
+		resolve: function(val) {
+			var deferred = $.Deferred().resolve(val);
+			var promise = deferred.promise();
 	
-				// always put the task at the end of the queue, BEFORE running the task
-				q.push(runFunc);
+			attachImmediatelyResolvingThen(promise, val);
 	
-				// if it's the only task in the queue, run immediately
-				if (q.length === 1) {
-					runFunc();
-				}
-			});
+			return promise;
+		},
+	
+		reject: function() {
+			var deferred = $.Deferred().reject();
+			var promise = deferred.promise();
+	
+			attachImmediatelyRejectingThen(promise);
+	
+			return promise;
 		}
 	
-		this.add = // potentially debounce, for the public method
-			typeof debounceWait === 'number' ?
-				debounce(addTask, debounceWait) :
-				addTask; // if not a number (null/undefined/false), no debounce at all
+	};
 	
-		this.addQuickly = addTask; // guaranteed no debounce
+	
+	function attachImmediatelyResolvingThen(promise, val) {
+		promise.then = function(onResolve) {
+			if (typeof onResolve === 'function') {
+				onResolve(val);
+			}
+			return promise; // for chaining
+		};
 	}
+	
+	
+	function attachImmediatelyRejectingThen(promise) {
+		promise.then = function(onResolve, onReject) {
+			if (typeof onReject === 'function') {
+				onReject();
+			}
+			return promise; // for chaining
+		};
+	}
+	
+	
+	FC.Promise = Promise;
+	
+	;;
+	
+	var TaskQueue = Class.extend(EmitterMixin, {
+	
+		q: null,
+		isPaused: false,
+		isRunning: false,
+	
+	
+		constructor: function() {
+			this.q = [];
+		},
+	
+	
+		queue: function(/* taskFunc, taskFunc... */) {
+			this.q.push.apply(this.q, arguments); // append
+			this.tryStart();
+		},
+	
+	
+		pause: function() {
+			this.isPaused = true;
+		},
+	
+	
+		resume: function() {
+			this.isPaused = false;
+			this.tryStart();
+		},
+	
+	
+		tryStart: function() {
+			if (!this.isRunning && this.canRunNext()) {
+				this.isRunning = true;
+				this.trigger('start');
+				this.runNext();
+			}
+		},
+	
+	
+		canRunNext: function() {
+			return !this.isPaused && this.q.length;
+		},
+	
+	
+		runNext: function() { // does not check canRunNext
+			this.runTask(this.q.shift());
+		},
+	
+	
+		runTask: function(task) {
+			this.runTaskFunc(task);
+		},
+	
+	
+		runTaskFunc: function(taskFunc) {
+			var _this = this;
+			var res = taskFunc();
+	
+			if (res && res.then) {
+				res.then(done);
+			}
+			else {
+				done();
+			}
+	
+			function done() {
+				if (_this.canRunNext()) {
+					_this.runNext();
+				}
+				else {
+					_this.isRunning = false;
+					_this.trigger('stop');
+				}
+			}
+		}
+	
+	});
 	
 	FC.TaskQueue = TaskQueue;
 	
-	/*
-	q = new TaskQueue();
+	;;
 	
-	function work(i) {
-		return q.push(function() {
-			trigger();
-			console.log('work' + i);
-		});
-	}
+	var RenderQueue = TaskQueue.extend({
 	
-	var cnt = 0;
+		waitsByNamespace: null,
+		waitNamespace: null,
+		waitId: null,
 	
-	function trigger() {
-		if (cnt < 5) {
-			cnt++;
-			work(cnt);
+	
+		constructor: function(waitsByNamespace) {
+			TaskQueue.call(this); // super-constructor
+	
+			this.waitsByNamespace = waitsByNamespace || {};
+		},
+	
+	
+		queue: function(taskFunc, namespace, type) {
+			var task = {
+				func: taskFunc,
+				namespace: namespace,
+				type: type
+			};
+			var waitMs;
+	
+			if (namespace) {
+				waitMs = this.waitsByNamespace[namespace];
+			}
+	
+			if (this.waitNamespace) {
+				if (namespace === this.waitNamespace && waitMs != null) {
+					this.delayWait(waitMs);
+				}
+				else {
+					this.clearWait();
+					this.tryStart();
+				}
+			}
+	
+			if (this.compoundTask(task)) { // appended to queue?
+	
+				if (!this.waitNamespace && waitMs != null) {
+					this.startWait(namespace, waitMs);
+				}
+				else {
+					this.tryStart();
+				}
+			}
+		},
+	
+	
+		startWait: function(namespace, waitMs) {
+			this.waitNamespace = namespace;
+			this.spawnWait(waitMs);
+		},
+	
+	
+		delayWait: function(waitMs) {
+			clearTimeout(this.waitId);
+			this.spawnWait(waitMs);
+		},
+	
+	
+		spawnWait: function(waitMs) {
+			var _this = this;
+	
+			this.waitId = setTimeout(function() {
+				_this.waitNamespace = null;
+				_this.tryStart();
+			}, waitMs);
+		},
+	
+	
+		clearWait: function() {
+			if (this.waitNamespace) {
+				clearTimeout(this.waitId);
+				this.waitId = null;
+				this.waitNamespace = null;
+			}
+		},
+	
+	
+		canRunNext: function() {
+			if (!TaskQueue.prototype.canRunNext.apply(this, arguments)) {
+				return false;
+			}
+	
+			// waiting for a certain namespace to stop receiving tasks?
+			if (this.waitNamespace) {
+	
+				// if there was a different namespace task in the meantime,
+				// that forces all previously-waiting tasks to suddenly execute.
+				// TODO: find a way to do this in constant time.
+				for (var q = this.q, i = 0; i < q.length; i++) {
+					if (q[i].namespace !== this.waitNamespace) {
+						return true; // allow execution
+					}
+				}
+	
+				return false;
+			}
+	
+			return true;
+		},
+	
+	
+		runTask: function(task) {
+			this.runTaskFunc(task.func);
+		},
+	
+	
+		compoundTask: function(newTask) {
+			var q = this.q;
+			var shouldAppend = true;
+			var i, task;
+	
+			if (newTask.namespace) {
+	
+				if (newTask.type === 'destroy' || newTask.type === 'init') {
+	
+					// remove all add/remove ops with same namespace, regardless of order
+					for (i = q.length - 1; i >= 0; i--) {
+						task = q[i];
+	
+						if (
+							task.namespace === newTask.namespace &&
+							(task.type === 'add' || task.type === 'remove')
+						) {
+							q.splice(i, 1); // remove task
+						}
+					}
+	
+					if (newTask.type === 'destroy') {
+						// eat away final init/destroy operation
+						if (q.length) {
+							task = q[q.length - 1]; // last task
+	
+							if (task.namespace === newTask.namespace) {
+	
+								// the init and our destroy cancel each other out
+								if (task.type === 'init') {
+									shouldAppend = false;
+									q.pop();
+								}
+								// prefer to use the destroy operation that's already present
+								else if (task.type === 'destroy') {
+									shouldAppend = false;
+								}
+							}
+						}
+					}
+					else if (newTask.type === 'init') {
+						// eat away final init operation
+						if (q.length) {
+							task = q[q.length - 1]; // last task
+	
+							if (
+								task.namespace === newTask.namespace &&
+								task.type === 'init'
+							) {
+								// our init operation takes precedence
+								q.pop();
+							}
+						}
+					}
+				}
+			}
+	
+			if (shouldAppend) {
+				q.push(newTask);
+			}
+	
+			return shouldAppend;
 		}
-	}
 	
-	work(9);
-	*/
+	});
+	
+	FC.RenderQueue = RenderQueue;
 	
 	;;
 	
@@ -8506,7 +8981,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			if (businessHours == null) {
 				// fallback
 				// access from calendawr. don't access from view. doesn't update with dynamic options.
-				businessHours = calendar.options.businessHours;
+				businessHours = calendar.opt('businessHours');
 			}
 	
 			events = calendar.computeBusinessHourEvents(wholeDay, businessHours);
@@ -9574,7 +10049,9 @@ return /******/ (function(modules) { // webpackBootstrap
 					});
 				}
 	
-				start = range.end;
+				if (range.end > start) {
+					start = range.end;
+				}
 			}
 	
 			// add the span of time after the last event (if there is any)
@@ -12458,7 +12935,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/* An abstract class from which other views inherit from
 	----------------------------------------------------------------------------------------------------------------------*/
 	
-	var View = FC.View = Class.extend(EmitterMixin, ListenerMixin, {
+	var View = FC.View = Model.extend({
 	
 		type: null, // subclass' view name (string)
 		name: null, // deprecated. use `type` instead
@@ -12469,14 +12946,13 @@ return /******/ (function(modules) { // webpackBootstrap
 		options: null, // hash containing all options. already merged with view-specific-options
 		el: null, // the view's containing element. set by Calendar
 	
-		isDateSet: false,
-		isDateRendered: false,
-		dateRenderQueue: null,
-	
-		isEventsBound: false,
-		isEventsSet: false,
+		renderQueue: null,
+		batchRenderDepth: 0,
+		isDatesRendered: false,
 		isEventsRendered: false,
-		eventRenderQueue: null,
+		isBaseRendered: false, // related to viewRender/viewDestroy triggers
+	
+		queuedScroll: null,
 	
 		isRTL: false,
 		isSelected: false, // boolean whether a range of time is user-selected or not
@@ -12502,6 +12978,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 		constructor: function(calendar, viewSpec) {
+			Model.prototype.constructor.call(this);
 	
 			this.calendar = calendar;
 			this.viewSpec = viewSpec;
@@ -12520,10 +12997,57 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 			this.eventOrderSpecs = parseFieldSpecs(this.opt('eventOrder'));
 	
-			this.dateRenderQueue = new TaskQueue();
-			this.eventRenderQueue = new TaskQueue(this.opt('eventRenderWait'));
+			this.renderQueue = this.buildRenderQueue();
+			this.initAutoBatchRender();
 	
 			this.initialize();
+		},
+	
+	
+		buildRenderQueue: function() {
+			var _this = this;
+			var renderQueue = new RenderQueue({
+				event: this.opt('eventRenderWait')
+			});
+	
+			renderQueue.on('start', function() {
+				_this.freezeHeight();
+				_this.addScroll(_this.queryScroll());
+			});
+	
+			renderQueue.on('stop', function() {
+				_this.thawHeight();
+				_this.popScroll();
+			});
+	
+			return renderQueue;
+		},
+	
+	
+		initAutoBatchRender: function() {
+			var _this = this;
+	
+			this.on('before:change', function() {
+				_this.startBatchRender();
+			});
+	
+			this.on('change', function() {
+				_this.stopBatchRender();
+			});
+		},
+	
+	
+		startBatchRender: function() {
+			if (!(this.batchRenderDepth++)) {
+				this.renderQueue.pause();
+			}
+		},
+	
+	
+		stopBatchRender: function() {
+			if (!(--this.batchRenderDepth)) {
+				this.renderQueue.resume();
+			}
 		},
 	
 	
@@ -12550,29 +13074,6 @@ return /******/ (function(modules) { // webpackBootstrap
 					[ this ] // always make the last argument a reference to the view. TODO: deprecate
 				)
 			);
-		},
-	
-	
-		// Returns a proxy of the given promise that will be rejected if the given event fires
-		// before the promise resolves.
-		rejectOn: function(eventName, promise) {
-			var _this = this;
-	
-			return new Promise(function(resolve, reject) {
-				_this.one(eventName, reject);
-	
-				function cleanup() {
-					_this.off(eventName, reject);
-				}
-	
-				promise.then(function(res) { // success
-					cleanup();
-					resolve(res);
-				}, function() { // failure
-					cleanup();
-					reject();
-				});
-			});
 		},
 	
 	
@@ -12708,6 +13209,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		setElement: function(el) {
 			this.el = el;
 			this.bindGlobalHandlers();
+			this.bindBaseRenderHandlers();
 			this.renderSkeleton();
 		},
 	
@@ -12719,6 +13221,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			this.unrenderSkeleton();
 	
 			this.unbindGlobalHandlers();
+			this.unbindBaseRenderHandlers();
 	
 			this.el.remove();
 			// NOTE: don't null-out this.el in case the View was destroyed within an API callback.
@@ -12744,83 +13247,108 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 		setDate: function(date) {
-			var isReset = this.isDateSet;
+			var currentDateProfile = this.get('dateProfile');
+			var newDateProfile = this.buildDateProfile(date, null, true); // forceToValid=true
 	
-			this.isDateSet = true;
-			this.handleRawDate(date);
-			this.trigger(isReset ? 'dateReset' : 'dateSet', date);
+			if (
+				!currentDateProfile ||
+				!isRangesEqual(currentDateProfile.activeRange, newDateProfile.activeRange)
+			) {
+				this.set('dateProfile', newDateProfile);
+			}
+	
+			return newDateProfile.date;
 		},
 	
 	
 		unsetDate: function() {
-			if (this.isDateSet) {
-				this.isDateSet = false;
-				this.handleDateUnset();
-				this.trigger('dateUnset');
-			}
+			this.unset('dateProfile');
 		},
 	
 	
-		// Date Handling
+		// Date Rendering
 		// -----------------------------------------------------------------------------------------------------------------
 	
 	
-		handleRawDate: function(date) {
-			var _this = this;
-			var dateProfile = this.buildDateProfile(date, null, true); // forceToValid=true
-	
-			if (!this.isSameDateProfile(dateProfile)) { // real change
-				this.handleDate(dateProfile);
-			}
-			else {
-				// View might have no date change, but still needs to render (because of a view unrender/rerender).
-				// Wait for possible queued unrenders. TODO: refactor.
-				this.dateRenderQueue.add(function() {
-					if (!_this.isDateRendered) {
-						_this.handleDate(dateProfile);
-					}
-				});
-			}
-		},
-	
-	
-		handleDate: function(dateProfile) {
-			var _this = this;
-	
-			this.unbindEvents(); // will do nothing if not already bound
-			this.requestDateRender(dateProfile).then(function() {
-				// wish we could start earlier, but setDateProfile needs to execute first
-				_this.bindEvents(); // will request events
-			});
-		},
-	
-	
-		handleDateUnset: function() {
-			this.unbindEvents();
-			this.requestDateUnrender();
-		},
-	
-	
-		// Date Render Queuing
-		// -----------------------------------------------------------------------------------------------------------------
-	
-	
-		// if dateProfile not specified, uses current
 		requestDateRender: function(dateProfile) {
 			var _this = this;
 	
-			return this.dateRenderQueue.add(function() {
-				return _this.executeDateRender(dateProfile);
-			});
+			this.renderQueue.queue(function() {
+				_this.executeDateRender(dateProfile);
+			}, 'date', 'init');
 		},
 	
 	
 		requestDateUnrender: function() {
 			var _this = this;
 	
-			return this.dateRenderQueue.add(function() {
-				return _this.executeDateUnrender();
-			});
+			this.renderQueue.queue(function() {
+				_this.executeDateUnrender();
+			}, 'date', 'destroy');
+		},
+	
+	
+		// Event Data
+		// -----------------------------------------------------------------------------------------------------------------
+	
+	
+		fetchInitialEvents: function(dateProfile) {
+			return this.calendar.requestEvents(
+				dateProfile.activeRange.start,
+				dateProfile.activeRange.end
+			);
+		},
+	
+	
+		bindEventChanges: function() {
+			this.listenTo(this.calendar, 'eventsReset', this.resetEvents);
+		},
+	
+	
+		unbindEventChanges: function() {
+			this.stopListeningTo(this.calendar, 'eventsReset');
+		},
+	
+	
+		setEvents: function(events) {
+			this.set('currentEvents', events);
+			this.set('hasEvents', true);
+		},
+	
+	
+		unsetEvents: function() {
+			this.unset('currentEvents');
+			this.unset('hasEvents');
+		},
+	
+	
+		resetEvents: function(events) {
+			this.startBatchRender();
+			this.unsetEvents();
+			this.setEvents(events);
+			this.stopBatchRender();
+		},
+	
+	
+		// Event Rendering
+		// -----------------------------------------------------------------------------------------------------------------
+	
+	
+		requestEventsRender: function(events) {
+			var _this = this;
+	
+			this.renderQueue.queue(function() {
+				_this.executeEventsRender(events);
+			}, 'event', 'init');
+		},
+	
+	
+		requestEventsUnrender: function() {
+			var _this = this;
+	
+			this.renderQueue.queue(function() {
+				_this.executeEventsUnrender();
+			}, 'event', 'destroy');
 		},
 	
 	
@@ -12829,80 +13357,45 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 		// if dateProfile not specified, uses current
-		executeDateRender: function(dateProfile) {
-			var _this = this;
+		executeDateRender: function(dateProfile, skipScroll) {
 	
-			if (dateProfile) {
-				_this.setDateProfile(dateProfile);
-			}
-	
+			this.setDateProfileForRendering(dateProfile);
 			this.updateTitle();
 			this.calendar.updateToolbarButtons();
 	
-			// if rendering a new date, reset scroll to initial state (scrollTime)
-			if (dateProfile) {
-				this.captureInitialScroll();
-			}
-			else {
-				this.captureScroll(); // a rerender of the current date
+			if (this.render) {
+				this.render(); // TODO: deprecate
 			}
 	
-			this.freezeHeight();
+			this.renderDates();
+			this.updateSize();
+			this.renderBusinessHours(); // might need coordinates, so should go after updateSize()
+			this.startNowIndicator();
 	
-			// potential issue: date-unrendering will happen with the *new* range
-			return this.executeDateUnrender().then(function() {
+			if (!skipScroll) {
+				this.addScroll(this.computeInitialDateScroll());
+			}
 	
-				if (_this.render) {
-					_this.render(); // TODO: deprecate
-				}
-	
-				_this.renderDates();
-				_this.updateSize();
-				_this.renderBusinessHours(); // might need coordinates, so should go after updateSize()
-				_this.startNowIndicator();
-	
-				_this.thawHeight();
-				_this.releaseScroll();
-	
-				_this.isDateRendered = true;
-				_this.onDateRender();
-				_this.trigger('dateRender');
-			});
+			this.isDatesRendered = true;
+			this.trigger('datesRendered');
 		},
 	
 	
 		executeDateUnrender: function() {
-			var _this = this;
 	
-			if (_this.isDateRendered) {
-				return this.requestEventsUnrender().then(function() {
+			this.unselect();
+			this.stopNowIndicator();
 	
-					_this.unselect();
-					_this.stopNowIndicator();
-					_this.triggerUnrender();
-					_this.unrenderBusinessHours();
-					_this.unrenderDates();
+			this.trigger('before:datesUnrendered');
 	
-					if (_this.destroy) {
-						_this.destroy(); // TODO: deprecate
-					}
+			this.unrenderBusinessHours();
+			this.unrenderDates();
 	
-					_this.isDateRendered = false;
-					_this.trigger('dateUnrender');
-				});
+			if (this.destroy) {
+				this.destroy(); // TODO: deprecate
 			}
-			else {
-				return Promise.resolve();
-			}
-		},
 	
-	
-		// Date Rendering Triggers
-		// -----------------------------------------------------------------------------------------------------------------
-	
-	
-		onDateRender: function() {
-			this.triggerRender();
+			this.isDatesRendered = false;
 		},
 	
 	
@@ -12922,20 +13415,42 @@ return /******/ (function(modules) { // webpackBootstrap
 		},
 	
 	
-		// Misc view rendering utils
-		// -------------------------
+		// Determing when the "meat" of the view is rendered (aka the base)
+		// -----------------------------------------------------------------------------------------------------------------
 	
 	
-		// Signals that the view's content has been rendered
-		triggerRender: function() {
+		bindBaseRenderHandlers: function() {
+			var _this = this;
+	
+			this.on('datesRendered.baseHandler', function() {
+				_this.onBaseRender();
+			});
+	
+			this.on('before:datesUnrendered.baseHandler', function() {
+				_this.onBeforeBaseUnrender();
+			});
+		},
+	
+	
+		unbindBaseRenderHandlers: function() {
+			this.off('.baseHandler');
+		},
+	
+	
+		onBaseRender: function() {
+			this.applyScreenState();
 			this.publiclyTrigger('viewRender', this, this, this.el);
 		},
 	
 	
-		// Signals that the view's content is about to be unrendered
-		triggerUnrender: function() {
+		onBeforeBaseUnrender: function() {
+			this.applyScreenState();
 			this.publiclyTrigger('viewDestroy', this, this, this.el);
 		},
+	
+	
+		// Misc view rendering utils
+		// -----------------------------------------------------------------------------------------------------------------
 	
 	
 		// Binds DOM handlers to elements that reside outside the view container, such as the document
@@ -13073,9 +13588,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		// Refreshes anything dependant upon sizing of the container element of the grid
 		updateSize: function(isResize) {
+			var scroll;
 	
 			if (isResize) {
-				this.captureScroll();
+				scroll = this.queryScroll();
 			}
 	
 			this.updateHeight(isResize);
@@ -13083,7 +13599,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			this.updateNowIndicator();
 	
 			if (isResize) {
-				this.releaseScroll();
+				this.applyScroll(scroll);
 			}
 		},
 	
@@ -13116,90 +13632,65 @@ return /******/ (function(modules) { // webpackBootstrap
 		------------------------------------------------------------------------------------------------------------------*/
 	
 	
-		capturedScroll: null,
-		capturedScrollDepth: 0,
-	
-	
-		captureScroll: function() {
-			if (!(this.capturedScrollDepth++)) {
-				this.capturedScroll = this.isDateRendered ? this.queryScroll() : {}; // require a render first
-				return true; // root?
-			}
-			return false;
+		addForcedScroll: function(scroll) {
+			this.addScroll(
+				$.extend(scroll, { isForced: true })
+			);
 		},
 	
 	
-		captureInitialScroll: function(forcedScroll) {
-			if (this.captureScroll()) { // root?
-				this.capturedScroll.isInitial = true;
+		addScroll: function(scroll) {
+			var queuedScroll = this.queuedScroll || (this.queuedScroll = {});
 	
-				if (forcedScroll) {
-					$.extend(this.capturedScroll, forcedScroll);
-				}
-				else {
-					this.capturedScroll.isComputed = true;
-				}
+			if (!queuedScroll.isForced) {
+				$.extend(queuedScroll, scroll);
 			}
 		},
 	
 	
-		releaseScroll: function() {
-			var scroll = this.capturedScroll;
-			var isRoot = this.discardScroll();
-	
-			if (scroll.isComputed) {
-				if (isRoot) {
-					// only compute initial scroll if it will actually be used (is the root capture)
-					$.extend(scroll, this.computeInitialScroll());
-				}
-				else {
-					scroll = null; // scroll couldn't be computed. don't apply it to the DOM
-				}
-			}
-	
-			if (scroll) {
-				// we act immediately on a releaseScroll operation, as opposed to captureScroll.
-				// if capture/release wraps a render operation that screws up the scroll,
-				// we still want to restore it a good state after, regardless of depth.
-	
-				if (scroll.isInitial) {
-					this.hardSetScroll(scroll); // outsmart how browsers set scroll on initial DOM
-				}
-				else {
-					this.setScroll(scroll);
-				}
-			}
+		popScroll: function() {
+			this.applyQueuedScroll();
+			this.queuedScroll = null;
 		},
 	
 	
-		discardScroll: function() {
-			if (!(--this.capturedScrollDepth)) {
-				this.capturedScroll = null;
-				return true; // root?
+		applyQueuedScroll: function() {
+			if (this.queuedScroll) {
+				this.applyScroll(this.queuedScroll);
 			}
-			return false;
-		},
-	
-	
-		computeInitialScroll: function() {
-			return {};
 		},
 	
 	
 		queryScroll: function() {
-			return {};
+			var scroll = {};
+	
+			if (this.isDatesRendered) {
+				$.extend(scroll, this.queryDateScroll());
+			}
+	
+			return scroll;
 		},
 	
 	
-		hardSetScroll: function(scroll) {
-			var _this = this;
-			var exec = function() { _this.setScroll(scroll); };
-			exec();
-			setTimeout(exec, 0); // to surely clear the browser's initial scroll for the DOM
+		applyScroll: function(scroll) {
+			if (this.isDatesRendered) {
+				this.applyDateScroll(scroll);
+			}
 		},
 	
 	
-		setScroll: function(scroll) {
+		computeInitialDateScroll: function() {
+			return {}; // subclasses must implement
+		},
+	
+	
+		queryDateScroll: function() {
+			return {}; // subclasses must implement
+		},
+	
+	
+		applyDateScroll: function(scroll) {
+			; // subclasses must implement
 		},
 	
 	
@@ -13217,165 +13708,27 @@ return /******/ (function(modules) { // webpackBootstrap
 		},
 	
 	
-		// Event Binding/Unbinding
-		// -----------------------------------------------------------------------------------------------------------------
-	
-	
-		bindEvents: function() {
-			var _this = this;
-	
-			if (!this.isEventsBound) {
-				this.isEventsBound = true;
-				this.rejectOn('eventsUnbind', this.requestEvents()).then(function(events) { // TODO: test rejection
-					_this.listenTo(_this.calendar, 'eventsReset', _this.setEvents);
-					_this.setEvents(events);
-				});
-			}
-		},
-	
-	
-		unbindEvents: function() {
-			if (this.isEventsBound) {
-				this.isEventsBound = false;
-				this.stopListeningTo(this.calendar, 'eventsReset');
-				this.unsetEvents();
-				this.trigger('eventsUnbind');
-			}
-		},
-	
-	
-		// Event Setting/Unsetting
-		// -----------------------------------------------------------------------------------------------------------------
-	
-	
-		setEvents: function(events) {
-			var isReset = this.isEventSet;
-	
-			this.isEventsSet = true;
-			this.handleEvents(events, isReset);
-			this.trigger(isReset ? 'eventsReset' : 'eventsSet', events);
-		},
-	
-	
-		unsetEvents: function() {
-			if (this.isEventsSet) {
-				this.isEventsSet = false;
-				this.handleEventsUnset();
-				this.trigger('eventsUnset');
-			}
-		},
-	
-	
-		whenEventsSet: function() {
-			var _this = this;
-	
-			if (this.isEventsSet) {
-				return Promise.resolve(this.getCurrentEvents());
-			}
-			else {
-				return new Promise(function(resolve) {
-					_this.one('eventsSet', resolve);
-				});
-			}
-		},
-	
-	
-		// Event Handling
-		// -----------------------------------------------------------------------------------------------------------------
-	
-	
-		handleEvents: function(events, isReset) {
-			this.requestEventsRender(events);
-		},
-	
-	
-		handleEventsUnset: function() {
-			this.requestEventsUnrender();
-		},
-	
-	
-		// Event Render Queuing
-		// -----------------------------------------------------------------------------------------------------------------
-	
-	
-		// assumes any previous event renders have been cleared already
-		requestEventsRender: function(events) {
-			var _this = this;
-	
-			return this.eventRenderQueue.add(function() { // might not return a promise if debounced!? bad
-				return _this.executeEventsRender(events);
-			});
-		},
-	
-	
-		requestEventsUnrender: function() {
-			var _this = this;
-	
-			if (this.isEventsRendered) {
-				return this.eventRenderQueue.addQuickly(function() {
-					return _this.executeEventsUnrender();
-				});
-			}
-			else {
-				return Promise.resolve();
-			}
-		},
-	
-	
-		requestCurrentEventsRender: function() {
-			if (this.isEventsSet) {
-				this.requestEventsRender(this.getCurrentEvents());
-			}
-			else {
-				return Promise.reject();
-			}
-		},
-	
-	
 		// Event High-level Rendering
 		// -----------------------------------------------------------------------------------------------------------------
 	
 	
 		executeEventsRender: function(events) {
-			var _this = this;
+			this.renderEvents(events);
+			this.isEventsRendered = true;
 	
-			this.captureScroll();
-			this.freezeHeight();
-	
-			return this.executeEventsUnrender().then(function() {
-				_this.renderEvents(events);
-	
-				_this.thawHeight();
-				_this.releaseScroll();
-	
-				_this.isEventsRendered = true;
-				_this.onEventsRender();
-				_this.trigger('eventsRender');
-			});
+			this.onEventsRender();
 		},
 	
 	
 		executeEventsUnrender: function() {
-			if (this.isEventsRendered) {
-				this.onBeforeEventsUnrender();
+			this.onBeforeEventsUnrender();
 	
-				this.captureScroll();
-				this.freezeHeight();
-	
-				if (this.destroyEvents) {
-					this.destroyEvents(); // TODO: deprecate
-				}
-	
-				this.unrenderEvents();
-	
-				this.thawHeight();
-				this.releaseScroll();
-	
-				this.isEventsRendered = false;
-				this.trigger('eventsUnrender');
+			if (this.destroyEvents) {
+				this.destroyEvents(); // TODO: deprecate
 			}
 	
-			return Promise.resolve(); // always synchronous
+			this.unrenderEvents();
+			this.isEventsRendered = false;
 		},
 	
 	
@@ -13385,6 +13738,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		// Signals that all events have been rendered
 		onEventsRender: function() {
+			this.applyScreenState();
+	
 			this.renderedEventSegEach(function(seg) {
 				this.publiclyTrigger('eventAfterRender', seg.event, seg.event, seg.el);
 			});
@@ -13394,9 +13749,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		// Signals that all event elements are about to be removed
 		onBeforeEventsUnrender: function() {
+			this.applyScreenState();
+	
 			this.renderedEventSegEach(function(seg) {
 				this.publiclyTrigger('eventDestroy', seg.event, seg.event, seg.el);
 			});
+		},
+	
+	
+		applyScreenState: function() {
+			this.thawHeight();
+			this.freezeHeight();
+			this.applyQueuedScroll();
 		},
 	
 	
@@ -13413,23 +13777,6 @@ return /******/ (function(modules) { // webpackBootstrap
 		// Removes event elements from the view.
 		unrenderEvents: function() {
 			// subclasses should implement
-		},
-	
-	
-		// Event Data Access
-		// -----------------------------------------------------------------------------------------------------------------
-	
-	
-		requestEvents: function() {
-			return this.calendar.requestEvents(
-				this.activeRange.start,
-				this.activeRange.end
-			);
-		},
-	
-	
-		getCurrentEvents: function() {
-			return this.calendar.getPrunedEventCache();
 		},
 	
 	
@@ -13837,6 +14184,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	});
 	
+	
+	View.watch('displayingDates', [ 'dateProfile' ], function(deps) {
+		this.requestDateRender(deps.dateProfile);
+	}, function() {
+		this.requestDateUnrender();
+	});
+	
+	
+	View.watch('initialEvents', [ 'dateProfile' ], function(deps) {
+		return this.fetchInitialEvents(deps.dateProfile);
+	});
+	
+	
+	View.watch('bindingEvents', [ 'initialEvents' ], function(deps) {
+		this.setEvents(deps.initialEvents);
+		this.bindEventChanges();
+	}, function() {
+		this.unbindEventChanges();
+		this.unsetEvents();
+	});
+	
+	
+	View.watch('displayingEvents', [ 'displayingDates', 'hasEvents' ], function() {
+		this.requestEventsRender(this.get('currentEvents')); // if there were event mutations after initialEvents
+	}, function() {
+		this.requestEventsUnrender();
+	});
+	
 	;;
 	
 	View.mixin({
@@ -13860,10 +14235,6 @@ return /******/ (function(modules) { // webpackBootstrap
 		// how far the current date will move for a prev/next operation
 		dateIncrement: null,
 	
-		// stores the *calendar's* current date after setDate
-		// TODO: entirely Calendar's responsibility
-		currentDate: null,
-	
 		minTime: null, // Duration object that denotes the first visible time of any given day
 		maxTime: null, // Duration object that denotes the exclusive visible end time of any given day
 		usesMinMaxTime: false, // whether minTime/maxTime will affect the activeRange. Views must opt-in.
@@ -13879,19 +14250,13 @@ return /******/ (function(modules) { // webpackBootstrap
 		------------------------------------------------------------------------------------------------------------------*/
 	
 	
-		isSameDateProfile: function(dateProfile) {
-			return this.activeRange && isRangesEqual(this.activeRange, dateProfile.activeRange);
-		},
-	
-	
-		setDateProfile: function(dateProfile) {
+		setDateProfileForRendering: function(dateProfile) {
 			this.currentRange = dateProfile.currentRange;
 			this.currentRangeUnit = dateProfile.currentRangeUnit;
 			this.renderRange = dateProfile.renderRange;
 			this.activeRange = dateProfile.activeRange;
 			this.validRange = dateProfile.validRange;
 			this.dateIncrement = dateProfile.dateIncrement;
-			this.currentDate = dateProfile.date;
 			this.minTime = dateProfile.minTime;
 			this.maxTime = dateProfile.maxTime;
 	
@@ -14447,7 +14812,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		function render() {
 			var sections = toolbarOptions.layout;
 	
-			tm = calendar.options.theme ? 'ui' : 'fc';
+			tm = calendar.opt('theme') ? 'ui' : 'fc';
 	
 			if (sections) {
 				if (!el) {
@@ -14478,6 +14843,8 @@ return /******/ (function(modules) { // webpackBootstrap
 		function renderSection(position) {
 			var sectionEl = $('<div class="fc-' + position + '"/>');
 			var buttonStr = toolbarOptions.layout[position];
+			var calendarCustomButtons = calendar.opt('customButtons') || {};
+			var calendarButtonText = calendar.opt('buttonText') || {};
 	
 			if (buttonStr) {
 				$.each(buttonStr.split(' '), function(i) {
@@ -14502,7 +14869,7 @@ return /******/ (function(modules) { // webpackBootstrap
 							isOnlyButtons = false;
 						}
 						else {
-							if ((customButtonProps = (calendar.options.customButtons || {})[buttonName])) {
+							if ((customButtonProps = calendarCustomButtons[buttonName])) {
 								buttonClick = function(ev) {
 									if (customButtonProps.click) {
 										customButtonProps.click.call(button[0], ev);
@@ -14524,7 +14891,7 @@ return /******/ (function(modules) { // webpackBootstrap
 									calendar[buttonName]();
 								};
 								overrideText = (calendar.overrides.buttonText || {})[buttonName];
-								defaultText = calendar.options.buttonText[buttonName]; // everything else is considered default
+								defaultText = calendarButtonText[buttonName]; // everything else is considered default
 							}
 	
 							if (buttonClick) {
@@ -14532,20 +14899,20 @@ return /******/ (function(modules) { // webpackBootstrap
 								themeIcon =
 									customButtonProps ?
 										customButtonProps.themeIcon :
-										calendar.options.themeButtonIcons[buttonName];
+										calendar.opt('themeButtonIcons')[buttonName];
 	
 								normalIcon =
 									customButtonProps ?
 										customButtonProps.icon :
-										calendar.options.buttonIcons[buttonName];
+										calendar.opt('buttonIcons')[buttonName];
 	
 								if (overrideText) {
 									innerHtml = htmlEscape(overrideText);
 								}
-								else if (themeIcon && calendar.options.theme) {
+								else if (themeIcon && calendar.opt('theme')) {
 									innerHtml = "<span class='ui-icon ui-icon-" + themeIcon + "'></span>";
 								}
-								else if (normalIcon && !calendar.options.theme) {
+								else if (normalIcon && !calendar.opt('theme')) {
 									innerHtml = "<span class='fc-icon fc-icon-" + normalIcon + "'></span>";
 								}
 								else {
@@ -14686,28 +15053,373 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	;;
 	
-	var Calendar = FC.Calendar = Class.extend({
+	var Calendar = FC.Calendar = Class.extend(EmitterMixin, {
+	
+		view: null, // current View object
+		viewsByType: null, // holds all instantiated view instances, current or not
+		currentDate: null, // unzoned moment. private (public API should use getDate instead)
+		loadingLevel: 0, // number of simultaneous loading tasks
+	
+	
+		constructor: function(el, overrides) {
+	
+			// declare the current calendar instance relies on GlobalEmitter. needed for garbage collection.
+			// unneeded() is called in destroy.
+			GlobalEmitter.needed();
+	
+			this.el = el;
+			this.viewsByType = {};
+			this.viewSpecCache = {};
+	
+			this.initOptionsInternals(overrides);
+			this.initMomentInternals(); // needs to happen after options hash initialized
+			this.initCurrentDate();
+	
+			EventManager.call(this); // needs options immediately
+			this.initialize();
+		},
+	
+	
+		// Subclasses can override this for initialization logic after the constructor has been called
+		initialize: function() {
+		},
+	
+	
+		// Public API
+		// -----------------------------------------------------------------------------------------------------------------
+	
+	
+		getCalendar: function() {
+			return this;
+		},
+	
+	
+		getView: function() {
+			return this.view;
+		},
+	
+	
+		publiclyTrigger: function(name, thisObj) {
+			var args = Array.prototype.slice.call(arguments, 2);
+			var optHandler = this.opt(name);
+	
+			thisObj = thisObj || this.el[0];
+			this.triggerWith(name, thisObj, args); // Emitter's method
+	
+			if (optHandler) {
+				return optHandler.apply(thisObj, args);
+			}
+		},
+	
+	
+		// View
+		// -----------------------------------------------------------------------------------------------------------------
+	
+	
+		// Given a view name for a custom view or a standard view, creates a ready-to-go View object
+		instantiateView: function(viewType) {
+			var spec = this.getViewSpec(viewType);
+	
+			return new spec['class'](this, spec);
+		},
+	
+	
+		// Returns a boolean about whether the view is okay to instantiate at some point
+		isValidViewType: function(viewType) {
+			return Boolean(this.getViewSpec(viewType));
+		},
+	
+	
+		changeView: function(viewName, dateOrRange) {
+	
+			if (dateOrRange) {
+	
+				if (dateOrRange.start && dateOrRange.end) { // a range
+					this.recordOptionOverrides({ // will not rerender
+						visibleRange: dateOrRange
+					});
+				}
+				else { // a date
+					this.currentDate = this.moment(dateOrRange).stripZone(); // just like gotoDate
+				}
+			}
+	
+			this.renderView(viewName);
+		},
+	
+	
+		// Forces navigation to a view for the given date.
+		// `viewType` can be a specific view name or a generic one like "week" or "day".
+		zoomTo: function(newDate, viewType) {
+			var spec;
+	
+			viewType = viewType || 'day'; // day is default zoom
+			spec = this.getViewSpec(viewType) || this.getUnitViewSpec(viewType);
+	
+			this.currentDate = newDate.clone();
+			this.renderView(spec ? spec.type : null);
+		},
+	
+	
+		// Current Date
+		// -----------------------------------------------------------------------------------------------------------------
+	
+	
+		initCurrentDate: function() {
+			var defaultDateInput = this.opt('defaultDate');
+	
+			// compute the initial ambig-timezone date
+			if (defaultDateInput != null) {
+				this.currentDate = this.moment(defaultDateInput).stripZone();
+			}
+			else {
+				this.currentDate = this.getNow(); // getNow already returns unzoned
+			}
+		},
+	
+	
+		prev: function() {
+			var prevInfo = this.view.buildPrevDateProfile(this.currentDate);
+	
+			if (prevInfo.isValid) {
+				this.currentDate = prevInfo.date;
+				this.renderView();
+			}
+		},
+	
+	
+		next: function() {
+			var nextInfo = this.view.buildNextDateProfile(this.currentDate);
+	
+			if (nextInfo.isValid) {
+				this.currentDate = nextInfo.date;
+				this.renderView();
+			}
+		},
+	
+	
+		prevYear: function() {
+			this.currentDate.add(-1, 'years');
+			this.renderView();
+		},
+	
+	
+		nextYear: function() {
+			this.currentDate.add(1, 'years');
+			this.renderView();
+		},
+	
+	
+		today: function() {
+			this.currentDate = this.getNow(); // should deny like prev/next?
+			this.renderView();
+		},
+	
+	
+		gotoDate: function(zonedDateInput) {
+			this.currentDate = this.moment(zonedDateInput).stripZone();
+			this.renderView();
+		},
+	
+	
+		incrementDate: function(delta) {
+			this.currentDate.add(moment.duration(delta));
+			this.renderView();
+		},
+	
+	
+		// for external API
+		getDate: function() {
+			return this.applyTimezone(this.currentDate); // infuse the calendar's timezone
+		},
+	
+	
+		// Loading Triggering
+		// -----------------------------------------------------------------------------------------------------------------
+	
+	
+		// Should be called when any type of async data fetching begins
+		pushLoading: function() {
+			if (!(this.loadingLevel++)) {
+				this.publiclyTrigger('loading', null, true, this.view);
+			}
+		},
+	
+	
+		// Should be called when any type of async data fetching completes
+		popLoading: function() {
+			if (!(--this.loadingLevel)) {
+				this.publiclyTrigger('loading', null, false, this.view);
+			}
+		},
+	
+	
+		// Selection
+		// -----------------------------------------------------------------------------------------------------------------
+	
+	
+		// this public method receives start/end dates in any format, with any timezone
+		select: function(zonedStartInput, zonedEndInput) {
+			this.view.select(
+				this.buildSelectSpan.apply(this, arguments)
+			);
+		},
+	
+	
+		unselect: function() { // safe to be called before renderView
+			if (this.view) {
+				this.view.unselect();
+			}
+		},
+	
+	
+		// Given arguments to the select method in the API, returns a span (unzoned start/end and other info)
+		buildSelectSpan: function(zonedStartInput, zonedEndInput) {
+			var start = this.moment(zonedStartInput).stripZone();
+			var end;
+	
+			if (zonedEndInput) {
+				end = this.moment(zonedEndInput).stripZone();
+			}
+			else if (start.hasTime()) {
+				end = start.clone().add(this.defaultTimedEventDuration);
+			}
+			else {
+				end = start.clone().add(this.defaultAllDayEventDuration);
+			}
+	
+			return { start: start, end: end };
+		},
+	
+	
+		// Misc
+		// -----------------------------------------------------------------------------------------------------------------
+	
+	
+		// will return `null` if invalid range
+		parseRange: function(rangeInput) {
+			var start = null;
+			var end = null;
+	
+			if (rangeInput.start) {
+				start = this.moment(rangeInput.start).stripZone();
+			}
+	
+			if (rangeInput.end) {
+				end = this.moment(rangeInput.end).stripZone();
+			}
+	
+			if (!start && !end) {
+				return null;
+			}
+	
+			if (start && end && end.isBefore(start)) {
+				return null;
+			}
+	
+			return { start: start, end: end };
+		},
+	
+	
+		rerenderEvents: function() { // API method. destroys old events if previously rendered.
+			if (this.elementVisible()) {
+				this.reportEventChange(); // will re-trasmit events to the view, causing a rerender
+			}
+		}
+	
+	});
+	
+	;;
+	/*
+	Options binding/triggering system.
+	*/
+	Calendar.mixin({
 	
 		dirDefaults: null, // option defaults related to LTR or RTL
 		localeDefaults: null, // option defaults related to current locale
 		overrides: null, // option overrides given to the fullCalendar constructor
 		dynamicOverrides: null, // options set with dynamic setter method. higher precedence than view overrides.
-		options: null, // all defaults combined with overrides
-		viewSpecCache: null, // cache of view definitions
-		view: null, // current View object
-		currentDate: null, // unzoned moment. private (public API should use getDate instead)
-		header: null,
-		footer: null,
-		loadingLevel: 0, // number of simultaneous loading tasks
+		optionsModel: null, // all defaults combined with overrides
 	
 	
-		// a lot of this class' OOP logic is scoped within this constructor function,
-		// but in the future, write individual methods on the prototype.
-		constructor: Calendar_constructor,
+		initOptionsInternals: function(overrides) {
+			this.overrides = $.extend({}, overrides); // make a copy
+			this.dynamicOverrides = {};
+			this.optionsModel = new Model();
+	
+			this.populateOptionsHash();
+		},
 	
 	
-		// Subclasses can override this for initialization logic after the constructor has been called
-		initialize: function() {
+		// public getter/setter
+		option: function(name, value) {
+			var newOptionHash;
+	
+			if (typeof name === 'string') {
+				if (value === undefined) { // getter
+					return this.optionsModel.get(name);
+				}
+				else { // setter for individual option
+					newOptionHash = {};
+					newOptionHash[name] = value;
+					this.setOptions(newOptionHash);
+				}
+			}
+			else if (typeof name === 'object') { // compound setter with object input
+				this.setOptions(name);
+			}
+		},
+	
+	
+		// private getter
+		opt: function(name) {
+			return this.optionsModel.get(name);
+		},
+	
+	
+		setOptions: function(newOptionHash) {
+			var optionCnt = 0;
+			var optionName;
+	
+			this.recordOptionOverrides(newOptionHash);
+	
+			for (optionName in newOptionHash) {
+				optionCnt++;
+			}
+	
+			// special-case handling of single option change.
+			// if only one option change, `optionName` will be its name.
+			if (optionCnt === 1) {
+				if (optionName === 'height' || optionName === 'contentHeight' || optionName === 'aspectRatio') {
+					this.updateSize(true); // true = allow recalculation of height
+					return;
+				}
+				else if (optionName === 'defaultDate') {
+					return; // can't change date this way. use gotoDate instead
+				}
+				else if (optionName === 'businessHours') {
+					if (this.view) {
+						this.view.unrenderBusinessHours();
+						this.view.renderBusinessHours();
+					}
+					return;
+				}
+				else if (optionName === 'timezone') {
+					this.rezoneArrayEventSources();
+					this.refetchEvents();
+					return;
+				}
+			}
+	
+			// catch-all. rerender the header and footer and rebuild/rerender the current view
+			this.renderHeader();
+			this.renderFooter();
+	
+			// even non-current views will be affected by this option change. do before rerender
+			// TODO: detangle
+			this.viewsByType = {};
+	
+			this.reinitView();
 		},
 	
 	
@@ -14716,6 +15428,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		populateOptionsHash: function() {
 			var locale, localeDefaults;
 			var isRTL, dirDefaults;
+			var rawOptions;
 	
 			locale = firstDefined( // explicit locale option given?
 				this.dynamicOverrides.locale,
@@ -14737,15 +15450,230 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 			this.dirDefaults = dirDefaults;
 			this.localeDefaults = localeDefaults;
-			this.options = mergeOptions([ // merge defaults and overrides. lowest to highest precedence
+	
+			rawOptions = mergeOptions([ // merge defaults and overrides. lowest to highest precedence
 				Calendar.defaults, // global defaults
 				dirDefaults,
 				localeDefaults,
 				this.overrides,
 				this.dynamicOverrides
 			]);
-			populateInstanceComputableOptions(this.options); // fill in gaps with computed options
+			populateInstanceComputableOptions(rawOptions); // fill in gaps with computed options
+	
+			this.optionsModel.reset(rawOptions);
 		},
+	
+	
+		// stores the new options internally, but does not rerender anything.
+		recordOptionOverrides: function(newOptionHash) {
+			var optionName;
+	
+			for (optionName in newOptionHash) {
+				this.dynamicOverrides[optionName] = newOptionHash[optionName];
+			}
+	
+			this.viewSpecCache = {}; // the dynamic override invalidates the options in this cache, so just clear it
+			this.populateOptionsHash(); // this.options needs to be recomputed after the dynamic override
+		}
+	
+	});
+	
+	;;
+	
+	Calendar.mixin({
+	
+		defaultAllDayEventDuration: null,
+		defaultTimedEventDuration: null,
+		localeData: null,
+	
+	
+		initMomentInternals: function() {
+			var _this = this;
+	
+			this.defaultAllDayEventDuration = moment.duration(this.opt('defaultAllDayEventDuration'));
+			this.defaultTimedEventDuration = moment.duration(this.opt('defaultTimedEventDuration'));
+	
+			// Called immediately, and when any of the options change.
+			// Happens before any internal objects rebuild or rerender, because this is very core.
+			this.optionsModel.watch('buildingMomentLocale', [
+				'?locale', '?monthNames', '?monthNamesShort', '?dayNames', '?dayNamesShort',
+				'?firstDay', '?weekNumberCalculation'
+			], function(opts) {
+				var weekNumberCalculation = opts.weekNumberCalculation;
+				var firstDay = opts.firstDay;
+				var _week;
+	
+				// normalize
+				if (weekNumberCalculation === 'iso') {
+					weekNumberCalculation = 'ISO'; // normalize
+				}
+	
+				var localeData = createObject( // make a cheap copy
+					getMomentLocaleData(opts.locale) // will fall back to en
+				);
+	
+				if (opts.monthNames) {
+					localeData._months = opts.monthNames;
+				}
+				if (opts.monthNamesShort) {
+					localeData._monthsShort = opts.monthNamesShort;
+				}
+				if (opts.dayNames) {
+					localeData._weekdays = opts.dayNames;
+				}
+				if (opts.dayNamesShort) {
+					localeData._weekdaysShort = opts.dayNamesShort;
+				}
+	
+				if (firstDay == null && weekNumberCalculation === 'ISO') {
+					firstDay = 1;
+				}
+				if (firstDay != null) {
+					_week = createObject(localeData._week); // _week: { dow: # }
+					_week.dow = firstDay;
+					localeData._week = _week;
+				}
+	
+				if ( // whitelist certain kinds of input
+					weekNumberCalculation === 'ISO' ||
+					weekNumberCalculation === 'local' ||
+					typeof weekNumberCalculation === 'function'
+				) {
+					localeData._fullCalendar_weekCalc = weekNumberCalculation; // moment-ext will know what to do with it
+				}
+	
+				_this.localeData = localeData;
+	
+				// If the internal current date object already exists, move to new locale.
+				// We do NOT need to do this technique for event dates, because this happens when converting to "segments".
+				if (_this.currentDate) {
+					_this.localizeMoment(_this.currentDate); // sets to localeData
+				}
+			});
+		},
+	
+	
+		// Builds a moment using the settings of the current calendar: timezone and locale.
+		// Accepts anything the vanilla moment() constructor accepts.
+		moment: function() {
+			var mom;
+	
+			if (this.opt('timezone') === 'local') {
+				mom = FC.moment.apply(null, arguments);
+	
+				// Force the moment to be local, because FC.moment doesn't guarantee it.
+				if (mom.hasTime()) { // don't give ambiguously-timed moments a local zone
+					mom.local();
+				}
+			}
+			else if (this.opt('timezone') === 'UTC') {
+				mom = FC.moment.utc.apply(null, arguments); // process as UTC
+			}
+			else {
+				mom = FC.moment.parseZone.apply(null, arguments); // let the input decide the zone
+			}
+	
+			this.localizeMoment(mom); // TODO
+	
+			return mom;
+		},
+	
+	
+		// Updates the given moment's locale settings to the current calendar locale settings.
+		localizeMoment: function(mom) {
+			mom._locale = this.localeData;
+		},
+	
+	
+		// Returns a boolean about whether or not the calendar knows how to calculate
+		// the timezone offset of arbitrary dates in the current timezone.
+		getIsAmbigTimezone: function() {
+			return this.opt('timezone') !== 'local' && this.opt('timezone') !== 'UTC';
+		},
+	
+	
+		// Returns a copy of the given date in the current timezone. Has no effect on dates without times.
+		applyTimezone: function(date) {
+			if (!date.hasTime()) {
+				return date.clone();
+			}
+	
+			var zonedDate = this.moment(date.toArray());
+			var timeAdjust = date.time() - zonedDate.time();
+			var adjustedZonedDate;
+	
+			// Safari sometimes has problems with this coersion when near DST. Adjust if necessary. (bug #2396)
+			if (timeAdjust) { // is the time result different than expected?
+				adjustedZonedDate = zonedDate.clone().add(timeAdjust); // add milliseconds
+				if (date.time() - adjustedZonedDate.time() === 0) { // does it match perfectly now?
+					zonedDate = adjustedZonedDate;
+				}
+			}
+	
+			return zonedDate;
+		},
+	
+	
+		// Returns a moment for the current date, as defined by the client's computer or from the `now` option.
+		// Will return an moment with an ambiguous timezone.
+		getNow: function() {
+			var now = this.opt('now');
+			if (typeof now === 'function') {
+				now = now();
+			}
+			return this.moment(now).stripZone();
+		},
+	
+	
+		// Produces a human-readable string for the given duration.
+		// Side-effect: changes the locale of the given duration.
+		humanizeDuration: function(duration) {
+			return duration.locale(this.opt('locale')).humanize();
+		},
+	
+	
+	
+		// Event-Specific Date Utilities. TODO: move
+		// -----------------------------------------------------------------------------------------------------------------
+	
+	
+		// Get an event's normalized end date. If not present, calculate it from the defaults.
+		getEventEnd: function(event) {
+			if (event.end) {
+				return event.end.clone();
+			}
+			else {
+				return this.getDefaultEventEnd(event.allDay, event.start);
+			}
+		},
+	
+	
+		// Given an event's allDay status and start date, return what its fallback end date should be.
+		// TODO: rename to computeDefaultEventEnd
+		getDefaultEventEnd: function(allDay, zonedStart) {
+			var end = zonedStart.clone();
+	
+			if (allDay) {
+				end.stripTime().add(this.defaultAllDayEventDuration);
+			}
+			else {
+				end.add(this.defaultTimedEventDuration);
+			}
+	
+			if (this.getIsAmbigTimezone()) {
+				end.stripZone(); // we don't know what the tzo should be
+			}
+	
+			return end;
+		}
+	
+	});
+	
+	;;
+	
+	Calendar.mixin({
+	
+		viewSpecCache: null, // cache of view definitions (initialized in Calendar.js)
 	
 	
 		// Gets information about how to create a view. Will use a cache.
@@ -14903,450 +15831,48 @@ return /******/ (function(modules) { // webpackBootstrap
 				queryButtonText(Calendar.defaults) ||
 				(spec.duration ? this.humanizeDuration(spec.duration) : null) || // like "3 days"
 				requestedViewType; // fall back to given view name
-		},
-	
-	
-		// Given a view name for a custom view or a standard view, creates a ready-to-go View object
-		instantiateView: function(viewType) {
-			var spec = this.getViewSpec(viewType);
-	
-			return new spec['class'](this, spec);
-		},
-	
-	
-		// Returns a boolean about whether the view is okay to instantiate at some point
-		isValidViewType: function(viewType) {
-			return Boolean(this.getViewSpec(viewType));
-		},
-	
-	
-		// Should be called when any type of async data fetching begins
-		pushLoading: function() {
-			if (!(this.loadingLevel++)) {
-				this.publiclyTrigger('loading', null, true, this.view);
-			}
-		},
-	
-	
-		// Should be called when any type of async data fetching completes
-		popLoading: function() {
-			if (!(--this.loadingLevel)) {
-				this.publiclyTrigger('loading', null, false, this.view);
-			}
-		},
-	
-	
-		// Given arguments to the select method in the API, returns a span (unzoned start/end and other info)
-		buildSelectSpan: function(zonedStartInput, zonedEndInput) {
-			var start = this.moment(zonedStartInput).stripZone();
-			var end;
-	
-			if (zonedEndInput) {
-				end = this.moment(zonedEndInput).stripZone();
-			}
-			else if (start.hasTime()) {
-				end = start.clone().add(this.defaultTimedEventDuration);
-			}
-			else {
-				end = start.clone().add(this.defaultAllDayEventDuration);
-			}
-	
-			return { start: start, end: end };
-		},
-	
-	
-		// Current Date
-		// ------------
-	
-	
-		/*
-		Called before initialize()
-		*/
-		initCurrentDate: function() {
-			// compute the initial ambig-timezone date
-			if (this.options.defaultDate != null) {
-				this.currentDate = this.moment(this.options.defaultDate).stripZone();
-			}
-			else {
-				this.currentDate = this.getNow(); // getNow already returns unzoned
-			}
-		},
-	
-	
-		changeView: function(viewName, dateOrRange) {
-	
-			if (dateOrRange) {
-	
-				if (dateOrRange.start && dateOrRange.end) { // a range
-					this.recordOptionOverrides({ // will not rerender
-						visibleRange: dateOrRange
-					});
-				}
-				else { // a date
-					this.currentDate = this.moment(dateOrRange).stripZone(); // just like gotoDate
-				}
-			}
-	
-			this.renderView(viewName);
-		},
-	
-	
-		prev: function() {
-			var prevInfo = this.view.buildPrevDateProfile(this.currentDate);
-	
-			if (prevInfo.isValid) {
-				this.currentDate = prevInfo.date;
-				this.renderView();
-			}
-		},
-	
-	
-		next: function() {
-			var nextInfo = this.view.buildNextDateProfile(this.currentDate);
-	
-			if (nextInfo.isValid) {
-				this.currentDate = nextInfo.date;
-				this.renderView();
-			}
-		},
-	
-	
-		prevYear: function() {
-			this.currentDate.add(-1, 'years');
-			this.renderView();
-		},
-	
-	
-		nextYear: function() {
-			this.currentDate.add(1, 'years');
-			this.renderView();
-		},
-	
-	
-		today: function() {
-			this.currentDate = this.getNow(); // should deny like prev/next?
-			this.renderView();
-		},
-	
-	
-		gotoDate: function(zonedDateInput) {
-			this.currentDate = this.moment(zonedDateInput).stripZone();
-			this.renderView();
-		},
-	
-	
-		incrementDate: function(delta) {
-			this.currentDate.add(moment.duration(delta));
-			this.renderView();
-		},
-	
-	
-		// for external API
-		getDate: function() {
-			return this.applyTimezone(this.currentDate); // infuse the calendar's timezone
-		},
-	
-	
-		// will return `null` if invalid range
-		parseRange: function(rangeInput) {
-			var start = null;
-			var end = null;
-	
-			if (rangeInput.start) {
-				start = this.moment(rangeInput.start).stripZone();
-			}
-	
-			if (rangeInput.end) {
-				end = this.moment(rangeInput.end).stripZone();
-			}
-	
-			if (!start && !end) {
-				return null;
-			}
-	
-			if (start && end && end.isBefore(start)) {
-				return null;
-			}
-	
-			return { start: start, end: end };
 		}
 	
 	});
 	
+	;;
 	
-	Calendar.mixin(EmitterMixin);
+	Calendar.mixin({
 	
-	
-	function Calendar_constructor(element, overrides) {
-		var t = this;
-	
-		// declare the current calendar instance relies on GlobalEmitter. needed for garbage collection.
-		GlobalEmitter.needed();
-	
-	
-		// Exports
-		// -----------------------------------------------------------------------------------
-	
-		t.render = render;
-		t.destroy = destroy;
-		t.rerenderEvents = rerenderEvents;
-		t.select = select;
-		t.unselect = unselect;
-		t.zoomTo = zoomTo;
-		t.getCalendar = getCalendar;
-		t.getView = getView;
-		t.option = option; // getter/setter method
-		t.recordOptionOverrides = recordOptionOverrides;
-		t.publiclyTrigger = publiclyTrigger;
+		el: null,
+		contentEl: null,
+		suggestedViewHeight: null,
+		windowResizeProxy: null,
+		ignoreWindowResize: 0,
 	
 	
-		// Options
-		// -----------------------------------------------------------------------------------
-	
-		t.dynamicOverrides = {};
-		t.viewSpecCache = {};
-		t.optionHandlers = {}; // for Calendar.options.js
-		t.overrides = $.extend({}, overrides); // make a copy
-	
-		t.populateOptionsHash(); // sets this.options
-	
-	
-	
-		// Locale-data Internals
-		// -----------------------------------------------------------------------------------
-		// Apply overrides to the current locale's data
-	
-		var localeData;
-	
-		// Called immediately, and when any of the options change.
-		// Happens before any internal objects rebuild or rerender, because this is very core.
-		t.bindOptions([
-			'locale', 'monthNames', 'monthNamesShort', 'dayNames', 'dayNamesShort', 'firstDay', 'weekNumberCalculation'
-		], function(locale, monthNames, monthNamesShort, dayNames, dayNamesShort, firstDay, weekNumberCalculation) {
-	
-			// normalize
-			if (weekNumberCalculation === 'iso') {
-				weekNumberCalculation = 'ISO'; // normalize
+		render: function() {
+			if (!this.contentEl) {
+				this.initialRender();
 			}
-	
-			localeData = createObject( // make a cheap copy
-				getMomentLocaleData(locale) // will fall back to en
-			);
-	
-			if (monthNames) {
-				localeData._months = monthNames;
-			}
-			if (monthNamesShort) {
-				localeData._monthsShort = monthNamesShort;
-			}
-			if (dayNames) {
-				localeData._weekdays = dayNames;
-			}
-			if (dayNamesShort) {
-				localeData._weekdaysShort = dayNamesShort;
-			}
-	
-			if (firstDay == null && weekNumberCalculation === 'ISO') {
-				firstDay = 1;
-			}
-			if (firstDay != null) {
-				var _week = createObject(localeData._week); // _week: { dow: # }
-				_week.dow = firstDay;
-				localeData._week = _week;
-			}
-	
-			if ( // whitelist certain kinds of input
-				weekNumberCalculation === 'ISO' ||
-				weekNumberCalculation === 'local' ||
-				typeof weekNumberCalculation === 'function'
-			) {
-				localeData._fullCalendar_weekCalc = weekNumberCalculation; // moment-ext will know what to do with it
-			}
-	
-			// If the internal current date object already exists, move to new locale.
-			// We do NOT need to do this technique for event dates, because this happens when converting to "segments".
-			if (t.currentDate) {
-				localizeMoment(t.currentDate); // sets to localeData
-			}
-		});
-	
-	
-		// Calendar-specific Date Utilities
-		// -----------------------------------------------------------------------------------
-	
-	
-		t.defaultAllDayEventDuration = moment.duration(t.options.defaultAllDayEventDuration);
-		t.defaultTimedEventDuration = moment.duration(t.options.defaultTimedEventDuration);
-	
-	
-		// Builds a moment using the settings of the current calendar: timezone and locale.
-		// Accepts anything the vanilla moment() constructor accepts.
-		t.moment = function() {
-			var mom;
-	
-			if (t.options.timezone === 'local') {
-				mom = FC.moment.apply(null, arguments);
-	
-				// Force the moment to be local, because FC.moment doesn't guarantee it.
-				if (mom.hasTime()) { // don't give ambiguously-timed moments a local zone
-					mom.local();
-				}
-			}
-			else if (t.options.timezone === 'UTC') {
-				mom = FC.moment.utc.apply(null, arguments); // process as UTC
-			}
-			else {
-				mom = FC.moment.parseZone.apply(null, arguments); // let the input decide the zone
-			}
-	
-			localizeMoment(mom);
-	
-			return mom;
-		};
-	
-	
-		// Updates the given moment's locale settings to the current calendar locale settings.
-		function localizeMoment(mom) {
-			mom._locale = localeData;
-		}
-		t.localizeMoment = localizeMoment;
-	
-	
-		// Returns a boolean about whether or not the calendar knows how to calculate
-		// the timezone offset of arbitrary dates in the current timezone.
-		t.getIsAmbigTimezone = function() {
-			return t.options.timezone !== 'local' && t.options.timezone !== 'UTC';
-		};
-	
-	
-		// Returns a copy of the given date in the current timezone. Has no effect on dates without times.
-		t.applyTimezone = function(date) {
-			if (!date.hasTime()) {
-				return date.clone();
-			}
-	
-			var zonedDate = t.moment(date.toArray());
-			var timeAdjust = date.time() - zonedDate.time();
-			var adjustedZonedDate;
-	
-			// Safari sometimes has problems with this coersion when near DST. Adjust if necessary. (bug #2396)
-			if (timeAdjust) { // is the time result different than expected?
-				adjustedZonedDate = zonedDate.clone().add(timeAdjust); // add milliseconds
-				if (date.time() - adjustedZonedDate.time() === 0) { // does it match perfectly now?
-					zonedDate = adjustedZonedDate;
-				}
-			}
-	
-			return zonedDate;
-		};
-	
-	
-		// Returns a moment for the current date, as defined by the client's computer or from the `now` option.
-		// Will return an moment with an ambiguous timezone.
-		t.getNow = function() {
-			var now = t.options.now;
-			if (typeof now === 'function') {
-				now = now();
-			}
-			return t.moment(now).stripZone();
-		};
-	
-	
-		// Get an event's normalized end date. If not present, calculate it from the defaults.
-		t.getEventEnd = function(event) {
-			if (event.end) {
-				return event.end.clone();
-			}
-			else {
-				return t.getDefaultEventEnd(event.allDay, event.start);
-			}
-		};
-	
-	
-		// Given an event's allDay status and start date, return what its fallback end date should be.
-		// TODO: rename to computeDefaultEventEnd
-		t.getDefaultEventEnd = function(allDay, zonedStart) {
-			var end = zonedStart.clone();
-	
-			if (allDay) {
-				end.stripTime().add(t.defaultAllDayEventDuration);
-			}
-			else {
-				end.add(t.defaultTimedEventDuration);
-			}
-	
-			if (t.getIsAmbigTimezone()) {
-				end.stripZone(); // we don't know what the tzo should be
-			}
-	
-			return end;
-		};
-	
-	
-		// Produces a human-readable string for the given duration.
-		// Side-effect: changes the locale of the given duration.
-		t.humanizeDuration = function(duration) {
-			return duration.locale(t.options.locale).humanize();
-		};
-	
-	
-	
-		// Imports
-		// -----------------------------------------------------------------------------------
-	
-	
-		EventManager.call(t);
-	
-	
-	
-		// Locals
-		// -----------------------------------------------------------------------------------
-	
-	
-		var _element = element[0];
-		var toolbarsManager;
-		var header;
-		var footer;
-		var content;
-		var tm; // for making theme classes
-		var currentView; // NOTE: keep this in sync with this.view
-		var viewsByType = {}; // holds all instantiated view instances, current or not
-		var suggestedViewHeight;
-		var windowResizeProxy; // wraps the windowResize function
-		var ignoreWindowResize = 0;
-	
-	
-		this.initCurrentDate();
-	
-	
-		// Main Rendering
-		// -----------------------------------------------------------------------------------
-	
-	
-		function render() {
-			if (!content) {
-				initialRender();
-			}
-			else if (elementVisible()) {
+			else if (this.elementVisible()) {
 				// mainly for the public API
-				calcSize();
-				renderView();
+				this.calcSize();
+				this.renderView();
 			}
-		}
+		},
 	
 	
-		function initialRender() {
-			element.addClass('fc');
+		initialRender: function() {
+			var _this = this;
+			var el = this.el;
+	
+			el.addClass('fc');
 	
 			// event delegation for nav links
-			element.on('click.fc', 'a[data-goto]', function(ev) {
+			el.on('click.fc', 'a[data-goto]', function(ev) {
 				var anchorEl = $(this);
 				var gotoOptions = anchorEl.data('goto'); // will automatically parse JSON
-				var date = t.moment(gotoOptions.date);
+				var date = _this.moment(gotoOptions.date);
 				var viewType = gotoOptions.type;
 	
 				// property like "navLinkDayClick". might be a string or a function
-				var customAction = currentView.opt('navLink' + capitaliseFirstLetter(viewType) + 'Click');
+				var customAction = _this.view.opt('navLink' + capitaliseFirstLetter(viewType) + 'Click');
 	
 				if (typeof customAction === 'function') {
 					customAction(date, ev);
@@ -15355,69 +15881,68 @@ return /******/ (function(modules) { // webpackBootstrap
 					if (typeof customAction === 'string') {
 						viewType = customAction;
 					}
-					zoomTo(date, viewType);
+					_this.zoomTo(date, viewType);
 				}
 			});
 	
 			// called immediately, and upon option change
-			t.bindOption('theme', function(theme) {
-				tm = theme ? 'ui' : 'fc'; // affects a larger scope
-				element.toggleClass('ui-widget', theme);
-				element.toggleClass('fc-unthemed', !theme);
+			this.optionsModel.watch('applyingThemeClasses', [ '?theme' ], function(opts) {
+				el.toggleClass('ui-widget', opts.theme);
+				el.toggleClass('fc-unthemed', !opts.theme);
 			});
 	
 			// called immediately, and upon option change.
 			// HACK: locale often affects isRTL, so we explicitly listen to that too.
-			t.bindOptions([ 'isRTL', 'locale' ], function(isRTL) {
-				element.toggleClass('fc-ltr', !isRTL);
-				element.toggleClass('fc-rtl', isRTL);
+			this.optionsModel.watch('applyingDirClasses', [ '?isRTL', '?locale' ], function(opts) {
+				el.toggleClass('fc-ltr', !opts.isRTL);
+				el.toggleClass('fc-rtl', opts.isRTL);
 			});
 	
-			content = $("<div class='fc-view-container'/>").prependTo(element);
+			this.contentEl = $("<div class='fc-view-container'/>").prependTo(el);
 	
-			var toolbars = buildToolbars();
-			toolbarsManager = new Iterator(toolbars);
+			this.initToolbars();
+			this.renderHeader();
+			this.renderFooter();
+			this.renderView(this.opt('defaultView'));
 	
-			header = t.header = toolbars[0];
-			footer = t.footer = toolbars[1];
-	
-			renderHeader();
-			renderFooter();
-			renderView(t.options.defaultView);
-	
-			if (t.options.handleWindowResize) {
-				windowResizeProxy = debounce(windowResize, t.options.windowResizeDelay); // prevents rapid calls
-				$(window).resize(windowResizeProxy);
+			if (this.opt('handleWindowResize')) {
+				$(window).resize(
+					this.windowResizeProxy = debounce( // prevents rapid calls
+						this.windowResize.bind(this),
+						this.opt('windowResizeDelay')
+					)
+				);
 			}
-		}
+		},
 	
 	
-		function destroy() {
+		destroy: function() {
 	
-			if (currentView) {
-				currentView.removeElement();
+			if (this.view) {
+				this.view.removeElement();
 	
-				// NOTE: don't null-out currentView/t.view in case API methods are called after destroy.
+				// NOTE: don't null-out this.view in case API methods are called after destroy.
 				// It is still the "current" view, just not rendered.
 			}
 	
-			toolbarsManager.proxyCall('removeElement');
-			content.remove();
-			element.removeClass('fc fc-ltr fc-rtl fc-unthemed ui-widget');
+			this.toolbarsManager.proxyCall('removeElement');
+			this.contentEl.remove();
+			this.el.removeClass('fc fc-ltr fc-rtl fc-unthemed ui-widget');
 	
-			element.off('.fc'); // unbind nav link handlers
+			this.el.off('.fc'); // unbind nav link handlers
 	
-			if (windowResizeProxy) {
-				$(window).unbind('resize', windowResizeProxy);
+			if (this.windowResizeProxy) {
+				$(window).unbind('resize', this.windowResizeProxy);
+				this.windowResizeProxy = null;
 			}
 	
 			GlobalEmitter.unneeded();
-		}
+		},
 	
 	
-		function elementVisible() {
-			return element.is(':visible');
-		}
+		elementVisible: function() {
+			return this.el.is(':visible');
+		},
 	
 	
 	
@@ -15428,501 +15953,278 @@ return /******/ (function(modules) { // webpackBootstrap
 		// Renders a view because of a date change, view-type change, or for the first time.
 		// If not given a viewType, keep the current view but render different dates.
 		// Accepts an optional scroll state to restore to.
-		function renderView(viewType, forcedScroll) {
-			ignoreWindowResize++;
+		renderView: function(viewType, forcedScroll) {
 	
-			var needsClearView = currentView && viewType && currentView.type !== viewType;
+			this.ignoreWindowResize++;
+	
+			var needsClearView = this.view && viewType && this.view.type !== viewType;
 	
 			// if viewType is changing, remove the old view's rendering
 			if (needsClearView) {
-				freezeContentHeight(); // prevent a scroll jump when view element is removed
-				clearView();
+				this.freezeContentHeight(); // prevent a scroll jump when view element is removed
+				this.clearView();
 			}
 	
 			// if viewType changed, or the view was never created, create a fresh view
-			if (!currentView && viewType) {
-				currentView = t.view =
-					viewsByType[viewType] ||
-					(viewsByType[viewType] = t.instantiateView(viewType));
+			if (!this.view && viewType) {
+				this.view =
+					this.viewsByType[viewType] ||
+					(this.viewsByType[viewType] = this.instantiateView(viewType));
 	
-				currentView.setElement(
-					$("<div class='fc-view fc-" + viewType + "-view' />").appendTo(content)
+				this.view.setElement(
+					$("<div class='fc-view fc-" + viewType + "-view' />").appendTo(this.contentEl)
 				);
-				toolbarsManager.proxyCall('activateButton', viewType);
+				this.toolbarsManager.proxyCall('activateButton', viewType);
 			}
 	
-			if (currentView) {
+			if (this.view) {
 	
-				if (elementVisible()) {
+				if (forcedScroll) {
+					this.view.addForcedScroll(forcedScroll);
+				}
 	
-					if (forcedScroll) {
-						currentView.captureInitialScroll(forcedScroll);
-					}
-	
-					currentView.setDate(t.currentDate);
-	
-					// TODO: make setDate return the revised date.
-					// Difficult because of the pseudo-async nature, promises.
-					t.currentDate = currentView.currentDate;
-	
-					if (forcedScroll) {
-						currentView.releaseScroll();
-					}
+				if (this.elementVisible()) {
+					this.currentDate = this.view.setDate(this.currentDate);
 				}
 			}
 	
 			if (needsClearView) {
-				thawContentHeight();
+				this.thawContentHeight();
 			}
 	
-			ignoreWindowResize--;
-		}
-		t.renderView = renderView;
+			this.ignoreWindowResize--;
+		},
 	
 	
 		// Unrenders the current view and reflects this change in the Header.
-		// Unregsiters the `currentView`, but does not remove from viewByType hash.
-		function clearView() {
-			toolbarsManager.proxyCall('deactivateButton', currentView.type);
-			currentView.removeElement();
-			currentView = t.view = null;
-		}
+		// Unregsiters the `view`, but does not remove from viewByType hash.
+		clearView: function() {
+			this.toolbarsManager.proxyCall('deactivateButton', this.view.type);
+			this.view.removeElement();
+			this.view = null;
+		},
 	
 	
 		// Destroys the view, including the view object. Then, re-instantiates it and renders it.
 		// Maintains the same scroll state.
 		// TODO: maintain any other user-manipulated state.
-		function reinitView() {
-			ignoreWindowResize++;
-			freezeContentHeight();
+		reinitView: function() {
+			this.ignoreWindowResize++;
+			this.freezeContentHeight();
 	
-			var viewType = currentView.type;
-			var scrollState = currentView.queryScroll();
-			clearView();
-			calcSize();
-			renderView(viewType, scrollState);
+			var viewType = this.view.type;
+			var scrollState = this.view.queryScroll();
+			this.clearView();
+			this.calcSize();
+			this.renderView(viewType, scrollState);
 	
-			thawContentHeight();
-			ignoreWindowResize--;
-		}
-	
+			this.thawContentHeight();
+			this.ignoreWindowResize--;
+		},
 	
 	
 		// Resizing
 		// -----------------------------------------------------------------------------------
 	
 	
-		t.getSuggestedViewHeight = function() {
-			if (suggestedViewHeight === undefined) {
-				calcSize();
+		getSuggestedViewHeight: function() {
+			if (this.suggestedViewHeight === null) {
+				this.calcSize();
 			}
-			return suggestedViewHeight;
-		};
+			return this.suggestedViewHeight;
+		},
 	
 	
-		t.isHeightAuto = function() {
-			return t.options.contentHeight === 'auto' || t.options.height === 'auto';
-		};
+		isHeightAuto: function() {
+			return this.opt('contentHeight') === 'auto' || this.opt('height') === 'auto';
+		},
 	
 	
-		function updateSize(shouldRecalc) {
-			if (elementVisible()) {
+		updateSize: function(shouldRecalc) {
+			if (this.elementVisible()) {
 	
 				if (shouldRecalc) {
-					_calcSize();
+					this._calcSize();
 				}
 	
-				ignoreWindowResize++;
-				currentView.updateSize(true); // isResize=true. will poll getSuggestedViewHeight() and isHeightAuto()
-				ignoreWindowResize--;
+				this.ignoreWindowResize++;
+				this.view.updateSize(true); // isResize=true. will poll getSuggestedViewHeight() and isHeightAuto()
+				this.ignoreWindowResize--;
 	
 				return true; // signal success
 			}
-		}
+		},
 	
 	
-		function calcSize() {
-			if (elementVisible()) {
-				_calcSize();
+		calcSize: function() {
+			if (this.elementVisible()) {
+				this._calcSize();
 			}
-		}
+		},
 	
 	
-		function _calcSize() { // assumes elementVisible
-			var contentHeightInput = t.options.contentHeight;
-			var heightInput = t.options.height;
+		_calcSize: function() { // assumes elementVisible
+			var contentHeightInput = this.opt('contentHeight');
+			var heightInput = this.opt('height');
 	
 			if (typeof contentHeightInput === 'number') { // exists and not 'auto'
-				suggestedViewHeight = contentHeightInput;
+				this.suggestedViewHeight = contentHeightInput;
 			}
 			else if (typeof contentHeightInput === 'function') { // exists and is a function
-				suggestedViewHeight = contentHeightInput();
+				this.suggestedViewHeight = contentHeightInput();
 			}
 			else if (typeof heightInput === 'number') { // exists and not 'auto'
-				suggestedViewHeight = heightInput - queryToolbarsHeight();
+				this.suggestedViewHeight = heightInput - this.queryToolbarsHeight();
 			}
 			else if (typeof heightInput === 'function') { // exists and is a function
-				suggestedViewHeight = heightInput() - queryToolbarsHeight();
+				this.suggestedViewHeight = heightInput() - this.queryToolbarsHeight();
 			}
 			else if (heightInput === 'parent') { // set to height of parent element
-				suggestedViewHeight = element.parent().height() - queryToolbarsHeight();
+				this.suggestedViewHeight = this.el.parent().height() - this.queryToolbarsHeight();
 			}
 			else {
-				suggestedViewHeight = Math.round(content.width() / Math.max(t.options.aspectRatio, .5));
+				this.suggestedViewHeight = Math.round(
+					this.contentEl.width() /
+					Math.max(this.opt('aspectRatio'), .5)
+				);
 			}
-		}
+		},
 	
 	
-		function queryToolbarsHeight() {
-			return toolbarsManager.items.reduce(function(accumulator, toolbar) {
-				var toolbarHeight = toolbar.el ? toolbar.el.outerHeight(true) : 0; // includes margin
-				return accumulator + toolbarHeight;
-			}, 0);
-		}
-	
-	
-		function windowResize(ev) {
+		windowResize: function(ev) {
 			if (
-				!ignoreWindowResize &&
+				!this.ignoreWindowResize &&
 				ev.target === window && // so we don't process jqui "resize" events that have bubbled up
-				currentView.renderRange // view has already been rendered
+				this.view.renderRange // view has already been rendered
 			) {
-				if (updateSize(true)) {
-					currentView.publiclyTrigger('windowResize', _element);
+				if (this.updateSize(true)) {
+					this.view.publiclyTrigger('windowResize', this.el[0]);
 				}
 			}
-		}
-	
-	
-	
-		/* Event Rendering
-		-----------------------------------------------------------------------------*/
-	
-	
-		function rerenderEvents() { // API method. destroys old events if previously rendered.
-			if (elementVisible()) {
-				t.reportEventChange(); // will re-trasmit events to the view, causing a rerender
-			}
-		}
-	
-	
-	
-		/* Toolbars
-		-----------------------------------------------------------------------------*/
-	
-	
-		function buildToolbars() {
-			return [
-				new Toolbar(t, computeHeaderOptions()),
-				new Toolbar(t, computeFooterOptions())
-			];
-		}
-	
-	
-		function computeHeaderOptions() {
-			return {
-				extraClasses: 'fc-header-toolbar',
-				layout: t.options.header
-			};
-		}
-	
-	
-		function computeFooterOptions() {
-			return {
-				extraClasses: 'fc-footer-toolbar',
-				layout: t.options.footer
-			};
-		}
-	
-	
-		// can be called repeatedly and Header will rerender
-		function renderHeader() {
-			header.setToolbarOptions(computeHeaderOptions());
-			header.render();
-			if (header.el) {
-				element.prepend(header.el);
-			}
-		}
-	
-	
-		// can be called repeatedly and Footer will rerender
-		function renderFooter() {
-			footer.setToolbarOptions(computeFooterOptions());
-			footer.render();
-			if (footer.el) {
-				element.append(footer.el);
-			}
-		}
-	
-	
-		t.setToolbarsTitle = function(title) {
-			toolbarsManager.proxyCall('updateTitle', title);
-		};
-	
-	
-		t.updateToolbarButtons = function() {
-			var now = t.getNow();
-			var todayInfo = currentView.buildDateProfile(now);
-			var prevInfo = currentView.buildPrevDateProfile(t.currentDate);
-			var nextInfo = currentView.buildNextDateProfile(t.currentDate);
-	
-			toolbarsManager.proxyCall(
-				(todayInfo.isValid && !isDateWithinRange(now, currentView.currentRange)) ?
-					'enableButton' :
-					'disableButton',
-				'today'
-			);
-	
-			toolbarsManager.proxyCall(
-				prevInfo.isValid ?
-					'enableButton' :
-					'disableButton',
-				'prev'
-			);
-	
-			toolbarsManager.proxyCall(
-				nextInfo.isValid ?
-					'enableButton' :
-					'disableButton',
-				'next'
-			);
-		};
-	
-	
-	
-		/* Selection
-		-----------------------------------------------------------------------------*/
-	
-	
-		// this public method receives start/end dates in any format, with any timezone
-		function select(zonedStartInput, zonedEndInput) {
-			currentView.select(
-				t.buildSelectSpan.apply(t, arguments)
-			);
-		}
-	
-	
-		function unselect() { // safe to be called before renderView
-			if (currentView) {
-				currentView.unselect();
-			}
-		}
-	
-	
-		// Forces navigation to a view for the given date.
-		// `viewType` can be a specific view name or a generic one like "week" or "day".
-		function zoomTo(newDate, viewType) {
-			var spec;
-	
-			viewType = viewType || 'day'; // day is default zoom
-			spec = t.getViewSpec(viewType) || t.getUnitViewSpec(viewType);
-	
-			t.currentDate = newDate.clone();
-			renderView(spec ? spec.type : null);
-		}
-	
+		},
 	
 	
 		/* Height "Freezing"
 		-----------------------------------------------------------------------------*/
 	
 	
-		t.freezeContentHeight = freezeContentHeight;
-		t.thawContentHeight = thawContentHeight;
+		freezeContentHeight: function() {
+			this.contentEl.css({
+				width: '100%',
+				height: this.contentEl.height(),
+				overflow: 'hidden'
+			});
+		},
 	
-		var freezeContentHeightDepth = 0;
 	
-	
-		function freezeContentHeight() {
-			if (!(freezeContentHeightDepth++)) {
-				content.css({
-					width: '100%',
-					height: content.height(),
-					overflow: 'hidden'
-				});
-			}
+		thawContentHeight: function() {
+			this.contentEl.css({
+				width: '',
+				height: '',
+				overflow: ''
+			});
 		}
 	
-	
-		function thawContentHeight() {
-			if (!(--freezeContentHeightDepth)) {
-				content.css({
-					width: '',
-					height: '',
-					overflow: ''
-				});
-			}
-		}
-	
-	
-	
-		/* Misc
-		-----------------------------------------------------------------------------*/
-	
-	
-		function getCalendar() {
-			return t;
-		}
-	
-	
-		function getView() {
-			return currentView;
-		}
-	
-	
-		function option(name, value) {
-			var newOptionHash;
-	
-			if (typeof name === 'string') {
-				if (value === undefined) { // getter
-					return t.options[name];
-				}
-				else { // setter for individual option
-					newOptionHash = {};
-					newOptionHash[name] = value;
-					setOptions(newOptionHash);
-				}
-			}
-			else if (typeof name === 'object') { // compound setter with object input
-				setOptions(name);
-			}
-		}
-	
-	
-		function setOptions(newOptionHash) {
-			var optionCnt = 0;
-			var optionName;
-	
-			recordOptionOverrides(newOptionHash);
-	
-			for (optionName in newOptionHash) {
-				optionCnt++;
-			}
-	
-			// special-case handling of single option change.
-			// if only one option change, `optionName` will be its name.
-			if (optionCnt === 1) {
-				if (optionName === 'height' || optionName === 'contentHeight' || optionName === 'aspectRatio') {
-					updateSize(true); // true = allow recalculation of height
-					return;
-				}
-				else if (optionName === 'defaultDate') {
-					return; // can't change date this way. use gotoDate instead
-				}
-				else if (optionName === 'businessHours') {
-					if (currentView) {
-						currentView.unrenderBusinessHours();
-						currentView.renderBusinessHours();
-					}
-					return;
-				}
-				else if (optionName === 'timezone') {
-					t.rezoneArrayEventSources();
-					t.refetchEvents();
-					return;
-				}
-			}
-	
-			// catch-all. rerender the header and footer and rebuild/rerender the current view
-			renderHeader();
-			renderFooter();
-			viewsByType = {}; // even non-current views will be affected by this option change. do before rerender
-			reinitView();
-		}
-	
-	
-		// stores the new options internally, but does not rerender anything.
-		function recordOptionOverrides(newOptionHash) {
-			var optionName;
-	
-			for (optionName in newOptionHash) {
-				t.dynamicOverrides[optionName] = newOptionHash[optionName];
-			}
-	
-			t.viewSpecCache = {}; // the dynamic override invalidates the options in this cache, so just clear it
-			t.populateOptionsHash(); // this.options needs to be recomputed after the dynamic override
-	
-			// trigger handlers after this.options has been updated
-			for (optionName in newOptionHash) {
-				t.triggerOptionHandlers(optionName); // recall bindOption/bindOptions
-			}
-		}
-	
-	
-		function publiclyTrigger(name, thisObj) {
-			var args = Array.prototype.slice.call(arguments, 2);
-	
-			thisObj = thisObj || _element;
-			this.triggerWith(name, thisObj, args); // Emitter's method
-	
-			if (t.options[name]) {
-				return t.options[name].apply(thisObj, args);
-			}
-		}
-	
-		t.initialize();
-	}
+	});
 	
 	;;
-	/*
-	Options binding/triggering system.
-	*/
+	
 	Calendar.mixin({
 	
-		// A map of option names to arrays of handler objects. Initialized to {} in Calendar.
-		// Format for a handler object:
-		// {
-		//   func // callback function to be called upon change
-		//   names // option names whose values should be given to func
-		// }
-		optionHandlers: null, 
+		header: null,
+		footer: null,
+		toolbarsManager: null,
 	
-		// Calls handlerFunc immediately, and when the given option has changed.
-		// handlerFunc will be given the option value.
-		bindOption: function(optionName, handlerFunc) {
-			this.bindOptions([ optionName ], handlerFunc);
+	
+		initToolbars: function() {
+			this.header = new Toolbar(this, this.computeHeaderOptions());
+			this.footer = new Toolbar(this, this.computeFooterOptions());
+			this.toolbarsManager = new Iterator([ this.header, this.footer ]);
 		},
 	
-		// Calls handlerFunc immediately, and when any of the given options change.
-		// handlerFunc will be given each option value as ordered function arguments.
-		bindOptions: function(optionNames, handlerFunc) {
-			var handlerObj = { func: handlerFunc, names: optionNames };
-			var i;
 	
-			for (i = 0; i < optionNames.length; i++) {
-				this.registerOptionHandlerObj(optionNames[i], handlerObj);
-			}
-	
-			this.triggerOptionHandlerObj(handlerObj);
+		computeHeaderOptions: function() {
+			return {
+				extraClasses: 'fc-header-toolbar',
+				layout: this.opt('header')
+			};
 		},
 	
-		// Puts the given handler object into the internal hash
-		registerOptionHandlerObj: function(optionName, handlerObj) {
-			(this.optionHandlers[optionName] || (this.optionHandlers[optionName] = []))
-				.push(handlerObj);
+	
+		computeFooterOptions: function() {
+			return {
+				extraClasses: 'fc-footer-toolbar',
+				layout: this.opt('footer')
+			};
 		},
 	
-		// Reports that the given option has changed, and calls all appropriate handlers.
-		triggerOptionHandlers: function(optionName) {
-			var handlerObjs = this.optionHandlers[optionName] || [];
-			var i;
 	
-			for (i = 0; i < handlerObjs.length; i++) {
-				this.triggerOptionHandlerObj(handlerObjs[i]);
+		// can be called repeatedly and Header will rerender
+		renderHeader: function() {
+			var header = this.header;
+	
+			header.setToolbarOptions(this.computeHeaderOptions());
+			header.render();
+	
+			if (header.el) {
+				this.el.prepend(header.el);
 			}
 		},
 	
-		// Calls the callback for a specific handler object, passing in the appropriate arguments.
-		triggerOptionHandlerObj: function(handlerObj) {
-			var optionNames = handlerObj.names;
-			var optionValues = [];
-			var i;
 	
-			for (i = 0; i < optionNames.length; i++) {
-				optionValues.push(this.options[optionNames[i]]);
+		// can be called repeatedly and Footer will rerender
+		renderFooter: function() {
+			var footer = this.footer;
+	
+			footer.setToolbarOptions(this.computeFooterOptions());
+			footer.render();
+	
+			if (footer.el) {
+				this.el.append(footer.el);
 			}
+		},
 	
-			handlerObj.func.apply(this, optionValues); // maintain the Calendar's `this` context
+	
+		setToolbarsTitle: function(title) {
+			this.toolbarsManager.proxyCall('updateTitle', title);
+		},
+	
+	
+		updateToolbarButtons: function() {
+			var now = this.getNow();
+			var view = this.view;
+			var todayInfo = view.buildDateProfile(now);
+			var prevInfo = view.buildPrevDateProfile(this.currentDate);
+			var nextInfo = view.buildNextDateProfile(this.currentDate);
+	
+			this.toolbarsManager.proxyCall(
+				(todayInfo.isValid && !isDateWithinRange(now, view.currentRange)) ?
+					'enableButton' :
+					'disableButton',
+				'today'
+			);
+	
+			this.toolbarsManager.proxyCall(
+				prevInfo.isValid ?
+					'enableButton' :
+					'disableButton',
+				'prev'
+			);
+	
+			this.toolbarsManager.proxyCall(
+				nextInfo.isValid ?
+					'enableButton' :
+					'disableButton',
+				'next'
+			);
+		},
+	
+	
+		queryToolbarsHeight: function() {
+			return this.toolbarsManager.items.reduce(function(accumulator, toolbar) {
+				var toolbarHeight = toolbar.el ? toolbar.el.outerHeight(true) : 0; // includes margin
+				return accumulator + toolbarHeight;
+			}, 0);
 		}
 	
 	});
@@ -16235,6 +16537,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	};
 	
+	// TODO: make these computable properties in optionsModel
 	function populateInstanceComputableOptions(options) {
 		$.each(instanceComputableOptions, function(name, func) {
 			if (options[name] == null) {
@@ -16305,7 +16608,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 		$.each(
-			(t.options.events ? [ t.options.events ] : []).concat(t.options.eventSources || []),
+			(t.opt('events') ? [ t.opt('events') ] : []).concat(t.opt('eventSources') || []),
 			function(i, sourceInput) {
 				var source = buildEventSource(sourceInput);
 				if (source) {
@@ -16317,7 +16620,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 		function requestEvents(start, end) {
-			if (!t.options.lazyFetching || isFetchNeeded(start, end)) {
+			if (!t.opt('lazyFetching') || isFetchNeeded(start, end)) {
 				return fetchEvents(start, end);
 			}
 			else {
@@ -16353,11 +16656,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		t.getEventCache = function() {
 			return cache;
-		};
-	
-	
-		t.getPrunedEventCache = function() {
-			return prunedCache;
 		};
 	
 	
@@ -16422,7 +16720,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 	
 			if (pendingSourceCnt) {
-				return new Promise(function(resolve) {
+				return Promise.construct(function(resolve) {
 					t.one('eventsReceived', resolve); // will send prunedCache
 				});
 			}
@@ -16506,7 +16804,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					source,
 					rangeStart.clone(),
 					rangeEnd.clone(),
-					t.options.timezone,
+					t.opt('timezone'),
 					callback
 				);
 	
@@ -16529,7 +16827,7 @@ return /******/ (function(modules) { // webpackBootstrap
 						t, // this, the Calendar object
 						rangeStart.clone(),
 						rangeEnd.clone(),
-						t.options.timezone,
+						t.opt('timezone'),
 						function(events) {
 							callback(events);
 							t.popLoading();
@@ -16564,9 +16862,9 @@ return /******/ (function(modules) { // webpackBootstrap
 					// and not affect the passed-in object.
 					var data = $.extend({}, customData || {});
 	
-					var startParam = firstDefined(source.startParam, t.options.startParam);
-					var endParam = firstDefined(source.endParam, t.options.endParam);
-					var timezoneParam = firstDefined(source.timezoneParam, t.options.timezoneParam);
+					var startParam = firstDefined(source.startParam, t.opt('startParam'));
+					var endParam = firstDefined(source.endParam, t.opt('endParam'));
+					var timezoneParam = firstDefined(source.timezoneParam, t.opt('timezoneParam'));
 	
 					if (startParam) {
 						data[startParam] = rangeStart.format();
@@ -16574,8 +16872,8 @@ return /******/ (function(modules) { // webpackBootstrap
 					if (endParam) {
 						data[endParam] = rangeEnd.format();
 					}
-					if (t.options.timezone && t.options.timezone != 'local') {
-						data[timezoneParam] = t.options.timezone;
+					if (t.opt('timezone') && t.opt('timezone') != 'local') {
+						data[timezoneParam] = t.opt('timezone');
 					}
 	
 					t.pushLoading();
@@ -16984,12 +17282,13 @@ return /******/ (function(modules) { // webpackBootstrap
 		// Will return `false` when input is invalid.
 		// `source` is optional
 		function buildEventFromInput(input, source) {
+			var calendarEventDataTransform = t.opt('eventDataTransform');
 			var out = {};
 			var start, end;
 			var allDay;
 	
-			if (t.options.eventDataTransform) {
-				input = t.options.eventDataTransform(input);
+			if (calendarEventDataTransform) {
+				input = calendarEventDataTransform(input);
 			}
 			if (source && source.eventDataTransform) {
 				input = source.eventDataTransform(input);
@@ -17055,7 +17354,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				if (allDay === undefined) { // still undefined? fallback to default
 					allDay = firstDefined(
 						source ? source.allDayDefault : undefined,
-						t.options.allDayDefault
+						t.opt('allDayDefault')
 					);
 					// still undefined? normalizeEventDates will calculate it
 				}
@@ -17092,7 +17391,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 	
 			if (!eventProps.end) {
-				if (t.options.forceEventDuration) {
+				if (t.opt('forceEventDuration')) {
 					eventProps.end = t.getDefaultEventEnd(eventProps.allDay, eventProps.start);
 				}
 				else {
@@ -17445,21 +17744,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Determines if the given event can be relocated to the given span (unzoned start/end with other misc data)
 	Calendar.prototype.isEventSpanAllowed = function(span, event) {
 		var source = event.source || {};
+		var eventAllowFunc = this.opt('eventAllow');
 	
 		var constraint = firstDefined(
 			event.constraint,
 			source.constraint,
-			this.options.eventConstraint
+			this.opt('eventConstraint')
 		);
 	
 		var overlap = firstDefined(
 			event.overlap,
 			source.overlap,
-			this.options.eventOverlap
+			this.opt('eventOverlap')
 		);
 	
 		return this.isSpanAllowed(span, constraint, overlap, event) &&
-			(!this.options.eventAllow || this.options.eventAllow(span, event) !== false);
+			(!eventAllowFunc || eventAllowFunc(span, event) !== false);
 	};
 	
 	
@@ -17488,8 +17788,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	// Determines the given span (unzoned start/end with other misc data) can be selected.
 	Calendar.prototype.isSelectionSpanAllowed = function(span) {
-		return this.isSpanAllowed(span, this.options.selectConstraint, this.options.selectOverlap) &&
-			(!this.options.selectAllow || this.options.selectAllow(span) !== false);
+		var selectAllowFunc = this.opt('selectAllow');
+	
+		return this.isSpanAllowed(span, this.opt('selectConstraint'), this.opt('selectOverlap')) &&
+			(!selectAllowFunc || selectAllowFunc(span) !== false);
 	};
 	
 	
@@ -17613,7 +17915,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Return events objects for business hours within the current view.
 	// Abuse of our event system :(
 	Calendar.prototype.getCurrentBusinessHourEvents = function(wholeDay) {
-		return this.computeBusinessHourEvents(wholeDay, this.options.businessHours);
+		return this.computeBusinessHourEvents(wholeDay, this.opt('businessHours'));
 	};
 	
 	// Given a raw input value from options, return events objects for business hours within the current view.
@@ -17910,18 +18212,20 @@ return /******/ (function(modules) { // webpackBootstrap
 		------------------------------------------------------------------------------------------------------------------*/
 	
 	
-		computeInitialScroll: function() {
+		computeInitialDateScroll: function() {
 			return { top: 0 };
 		},
 	
 	
-		queryScroll: function() {
+		queryDateScroll: function() {
 			return { top: this.scroller.getScrollTop() };
 		},
 	
 	
-		setScroll: function(scroll) {
-			this.scroller.setScrollTop(scroll.top);
+		applyDateScroll: function(scroll) {
+			if (scroll.top !== undefined) {
+				this.scroller.setScrollTop(scroll.top);
+			}
 		},
 	
 	
@@ -18438,7 +18742,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 		// Computes the initial pre-configured scroll state prior to allowing the user to change it
-		computeInitialScroll: function() {
+		computeInitialDateScroll: function() {
 			var scrollTime = moment.duration(this.opt('scrollTime'));
 			var top = this.timeGrid.computeTimeTop(scrollTime);
 	
@@ -18453,13 +18757,15 @@ return /******/ (function(modules) { // webpackBootstrap
 		},
 	
 	
-		queryScroll: function() {
+		queryDateScroll: function() {
 			return { top: this.scroller.getScrollTop() };
 		},
 	
 	
-		setScroll: function(scroll) {
-			this.scroller.setScrollTop(scroll.top);
+		applyDateScroll: function(scroll) {
+			if (scroll.top !== undefined) {
+				this.scroller.setScrollTop(scroll.top);
+			}
 		},
 	
 	
@@ -24868,7 +25174,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 	// module
-	exports.push([module.id, "/*!\n * FullCalendar v3.3.1 Stylesheet\n * Docs & License: https://fullcalendar.io/\n * (c) 2017 Adam Shaw\n */.fc{direction:ltr;text-align:left}.fc-rtl{text-align:right}body .fc{font-size:1em}.fc-unthemed .fc-content,.fc-unthemed .fc-divider,.fc-unthemed .fc-list-heading td,.fc-unthemed .fc-list-view,.fc-unthemed .fc-popover,.fc-unthemed .fc-row,.fc-unthemed tbody,.fc-unthemed td,.fc-unthemed th,.fc-unthemed thead{border-color:#ddd}.fc-unthemed .fc-popover{background-color:#fff}.fc-unthemed .fc-divider,.fc-unthemed .fc-list-heading td,.fc-unthemed .fc-popover .fc-header{background:#eee}.fc-unthemed .fc-popover .fc-header .fc-close{color:#666}.fc-unthemed td.fc-today{background:#fcf8e3}.fc-highlight{background:#bce8f1;opacity:.3}.fc-bgevent{background:#8fdf82;opacity:.3}.fc-nonbusiness{background:#d7d7d7}.fc-unthemed .fc-disabled-day{background:#d7d7d7;opacity:.3}.ui-widget .fc-disabled-day{background-image:none}.fc-icon{display:inline-block;height:1em;line-height:1em;font-size:1em;text-align:center;overflow:hidden;font-family:Courier New,Courier,monospace;-webkit-touch-callout:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.fc-icon:after{position:relative}.fc-icon-left-single-arrow:after{content:\"\\2039\";font-weight:700;font-size:200%;top:-7%}.fc-icon-right-single-arrow:after{content:\"\\203A\";font-weight:700;font-size:200%;top:-7%}.fc-icon-left-double-arrow:after{content:\"\\AB\";font-size:160%;top:-7%}.fc-icon-right-double-arrow:after{content:\"\\BB\";font-size:160%;top:-7%}.fc-icon-left-triangle:after{content:\"\\25C4\";font-size:125%;top:3%}.fc-icon-right-triangle:after{content:\"\\25BA\";font-size:125%;top:3%}.fc-icon-down-triangle:after{content:\"\\25BC\";font-size:125%;top:2%}.fc-icon-x:after{content:\"\\D7\";font-size:200%;top:6%}.fc button{box-sizing:border-box;margin:0;height:2.1em;padding:0 .6em;font-size:1em;white-space:nowrap;cursor:pointer}.fc button::-moz-focus-inner{margin:0;padding:0}.fc-state-default{border:1px solid}.fc-state-default.fc-corner-left{border-top-left-radius:4px;border-bottom-left-radius:4px}.fc-state-default.fc-corner-right{border-top-right-radius:4px;border-bottom-right-radius:4px}.fc button .fc-icon{position:relative;top:-.05em;margin:0 .2em;vertical-align:middle}.fc-state-default{background-color:#f5f5f5;background-image:-webkit-gradient(linear,0 0,0 100%,from(#fff),to(#e6e6e6));background-image:-webkit-linear-gradient(top,#fff,#e6e6e6);background-image:linear-gradient(180deg,#fff,#e6e6e6);background-repeat:repeat-x;border-color:#e6e6e6 #e6e6e6 #bfbfbf;border-color:rgba(0,0,0,.1) rgba(0,0,0,.1) rgba(0,0,0,.25);color:#333;text-shadow:0 1px 1px hsla(0,0%,100%,.75);box-shadow:inset 0 1px 0 hsla(0,0%,100%,.2),0 1px 2px rgba(0,0,0,.05)}.fc-state-active,.fc-state-disabled,.fc-state-down,.fc-state-hover{color:#333;background-color:#e6e6e6}.fc-state-hover{color:#333;text-decoration:none;background-position:0 -15px;-webkit-transition:background-position .1s linear;transition:background-position .1s linear}.fc-state-active,.fc-state-down{background-color:#ccc;background-image:none;box-shadow:inset 0 2px 4px rgba(0,0,0,.15),0 1px 2px rgba(0,0,0,.05)}.fc-state-disabled{cursor:default;background-image:none;opacity:.65;box-shadow:none}.fc-button-group{display:inline-block}.fc .fc-button-group>*{float:left;margin:0 0 0 -1px}.fc .fc-button-group>:first-child{margin-left:0}.fc-popover{position:absolute;box-shadow:0 2px 6px rgba(0,0,0,.15)}.fc-popover .fc-header{padding:2px 4px}.fc-popover .fc-header .fc-title{margin:0 2px}.fc-popover .fc-header .fc-close{cursor:pointer}.fc-ltr .fc-popover .fc-header .fc-title,.fc-rtl .fc-popover .fc-header .fc-close{float:left}.fc-ltr .fc-popover .fc-header .fc-close,.fc-rtl .fc-popover .fc-header .fc-title{float:right}.fc-unthemed .fc-popover{border-width:1px;border-style:solid}.fc-unthemed .fc-popover .fc-header .fc-close{font-size:.9em;margin-top:2px}.fc-popover>.ui-widget-header+.ui-widget-content{border-top:0}.fc-divider{border-style:solid;border-width:1px}hr.fc-divider{height:0;margin:0;padding:0 0 2px;border-width:1px 0}.fc-clear{clear:both}.fc-bg,.fc-bgevent-skeleton,.fc-helper-skeleton,.fc-highlight-skeleton{position:absolute;top:0;left:0;right:0}.fc-bg{bottom:0}.fc-bg table{height:100%}.fc table{width:100%;box-sizing:border-box;table-layout:fixed;border-collapse:collapse;border-spacing:0;font-size:1em}.fc th{text-align:center}.fc td,.fc th{border-style:solid;border-width:1px;padding:0;vertical-align:top}.fc td.fc-today{border-style:double}a[data-goto]{cursor:pointer}a[data-goto]:hover{text-decoration:underline}.fc .fc-row{border-style:solid;border-width:0}.fc-row table{border-left:0 hidden transparent;border-right:0 hidden transparent;border-bottom:0 hidden transparent}.fc-row:first-child table{border-top:0 hidden transparent}.fc-row{position:relative}.fc-row .fc-bg{z-index:1}.fc-row .fc-bgevent-skeleton,.fc-row .fc-highlight-skeleton{bottom:0}.fc-row .fc-bgevent-skeleton table,.fc-row .fc-highlight-skeleton table{height:100%}.fc-row .fc-bgevent-skeleton td,.fc-row .fc-highlight-skeleton td{border-color:transparent}.fc-row .fc-bgevent-skeleton{z-index:2}.fc-row .fc-highlight-skeleton{z-index:3}.fc-row .fc-content-skeleton{position:relative;z-index:4;padding-bottom:2px}.fc-row .fc-helper-skeleton{z-index:5}.fc-row .fc-content-skeleton td,.fc-row .fc-helper-skeleton td{background:none;border-color:transparent;border-bottom:0}.fc-row .fc-content-skeleton tbody td,.fc-row .fc-helper-skeleton tbody td{border-top:0}.fc-scroller{-webkit-overflow-scrolling:touch}.fc-scroller>.fc-day-grid,.fc-scroller>.fc-time-grid{position:relative;width:100%}.fc-event{position:relative;display:block;font-size:.85em;line-height:1.3;border-radius:3px;border:1px solid #3a87ad;font-weight:400}.fc-event,.fc-event-dot{background-color:#3a87ad}.fc-event,.fc-event:hover,.ui-widget .fc-event{color:#fff;text-decoration:none}.fc-event.fc-draggable,.fc-event[href]{cursor:pointer}.fc-not-allowed,.fc-not-allowed .fc-event{cursor:not-allowed}.fc-event .fc-bg{z-index:1;background:#fff;opacity:.25}.fc-event .fc-content{position:relative;z-index:2}.fc-event .fc-resizer{position:absolute;z-index:4;display:none}.fc-event.fc-allow-mouse-resize .fc-resizer,.fc-event.fc-selected .fc-resizer{display:block}.fc-event.fc-selected .fc-resizer:before{content:\"\";position:absolute;z-index:9999;top:50%;left:50%;width:40px;height:40px;margin-left:-20px;margin-top:-20px}.fc-event.fc-selected{z-index:9999!important;box-shadow:0 2px 5px rgba(0,0,0,.2)}.fc-event.fc-selected.fc-dragging{box-shadow:0 2px 7px rgba(0,0,0,.3)}.fc-h-event.fc-selected:before{content:\"\";position:absolute;z-index:3;top:-10px;bottom:-10px;left:0;right:0}.fc-ltr .fc-h-event.fc-not-start,.fc-rtl .fc-h-event.fc-not-end{margin-left:0;border-left-width:0;padding-left:1px;border-top-left-radius:0;border-bottom-left-radius:0}.fc-ltr .fc-h-event.fc-not-end,.fc-rtl .fc-h-event.fc-not-start{margin-right:0;border-right-width:0;padding-right:1px;border-top-right-radius:0;border-bottom-right-radius:0}.fc-ltr .fc-h-event .fc-start-resizer,.fc-rtl .fc-h-event .fc-end-resizer{cursor:w-resize;left:-1px}.fc-ltr .fc-h-event .fc-end-resizer,.fc-rtl .fc-h-event .fc-start-resizer{cursor:e-resize;right:-1px}.fc-h-event.fc-allow-mouse-resize .fc-resizer{width:7px;top:-1px;bottom:-1px}.fc-h-event.fc-selected .fc-resizer{border-radius:4px;border-width:1px;width:6px;height:6px;border-style:solid;border-color:inherit;background:#fff;top:50%;margin-top:-4px}.fc-ltr .fc-h-event.fc-selected .fc-start-resizer,.fc-rtl .fc-h-event.fc-selected .fc-end-resizer{margin-left:-4px}.fc-ltr .fc-h-event.fc-selected .fc-end-resizer,.fc-rtl .fc-h-event.fc-selected .fc-start-resizer{margin-right:-4px}.fc-day-grid-event{margin:1px 2px 0;padding:0 1px}tr:first-child>td>.fc-day-grid-event{margin-top:2px}.fc-day-grid-event.fc-selected:after{content:\"\";position:absolute;z-index:1;top:-1px;right:-1px;bottom:-1px;left:-1px;background:#000;opacity:.25}.fc-day-grid-event .fc-content{white-space:nowrap;overflow:hidden}.fc-day-grid-event .fc-time{font-weight:700}.fc-ltr .fc-day-grid-event.fc-allow-mouse-resize .fc-start-resizer,.fc-rtl .fc-day-grid-event.fc-allow-mouse-resize .fc-end-resizer{margin-left:-2px}.fc-ltr .fc-day-grid-event.fc-allow-mouse-resize .fc-end-resizer,.fc-rtl .fc-day-grid-event.fc-allow-mouse-resize .fc-start-resizer{margin-right:-2px}a.fc-more{margin:1px 3px;font-size:.85em;cursor:pointer;text-decoration:none}a.fc-more:hover{text-decoration:underline}.fc-limited{display:none}.fc-day-grid .fc-row{z-index:1}.fc-more-popover{z-index:2;width:220px}.fc-more-popover .fc-event-container{padding:10px}.fc-now-indicator{position:absolute;border:0 solid red}.fc-unselectable{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:rgba(0,0,0,0)}.fc-toolbar{text-align:center}.fc-toolbar.fc-header-toolbar{margin-bottom:1em}.fc-toolbar.fc-footer-toolbar{margin-top:1em}.fc-toolbar .fc-left{float:left}.fc-toolbar .fc-right{float:right}.fc-toolbar .fc-center{display:inline-block}.fc .fc-toolbar>*>*{float:left;margin-left:.75em}.fc .fc-toolbar>*>:first-child{margin-left:0}.fc-toolbar h2{margin:0}.fc-toolbar button{position:relative}.fc-toolbar .fc-state-hover,.fc-toolbar .ui-state-hover{z-index:2}.fc-toolbar .fc-state-down{z-index:3}.fc-toolbar .fc-state-active,.fc-toolbar .ui-state-active{z-index:4}.fc-toolbar button:focus{z-index:5}.fc-view-container *,.fc-view-container :after,.fc-view-container :before{box-sizing:content-box}.fc-view,.fc-view>table{position:relative;z-index:1}.fc-basicDay-view .fc-content-skeleton,.fc-basicWeek-view .fc-content-skeleton{padding-bottom:1em}.fc-basic-view .fc-body .fc-row{min-height:4em}.fc-row.fc-rigid{overflow:hidden}.fc-row.fc-rigid .fc-content-skeleton{position:absolute;top:0;left:0;right:0}.fc-day-top.fc-other-month{opacity:.3}.fc-basic-view .fc-day-number,.fc-basic-view .fc-week-number{padding:2px}.fc-basic-view th.fc-day-number,.fc-basic-view th.fc-week-number{padding:0 2px}.fc-ltr .fc-basic-view .fc-day-top .fc-day-number{float:right}.fc-rtl .fc-basic-view .fc-day-top .fc-day-number{float:left}.fc-ltr .fc-basic-view .fc-day-top .fc-week-number{float:left;border-radius:0 0 3px 0}.fc-rtl .fc-basic-view .fc-day-top .fc-week-number{float:right;border-radius:0 0 0 3px}.fc-basic-view .fc-day-top .fc-week-number{min-width:1.5em;text-align:center;background-color:#f2f2f2;color:gray}.fc-basic-view td.fc-week-number{text-align:center}.fc-basic-view td.fc-week-number>*{display:inline-block;min-width:1.25em}.fc-agenda-view .fc-day-grid{position:relative;z-index:2}.fc-agenda-view .fc-day-grid .fc-row{min-height:3em}.fc-agenda-view .fc-day-grid .fc-row .fc-content-skeleton{padding-bottom:1em}.fc .fc-axis{vertical-align:middle;padding:0 4px;white-space:nowrap}.fc-ltr .fc-axis{text-align:right}.fc-rtl .fc-axis{text-align:left}.ui-widget td.fc-axis{font-weight:400}.fc-time-grid,.fc-time-grid-container{position:relative;z-index:1}.fc-time-grid{min-height:100%}.fc-time-grid table{border:0 hidden transparent}.fc-time-grid>.fc-bg{z-index:1}.fc-time-grid .fc-slats,.fc-time-grid>hr{position:relative;z-index:2}.fc-time-grid .fc-content-col{position:relative}.fc-time-grid .fc-content-skeleton{position:absolute;z-index:3;top:0;left:0;right:0}.fc-time-grid .fc-business-container{position:relative;z-index:1}.fc-time-grid .fc-bgevent-container{position:relative;z-index:2}.fc-time-grid .fc-highlight-container{position:relative;z-index:3}.fc-time-grid .fc-event-container{position:relative;z-index:4}.fc-time-grid .fc-now-indicator-line{z-index:5}.fc-time-grid .fc-helper-container{position:relative;z-index:6}.fc-time-grid .fc-slats td{height:1.5em;border-bottom:0}.fc-time-grid .fc-slats .fc-minor td{border-top-style:dotted}.fc-time-grid .fc-slats .ui-widget-content{background:none}.fc-time-grid .fc-highlight-container{position:relative}.fc-time-grid .fc-highlight{position:absolute;left:0;right:0}.fc-ltr .fc-time-grid .fc-event-container{margin:0 2.5% 0 2px}.fc-rtl .fc-time-grid .fc-event-container{margin:0 2px 0 2.5%}.fc-time-grid .fc-bgevent,.fc-time-grid .fc-event{position:absolute;z-index:1}.fc-time-grid .fc-bgevent{left:0;right:0}.fc-v-event.fc-not-start{border-top-width:0;padding-top:1px;border-top-left-radius:0;border-top-right-radius:0}.fc-v-event.fc-not-end{border-bottom-width:0;padding-bottom:1px;border-bottom-left-radius:0;border-bottom-right-radius:0}.fc-time-grid-event{overflow:hidden}.fc-time-grid-event.fc-selected{overflow:visible}.fc-time-grid-event.fc-selected .fc-bg{display:none}.fc-time-grid-event .fc-content{overflow:hidden}.fc-time-grid-event .fc-time,.fc-time-grid-event .fc-title{padding:0 1px}.fc-time-grid-event .fc-time{font-size:.85em;white-space:nowrap}.fc-time-grid-event.fc-short .fc-content{white-space:nowrap}.fc-time-grid-event.fc-short .fc-time,.fc-time-grid-event.fc-short .fc-title{display:inline-block;vertical-align:top}.fc-time-grid-event.fc-short .fc-time span{display:none}.fc-time-grid-event.fc-short .fc-time:before{content:attr(data-start)}.fc-time-grid-event.fc-short .fc-time:after{content:\"\\A0-\\A0\"}.fc-time-grid-event.fc-short .fc-title{font-size:.85em;padding:0}.fc-time-grid-event.fc-allow-mouse-resize .fc-resizer{left:0;right:0;bottom:0;height:8px;overflow:hidden;line-height:8px;font-size:11px;font-family:monospace;text-align:center;cursor:s-resize}.fc-time-grid-event.fc-allow-mouse-resize .fc-resizer:after{content:\"=\"}.fc-time-grid-event.fc-selected .fc-resizer{border-radius:5px;border-width:1px;width:8px;height:8px;border-style:solid;border-color:inherit;background:#fff;left:50%;margin-left:-5px;bottom:-5px}.fc-time-grid .fc-now-indicator-line{border-top-width:1px;left:0;right:0}.fc-time-grid .fc-now-indicator-arrow{margin-top:-5px}.fc-ltr .fc-time-grid .fc-now-indicator-arrow{left:0;border-width:5px 0 5px 6px;border-top-color:transparent;border-bottom-color:transparent}.fc-rtl .fc-time-grid .fc-now-indicator-arrow{right:0;border-width:5px 6px 5px 0;border-top-color:transparent;border-bottom-color:transparent}.fc-event-dot{display:inline-block;width:10px;height:10px;border-radius:5px}.fc-rtl .fc-list-view{direction:rtl}.fc-list-view{border-width:1px;border-style:solid}.fc .fc-list-table{table-layout:auto}.fc-list-table td{border-width:1px 0 0;padding:8px 14px}.fc-list-table tr:first-child td{border-top-width:0}.fc-list-heading{border-bottom-width:1px}.fc-list-heading td{font-weight:700}.fc-ltr .fc-list-heading-main{float:left}.fc-ltr .fc-list-heading-alt,.fc-rtl .fc-list-heading-main{float:right}.fc-rtl .fc-list-heading-alt{float:left}.fc-list-item.fc-has-url{cursor:pointer}.fc-list-item:hover td{background-color:#f5f5f5}.fc-list-item-marker,.fc-list-item-time{white-space:nowrap;width:1px}.fc-ltr .fc-list-item-marker{padding-right:0}.fc-rtl .fc-list-item-marker{padding-left:0}.fc-list-item-title a{text-decoration:none;color:inherit}.fc-list-item-title a[href]:hover{text-decoration:underline}.fc-list-empty-wrap2{position:absolute;top:0;left:0;right:0;bottom:0}.fc-list-empty-wrap1{width:100%;height:100%;display:table}.fc-list-empty{display:table-cell;vertical-align:middle;text-align:center}.fc-unthemed .fc-list-empty{background-color:#eee}", ""]);
+	exports.push([module.id, "/*!\n * FullCalendar v3.4.0 Stylesheet\n * Docs & License: https://fullcalendar.io/\n * (c) 2017 Adam Shaw\n */.fc{direction:ltr;text-align:left}.fc-rtl{text-align:right}body .fc{font-size:1em}.fc-unthemed .fc-content,.fc-unthemed .fc-divider,.fc-unthemed .fc-list-heading td,.fc-unthemed .fc-list-view,.fc-unthemed .fc-popover,.fc-unthemed .fc-row,.fc-unthemed tbody,.fc-unthemed td,.fc-unthemed th,.fc-unthemed thead{border-color:#ddd}.fc-unthemed .fc-popover{background-color:#fff}.fc-unthemed .fc-divider,.fc-unthemed .fc-list-heading td,.fc-unthemed .fc-popover .fc-header{background:#eee}.fc-unthemed .fc-popover .fc-header .fc-close{color:#666}.fc-unthemed td.fc-today{background:#fcf8e3}.fc-highlight{background:#bce8f1;opacity:.3}.fc-bgevent{background:#8fdf82;opacity:.3}.fc-nonbusiness{background:#d7d7d7}.fc-unthemed .fc-disabled-day{background:#d7d7d7;opacity:.3}.ui-widget .fc-disabled-day{background-image:none}.fc-icon{display:inline-block;height:1em;line-height:1em;font-size:1em;text-align:center;overflow:hidden;font-family:Courier New,Courier,monospace;-webkit-touch-callout:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.fc-icon:after{position:relative}.fc-icon-left-single-arrow:after{content:\"\\2039\";font-weight:700;font-size:200%;top:-7%}.fc-icon-right-single-arrow:after{content:\"\\203A\";font-weight:700;font-size:200%;top:-7%}.fc-icon-left-double-arrow:after{content:\"\\AB\";font-size:160%;top:-7%}.fc-icon-right-double-arrow:after{content:\"\\BB\";font-size:160%;top:-7%}.fc-icon-left-triangle:after{content:\"\\25C4\";font-size:125%;top:3%}.fc-icon-right-triangle:after{content:\"\\25BA\";font-size:125%;top:3%}.fc-icon-down-triangle:after{content:\"\\25BC\";font-size:125%;top:2%}.fc-icon-x:after{content:\"\\D7\";font-size:200%;top:6%}.fc button{box-sizing:border-box;margin:0;height:2.1em;padding:0 .6em;font-size:1em;white-space:nowrap;cursor:pointer}.fc button::-moz-focus-inner{margin:0;padding:0}.fc-state-default{border:1px solid}.fc-state-default.fc-corner-left{border-top-left-radius:4px;border-bottom-left-radius:4px}.fc-state-default.fc-corner-right{border-top-right-radius:4px;border-bottom-right-radius:4px}.fc button .fc-icon{position:relative;top:-.05em;margin:0 .2em;vertical-align:middle}.fc-state-default{background-color:#f5f5f5;background-image:linear-gradient(180deg,#fff,#e6e6e6);background-repeat:repeat-x;border-color:#e6e6e6 #e6e6e6 #bfbfbf;border-color:rgba(0,0,0,.1) rgba(0,0,0,.1) rgba(0,0,0,.25);color:#333;text-shadow:0 1px 1px hsla(0,0%,100%,.75);box-shadow:inset 0 1px 0 hsla(0,0%,100%,.2),0 1px 2px rgba(0,0,0,.05)}.fc-state-active,.fc-state-disabled,.fc-state-down,.fc-state-hover{color:#333;background-color:#e6e6e6}.fc-state-hover{color:#333;text-decoration:none;background-position:0 -15px;transition:background-position .1s linear}.fc-state-active,.fc-state-down{background-color:#ccc;background-image:none;box-shadow:inset 0 2px 4px rgba(0,0,0,.15),0 1px 2px rgba(0,0,0,.05)}.fc-state-disabled{cursor:default;background-image:none;opacity:.65;box-shadow:none}.fc-button-group{display:inline-block}.fc .fc-button-group>*{float:left;margin:0 0 0 -1px}.fc .fc-button-group>:first-child{margin-left:0}.fc-popover{position:absolute;box-shadow:0 2px 6px rgba(0,0,0,.15)}.fc-popover .fc-header{padding:2px 4px}.fc-popover .fc-header .fc-title{margin:0 2px}.fc-popover .fc-header .fc-close{cursor:pointer}.fc-ltr .fc-popover .fc-header .fc-title,.fc-rtl .fc-popover .fc-header .fc-close{float:left}.fc-ltr .fc-popover .fc-header .fc-close,.fc-rtl .fc-popover .fc-header .fc-title{float:right}.fc-unthemed .fc-popover{border-width:1px;border-style:solid}.fc-unthemed .fc-popover .fc-header .fc-close{font-size:.9em;margin-top:2px}.fc-popover>.ui-widget-header+.ui-widget-content{border-top:0}.fc-divider{border-style:solid;border-width:1px}hr.fc-divider{height:0;margin:0;padding:0 0 2px;border-width:1px 0}.fc-clear{clear:both}.fc-bg,.fc-bgevent-skeleton,.fc-helper-skeleton,.fc-highlight-skeleton{position:absolute;top:0;left:0;right:0}.fc-bg{bottom:0}.fc-bg table{height:100%}.fc table{width:100%;box-sizing:border-box;table-layout:fixed;border-collapse:collapse;border-spacing:0;font-size:1em}.fc th{text-align:center}.fc td,.fc th{border-style:solid;border-width:1px;padding:0;vertical-align:top}.fc td.fc-today{border-style:double}a[data-goto]{cursor:pointer}a[data-goto]:hover{text-decoration:underline}.fc .fc-row{border-style:solid;border-width:0}.fc-row table{border-left:0 hidden transparent;border-right:0 hidden transparent;border-bottom:0 hidden transparent}.fc-row:first-child table{border-top:0 hidden transparent}.fc-row{position:relative}.fc-row .fc-bg{z-index:1}.fc-row .fc-bgevent-skeleton,.fc-row .fc-highlight-skeleton{bottom:0}.fc-row .fc-bgevent-skeleton table,.fc-row .fc-highlight-skeleton table{height:100%}.fc-row .fc-bgevent-skeleton td,.fc-row .fc-highlight-skeleton td{border-color:transparent}.fc-row .fc-bgevent-skeleton{z-index:2}.fc-row .fc-highlight-skeleton{z-index:3}.fc-row .fc-content-skeleton{position:relative;z-index:4;padding-bottom:2px}.fc-row .fc-helper-skeleton{z-index:5}.fc-row .fc-content-skeleton td,.fc-row .fc-helper-skeleton td{background:none;border-color:transparent;border-bottom:0}.fc-row .fc-content-skeleton tbody td,.fc-row .fc-helper-skeleton tbody td{border-top:0}.fc-scroller{-webkit-overflow-scrolling:touch}.fc-scroller>.fc-day-grid,.fc-scroller>.fc-time-grid{position:relative;width:100%}.fc-event{position:relative;display:block;font-size:.85em;line-height:1.3;border-radius:3px;border:1px solid #3a87ad;font-weight:400}.fc-event,.fc-event-dot{background-color:#3a87ad}.fc-event,.fc-event:hover,.ui-widget .fc-event{color:#fff;text-decoration:none}.fc-event.fc-draggable,.fc-event[href]{cursor:pointer}.fc-not-allowed,.fc-not-allowed .fc-event{cursor:not-allowed}.fc-event .fc-bg{z-index:1;background:#fff;opacity:.25}.fc-event .fc-content{position:relative;z-index:2}.fc-event .fc-resizer{position:absolute;z-index:4;display:none}.fc-event.fc-allow-mouse-resize .fc-resizer,.fc-event.fc-selected .fc-resizer{display:block}.fc-event.fc-selected .fc-resizer:before{content:\"\";position:absolute;z-index:9999;top:50%;left:50%;width:40px;height:40px;margin-left:-20px;margin-top:-20px}.fc-event.fc-selected{z-index:9999!important;box-shadow:0 2px 5px rgba(0,0,0,.2)}.fc-event.fc-selected.fc-dragging{box-shadow:0 2px 7px rgba(0,0,0,.3)}.fc-h-event.fc-selected:before{content:\"\";position:absolute;z-index:3;top:-10px;bottom:-10px;left:0;right:0}.fc-ltr .fc-h-event.fc-not-start,.fc-rtl .fc-h-event.fc-not-end{margin-left:0;border-left-width:0;padding-left:1px;border-top-left-radius:0;border-bottom-left-radius:0}.fc-ltr .fc-h-event.fc-not-end,.fc-rtl .fc-h-event.fc-not-start{margin-right:0;border-right-width:0;padding-right:1px;border-top-right-radius:0;border-bottom-right-radius:0}.fc-ltr .fc-h-event .fc-start-resizer,.fc-rtl .fc-h-event .fc-end-resizer{cursor:w-resize;left:-1px}.fc-ltr .fc-h-event .fc-end-resizer,.fc-rtl .fc-h-event .fc-start-resizer{cursor:e-resize;right:-1px}.fc-h-event.fc-allow-mouse-resize .fc-resizer{width:7px;top:-1px;bottom:-1px}.fc-h-event.fc-selected .fc-resizer{border-radius:4px;border-width:1px;width:6px;height:6px;border-style:solid;border-color:inherit;background:#fff;top:50%;margin-top:-4px}.fc-ltr .fc-h-event.fc-selected .fc-start-resizer,.fc-rtl .fc-h-event.fc-selected .fc-end-resizer{margin-left:-4px}.fc-ltr .fc-h-event.fc-selected .fc-end-resizer,.fc-rtl .fc-h-event.fc-selected .fc-start-resizer{margin-right:-4px}.fc-day-grid-event{margin:1px 2px 0;padding:0 1px}tr:first-child>td>.fc-day-grid-event{margin-top:2px}.fc-day-grid-event.fc-selected:after{content:\"\";position:absolute;z-index:1;top:-1px;right:-1px;bottom:-1px;left:-1px;background:#000;opacity:.25}.fc-day-grid-event .fc-content{white-space:nowrap;overflow:hidden}.fc-day-grid-event .fc-time{font-weight:700}.fc-ltr .fc-day-grid-event.fc-allow-mouse-resize .fc-start-resizer,.fc-rtl .fc-day-grid-event.fc-allow-mouse-resize .fc-end-resizer{margin-left:-2px}.fc-ltr .fc-day-grid-event.fc-allow-mouse-resize .fc-end-resizer,.fc-rtl .fc-day-grid-event.fc-allow-mouse-resize .fc-start-resizer{margin-right:-2px}a.fc-more{margin:1px 3px;font-size:.85em;cursor:pointer;text-decoration:none}a.fc-more:hover{text-decoration:underline}.fc-limited{display:none}.fc-day-grid .fc-row{z-index:1}.fc-more-popover{z-index:2;width:220px}.fc-more-popover .fc-event-container{padding:10px}.fc-now-indicator{position:absolute;border:0 solid red}.fc-unselectable{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:rgba(0,0,0,0)}.fc-toolbar{text-align:center}.fc-toolbar.fc-header-toolbar{margin-bottom:1em}.fc-toolbar.fc-footer-toolbar{margin-top:1em}.fc-toolbar .fc-left{float:left}.fc-toolbar .fc-right{float:right}.fc-toolbar .fc-center{display:inline-block}.fc .fc-toolbar>*>*{float:left;margin-left:.75em}.fc .fc-toolbar>*>:first-child{margin-left:0}.fc-toolbar h2{margin:0}.fc-toolbar button{position:relative}.fc-toolbar .fc-state-hover,.fc-toolbar .ui-state-hover{z-index:2}.fc-toolbar .fc-state-down{z-index:3}.fc-toolbar .fc-state-active,.fc-toolbar .ui-state-active{z-index:4}.fc-toolbar button:focus{z-index:5}.fc-view-container *,.fc-view-container :after,.fc-view-container :before{box-sizing:content-box}.fc-view,.fc-view>table{position:relative;z-index:1}.fc-basicDay-view .fc-content-skeleton,.fc-basicWeek-view .fc-content-skeleton{padding-bottom:1em}.fc-basic-view .fc-body .fc-row{min-height:4em}.fc-row.fc-rigid{overflow:hidden}.fc-row.fc-rigid .fc-content-skeleton{position:absolute;top:0;left:0;right:0}.fc-day-top.fc-other-month{opacity:.3}.fc-basic-view .fc-day-number,.fc-basic-view .fc-week-number{padding:2px}.fc-basic-view th.fc-day-number,.fc-basic-view th.fc-week-number{padding:0 2px}.fc-ltr .fc-basic-view .fc-day-top .fc-day-number{float:right}.fc-rtl .fc-basic-view .fc-day-top .fc-day-number{float:left}.fc-ltr .fc-basic-view .fc-day-top .fc-week-number{float:left;border-radius:0 0 3px 0}.fc-rtl .fc-basic-view .fc-day-top .fc-week-number{float:right;border-radius:0 0 0 3px}.fc-basic-view .fc-day-top .fc-week-number{min-width:1.5em;text-align:center;background-color:#f2f2f2;color:gray}.fc-basic-view td.fc-week-number{text-align:center}.fc-basic-view td.fc-week-number>*{display:inline-block;min-width:1.25em}.fc-agenda-view .fc-day-grid{position:relative;z-index:2}.fc-agenda-view .fc-day-grid .fc-row{min-height:3em}.fc-agenda-view .fc-day-grid .fc-row .fc-content-skeleton{padding-bottom:1em}.fc .fc-axis{vertical-align:middle;padding:0 4px;white-space:nowrap}.fc-ltr .fc-axis{text-align:right}.fc-rtl .fc-axis{text-align:left}.ui-widget td.fc-axis{font-weight:400}.fc-time-grid,.fc-time-grid-container{position:relative;z-index:1}.fc-time-grid{min-height:100%}.fc-time-grid table{border:0 hidden transparent}.fc-time-grid>.fc-bg{z-index:1}.fc-time-grid .fc-slats,.fc-time-grid>hr{position:relative;z-index:2}.fc-time-grid .fc-content-col{position:relative}.fc-time-grid .fc-content-skeleton{position:absolute;z-index:3;top:0;left:0;right:0}.fc-time-grid .fc-business-container{position:relative;z-index:1}.fc-time-grid .fc-bgevent-container{position:relative;z-index:2}.fc-time-grid .fc-highlight-container{z-index:3}.fc-time-grid .fc-event-container{position:relative;z-index:4}.fc-time-grid .fc-now-indicator-line{z-index:5}.fc-time-grid .fc-helper-container{position:relative;z-index:6}.fc-time-grid .fc-slats td{height:1.5em;border-bottom:0}.fc-time-grid .fc-slats .fc-minor td{border-top-style:dotted}.fc-time-grid .fc-slats .ui-widget-content{background:none}.fc-time-grid .fc-highlight-container{position:relative}.fc-time-grid .fc-highlight{position:absolute;left:0;right:0}.fc-ltr .fc-time-grid .fc-event-container{margin:0 2.5% 0 2px}.fc-rtl .fc-time-grid .fc-event-container{margin:0 2px 0 2.5%}.fc-time-grid .fc-bgevent,.fc-time-grid .fc-event{position:absolute;z-index:1}.fc-time-grid .fc-bgevent{left:0;right:0}.fc-v-event.fc-not-start{border-top-width:0;padding-top:1px;border-top-left-radius:0;border-top-right-radius:0}.fc-v-event.fc-not-end{border-bottom-width:0;padding-bottom:1px;border-bottom-left-radius:0;border-bottom-right-radius:0}.fc-time-grid-event{overflow:hidden}.fc-time-grid-event.fc-selected{overflow:visible}.fc-time-grid-event.fc-selected .fc-bg{display:none}.fc-time-grid-event .fc-content{overflow:hidden}.fc-time-grid-event .fc-time,.fc-time-grid-event .fc-title{padding:0 1px}.fc-time-grid-event .fc-time{font-size:.85em;white-space:nowrap}.fc-time-grid-event.fc-short .fc-content{white-space:nowrap}.fc-time-grid-event.fc-short .fc-time,.fc-time-grid-event.fc-short .fc-title{display:inline-block;vertical-align:top}.fc-time-grid-event.fc-short .fc-time span{display:none}.fc-time-grid-event.fc-short .fc-time:before{content:attr(data-start)}.fc-time-grid-event.fc-short .fc-time:after{content:\"\\A0-\\A0\"}.fc-time-grid-event.fc-short .fc-title{font-size:.85em;padding:0}.fc-time-grid-event.fc-allow-mouse-resize .fc-resizer{left:0;right:0;bottom:0;height:8px;overflow:hidden;line-height:8px;font-size:11px;font-family:monospace;text-align:center;cursor:s-resize}.fc-time-grid-event.fc-allow-mouse-resize .fc-resizer:after{content:\"=\"}.fc-time-grid-event.fc-selected .fc-resizer{border-radius:5px;border-width:1px;width:8px;height:8px;border-style:solid;border-color:inherit;background:#fff;left:50%;margin-left:-5px;bottom:-5px}.fc-time-grid .fc-now-indicator-line{border-top-width:1px;left:0;right:0}.fc-time-grid .fc-now-indicator-arrow{margin-top:-5px}.fc-ltr .fc-time-grid .fc-now-indicator-arrow{left:0;border-width:5px 0 5px 6px;border-top-color:transparent;border-bottom-color:transparent}.fc-rtl .fc-time-grid .fc-now-indicator-arrow{right:0;border-width:5px 6px 5px 0;border-top-color:transparent;border-bottom-color:transparent}.fc-event-dot{display:inline-block;width:10px;height:10px;border-radius:5px}.fc-rtl .fc-list-view{direction:rtl}.fc-list-view{border-width:1px;border-style:solid}.fc .fc-list-table{table-layout:auto}.fc-list-table td{border-width:1px 0 0;padding:8px 14px}.fc-list-table tr:first-child td{border-top-width:0}.fc-list-heading{border-bottom-width:1px}.fc-list-heading td{font-weight:700}.fc-ltr .fc-list-heading-main{float:left}.fc-ltr .fc-list-heading-alt,.fc-rtl .fc-list-heading-main{float:right}.fc-rtl .fc-list-heading-alt{float:left}.fc-list-item.fc-has-url{cursor:pointer}.fc-list-item:hover td{background-color:#f5f5f5}.fc-list-item-marker,.fc-list-item-time{white-space:nowrap;width:1px}.fc-ltr .fc-list-item-marker{padding-right:0}.fc-rtl .fc-list-item-marker{padding-left:0}.fc-list-item-title a{text-decoration:none;color:inherit}.fc-list-item-title a[href]:hover{text-decoration:underline}.fc-list-empty-wrap2{position:absolute;top:0;left:0;right:0;bottom:0}.fc-list-empty-wrap1{width:100%;height:100%;display:table}.fc-list-empty{display:table-cell;vertical-align:middle;text-align:center}.fc-unthemed .fc-list-empty{background-color:#eee}", ""]);
 	
 	// exports
 
@@ -25575,7 +25881,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 	// module
-	exports.push([module.id, ".fc-view-container{background-color:#fbfbfb;color:#333}.fc-row.fc-widget-header{border-bottom:1px solid #ececec}.fc-row.fc-widget-header .fc-day-header{text-transform:uppercase;font-size:.9em;font-weight:600}.fc-axis,.fc-row.fc-widget-header .fc-day-header:first-line{color:#b9b9b9}.fc-axis{font-size:.9em}.fc-state-default{text-shadow:none;box-shadow:none;background-image:none;background-color:#fff;border-color:#fff}.fc-button{text-transform:uppercase;font-weight:600;font-size:1.1em;border:0;outline:none}.fc-button:active,.fc-button:focus,.fc-button:hover,.fc-button:visited{outline:none;border:0;background-color:transparent}.fc-content-skeleton{border-top:1px solid #ddd}.fc .fc-toolbar{padding:0;margin-bottom:0;border-bottom:1px solid #ececec;min-height:48px}.fc .fc-toolbar>*>button{padding:15px 17px;height:auto;outline:0;margin-left:0;-webkit-transition:opacity .2s ease;transition:opacity .2s ease;opacity:.3}.fc .fc-toolbar>*>button:hover{opacity:1}.fc .fc-toolbar>*>button.fc-state-disabled{-webkit-transition:opacity 0s;transition:opacity 0s;opacity:0}.fc .fc-toolbar>*>button.fc-prev-button{padding-right:8px}.fc .fc-toolbar>*>button.fc-next-button{padding-left:8px}.fc .fc-toolbar>*>button .fc-icon{font-size:1.1em}.fc .fc-toolbar>.fc-right>button.fc-today-button{padding:15px 5px}.fc .fc-toolbar>.fc-right h2{font-size:13px;padding:15px 0 15px 20px;color:#333;font-weight:600}.fc-unthemed td.fc-today{background:#fff}.fc-body>tr>.fc-widget-content,.fc-head>tr>.fc-widget-header{border:0!important}.fc th{border-color:#fff;padding:5px}.fc-unthemed .fc-divider,.fc-unthemed .fc-popover .fc-header{background-color:transparent}.empty-calendar .fc-event{opacity:0}.fc-event{-webkit-transition:all .2s,opacity .6s;transition:all .2s,opacity .6s;border:none;border-left:3px solid #689ad8;padding:3px;background-color:#fff;border-radius:4px;color:#333;margin:1px 0;box-shadow:0 1px 2px rgba(0,0,0,.07);cursor:pointer;margin-bottom:2px;opacity:1}.fc-event-clicked,.fc-event:hover{color:#fff;background-color:#689ad8;border-left:3px solid #689ad8;box-shadow:0 1px 3px rgba(0,0,0,.15)}.fc-event .fc-bg{opacity:0}.fc-day-grid-event{padding:15px;margin:5px}.fc-day-grid-event .fc-time{font-weight:600}.fc-day-grid-event .fc-title{padding:0 5px 5px;font-weight:700}.fc-time-grid .fc-slats .fc-minor td{border-top-style:none}.fc-time-grid .fc-slats td{border-top-color:#fbfbfb}.fc-time-grid .fc-slats td.fc-axis{border-top-color:#ececec}.fc-time-grid-event.fc-short .fc-content{font-size:.7em;line-height:.2em}.fc-time-grid-event.fc-short .fc-time:after{content:''}.fc-time-grid-event .fc-time{font-size:1.1em;padding:5px}.fc-time-grid-event .fc-title{padding:0 5px 5px;font-weight:700}.fc-unthemed .fc-divider,.fc-unthemed .fc-popover,.fc-unthemed .fc-row,.fc-unthemed tbody,.fc-unthemed td,.fc-unthemed th,.fc-unthemed thead{border-color:#ececec}.fc-agendaMonthly-view .fc-event{color:#fff}.fc-now-indicator{border-color:rgba(255,0,0,.5)}.fc-unthemed .fc-list-view .fc-scroller{padding:0 15px}.fc-list-view{border-width:0}.fc-list-table{width:80%;max-width:400px;margin:0 auto}.fc-unthemed .fc-list-heading td{background:transparent;border-color:transparent;font-size:1em;line-height:1em;padding:20px 19px 15px;text-transform:uppercase;font-weight:600}.fc-unthemed .fc-list-heading td .fc-list-heading-alt{color:#b9b9b9}.fc-list-item{display:block;-webkit-transition:all .2s,opacity .6s;transition:all .2s,opacity .6s;border:none;border-left:3px solid #689ad8;padding:3px;background-color:#fff;border-radius:4px;color:#333;margin:1px 0;box-shadow:0 1px 2px rgba(0,0,0,.07);cursor:pointer;margin-bottom:3px;font-weight:500;font-size:12px}.fc-list-item:hover{background:#689ad8;color:#fff}.fc-list-item td{border-color:transparent}.fc-list-item:hover td,.fc-list-item td{background:transparent}.fc-list-item .fc-list-item-marker{display:none}.fc-list-item .fc-list-item-time{padding-right:0;min-width:110px}.fc-list-item .fc-list-item-title a{font-weight:600}.fc-unthemed .fc-list-empty{background-color:transparent}", ""]);
+	exports.push([module.id, ".fc-view-container{background-color:#fbfbfb;color:#333}.fc-row.fc-widget-header{border-bottom:1px solid #ececec}.fc-row.fc-widget-header .fc-day-header{text-transform:uppercase;font-size:.9em;font-weight:600}.fc-axis,.fc-row.fc-widget-header .fc-day-header:first-line{color:#b9b9b9}.fc-axis{font-size:.9em}.fc-state-default{text-shadow:none;box-shadow:none;background-image:none;background-color:#fff;border-color:#fff}.fc-button{text-transform:uppercase;font-weight:600;font-size:1.1em;border:0;outline:none}.fc-button:active,.fc-button:focus,.fc-button:hover,.fc-button:visited{outline:none;border:0;background-color:transparent}.fc-content-skeleton{border-top:1px solid #ddd}.fc .fc-toolbar{padding:0;margin-bottom:0;border-bottom:1px solid #ececec;min-height:48px}.fc .fc-toolbar>*>button{padding:15px 17px;height:auto;outline:0;margin-left:0;transition:opacity .2s ease;opacity:.3}.fc .fc-toolbar>*>button:hover{opacity:1}.fc .fc-toolbar>*>button.fc-state-disabled{transition:opacity 0s;opacity:0}.fc .fc-toolbar>*>button.fc-prev-button{padding-right:8px}.fc .fc-toolbar>*>button.fc-next-button{padding-left:8px}.fc .fc-toolbar>*>button .fc-icon{font-size:1.1em}.fc .fc-toolbar>.fc-right>button.fc-today-button{padding:15px 5px}.fc .fc-toolbar>.fc-right h2{font-size:13px;padding:15px 0 15px 20px;color:#333;font-weight:600}.fc-unthemed td.fc-today{background:#fff}.fc-body>tr>.fc-widget-content,.fc-head>tr>.fc-widget-header{border:0!important}.fc th{border-color:#fff;padding:5px}.fc-unthemed .fc-divider,.fc-unthemed .fc-popover .fc-header{background-color:transparent}.empty-calendar .fc-event{opacity:0}.fc-event{transition:all .2s,opacity .6s;border:none;border-left:3px solid #689ad8;padding:3px;background-color:#fff;border-radius:4px;color:#333;margin:1px 0;box-shadow:0 1px 2px rgba(0,0,0,.07);cursor:pointer;margin-bottom:2px;opacity:1}.fc-event-clicked,.fc-event:hover{color:#fff;background-color:#689ad8;border-left:3px solid #689ad8;box-shadow:0 1px 3px rgba(0,0,0,.15)}.fc-event .fc-bg{opacity:0}.fc-day-grid-event{padding:15px;margin:5px}.fc-day-grid-event .fc-time{font-weight:600}.fc-day-grid-event .fc-title{padding:0 5px 5px;font-weight:700}.fc-time-grid .fc-slats .fc-minor td{border-top-style:none}.fc-time-grid .fc-slats td{border-top-color:#fbfbfb}.fc-time-grid .fc-slats td.fc-axis{border-top-color:#ececec}.fc-time-grid-event.fc-short .fc-content{font-size:.7em;line-height:.2em}.fc-time-grid-event.fc-short .fc-time:after{content:\"\"}.fc-time-grid-event .fc-time{font-size:1.1em;padding:5px}.fc-time-grid-event .fc-title{padding:0 5px 5px;font-weight:700}.fc-unthemed .fc-divider,.fc-unthemed .fc-popover,.fc-unthemed .fc-row,.fc-unthemed tbody,.fc-unthemed td,.fc-unthemed th,.fc-unthemed thead{border-color:#ececec}.fc-agendaMonthly-view .fc-event{color:#fff}.fc-now-indicator{border-color:rgba(255,0,0,.5)}.fc-unthemed .fc-list-view .fc-scroller{padding:0 15px}.fc-list-view{border-width:0}.fc-list-table{width:80%;max-width:400px;margin:0 auto}.fc-unthemed .fc-list-heading td{background:transparent;border-color:transparent;font-size:1em;line-height:1em;padding:20px 19px 15px;text-transform:uppercase;font-weight:600}.fc-unthemed .fc-list-heading td .fc-list-heading-alt{color:#b9b9b9}.fc-list-item{display:block;transition:all .2s,opacity .6s;border:none;border-left:3px solid #689ad8;padding:3px;background-color:#fff;border-radius:4px;color:#333;margin:1px 0;box-shadow:0 1px 2px rgba(0,0,0,.07);cursor:pointer;margin-bottom:3px;font-weight:500;font-size:12px}.fc-list-item:hover{background:#689ad8;color:#fff}.fc-list-item td{border-color:transparent}.fc-list-item:hover td,.fc-list-item td{background:transparent}.fc-list-item .fc-list-item-marker{display:none}.fc-list-item .fc-list-item-time{padding-right:0;min-width:110px}.fc-list-item .fc-list-item-title a{font-weight:600}.fc-unthemed .fc-list-empty{background-color:transparent}", ""]);
 	
 	// exports
 
@@ -25655,7 +25961,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.push([module.id, "@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);", ""]);
 	
 	// module
-	exports.push([module.id, "/*!\n * Booking.js\n * http://timekit.io\n * (c) 2015 Timekit Inc.\n */.bookingjs{position:relative;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;font-size:13px;border-radius:4px;background-color:#fff;box-shadow:rgba(0,0,0,.2) 0 2px 4px 0;margin:20px auto;z-index:10;opacity:0;color:#333;border-top:1px solid #ececec}.bookingjs.show{-webkit-transition:opacity .3s ease;transition:opacity .3s ease;opacity:1}.bookingjs.has-avatar{margin-top:60px}.is-small.has-avatar.has-displayname .bookingjs-calendar .fc-toolbar{padding-bottom:24px}.is-small .bookingjs-calendar .fc-toolbar>.fc-right>button.fc-today-button{position:absolute;left:15px}.is-small.has-avatar .bookingjs-calendar .fc-toolbar .fc-right h2{display:none}.bookingjs-timezonehelper{color:#aeaeae;text-align:center;padding:7px 10px;background-color:#fbfbfb;border-top:1px solid #ececec;min-height:15px;z-index:20;border-radius:0 0 4px 4px}.bookingjs-timezoneicon{width:10px;margin-right:5px}.bookingjs-avatar{position:absolute;top:-50px;left:50%;-webkit-transform:translateX(-50%);transform:translateX(-50%);border-radius:150px;border:3px solid #fff;box-shadow:0 1px 3px 0 rgba(0,0,0,.13);overflow:hidden;z-index:40;background-color:#fff}.is-small .bookingjs-avatar{top:-40px}.bookingjs-avatar img{max-width:100%;vertical-align:middle;display:inline-block;width:80px;height:80px}.is-small .bookingjs-avatar img{width:70px;height:70px}.bookingjs-displayname{position:absolute;top:0;left:0;padding:15px 20px;color:#333;font-weight:600}.is-small.has-avatar .bookingjs-displayname{top:44px;padding:0 20px;text-align:center;left:0;right:0;box-sizing:border-box}.bookingjs-bookpage{position:absolute;height:100%;width:100%;top:0;left:0;background-color:#fbfbfb;z-index:30;opacity:0;-webkit-transition:opacity .2s ease;transition:opacity .2s ease;border-radius:4px}.bookingjs-bookpage.show{opacity:1}.bookingjs-bookpage-close{position:absolute;top:0;right:0;padding:18px;-webkit-transition:opacity .2s ease;transition:opacity .2s ease;opacity:.3}.bookingjs-bookpage-close:hover{opacity:1}.bookingjs-bookpage-date,.bookingjs-bookpage h2{text-align:center;font-size:34px;font-weight:400;margin-top:70px;margin-bottom:10px}.is-small .bookingjs-bookpage-date,.is-small .bookingjs-bookpage h2{font-size:27px;margin-top:60px}.bookingjs-bookpage-time,.bookingjs-bookpage h3{text-align:center;font-size:17px;font-weight:400;margin-bottom:50px;margin-top:10px}.is-small .bookingjs-bookpage-time,.is-small .bookingjs-bookpage h3{font-size:15px;margin-bottom:35px}.bookingjs-closeicon{height:15px;width:15px}.bookingjs-form{width:350px;position:relative;margin:0 auto;text-align:center}.is-small .bookingjs-form{width:90%}.bookingjs-form-box{position:relative;box-shadow:0 1px 3px 0 rgba(0,0,0,.1);overflow:hidden;background-color:#fff;line-height:0}.bookingjs-form-success-message{position:absolute;top:-999px;left:0;right:0;padding:30px;background-color:#fff;opacity:0;-webkit-transition:opacity .3s ease;transition:opacity .3s ease;line-height:normal}.is-small .bookingjs-form-success-message{padding:22px 10px}.bookingjs-form-success-message .title{font-size:20px;display:block;margin-bottom:25px}.bookingjs-form-success-message .body{display:block}.bookingjs-form-success-message .body .booked-email{color:#aeaeae}.bookingjs-form.success .bookingjs-form-success-message{opacity:1;top:0;bottom:0}.bookingjs-form-input,.bookingjs-form input,.bookingjs-form input:invalid textarea,.bookingjs-form textarea:invalid{-webkit-transition:box-shadow .2s ease;transition:box-shadow .2s ease;width:100%;padding:15px 25px;margin:0;border:0 solid #ececec;font-size:1em;box-shadow:inset 0 0 1px 1px hsla(0,0%,100%,0);text-align:left;box-sizing:border-box;line-height:normal;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;color:#333;overflow:auto}.bookingjs-form-input:focus,.bookingjs-form input:focus,.bookingjs-form input:invalid textarea:focus,.bookingjs-form textarea:invalid:focus{outline:0;box-shadow:inset 0 0 1px 1px #689ad8}.bookingjs-form-input.hidden,.bookingjs-form input.hidden,.bookingjs-form input:invalid textarea.hidden,.bookingjs-form textarea:invalid.hidden{display:none}.bookingjs-form-input:-moz-read-only,.bookingjs-form input:-moz-read-only,.bookingjs-form input:invalid textarea:-moz-read-only,.bookingjs-form textarea:invalid:-moz-read-only{cursor:not-allowed;font-style:italic}.bookingjs-form-input:read-only,.bookingjs-form input:invalid textarea:read-only,.bookingjs-form input:read-only,.bookingjs-form textarea:invalid:read-only{cursor:not-allowed;font-style:italic}.bookingjs-form-input:-moz-read-only:focus,.bookingjs-form input:-moz-read-only:focus,.bookingjs-form input:invalid textarea:-moz-read-only:focus,.bookingjs-form textarea:invalid:-moz-read-only:focus{box-shadow:inset 0 0 1px 1px #d8d8d8}.bookingjs-form-input:read-only:focus,.bookingjs-form input:invalid textarea:read-only:focus,.bookingjs-form input:read-only:focus,.bookingjs-form textarea:invalid:read-only:focus{box-shadow:inset 0 0 1px 1px #d8d8d8}.bookingjs-form-button{position:relative;-webkit-transition:background-color .2s,max-width .3s;transition:background-color .2s,max-width .3s;display:inline-block;padding:13px 25px;background-color:#689ad8;text-transform:uppercase;box-shadow:0 1px 3px 0 rgba(0,0,0,.15);color:#fff;border:0;border-radius:3px;font-size:1.1em;font-weight:600;margin-top:30px;cursor:pointer;height:44px;outline:0;text-align:center;max-width:200px}.bookingjs-form-button .error-text,.bookingjs-form-button .loading-text,.bookingjs-form-button .success-text{-webkit-transition:opacity .3s ease;transition:opacity .3s ease;position:absolute;top:13px;left:50%;-webkit-transform:translateX(-50%);transform:translateX(-50%);opacity:0}.bookingjs-form-button .inactive-text{white-space:nowrap;opacity:1}.bookingjs-form-button .loading-text svg{height:19px;width:19px;-webkit-animation:spin .6s infinite linear;animation:spin .6s infinite linear}.bookingjs-form-button .error-text svg{height:15px;width:15px;margin-top:2px}.bookingjs-form-button .success-text svg{height:15px;margin-top:2px;-webkit-transform:scale(0);transform:scale(0);-webkit-transition:-webkit-transform .6s ease;transition:-webkit-transform .6s ease;transition:transform .6s ease;transition:transform .6s ease,-webkit-transform .6s ease}.bookingjs-form-button:focus,.bookingjs-form-button:hover{background-color:#3f7fce}.bookingjs-form-button.button-shake{-webkit-animation:shake .5s 1 ease;animation:shake .5s 1 ease}.bookingjs-form.loading .bookingjs-form-button,.bookingjs-form.loading .bookingjs-form-button:hover{max-width:80px;background-color:#b1b1b1;cursor:not-allowed}.bookingjs-form.loading .bookingjs-form-button .inactive-text,.bookingjs-form.loading .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.loading .bookingjs-form-button .loading-text,.bookingjs-form.loading .bookingjs-form-button:hover .loading-text{opacity:1}.bookingjs-form.error .bookingjs-form-button,.bookingjs-form.error .bookingjs-form-button:hover{max-width:80px;background-color:#d83b46;cursor:not-allowed}.bookingjs-form.error .bookingjs-form-button .inactive-text,.bookingjs-form.error .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.error .bookingjs-form-button .error-text,.bookingjs-form.error .bookingjs-form-button:hover .error-text{opacity:1}.bookingjs-form.success .bookingjs-form-button,.bookingjs-form.success .bookingjs-form-button:hover{max-width:80px;background-color:#5baf56;cursor:not-allowed}.bookingjs-form.success .bookingjs-form-button .inactive-text,.bookingjs-form.success .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.success .bookingjs-form-button .success-text,.bookingjs-form.success .bookingjs-form-button:hover .success-text{opacity:1}.bookingjs-form.success .bookingjs-form-button .success-text svg,.bookingjs-form.success .bookingjs-form-button:hover .success-text svg{-webkit-transform:scale(1);transform:scale(1)}.bookingjs-poweredby{position:absolute;bottom:0;left:0;right:0;text-align:center;padding:7px 10px}.bookingjs-poweredby a{-webkit-transition:color .2s ease;transition:color .2s ease;color:#aeaeae;text-decoration:none}.bookingjs-poweredby a svg path{-webkit-transition:fill .2s ease;transition:fill .2s ease;fill:#aeaeae}.bookingjs-poweredby a:hover{color:#333}.bookingjs-poweredby a:hover svg path{fill:#333}.bookingjs-timekitlogo{width:15px;height:15px;margin-right:5px;vertical-align:sub}.bookingjs-loading{position:absolute;height:100%;width:100%;top:0;left:0;background-color:#fbfbfb;z-index:30;opacity:0;-webkit-transition:opacity .5s ease;transition:opacity .5s ease;border-radius:4px}.bookingjs-loading.show{opacity:1}.bookingjs-loading-icon{position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%)}.bookingjs-loading-icon svg{height:30px;width:30px;-webkit-animation:spin .6s infinite linear;animation:spin .6s infinite linear}.bookingjs-loading-icon svg path{fill:#689ad8}", ""]);
+	exports.push([module.id, "/*!\n * Booking.js\n * http://timekit.io\n * (c) 2015 Timekit Inc.\n */.bookingjs{position:relative;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;font-size:13px;border-radius:4px;background-color:#fff;box-shadow:0 2px 4px 0 rgba(0,0,0,.2);margin:20px auto;z-index:10;opacity:0;color:#333;border-top:1px solid #ececec}.bookingjs.show{transition:opacity .3s ease;opacity:1}.bookingjs.has-avatar{margin-top:60px}.is-small.has-avatar.has-displayname .bookingjs-calendar .fc-toolbar{padding-bottom:24px}.is-small .bookingjs-calendar .fc-toolbar>.fc-right>button.fc-today-button{position:absolute;left:15px}.is-small.has-avatar .bookingjs-calendar .fc-toolbar .fc-right h2{display:none}.bookingjs-timezonehelper{color:#aeaeae;text-align:center;padding:7px 10px;background-color:#fbfbfb;border-top:1px solid #ececec;min-height:15px;z-index:20;border-radius:0 0 4px 4px}.bookingjs-timezoneicon{width:10px;margin-right:5px}.bookingjs-avatar{position:absolute;top:-50px;left:50%;-webkit-transform:translateX(-50%);transform:translateX(-50%);border-radius:150px;border:3px solid #fff;box-shadow:0 1px 3px 0 rgba(0,0,0,.13);overflow:hidden;z-index:40;background-color:#fff}.is-small .bookingjs-avatar{top:-40px}.bookingjs-avatar img{max-width:100%;vertical-align:middle;display:inline-block;width:80px;height:80px}.is-small .bookingjs-avatar img{width:70px;height:70px}.bookingjs-displayname{position:absolute;top:0;left:0;padding:15px 20px;color:#333;font-weight:600}.is-small.has-avatar .bookingjs-displayname{top:44px;padding:0 20px;text-align:center;left:0;right:0;box-sizing:border-box}.bookingjs-bookpage{position:absolute;height:100%;width:100%;top:0;left:0;background-color:#fbfbfb;z-index:30;opacity:0;transition:opacity .2s ease;border-radius:4px}.bookingjs-bookpage.show{opacity:1}.bookingjs-bookpage-close{position:absolute;top:0;right:0;padding:18px;transition:opacity .2s ease;opacity:.3}.bookingjs-bookpage-close:hover{opacity:1}.bookingjs-bookpage-date,.bookingjs-bookpage h2{text-align:center;font-size:34px;font-weight:400;margin-top:70px;margin-bottom:10px}.is-small .bookingjs-bookpage-date,.is-small .bookingjs-bookpage h2{font-size:27px;margin-top:60px}.bookingjs-bookpage-time,.bookingjs-bookpage h3{text-align:center;font-size:17px;font-weight:400;margin-bottom:50px;margin-top:10px}.is-small .bookingjs-bookpage-time,.is-small .bookingjs-bookpage h3{font-size:15px;margin-bottom:35px}.bookingjs-closeicon{height:15px;width:15px}.bookingjs-form{width:350px;position:relative;margin:0 auto;text-align:center}.is-small .bookingjs-form{width:90%}.bookingjs-form-box{position:relative;box-shadow:0 1px 3px 0 rgba(0,0,0,.1);overflow:hidden;background-color:#fff;line-height:0}.bookingjs-form-success-message{position:absolute;top:-999px;left:0;right:0;padding:30px;background-color:#fff;opacity:0;transition:opacity .3s ease;line-height:normal}.is-small .bookingjs-form-success-message{padding:22px 10px}.bookingjs-form-success-message .title{font-size:20px;display:block;margin-bottom:25px}.bookingjs-form-success-message .body{display:block}.bookingjs-form-success-message .body .booked-email{color:#aeaeae}.bookingjs-form.success .bookingjs-form-success-message{opacity:1;top:0;bottom:0}.bookingjs-form-input,.bookingjs-form input,.bookingjs-form input:invalid textarea,.bookingjs-form textarea:invalid{transition:box-shadow .2s ease;width:100%;padding:15px 25px;margin:0;border:0 solid #ececec;font-size:1em;box-shadow:inset 0 0 1px 1px hsla(0,0%,100%,0);text-align:left;box-sizing:border-box;line-height:normal;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;color:#333;overflow:auto}.bookingjs-form-input:focus,.bookingjs-form input:focus,.bookingjs-form input:invalid textarea:focus,.bookingjs-form textarea:invalid:focus{outline:0;box-shadow:inset 0 0 1px 1px #689ad8}.bookingjs-form-input.hidden,.bookingjs-form input.hidden,.bookingjs-form input:invalid textarea.hidden,.bookingjs-form textarea:invalid.hidden{display:none}.bookingjs-form-input:-moz-read-only,.bookingjs-form input:-moz-read-only,.bookingjs-form input:invalid textarea:-moz-read-only,.bookingjs-form textarea:invalid:-moz-read-only{cursor:not-allowed;font-style:italic}.bookingjs-form-input:read-only,.bookingjs-form input:invalid textarea:read-only,.bookingjs-form input:read-only,.bookingjs-form textarea:invalid:read-only{cursor:not-allowed;font-style:italic}.bookingjs-form-input:-moz-read-only:focus,.bookingjs-form input:-moz-read-only:focus,.bookingjs-form input:invalid textarea:-moz-read-only:focus,.bookingjs-form textarea:invalid:-moz-read-only:focus{box-shadow:inset 0 0 1px 1px #d8d8d8}.bookingjs-form-input:read-only:focus,.bookingjs-form input:invalid textarea:read-only:focus,.bookingjs-form input:read-only:focus,.bookingjs-form textarea:invalid:read-only:focus{box-shadow:inset 0 0 1px 1px #d8d8d8}.bookingjs-form-button{position:relative;transition:background-color .2s,max-width .3s;display:inline-block;padding:13px 25px;background-color:#689ad8;text-transform:uppercase;box-shadow:0 1px 3px 0 rgba(0,0,0,.15);color:#fff;border:0;border-radius:3px;font-size:1.1em;font-weight:600;margin-top:30px;cursor:pointer;height:44px;outline:0;text-align:center;max-width:200px}.bookingjs-form-button .error-text,.bookingjs-form-button .loading-text,.bookingjs-form-button .success-text{transition:opacity .3s ease;position:absolute;top:13px;left:50%;-webkit-transform:translateX(-50%);transform:translateX(-50%);opacity:0}.bookingjs-form-button .inactive-text{white-space:nowrap;opacity:1}.bookingjs-form-button .loading-text svg{height:19px;width:19px;-webkit-animation:spin .6s infinite linear;animation:spin .6s infinite linear}.bookingjs-form-button .error-text svg{height:15px;width:15px;margin-top:2px}.bookingjs-form-button .success-text svg{height:15px;margin-top:2px;-webkit-transform:scale(0);transform:scale(0);transition:-webkit-transform .6s ease;transition:transform .6s ease;transition:transform .6s ease,-webkit-transform .6s ease}.bookingjs-form-button:focus,.bookingjs-form-button:hover{background-color:#3f7fce}.bookingjs-form-button.button-shake{-webkit-animation:shake .5s 1 ease;animation:shake .5s 1 ease}.bookingjs-form.loading .bookingjs-form-button,.bookingjs-form.loading .bookingjs-form-button:hover{max-width:80px;background-color:#b1b1b1;cursor:not-allowed}.bookingjs-form.loading .bookingjs-form-button .inactive-text,.bookingjs-form.loading .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.loading .bookingjs-form-button .loading-text,.bookingjs-form.loading .bookingjs-form-button:hover .loading-text{opacity:1}.bookingjs-form.error .bookingjs-form-button,.bookingjs-form.error .bookingjs-form-button:hover{max-width:80px;background-color:#d83b46;cursor:not-allowed}.bookingjs-form.error .bookingjs-form-button .inactive-text,.bookingjs-form.error .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.error .bookingjs-form-button .error-text,.bookingjs-form.error .bookingjs-form-button:hover .error-text{opacity:1}.bookingjs-form.success .bookingjs-form-button,.bookingjs-form.success .bookingjs-form-button:hover{max-width:80px;background-color:#5baf56;cursor:pointer}.bookingjs-form.success .bookingjs-form-button .inactive-text,.bookingjs-form.success .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.success .bookingjs-form-button .success-text,.bookingjs-form.success .bookingjs-form-button:hover .success-text{opacity:1}.bookingjs-form.success .bookingjs-form-button .success-text svg,.bookingjs-form.success .bookingjs-form-button:hover .success-text svg{-webkit-transform:scale(1);transform:scale(1)}.bookingjs-poweredby{position:absolute;bottom:0;left:0;right:0;text-align:center;padding:7px 10px}.bookingjs-poweredby a{transition:color .2s ease;color:#aeaeae;text-decoration:none}.bookingjs-poweredby a svg path{transition:fill .2s ease;fill:#aeaeae}.bookingjs-poweredby a:hover{color:#333}.bookingjs-poweredby a:hover svg path{fill:#333}.bookingjs-timekitlogo{width:15px;height:15px;margin-right:5px;vertical-align:sub}.bookingjs-loading{position:absolute;height:100%;width:100%;top:0;left:0;background-color:#fbfbfb;z-index:30;opacity:0;transition:opacity .5s ease;border-radius:4px}.bookingjs-loading.show{opacity:1}.bookingjs-loading-icon{position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%)}.bookingjs-loading-icon svg{height:30px;width:30px;-webkit-animation:spin .6s infinite linear;animation:spin .6s infinite linear}.bookingjs-loading-icon svg path{fill:#689ad8}", ""]);
 	
 	// exports
 

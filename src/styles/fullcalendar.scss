@@ -66,6 +66,7 @@ $primaryDarkColor: darken($primaryColor, 10%);
   padding: 0px;
   margin-bottom: 0;
   border-bottom: 1px solid $borderColor;
+  min-height: 48px;
 
   > * > button {
     padding: 15px 17px;
@@ -101,9 +102,16 @@ $primaryDarkColor: darken($primaryColor, 10%);
     padding: 15px 5px;
   }
 
+  > .fc-right h2 {
+    font-size: 13px;
+    padding: 15px 0px 15px 20px;
+    color: $textColor;
+    font-weight: 600;
+  }
+
 }
 
-.fc-unthemed .fc-today {
+.fc-unthemed td.fc-today {
   background: white;
 }
 
@@ -217,4 +225,82 @@ $primaryDarkColor: darken($primaryColor, 10%);
 
 .fc-now-indicator {
   border-color: rgba(255, 0, 0, 0.5);
+}
+
+// List view
+
+.fc-unthemed .fc-list-view .fc-scroller {
+  padding: 0px 15px;
+}
+
+.fc-list-view {
+  border-width: 0px;
+}
+
+.fc-list-table {
+  width: 80%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.fc-unthemed .fc-list-heading td {
+  background: transparent;
+  border-color: transparent;
+  font-size: 1em;
+  line-height: 1em;
+  padding: 20px 19px 15px 19px;
+  text-transform: uppercase;
+  font-weight: 600;
+
+  .fc-list-heading-alt {
+    color: $subtleColor;
+  }
+}
+
+.fc-list-item {
+  display: block;
+  transition: all .2s,opacity .6s;
+  border: none;
+  border-left: 3px solid $primaryColor;
+  padding: 3px;
+  background-color: #fff;
+  border-radius: 4px;
+  color: #333;
+  margin: 1px 0;
+  box-shadow: 0 1px 2px rgba(0,0,0,.07);
+  cursor: pointer;
+  margin-bottom: 3px;
+  font-weight: 500;
+  font-size: 12px;
+
+  &:hover {
+    background: $primaryColor;
+    color: white;
+  }
+
+  td {
+    background: transparent;
+    border-color: transparent;
+  }
+
+  &:hover td {
+    background: transparent;
+  }
+
+  .fc-list-item-marker {
+    display: none;
+  }
+
+  .fc-list-item-time {
+    padding-right: 0px;
+    min-width: 110px;
+  }
+
+  .fc-list-item-title a {
+    font-weight: 600;
+  }
+}
+
+.fc-unthemed .fc-list-empty {
+  background-color: transparent;
 }

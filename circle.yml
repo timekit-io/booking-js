@@ -1,11 +1,13 @@
 machine:
   node:
-    version: 0.12.7
+    version: 5.1.1
 
 dependencies:
   override:
     - npm install
     - npm rebuild node-sass
+post:
+    - cp npm-debug.log "$CIRCLE_ARTIFACTS/npm-debug.log"
 
 test:
   override:

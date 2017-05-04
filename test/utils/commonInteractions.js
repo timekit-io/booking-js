@@ -15,6 +15,13 @@ module.exports = {
     return calEventStart;
   },
 
+  clickListEvent: function() {
+    var calEvent = $('.fc-list-item')[0];
+    var calEventStart = $(calEvent).find('.fc-list-item-time').text();
+    $(calEvent).click();
+    return calEventStart;
+  },
+
   fillSubmit: function() {
     var data = {
       name: 'Joe Test',

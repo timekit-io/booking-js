@@ -12,11 +12,11 @@ var primary = {
   autoload: true,
   disableRemoteLoad: false,
   disableConfirmPage: false,
-  includeStyles: true,
   showCredits: true,
   goToFirstEvent: true,
   bookingGraph: 'instant',
   debug: false,
+  availabilityView: 'agendaWeek',
   bookingFields: {
     name: {
       placeholder: 'Full name',
@@ -67,14 +67,15 @@ var primary = {
   timekitCreateBooking: { },
   timekitUpdateBooking: { },
   fullCalendar: {
-    header: {
-      left: '',
-      center: '',
-      right: 'today, prev, next'
-    },
     views: {
       agenda: {
         displayEventEnd: false
+      },
+      listing: {
+        type: 'list',
+        duration: { days: 365 / 2 },
+        listDayAltFormat: 'dddd',
+        noEventsMessage: 'No timeslots available'
       }
     },
     allDaySlot: false,
@@ -235,6 +236,34 @@ var timeDateFormat12hmdysun = {
 
 };
 
+// Preset: availabilityView = 'agendaWeek'
+var availabilityViewAgendaWeek = {
+
+  fullCalendar: {
+    header: {
+      left: '',
+      center: '',
+      right: 'today, prev, next'
+    },
+    defaultView: 'agendaWeek'
+  }
+
+}
+
+// Preset: availabilityView = 'listing'
+var availabilityViewListing = {
+
+  fullCalendar: {
+    header: {
+      left: '',
+      center: '',
+      right: ''
+    },
+    defaultView: 'listing'
+  }
+
+}
+
 // Export objects
 module.exports = {
   primary: primary,
@@ -249,6 +278,10 @@ module.exports = {
       'confirm_decline': bookingConfirmDecline,
       'group_customer': bookingGroupCustomer,
       'group_customer_payment': bookingGroupCustomerPayment
+    },
+    availabilityView: {
+      'agendaWeek': availabilityViewAgendaWeek,
+      'listing': availabilityViewListing
     }
   }
 };

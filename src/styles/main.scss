@@ -57,6 +57,10 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
           left: 15px;
         }
       }
+
+      .is-small.has-avatar & .fc-right h2 {
+        display: none;
+      }
     }
   }
 
@@ -118,15 +122,13 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
     color: $textColor;
     font-weight: 600;
 
-    .is-small & {
-      text-align: center;
-      left: 90px;
-      right: 90px;
-      box-sizing: border-box;
-    }
     .is-small.has-avatar & {
       top: 44px;
       padding: 0px 20px;
+      text-align: center;
+      left: 0;
+      right: 0;
+      box-sizing: border-box;
     }
   }
 
@@ -376,7 +378,7 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
     &.success &-button:hover {
       max-width: 80px;
       background-color: #5BAF56;
-      cursor: not-allowed;
+      cursor: pointer;
 
       .inactive-text { opacity: 0; }
       .success-text { opacity: 1; }
@@ -422,6 +424,41 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
     height: 15px;
     margin-right: 5px;
     vertical-align: sub;
+  }
+
+  &-loading {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    background-color: $bgColor;
+    z-index: 30;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    border-radius: 4px;
+
+    &.show {
+      opacity: 1;
+    }
+
+    &-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+
+      svg {
+        height: 30px;
+        width: 30px;
+        animation: spin 0.6s infinite linear;
+
+        path {
+          fill: $primaryColor;
+        }
+      }
+    }
+
   }
 
 }

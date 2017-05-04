@@ -6,6 +6,8 @@ dependencies:
   override:
     - npm install
     - npm rebuild node-sass
+post:
+    - cp ./npm-debug.log "$CIRCLE_ARTIFACTS"
 
 test:
   override:

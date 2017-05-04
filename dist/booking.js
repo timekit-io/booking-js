@@ -330,7 +330,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var hostTzOffset = response.data.utc_offset;
 	      var tzOffsetDiff = localTzOffset - hostTzOffset;
 	      var tzOffsetDiffAbs = Math.abs(localTzOffset - hostTzOffset);
-	      var tzDirection = (tzOffsetDiff > 0 ? 'ahead' : 'behind');
+	      var tzDirection = (tzOffsetDiff > 0 ? 'ahead of' : 'behind');
 	
 	      var template = __webpack_require__(46);
 	      var newTimezoneHelperTarget = $(template.render({
@@ -794,7 +794,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Get library version
 	  var getVersion = function() {
 	
-	    return ("1.13.0");
+	    return ("1.14.0");
 	
 	  };
 	
@@ -25649,7 +25649,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      submitText: 'Book it',
 	      successMessageTitle: 'Thanks!',
 	      timezoneHelperLoading: 'Loading..',
-	      timezoneHelperDifferent: 'Your timezone is %s hours %s of %s (calendar shown in your local time)',
+	      timezoneHelperDifferent: 'Your timezone is %s hours %s %s (calendar shown in your local time)',
 	      timezoneHelperSame: 'You are in the same timezone as %s'
 	    }
 	  },

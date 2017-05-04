@@ -274,7 +274,7 @@ function TimekitBooking() {
       var hostTzOffset = response.data.utc_offset;
       var tzOffsetDiff = localTzOffset - hostTzOffset;
       var tzOffsetDiffAbs = Math.abs(localTzOffset - hostTzOffset);
-      var tzDirection = (tzOffsetDiff > 0 ? 'ahead' : 'behind');
+      var tzDirection = (tzOffsetDiff > 0 ? 'ahead of' : 'behind');
 
       var template = require('./templates/timezone-helper.html');
       var newTimezoneHelperTarget = $(template.render({

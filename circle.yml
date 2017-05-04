@@ -7,7 +7,7 @@ dependencies:
     - npm install
     - npm rebuild node-sass
 post:
-    - cp ./npm-debug.log "$CIRCLE_ARTIFACTS"
+    - cp npm-debug.log "$CIRCLE_ARTIFACTS/npm-debug.log"
 
 test:
   override:

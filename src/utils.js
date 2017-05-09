@@ -13,7 +13,7 @@ module.exports = {
   },
 
   doCallback: function(hook, config, arg, deprecated) {
-    if(this.isFunction(config.callbacks[hook])) {
+    if(config.callbacks && this.isFunction(config.callbacks[hook])) {
       if (deprecated) { this.logDeprecated(hook + ' callback has been replaced, please see docs'); }
       config.callbacks[hook](arg);
     }

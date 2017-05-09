@@ -887,13 +887,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // Set rootTarget to the target element and clean before child nodes before continuing
 	    prepareDOM(suppliedConfig || {});
 	
-	    try {
-	      // Start from local config
-	      if ((!suppliedConfig.widgetId && !suppliedConfig.widgetSlug) || suppliedConfig.disableRemoteLoad) {
+	    // Start from local config
+	    if (!suppliedConfig || (!suppliedConfig.widgetId && !suppliedConfig.widgetSlug) || suppliedConfig.disableRemoteLoad) {
+	      try {
 	        return start(suppliedConfig)
+	      } catch (e) {
+	        return this
 	      }
-	    } catch (e) {
-	      return this
 	    }
 	
 	    // Load remote config

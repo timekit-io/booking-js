@@ -11,13 +11,13 @@
 
   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
   <script type="text/javascript" src="../dist/booking.js"></script>
-<!--
+
   <p>No email:</p>
-  <div id="bookingjs">
+  <div id="bookingjs1">
     <script type="text/javascript">
       var widget1 = new TimekitBooking();
       widget1.init({
-        targetEl: '#bookingjs',
+        targetEl: '#bookingjs1',
         name:     'Doc Brown',
         apiToken: 'XT1JO879JF1qUXXzmETD5ucgxaDwsFsd',
         calendar: '22f86f0c-ee80-470c-95e8-dadd9d05edd2',
@@ -67,7 +67,7 @@
         app:      'bookingjs-demo'
       });
     </script>
-  </div> -->
+  </div>
 
   <p>No app supplied:</p>
   <div id="bookingjs5">
@@ -82,13 +82,46 @@
     </script>
   </div>
 
-  <!-- <p>No config supplied at all:</p>
+  <p>No config supplied at all:</p>
   <div id="bookingjs6">
     <script type="text/javascript">
       var widget6 = new TimekitBooking();
       widget6.init();
     </script>
-  </div> -->
+  </div>
+
+  <p>FindTime error after remote config:</p>
+  <div id="bookingjs7">
+    <script type="text/javascript">
+      var widget7 = new TimekitBooking();
+      widget7.init({
+        targetEl: '#bookingjs7',
+        widgetSlug: 'gj1zhkmb',
+        timekitFindTime: {
+          future: 'wrong'
+        }
+      });
+    </script>
+  </div>
+
+  <p>CreateBooking error:</p>
+  <div id="bookingjs8">
+    <script type="text/javascript">
+      var widget8 = new TimekitBooking();
+      widget8.init({
+        targetEl: '#bookingjs8',
+        app:      'bookingjs-demo',
+        email:    'marty.mcfly@timekit.io',
+        apiToken: 'XT1JO879JF1qUXXzmETD5ucgxaDwsFsd',
+        calendar: '22f86f0c-ee80-470c-95e8-dadd9d05edd2',
+        timekitCreateBooking: {
+          event: {
+            calendar_id: 'doesnt exist'
+          }
+        }
+      });
+    </script>
+  </div>
 
 </body>
 </html>

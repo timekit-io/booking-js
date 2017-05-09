@@ -476,10 +476,13 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
     &-inner {
       position: absolute;
       top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+      transform: translateY(-50%);
       text-align: center;
-      width: 80%;
+      overflow: scroll;
+      max-height: 100%;
+      padding: 30px;
+      box-sizing: border-box;
+      width: 100%;
     }
 
     &-icon {
@@ -499,9 +502,18 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
       margin: 15px 0;
     }
 
-    &-message {
+    &-text {
       font-size: 12px;
       color: $textLightColor;
+      word-break: break-word;
+      overflow: scroll;
+
+      &-messag {
+        display: block;
+      }
+      &-context {
+        display: block;
+      }
     }
 
   }

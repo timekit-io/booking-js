@@ -95,13 +95,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var errorTarget;
 	
 	  // Make sure DOM element is ready and clean it
-	  var prepareDOM = function() {
+	  var prepareDOM = function(suppliedConfig) {
 	
-	    var targetElement = config.targetEl || defaultConfig.primary.targetEl;
+	    var targetElement = suppliedConfig.targetEl || config.targetEl || defaultConfig.primary.targetEl;
 	
 	    rootTarget = $(targetElement);
-	    if (rootTarget.length === 0) rootTarget = $('#hourwidget'); // TODO temprorary fix for hour widget migrations
-	    if (rootTarget.length === 0) utils.logError('No target DOM element was found (' + targetElement + ')');
+	
+	    if (rootTarget.length === 0) {
+	      utils.logError('No target DOM element was found (' + targetElement + ')');
+	      return
+	    }
+	
 	    rootTarget.addClass('bookingjs');
 	    rootTarget.children(':not(script)').remove();
 	
@@ -146,7 +150,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }).catch(function(response){
 	      utils.doCallback('findTimeFailed', config, response);
 	      hideLoadingScreen();
-	      throw showErrorScreen(['An error with Timekit FindTime occured, context:', response]);
+	      showErrorScreen(['An error with Timekit FindTime occured', response]);
 	    });
 	
 	  };
@@ -182,7 +186,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }).catch(function(response){
 	      utils.doCallback('findTimeTeamFailed', config, response);
 	      hideLoadingScreen();
-	      throw showErrorScreen(['An error with Timekit FindTimeTeam occured, context:', response]);
+	      showErrorScreen(['An error with Timekit FindTimeTeam occured', response]);
 	    });
 	
 	  };
@@ -224,7 +228,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }).catch(function(response){
 	      utils.doCallback('getBookingSlotsFailed', config, response);
 	      hideLoadingScreen();
-	      throw showErrorScreen(['An error with Timekit GetBookings occured, context:', response]);
+	      showErrorScreen(['An error with Timekit GetBookings occured', response]);
 	    });
 	
 	  };
@@ -346,7 +350,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    }).catch(function(response){
 	      utils.doCallback('getUserTimezoneFailed', config, response);
-	      throw showErrorScreen(['An error with Timekit getUserTimezone occured, context:', response]);
+	      showErrorScreen(['An error with Timekit getUserTimezone occured', response]);
 	    });
 	
 	  };
@@ -498,13 +502,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Show error and warning screen
 	  var showErrorScreen = function(message) {
 	
+	    if (errorTarget) return
+	    var hasContext = utils.isArray(message);
+	
+	    var messageProcessed = hasContext ? message[0] : message;
+	    var contextProcessed = hasContext ? JSON.stringify(message[1].data || message[1]) : null
+	
 	    utils.doCallback('showErrorScreen', config);
 	    utils.logError(message)
 	
 	    var template = __webpack_require__(54);
 	    errorTarget = $(template.render({
 	      errorWarningIcon: __webpack_require__(55),
-	      message: message
+	      message: messageProcessed,
+	      context: contextProcessed
 	    }));
 	
 	    errorTarget.children('.bookingjs-errorscreen-close').click(function(e) {
@@ -512,10 +523,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      hideErrorScreen();
 	    });
 	
-	    if (!rootTarget) prepareDOM();
 	    rootTarget.append(errorTarget);
-	
-	    console.log(rootTarget)
 	
 	    return message
 	
@@ -746,7 +754,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      utils.doCallback('createBookingSuccessful', config, response);
 	    }).catch(function(response){
 	      utils.doCallback('createBookingFailed', config, response);
-	      throw showErrorScreen(['An error with Timekit CreateBooking occured, context:', response]);
+	      showErrorScreen(['An error with Timekit CreateBooking occured', response]);
 	    });
 	
 	    return request;
@@ -801,9 +809,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    newConfig = applyConfigPreset(newConfig, 'availabilityView', newConfig.availabilityView)
 	
 	    // Check for required settings
-	    if (newConfig.timekitConfig.app === 'bookingjs') {
-	      throw showErrorScreen('A required config setting ("app") was missing');
-	    }
 	    if (!newConfig.email) {
 	      throw showErrorScreen('A required config setting ("email") was missing');
 	    }
@@ -843,9 +848,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    utils.doCallback('renderStarted', config);
 	
-	    // Set rootTarget to the target element and clean before child nodes before continuing
-	    prepareDOM();
-	
 	    // Setup Timekit SDK config
 	    timekitSetupConfig();
 	    timekitSetupUser();
@@ -880,33 +882,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Initilization method
 	  var init = function(suppliedConfig) {
 	
+	    utils.logDebug(['Supplied config:', suppliedConfig], suppliedConfig);
+	
+	    // Set rootTarget to the target element and clean before child nodes before continuing
+	    prepareDOM(suppliedConfig || {});
+	
 	    try {
-	
-	      utils.logDebug(['Supplied config:', suppliedConfig], suppliedConfig);
-	
 	      // Start from local config
 	      if ((!suppliedConfig.widgetId && !suppliedConfig.widgetSlug) || suppliedConfig.disableRemoteLoad) {
 	        return start(suppliedConfig)
 	      }
-	
-	      // Load remote config
-	      loadRemoteConfig(suppliedConfig)
-	      .then(function (response) {
-	        // save widget ID from remote to reference it when creating bookings
-	        var remoteConfig = response.data.config
-	        if (response.data.id) remoteConfig.widgetId = response.data.id
-	        // merge with supplied config for overwriting settings
-	        var mergedConfig = $.extend(true, {}, remoteConfig, suppliedConfig);
-	        utils.logDebug(['Remote config:', remoteConfig], mergedConfig);
-	        start(mergedConfig)
-	      })
-	      .catch(function () {
-	        throw showErrorScreen('The widget could not be found, please double-check your widgetId/widgetSlug');
-	      })
-	
 	    } catch (e) {
-	      console.log('BOOM!')
+	      return this
 	    }
+	
+	    // Load remote config
+	    loadRemoteConfig(suppliedConfig)
+	    .then(function (response) {
+	      // save widget ID from remote to reference it when creating bookings
+	      var remoteConfig = response.data.config
+	      if (response.data.id) remoteConfig.widgetId = response.data.id
+	      // merge with supplied config for overwriting settings
+	      var mergedConfig = $.extend(true, {}, remoteConfig, suppliedConfig);
+	      utils.logDebug(['Remote config:', remoteConfig], mergedConfig);
+	      start(mergedConfig)
+	    })
+	    .catch(function () {
+	      showErrorScreen('The widget could not be found, please double-check your widgetId/widgetSlug');
+	    })
 	
 	    return this
 	
@@ -940,7 +943,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  var destroy = function() {
 	
-	    prepareDOM();
+	    prepareDOM({});
 	    config = {};
 	    return this;
 	
@@ -970,8 +973,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	
 	// Autoload if config is available on window, else export function
-	// TODO temprorary fix for hour widget migrations
-	var globalLibraryConfig = window.timekitBookingConfig || window.hourWidgetConfig
+	var globalLibraryConfig = window.timekitBookingConfig
 	if (window && globalLibraryConfig && globalLibraryConfig.autoload !== false) {
 	  $(window).load(function(){
 	    var instance = new TimekitBooking();
@@ -3607,15 +3609,23 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
+	var __WEBPACK_AMD_DEFINE_RESULT__;/* globals window, exports, define */
+	
 	(function(window) {
+	    'use strict'
+	
 	    var re = {
 	        not_string: /[^s]/,
+	        not_bool: /[^t]/,
+	        not_type: /[^T]/,
+	        not_primitive: /[^v]/,
 	        number: /[diefg]/,
+	        numeric_arg: /[bcdiefguxX]/,
 	        json: /[j]/,
 	        not_json: /[^j]/,
 	        text: /^[^\x25]+/,
 	        modulo: /^\x25{2}/,
-	        placeholder: /^\x25(?:([1-9]\d*)\$|\(([^\)]+)\))?(\+)?(0|'[^$])?(-)?(\d+)?(?:\.(\d+))?([b-gijosuxX])/,
+	        placeholder: /^\x25(?:([1-9]\d*)\$|\(([^\)]+)\))?(\+)?(0|'[^$])?(-)?(\d+)?(?:\.(\d+))?([b-gijostTuvxX])/,
 	        key: /^([a-z_][a-z_\d]*)/i,
 	        key_access: /^\.([a-z_][a-z_\d]*)/i,
 	        index_access: /^\[(\d+)\]/,
@@ -3624,26 +3634,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    function sprintf() {
 	        var key = arguments[0], cache = sprintf.cache
-	        if (!(cache[key] && cache.hasOwnProperty(key))) {
+	        if (!(cache[key])) {
 	            cache[key] = sprintf.parse(key)
 	        }
 	        return sprintf.format.call(null, cache[key], arguments)
 	    }
 	
 	    sprintf.format = function(parse_tree, argv) {
-	        var cursor = 1, tree_length = parse_tree.length, node_type = "", arg, output = [], i, k, match, pad, pad_character, pad_length, is_positive = true, sign = ""
+	        var cursor = 1, tree_length = parse_tree.length, node_type = '', arg, output = [], i, k, match, pad, pad_character, pad_length, is_positive = true, sign = ''
 	        for (i = 0; i < tree_length; i++) {
 	            node_type = get_type(parse_tree[i])
-	            if (node_type === "string") {
+	            if (node_type === 'string') {
 	                output[output.length] = parse_tree[i]
 	            }
-	            else if (node_type === "array") {
+	            else if (node_type === 'array') {
 	                match = parse_tree[i] // convenience purposes only
 	                if (match[2]) { // keyword argument
 	                    arg = argv[cursor]
 	                    for (k = 0; k < match[2].length; k++) {
 	                        if (!arg.hasOwnProperty(match[2][k])) {
-	                            throw new Error(sprintf("[sprintf] property '%s' does not exist", match[2][k]))
+	                            throw new Error(sprintf('[sprintf] property "%s" does not exist', match[2][k]))
 	                        }
 	                        arg = arg[match[2][k]]
 	                    }
@@ -3655,11 +3665,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    arg = argv[cursor++]
 	                }
 	
-	                if (get_type(arg) == "function") {
+	                if (re.not_type.test(match[8]) && re.not_primitive.test(match[8]) && get_type(arg) == 'function') {
 	                    arg = arg()
 	                }
 	
-	                if (re.not_string.test(match[8]) && re.not_json.test(match[8]) && (get_type(arg) != "number" && isNaN(arg))) {
+	                if (re.numeric_arg.test(match[8]) && (get_type(arg) != 'number' && isNaN(arg))) {
 	                    throw new TypeError(sprintf("[sprintf] expecting number but found %s", get_type(arg)))
 	                }
 	
@@ -3668,42 +3678,55 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }
 	
 	                switch (match[8]) {
-	                    case "b":
-	                        arg = arg.toString(2)
+	                    case 'b':
+	                        arg = parseInt(arg, 10).toString(2)
 	                    break
-	                    case "c":
-	                        arg = String.fromCharCode(arg)
+	                    case 'c':
+	                        arg = String.fromCharCode(parseInt(arg, 10))
 	                    break
-	                    case "d":
-	                    case "i":
+	                    case 'd':
+	                    case 'i':
 	                        arg = parseInt(arg, 10)
 	                    break
-	                    case "j":
+	                    case 'j':
 	                        arg = JSON.stringify(arg, null, match[6] ? parseInt(match[6]) : 0)
 	                    break
-	                    case "e":
-	                        arg = match[7] ? arg.toExponential(match[7]) : arg.toExponential()
+	                    case 'e':
+	                        arg = match[7] ? parseFloat(arg).toExponential(match[7]) : parseFloat(arg).toExponential()
 	                    break
-	                    case "f":
+	                    case 'f':
 	                        arg = match[7] ? parseFloat(arg).toFixed(match[7]) : parseFloat(arg)
 	                    break
-	                    case "g":
+	                    case 'g':
 	                        arg = match[7] ? parseFloat(arg).toPrecision(match[7]) : parseFloat(arg)
 	                    break
-	                    case "o":
+	                    case 'o':
 	                        arg = arg.toString(8)
 	                    break
-	                    case "s":
-	                        arg = ((arg = String(arg)) && match[7] ? arg.substring(0, match[7]) : arg)
+	                    case 's':
+	                        arg = String(arg)
+	                        arg = (match[7] ? arg.substring(0, match[7]) : arg)
 	                    break
-	                    case "u":
-	                        arg = arg >>> 0
+	                    case 't':
+	                        arg = String(!!arg)
+	                        arg = (match[7] ? arg.substring(0, match[7]) : arg)
 	                    break
-	                    case "x":
-	                        arg = arg.toString(16)
+	                    case 'T':
+	                        arg = get_type(arg)
+	                        arg = (match[7] ? arg.substring(0, match[7]) : arg)
 	                    break
-	                    case "X":
-	                        arg = arg.toString(16).toUpperCase()
+	                    case 'u':
+	                        arg = parseInt(arg, 10) >>> 0
+	                    break
+	                    case 'v':
+	                        arg = arg.valueOf()
+	                        arg = (match[7] ? arg.substring(0, match[7]) : arg)
+	                    break
+	                    case 'x':
+	                        arg = parseInt(arg, 10).toString(16)
+	                    break
+	                    case 'X':
+	                        arg = parseInt(arg, 10).toString(16).toUpperCase()
 	                    break
 	                }
 	                if (re.json.test(match[8])) {
@@ -3711,23 +3734,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }
 	                else {
 	                    if (re.number.test(match[8]) && (!is_positive || match[3])) {
-	                        sign = is_positive ? "+" : "-"
-	                        arg = arg.toString().replace(re.sign, "")
+	                        sign = is_positive ? '+' : '-'
+	                        arg = arg.toString().replace(re.sign, '')
 	                    }
 	                    else {
-	                        sign = ""
+	                        sign = ''
 	                    }
-	                    pad_character = match[4] ? match[4] === "0" ? "0" : match[4].charAt(1) : " "
+	                    pad_character = match[4] ? match[4] === '0' ? '0' : match[4].charAt(1) : ' '
 	                    pad_length = match[6] - (sign + arg).length
-	                    pad = match[6] ? (pad_length > 0 ? str_repeat(pad_character, pad_length) : "") : ""
-	                    output[output.length] = match[5] ? sign + arg + pad : (pad_character === "0" ? sign + pad + arg : pad + sign + arg)
+	                    pad = match[6] ? (pad_length > 0 ? str_repeat(pad_character, pad_length) : '') : ''
+	                    output[output.length] = match[5] ? sign + arg + pad : (pad_character === '0' ? sign + pad + arg : pad + sign + arg)
 	                }
 	            }
 	        }
-	        return output.join("")
+	        return output.join('')
 	    }
 	
-	    sprintf.cache = {}
+	    sprintf.cache = Object.create(null)
 	
 	    sprintf.parse = function(fmt) {
 	        var _fmt = fmt, match = [], parse_tree = [], arg_names = 0
@@ -3736,7 +3759,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                parse_tree[parse_tree.length] = match[0]
 	            }
 	            else if ((match = re.modulo.exec(_fmt)) !== null) {
-	                parse_tree[parse_tree.length] = "%"
+	                parse_tree[parse_tree.length] = '%'
 	            }
 	            else if ((match = re.placeholder.exec(_fmt)) !== null) {
 	                if (match[2]) {
@@ -3744,7 +3767,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    var field_list = [], replacement_field = match[2], field_match = []
 	                    if ((field_match = re.key.exec(replacement_field)) !== null) {
 	                        field_list[field_list.length] = field_match[1]
-	                        while ((replacement_field = replacement_field.substring(field_match[0].length)) !== "") {
+	                        while ((replacement_field = replacement_field.substring(field_match[0].length)) !== '') {
 	                            if ((field_match = re.key_access.exec(replacement_field)) !== null) {
 	                                field_list[field_list.length] = field_match[1]
 	                            }
@@ -3787,10 +3810,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * helpers
 	     */
 	    function get_type(variable) {
-	        return Object.prototype.toString.call(variable).slice(8, -1).toLowerCase()
+	        if (typeof variable === 'number') {
+	            return 'number'
+	        }
+	        else if (typeof variable === 'string') {
+	            return 'string'
+	        }
+	        else {
+	            return Object.prototype.toString.call(variable).slice(8, -1).toLowerCase()
+	        }
 	    }
 	
+	    var preformattedPadding = {
+	        '0': ['', '0', '00', '000', '0000', '00000', '000000', '0000000'],
+	        ' ': ['', ' ', '  ', '   ', '    ', '     ', '      ', '       '],
+	        '_': ['', '_', '__', '___', '____', '_____', '______', '_______'],
+	    }
 	    function str_repeat(input, multiplier) {
+	        if (multiplier >= 0 && multiplier <= 7 && preformattedPadding[input]) {
+	            return preformattedPadding[input][multiplier]
+	        }
 	        return Array(multiplier + 1).join(input)
 	    }
 	
@@ -3801,20 +3840,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	        exports.sprintf = sprintf
 	        exports.vsprintf = vsprintf
 	    }
-	    else {
+	    if (typeof window !== 'undefined') {
 	        window.sprintf = sprintf
 	        window.vsprintf = vsprintf
 	
-	        if (typeof define === "function" && define.amd) {
-	            define(function() {
+	        if (true) {
+	            !(__WEBPACK_AMD_DEFINE_RESULT__ = function() {
 	                return {
 	                    sprintf: sprintf,
 	                    vsprintf: vsprintf
 	                }
-	            })
+	            }.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__))
 	        }
 	    }
-	})(typeof window === "undefined" ? this : window);
+	})(typeof window === 'undefined' ? this : window);
 
 
 /***/ }),
@@ -25550,6 +25589,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	   return !!(object && object.constructor && object.call && object.apply);
 	  },
 	
+	  isArray: function(object) {
+	   return object && object.constructor === Array;
+	  },
+	
 	  doCallback: function(hook, config, arg, deprecated) {
 	    if(config.callbacks && this.isFunction(config.callbacks[hook])) {
 	      if (deprecated) { this.logDeprecated(hook + ' callback has been replaced, please see docs'); }
@@ -25559,11 +25602,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	
 	  logDebug: function(message, config) {
-	    if (config.debug) console.log('TimekitBooking Debug: ', message);
+	    if (config && config.debug) console.log('TimekitBooking Debug: ', message);
 	  },
 	
 	  logError: function(message) {
-	    console.error('TimekitBooking Error: ', message);
+	    console.warn('TimekitBooking Error: ', message);
 	  },
 	
 	  logDeprecated: function(message) {
@@ -26006,7 +26049,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.push([module.id, "@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);", ""]);
 	
 	// module
-	exports.push([module.id, "/*!\n * Booking.js\n * http://timekit.io\n * (c) 2015 Timekit Inc.\n */.bookingjs{position:relative;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;font-size:13px;border-radius:4px;background-color:#fff;box-shadow:0 2px 4px 0 rgba(0,0,0,.2);margin:20px auto;z-index:10;opacity:1;color:#333;border-top:1px solid #ececec;min-height:200px}.bookingjs.has-avatar{margin-top:60px}.is-small.has-avatar.has-displayname .bookingjs-calendar .fc-toolbar{padding-bottom:24px}.is-small .bookingjs-calendar .fc-toolbar>.fc-right>button.fc-today-button{position:absolute;left:15px}.is-small.has-avatar .bookingjs-calendar .fc-toolbar .fc-right h2{display:none}.bookingjs-timezonehelper{color:#aeaeae;text-align:center;padding:7px 10px;background-color:#fbfbfb;border-top:1px solid #ececec;min-height:15px;z-index:20;border-radius:0 0 4px 4px}.bookingjs-timezoneicon{width:10px;margin-right:5px}.bookingjs-avatar{position:absolute;top:-50px;left:50%;-webkit-transform:translateX(-50%);transform:translateX(-50%);border-radius:150px;border:3px solid #fff;box-shadow:0 1px 3px 0 rgba(0,0,0,.13);overflow:hidden;z-index:40;background-color:#fff}.is-small .bookingjs-avatar{top:-40px}.bookingjs-avatar img{max-width:100%;vertical-align:middle;display:inline-block;width:80px;height:80px}.is-small .bookingjs-avatar img{width:70px;height:70px}.bookingjs-displayname{position:absolute;top:0;left:0;padding:15px 20px;color:#333;font-weight:600}.is-small.has-avatar .bookingjs-displayname{top:44px;padding:0 20px;text-align:center;left:0;right:0;box-sizing:border-box}.bookingjs-bookpage{position:absolute;height:100%;width:100%;top:0;left:0;background-color:#fbfbfb;z-index:30;opacity:0;transition:opacity .2s ease;border-radius:4px}.bookingjs-bookpage.show{opacity:1}.bookingjs-bookpage-close{position:absolute;top:0;right:0;padding:18px;transition:opacity .2s ease;opacity:.3}.bookingjs-bookpage-close:hover{opacity:1}.bookingjs-bookpage-date,.bookingjs-bookpage h2{text-align:center;font-size:34px;font-weight:400;margin-top:70px;margin-bottom:10px}.is-small .bookingjs-bookpage-date,.is-small .bookingjs-bookpage h2{font-size:27px;margin-top:60px}.bookingjs-bookpage-time,.bookingjs-bookpage h3{text-align:center;font-size:17px;font-weight:400;margin-bottom:50px;margin-top:10px}.is-small .bookingjs-bookpage-time,.is-small .bookingjs-bookpage h3{font-size:15px;margin-bottom:35px}.bookingjs-closeicon{height:15px;width:15px}.bookingjs-form{width:350px;position:relative;margin:0 auto;text-align:center}.is-small .bookingjs-form{width:90%}.bookingjs-form-box{position:relative;box-shadow:0 1px 3px 0 rgba(0,0,0,.1);overflow:hidden;background-color:#fff;line-height:0}.bookingjs-form-success-message{position:absolute;top:-999px;left:0;right:0;padding:30px;background-color:#fff;opacity:0;transition:opacity .3s ease;line-height:normal}.is-small .bookingjs-form-success-message{padding:22px 10px}.bookingjs-form-success-message .title{font-size:20px;display:block;margin-bottom:25px}.bookingjs-form-success-message .body{display:block}.bookingjs-form-success-message .body .booked-email{color:#aeaeae}.bookingjs-form.success .bookingjs-form-success-message{opacity:1;top:0;bottom:0}.bookingjs-form-input,.bookingjs-form input,.bookingjs-form input:invalid textarea,.bookingjs-form textarea:invalid{transition:box-shadow .2s ease;width:100%;padding:15px 25px;margin:0;border:0 solid #ececec;font-size:1em;box-shadow:inset 0 0 1px 1px hsla(0,0%,100%,0);text-align:left;box-sizing:border-box;line-height:normal;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;color:#333;overflow:auto}.bookingjs-form-input:focus,.bookingjs-form input:focus,.bookingjs-form input:invalid textarea:focus,.bookingjs-form textarea:invalid:focus{outline:0;box-shadow:inset 0 0 1px 1px #689ad8}.bookingjs-form-input.hidden,.bookingjs-form input.hidden,.bookingjs-form input:invalid textarea.hidden,.bookingjs-form textarea:invalid.hidden{display:none}.bookingjs-form-input:-moz-read-only,.bookingjs-form input:-moz-read-only,.bookingjs-form input:invalid textarea:-moz-read-only,.bookingjs-form textarea:invalid:-moz-read-only{cursor:not-allowed;font-style:italic}.bookingjs-form-input:read-only,.bookingjs-form input:invalid textarea:read-only,.bookingjs-form input:read-only,.bookingjs-form textarea:invalid:read-only{cursor:not-allowed;font-style:italic}.bookingjs-form-input:-moz-read-only:focus,.bookingjs-form input:-moz-read-only:focus,.bookingjs-form input:invalid textarea:-moz-read-only:focus,.bookingjs-form textarea:invalid:-moz-read-only:focus{box-shadow:inset 0 0 1px 1px #d8d8d8}.bookingjs-form-input:read-only:focus,.bookingjs-form input:invalid textarea:read-only:focus,.bookingjs-form input:read-only:focus,.bookingjs-form textarea:invalid:read-only:focus{box-shadow:inset 0 0 1px 1px #d8d8d8}.bookingjs-form-button{position:relative;transition:background-color .2s,max-width .3s;display:inline-block;padding:13px 25px;background-color:#689ad8;text-transform:uppercase;box-shadow:0 1px 3px 0 rgba(0,0,0,.15);color:#fff;border:0;border-radius:3px;font-size:1.1em;font-weight:600;margin-top:30px;cursor:pointer;height:44px;outline:0;text-align:center;max-width:200px}.bookingjs-form-button .error-text,.bookingjs-form-button .loading-text,.bookingjs-form-button .success-text{transition:opacity .3s ease;position:absolute;top:13px;left:50%;-webkit-transform:translateX(-50%);transform:translateX(-50%);opacity:0}.bookingjs-form-button .inactive-text{white-space:nowrap;opacity:1}.bookingjs-form-button .loading-text svg{height:19px;width:19px;-webkit-animation:spin .6s infinite linear;animation:spin .6s infinite linear}.bookingjs-form-button .error-text svg{height:15px;width:15px;margin-top:2px}.bookingjs-form-button .success-text svg{height:15px;margin-top:2px;-webkit-transform:scale(0);transform:scale(0);transition:-webkit-transform .6s ease;transition:transform .6s ease;transition:transform .6s ease,-webkit-transform .6s ease}.bookingjs-form-button:focus,.bookingjs-form-button:hover{background-color:#3f7fce}.bookingjs-form-button.button-shake{-webkit-animation:shake .5s 1 ease;animation:shake .5s 1 ease}.bookingjs-form.loading .bookingjs-form-button,.bookingjs-form.loading .bookingjs-form-button:hover{max-width:80px;background-color:#b1b1b1;cursor:not-allowed}.bookingjs-form.loading .bookingjs-form-button .inactive-text,.bookingjs-form.loading .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.loading .bookingjs-form-button .loading-text,.bookingjs-form.loading .bookingjs-form-button:hover .loading-text{opacity:1}.bookingjs-form.error .bookingjs-form-button,.bookingjs-form.error .bookingjs-form-button:hover{max-width:80px;background-color:#d83b46;cursor:not-allowed}.bookingjs-form.error .bookingjs-form-button .inactive-text,.bookingjs-form.error .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.error .bookingjs-form-button .error-text,.bookingjs-form.error .bookingjs-form-button:hover .error-text{opacity:1}.bookingjs-form.success .bookingjs-form-button,.bookingjs-form.success .bookingjs-form-button:hover{max-width:80px;background-color:#5baf56;cursor:pointer}.bookingjs-form.success .bookingjs-form-button .inactive-text,.bookingjs-form.success .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.success .bookingjs-form-button .success-text,.bookingjs-form.success .bookingjs-form-button:hover .success-text{opacity:1}.bookingjs-form.success .bookingjs-form-button .success-text svg,.bookingjs-form.success .bookingjs-form-button:hover .success-text svg{-webkit-transform:scale(1);transform:scale(1)}.bookingjs-poweredby{position:absolute;bottom:0;left:0;right:0;text-align:center;padding:7px 10px}.bookingjs-poweredby a{transition:color .2s ease;color:#aeaeae;text-decoration:none}.bookingjs-poweredby a svg path{transition:fill .2s ease;fill:#aeaeae}.bookingjs-poweredby a:hover{color:#333}.bookingjs-poweredby a:hover svg path{fill:#333}.bookingjs-timekitlogo{width:15px;height:15px;margin-right:5px;vertical-align:sub}.bookingjs-loading{position:absolute;height:100%;width:100%;top:0;left:0;background-color:#fbfbfb;z-index:30;opacity:0;transition:opacity .5s ease;border-radius:4px}.bookingjs-loading.show{opacity:1}.bookingjs-loading-icon{position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%)}.bookingjs-loading-icon svg{height:30px;width:30px;-webkit-animation:spin .6s infinite linear;animation:spin .6s infinite linear}.bookingjs-loading-icon svg path{fill:#689ad8}.bookingjs-error{position:absolute;height:100%;width:100%;top:0;left:0;background-color:#fbfbfb;z-index:31;opacity:0;transition:opacity .5s ease;border-radius:4px}.bookingjs-error.show{opacity:1}.bookingjs-error-inner{position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);text-align:center;width:80%}.bookingjs-error-icon svg{height:30px;width:30px}.bookingjs-error-icon svg g{fill:#d83b46}.bookingjs-error-heading{color:#d83b46;font-size:15px;margin:15px 0}.bookingjs-error-message{font-size:12px;color:#aeaeae}", ""]);
+	exports.push([module.id, "/*!\n * Booking.js\n * http://timekit.io\n * (c) 2015 Timekit Inc.\n */.bookingjs{position:relative;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;font-size:13px;border-radius:4px;background-color:#fff;box-shadow:0 2px 4px 0 rgba(0,0,0,.2);margin:20px auto;z-index:10;opacity:1;color:#333;border-top:1px solid #ececec;min-height:200px}.bookingjs.has-avatar{margin-top:60px}.is-small.has-avatar.has-displayname .bookingjs-calendar .fc-toolbar{padding-bottom:24px}.is-small .bookingjs-calendar .fc-toolbar>.fc-right>button.fc-today-button{position:absolute;left:15px}.is-small.has-avatar .bookingjs-calendar .fc-toolbar .fc-right h2{display:none}.bookingjs-timezonehelper{color:#aeaeae;text-align:center;padding:7px 10px;background-color:#fbfbfb;border-top:1px solid #ececec;min-height:15px;z-index:20;border-radius:0 0 4px 4px}.bookingjs-timezoneicon{width:10px;margin-right:5px}.bookingjs-avatar{position:absolute;top:-50px;left:50%;-webkit-transform:translateX(-50%);transform:translateX(-50%);border-radius:150px;border:3px solid #fff;box-shadow:0 1px 3px 0 rgba(0,0,0,.13);overflow:hidden;z-index:40;background-color:#fff}.is-small .bookingjs-avatar{top:-40px}.bookingjs-avatar img{max-width:100%;vertical-align:middle;display:inline-block;width:80px;height:80px}.is-small .bookingjs-avatar img{width:70px;height:70px}.bookingjs-displayname{position:absolute;top:0;left:0;padding:15px 20px;color:#333;font-weight:600}.is-small.has-avatar .bookingjs-displayname{top:44px;padding:0 20px;text-align:center;left:0;right:0;box-sizing:border-box}.bookingjs-bookpage{position:absolute;height:100%;width:100%;top:0;left:0;background-color:#fbfbfb;z-index:30;opacity:0;transition:opacity .2s ease;border-radius:4px}.bookingjs-bookpage.show{opacity:1}.bookingjs-bookpage-close{position:absolute;top:0;right:0;padding:18px;transition:opacity .2s ease;opacity:.3}.bookingjs-bookpage-close:hover{opacity:1}.bookingjs-bookpage-date,.bookingjs-bookpage h2{text-align:center;font-size:34px;font-weight:400;margin-top:70px;margin-bottom:10px}.is-small .bookingjs-bookpage-date,.is-small .bookingjs-bookpage h2{font-size:27px;margin-top:60px}.bookingjs-bookpage-time,.bookingjs-bookpage h3{text-align:center;font-size:17px;font-weight:400;margin-bottom:50px;margin-top:10px}.is-small .bookingjs-bookpage-time,.is-small .bookingjs-bookpage h3{font-size:15px;margin-bottom:35px}.bookingjs-closeicon{height:15px;width:15px}.bookingjs-form{width:350px;position:relative;margin:0 auto;text-align:center}.is-small .bookingjs-form{width:90%}.bookingjs-form-box{position:relative;box-shadow:0 1px 3px 0 rgba(0,0,0,.1);overflow:hidden;background-color:#fff;line-height:0}.bookingjs-form-success-message{position:absolute;top:-999px;left:0;right:0;padding:30px;background-color:#fff;opacity:0;transition:opacity .3s ease;line-height:normal}.is-small .bookingjs-form-success-message{padding:22px 10px}.bookingjs-form-success-message .title{font-size:20px;display:block;margin-bottom:25px}.bookingjs-form-success-message .body{display:block}.bookingjs-form-success-message .body .booked-email{color:#aeaeae}.bookingjs-form.success .bookingjs-form-success-message{opacity:1;top:0;bottom:0}.bookingjs-form-input,.bookingjs-form input,.bookingjs-form input:invalid textarea,.bookingjs-form textarea:invalid{transition:box-shadow .2s ease;width:100%;padding:15px 25px;margin:0;border:0 solid #ececec;font-size:1em;box-shadow:inset 0 0 1px 1px hsla(0,0%,100%,0);text-align:left;box-sizing:border-box;line-height:normal;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;color:#333;overflow:auto}.bookingjs-form-input:focus,.bookingjs-form input:focus,.bookingjs-form input:invalid textarea:focus,.bookingjs-form textarea:invalid:focus{outline:0;box-shadow:inset 0 0 1px 1px #689ad8}.bookingjs-form-input.hidden,.bookingjs-form input.hidden,.bookingjs-form input:invalid textarea.hidden,.bookingjs-form textarea:invalid.hidden{display:none}.bookingjs-form-input:-moz-read-only,.bookingjs-form input:-moz-read-only,.bookingjs-form input:invalid textarea:-moz-read-only,.bookingjs-form textarea:invalid:-moz-read-only{cursor:not-allowed;font-style:italic}.bookingjs-form-input:read-only,.bookingjs-form input:invalid textarea:read-only,.bookingjs-form input:read-only,.bookingjs-form textarea:invalid:read-only{cursor:not-allowed;font-style:italic}.bookingjs-form-input:-moz-read-only:focus,.bookingjs-form input:-moz-read-only:focus,.bookingjs-form input:invalid textarea:-moz-read-only:focus,.bookingjs-form textarea:invalid:-moz-read-only:focus{box-shadow:inset 0 0 1px 1px #d8d8d8}.bookingjs-form-input:read-only:focus,.bookingjs-form input:invalid textarea:read-only:focus,.bookingjs-form input:read-only:focus,.bookingjs-form textarea:invalid:read-only:focus{box-shadow:inset 0 0 1px 1px #d8d8d8}.bookingjs-form-button{position:relative;transition:background-color .2s,max-width .3s;display:inline-block;padding:13px 25px;background-color:#689ad8;text-transform:uppercase;box-shadow:0 1px 3px 0 rgba(0,0,0,.15);color:#fff;border:0;border-radius:3px;font-size:1.1em;font-weight:600;margin-top:30px;cursor:pointer;height:44px;outline:0;text-align:center;max-width:200px}.bookingjs-form-button .error-text,.bookingjs-form-button .loading-text,.bookingjs-form-button .success-text{transition:opacity .3s ease;position:absolute;top:13px;left:50%;-webkit-transform:translateX(-50%);transform:translateX(-50%);opacity:0}.bookingjs-form-button .inactive-text{white-space:nowrap;opacity:1}.bookingjs-form-button .loading-text svg{height:19px;width:19px;-webkit-animation:spin .6s infinite linear;animation:spin .6s infinite linear}.bookingjs-form-button .error-text svg{height:15px;width:15px;margin-top:2px}.bookingjs-form-button .success-text svg{height:15px;margin-top:2px;-webkit-transform:scale(0);transform:scale(0);transition:-webkit-transform .6s ease;transition:transform .6s ease;transition:transform .6s ease,-webkit-transform .6s ease}.bookingjs-form-button:focus,.bookingjs-form-button:hover{background-color:#3f7fce}.bookingjs-form-button.button-shake{-webkit-animation:shake .5s 1 ease;animation:shake .5s 1 ease}.bookingjs-form.loading .bookingjs-form-button,.bookingjs-form.loading .bookingjs-form-button:hover{max-width:80px;background-color:#b1b1b1;cursor:not-allowed}.bookingjs-form.loading .bookingjs-form-button .inactive-text,.bookingjs-form.loading .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.loading .bookingjs-form-button .loading-text,.bookingjs-form.loading .bookingjs-form-button:hover .loading-text{opacity:1}.bookingjs-form.error .bookingjs-form-button,.bookingjs-form.error .bookingjs-form-button:hover{max-width:80px;background-color:#d83b46;cursor:not-allowed}.bookingjs-form.error .bookingjs-form-button .inactive-text,.bookingjs-form.error .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.error .bookingjs-form-button .error-text,.bookingjs-form.error .bookingjs-form-button:hover .error-text{opacity:1}.bookingjs-form.success .bookingjs-form-button,.bookingjs-form.success .bookingjs-form-button:hover{max-width:80px;background-color:#5baf56;cursor:pointer}.bookingjs-form.success .bookingjs-form-button .inactive-text,.bookingjs-form.success .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.success .bookingjs-form-button .success-text,.bookingjs-form.success .bookingjs-form-button:hover .success-text{opacity:1}.bookingjs-form.success .bookingjs-form-button .success-text svg,.bookingjs-form.success .bookingjs-form-button:hover .success-text svg{-webkit-transform:scale(1);transform:scale(1)}.bookingjs-poweredby{position:absolute;bottom:0;left:0;right:0;text-align:center;padding:7px 10px}.bookingjs-poweredby a{transition:color .2s ease;color:#aeaeae;text-decoration:none}.bookingjs-poweredby a svg path{transition:fill .2s ease;fill:#aeaeae}.bookingjs-poweredby a:hover{color:#333}.bookingjs-poweredby a:hover svg path{fill:#333}.bookingjs-timekitlogo{width:15px;height:15px;margin-right:5px;vertical-align:sub}.bookingjs-loading{position:absolute;height:100%;width:100%;top:0;left:0;background-color:#fbfbfb;z-index:30;opacity:0;transition:opacity .5s ease;border-radius:4px}.bookingjs-loading.show{opacity:1}.bookingjs-loading-icon{position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%)}.bookingjs-loading-icon svg{height:30px;width:30px;-webkit-animation:spin .6s infinite linear;animation:spin .6s infinite linear}.bookingjs-loading-icon svg path{fill:#689ad8}.bookingjs-error{position:absolute;height:100%;width:100%;top:0;left:0;background-color:#fbfbfb;z-index:31;opacity:0;transition:opacity .5s ease;border-radius:4px}.bookingjs-error.show{opacity:1}.bookingjs-error-inner{position:absolute;top:50%;-webkit-transform:translateY(-50%);transform:translateY(-50%);text-align:center;overflow:scroll;max-height:100%;padding:30px;box-sizing:border-box;width:100%}.bookingjs-error-icon svg{height:30px;width:30px}.bookingjs-error-icon svg g{fill:#d83b46}.bookingjs-error-heading{color:#d83b46;font-size:15px;margin:15px 0}.bookingjs-error-text{font-size:12px;color:#aeaeae;word-break:break-word;overflow:scroll}.bookingjs-error-text-context,.bookingjs-error-text-messag{display:block}", ""]);
 	
 	// exports
 
@@ -26859,7 +26902,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ (function(module, exports, __webpack_require__) {
 
 	var H = __webpack_require__(47);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-error show\">");t.b("\n" + i);t.b("  <div class=\"bookingjs-error-inner\">");t.b("\n" + i);t.b("    <div class=\"bookingjs-error-icon\">");t.b("\n" + i);t.b("      ");t.b(t.t(t.f("errorWarningIcon",c,p,0)));t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <div class=\"bookingjs-error-heading\">");t.b("\n" + i);t.b("      Ouch, we've encountered a problem");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <div class=\"bookingjs-error-message\">");t.b("\n" + i);t.b("      ");t.b(t.t(t.f("message",c,p,0)));t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-error show\">\n  <div class=\"bookingjs-error-inner\">\n    <div class=\"bookingjs-error-icon\">\n      {{& errorWarningIcon }}\n    </div>\n    <div class=\"bookingjs-error-heading\">\n      Ouch, we've encountered a problem\n    </div>\n    <div class=\"bookingjs-error-message\">\n      {{& message }}\n    </div>\n  </div>\n</div>\n", H);return T; }();
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-error show\">");t.b("\n" + i);t.b("  <div class=\"bookingjs-error-inner\">");t.b("\n" + i);t.b("    <div class=\"bookingjs-error-icon\">");t.b("\n" + i);t.b("      ");t.b(t.t(t.f("errorWarningIcon",c,p,0)));t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <div class=\"bookingjs-error-heading\">");t.b("\n" + i);t.b("      Ouch, we've encountered a problem");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <div class=\"bookingjs-error-text\">");t.b("\n" + i);t.b("      <span class=\"bookingjs-error-text-message\">");t.b(t.t(t.f("message",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"bookingjs-error-text-context\">");t.b(t.t(t.f("context",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-error show\">\n  <div class=\"bookingjs-error-inner\">\n    <div class=\"bookingjs-error-icon\">\n      {{& errorWarningIcon }}\n    </div>\n    <div class=\"bookingjs-error-heading\">\n      Ouch, we've encountered a problem\n    </div>\n    <div class=\"bookingjs-error-text\">\n      <span class=\"bookingjs-error-text-message\">{{& message }}</span>\n      <span class=\"bookingjs-error-text-context\">{{& context }}</span>\n    </div>\n  </div>\n</div>\n", H);return T; }();
 
 /***/ }),
 /* 55 */

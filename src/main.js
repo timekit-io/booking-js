@@ -39,13 +39,17 @@ function TimekitBooking() {
   var errorTarget;
 
   // Make sure DOM element is ready and clean it
-  var prepareDOM = function() {
+  var prepareDOM = function(suppliedConfig) {
 
-    var targetElement = config.targetEl || defaultConfig.primary.targetEl;
+    var targetElement = suppliedConfig.targetEl || config.targetEl || defaultConfig.primary.targetEl;
 
     rootTarget = $(targetElement);
-    if (rootTarget.length === 0) rootTarget = $('#hourwidget'); // TODO temprorary fix for hour widget migrations
-    if (rootTarget.length === 0) utils.logError('No target DOM element was found (' + targetElement + ')');
+
+    if (rootTarget.length === 0) {
+      utils.logError('No target DOM element was found (' + targetElement + ')');
+      return
+    }
+
     rootTarget.addClass('bookingjs');
     rootTarget.children(':not(script)').remove();
 
@@ -90,7 +94,7 @@ function TimekitBooking() {
     }).catch(function(response){
       utils.doCallback('findTimeFailed', config, response);
       hideLoadingScreen();
-      throw showErrorScreen(['An error with Timekit FindTime occured, context:', response]);
+      showErrorScreen(['An error with Timekit FindTime occured', response]);
     });
 
   };
@@ -126,7 +130,7 @@ function TimekitBooking() {
     }).catch(function(response){
       utils.doCallback('findTimeTeamFailed', config, response);
       hideLoadingScreen();
-      throw showErrorScreen(['An error with Timekit FindTimeTeam occured, context:', response]);
+      showErrorScreen(['An error with Timekit FindTimeTeam occured', response]);
     });
 
   };
@@ -168,7 +172,7 @@ function TimekitBooking() {
     }).catch(function(response){
       utils.doCallback('getBookingSlotsFailed', config, response);
       hideLoadingScreen();
-      throw showErrorScreen(['An error with Timekit GetBookings occured, context:', response]);
+      showErrorScreen(['An error with Timekit GetBookings occured', response]);
     });
 
   };
@@ -290,7 +294,7 @@ function TimekitBooking() {
 
     }).catch(function(response){
       utils.doCallback('getUserTimezoneFailed', config, response);
-      throw showErrorScreen(['An error with Timekit getUserTimezone occured, context:', response]);
+      showErrorScreen(['An error with Timekit getUserTimezone occured', response]);
     });
 
   };
@@ -442,13 +446,20 @@ function TimekitBooking() {
   // Show error and warning screen
   var showErrorScreen = function(message) {
 
+    if (errorTarget) return
+    var hasContext = utils.isArray(message);
+
+    var messageProcessed = hasContext ? message[0] : message;
+    var contextProcessed = hasContext ? JSON.stringify(message[1].data || message[1]) : null
+
     utils.doCallback('showErrorScreen', config);
     utils.logError(message)
 
     var template = require('./templates/error.html');
     errorTarget = $(template.render({
       errorWarningIcon: require('!svg-inline!./assets/error-warning-icon.svg'),
-      message: message
+      message: messageProcessed,
+      context: contextProcessed
     }));
 
     errorTarget.children('.bookingjs-errorscreen-close').click(function(e) {
@@ -456,10 +467,7 @@ function TimekitBooking() {
       hideErrorScreen();
     });
 
-    if (!rootTarget) prepareDOM();
     rootTarget.append(errorTarget);
-
-    console.log(rootTarget)
 
     return message
 
@@ -690,7 +698,7 @@ function TimekitBooking() {
       utils.doCallback('createBookingSuccessful', config, response);
     }).catch(function(response){
       utils.doCallback('createBookingFailed', config, response);
-      throw showErrorScreen(['An error with Timekit CreateBooking occured, context:', response]);
+      showErrorScreen(['An error with Timekit CreateBooking occured', response]);
     });
 
     return request;
@@ -745,9 +753,6 @@ function TimekitBooking() {
     newConfig = applyConfigPreset(newConfig, 'availabilityView', newConfig.availabilityView)
 
     // Check for required settings
-    if (newConfig.timekitConfig.app === 'bookingjs') {
-      throw showErrorScreen('A required config setting ("app") was missing');
-    }
     if (!newConfig.email) {
       throw showErrorScreen('A required config setting ("email") was missing');
     }
@@ -787,9 +792,6 @@ function TimekitBooking() {
 
     utils.doCallback('renderStarted', config);
 
-    // Set rootTarget to the target element and clean before child nodes before continuing
-    prepareDOM();
-
     // Setup Timekit SDK config
     timekitSetupConfig();
     timekitSetupUser();
@@ -824,33 +826,34 @@ function TimekitBooking() {
   // Initilization method
   var init = function(suppliedConfig) {
 
+    utils.logDebug(['Supplied config:', suppliedConfig], suppliedConfig);
+
+    // Set rootTarget to the target element and clean before child nodes before continuing
+    prepareDOM(suppliedConfig || {});
+
     try {
-
-      utils.logDebug(['Supplied config:', suppliedConfig], suppliedConfig);
-
       // Start from local config
       if ((!suppliedConfig.widgetId && !suppliedConfig.widgetSlug) || suppliedConfig.disableRemoteLoad) {
         return start(suppliedConfig)
       }
-
-      // Load remote config
-      loadRemoteConfig(suppliedConfig)
-      .then(function (response) {
-        // save widget ID from remote to reference it when creating bookings
-        var remoteConfig = response.data.config
-        if (response.data.id) remoteConfig.widgetId = response.data.id
-        // merge with supplied config for overwriting settings
-        var mergedConfig = $.extend(true, {}, remoteConfig, suppliedConfig);
-        utils.logDebug(['Remote config:', remoteConfig], mergedConfig);
-        start(mergedConfig)
-      })
-      .catch(function () {
-        throw showErrorScreen('The widget could not be found, please double-check your widgetId/widgetSlug');
-      })
-
     } catch (e) {
-      console.log('BOOM!')
+      return this
     }
+
+    // Load remote config
+    loadRemoteConfig(suppliedConfig)
+    .then(function (response) {
+      // save widget ID from remote to reference it when creating bookings
+      var remoteConfig = response.data.config
+      if (response.data.id) remoteConfig.widgetId = response.data.id
+      // merge with supplied config for overwriting settings
+      var mergedConfig = $.extend(true, {}, remoteConfig, suppliedConfig);
+      utils.logDebug(['Remote config:', remoteConfig], mergedConfig);
+      start(mergedConfig)
+    })
+    .catch(function () {
+      showErrorScreen('The widget could not be found, please double-check your widgetId/widgetSlug');
+    })
 
     return this
 
@@ -884,7 +887,7 @@ function TimekitBooking() {
 
   var destroy = function() {
 
-    prepareDOM();
+    prepareDOM({});
     config = {};
     return this;
 
@@ -914,8 +917,7 @@ function TimekitBooking() {
 }
 
 // Autoload if config is available on window, else export function
-// TODO temprorary fix for hour widget migrations
-var globalLibraryConfig = window.timekitBookingConfig || window.hourWidgetConfig
+var globalLibraryConfig = window.timekitBookingConfig
 if (window && globalLibraryConfig && globalLibraryConfig.autoload !== false) {
   $(window).load(function(){
     var instance = new TimekitBooking();

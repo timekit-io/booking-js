@@ -6,8 +6,9 @@
     <div class="bookingjs-error-heading">
       Ouch, we've encountered a problem
     </div>
-    <div class="bookingjs-error-message">
-      {{& message }}
+    <div class="bookingjs-error-text">
+      <span class="bookingjs-error-text-message">{{& message }}</span>
+      <span class="bookingjs-error-text-context">{{& context }}</span>
     </div>
   </div>
 </div>

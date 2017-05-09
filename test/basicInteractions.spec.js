@@ -168,7 +168,7 @@ describe('Basic interaction', function() {
 
   });
 
-  fit('should be able to book an event and close page by clicking the submit button', function(done) {
+  it('should be able to book an event and close page by clicking the submit button', function(done) {
 
     createWidget();
 

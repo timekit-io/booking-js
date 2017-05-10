@@ -753,6 +753,9 @@ function TimekitBooking() {
     newConfig = applyConfigPreset(newConfig, 'availabilityView', newConfig.availabilityView)
 
     // Check for required settings
+    if (!newConfig.app && !newConfig.timekitConfig.app) {
+      throw showErrorScreen('A required config setting ("app") was missing');
+    }
     if (!newConfig.email) {
       throw showErrorScreen('A required config setting ("email") was missing');
     }

@@ -3,7 +3,7 @@
 $textColor:       #333;
 $bgColor:         #FBFBFB;
 $borderColor:     #ececec;
-$subtleColor:     darken($borderColor, 20%);
+$subtleColor:     darken($borderColor, 25%);
 $primaryColor:    #2e5bec;
 $primaryDarkColor: darken($primaryColor, 10%);
 
@@ -18,13 +18,9 @@ $primaryDarkColor: darken($primaryColor, 10%);
   border-bottom: 1px solid $borderColor;
 
   .fc-day-header {
-    text-transform: uppercase;
-    font-size: 0.9em;
+    font-size: 12px;
     font-weight: 600;
-
-    &::first-line {
-      color: darken($borderColor, 20%);
-    }
+    color: $subtleColor;
   }
 }
 

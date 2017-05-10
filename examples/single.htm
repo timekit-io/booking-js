@@ -14,14 +14,17 @@
   <div id="bookingjs">
     <script type="text/javascript">
       TimekitBooking().init({
-        name:     'Doc Brown',
-        email:    'marty.mcfly@timekit.io',
-        apiToken: 'XT1JO879JF1qUXXzmETD5ucgxaDwsFsd',
-        calendar: '22f86f0c-ee80-470c-95e8-dadd9d05edd2',
-        avatar:   '../misc/avatar-doc.jpg',
-        timekitConfig: {
-          app: 'back-to-the-future'
-        }
+        widgetSlug: 'timekit-lasse',
+        availabilityView: 'listing'
+      });
+    </script>
+  </div>
+
+  <div id="bookingjs2">
+    <script type="text/javascript">
+      TimekitBooking().init({
+        targetEl: '#bookingjs2',
+        widgetSlug: 'timekit-lasse'
       });
     </script>
   </div>

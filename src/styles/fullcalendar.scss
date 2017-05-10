@@ -131,12 +131,12 @@ $primaryDarkColor: darken($primaryColor, 10%);
 }
 
 .fc-event {
-  transition: all 200ms, opacity 600ms;
+  transition: color .2s ease, border-color .2s ease, opacity .6s ease, box-shadow .2s ease;
   border: none;
-  border-left: 3px solid $primaryColor;
+  border-left: 2px solid darken($borderColor, 35%);
   padding: 3px;
   background-color: white;
-  border-radius: 4px;
+  border-radius: 3px;
   color: $textColor;
   margin: 1px 0;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.07);
@@ -146,10 +146,20 @@ $primaryDarkColor: darken($primaryColor, 10%);
 
   &:hover,
   &-clicked {
-    color: white;
-    background-color: $primaryColor;
+    box-shadow: 0 2px 4px rgba(0,0,0,.12);
     border-left: 3px solid $primaryColor;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    color: $primaryColor;
+    font-weight: 600;
+    padding-left: 2px;
+  }
+
+  .fc-content {
+    transform: translateX(0);
+    transition: transform .2s ease;
+  }
+
+  &:hover .fc-content {
+    transform: translateX(2px);
   }
 
   .fc-bg {
@@ -158,16 +168,30 @@ $primaryDarkColor: darken($primaryColor, 10%);
 }
 
 .fc-day-grid-event {
-  padding: 15px;
-  margin: 5px;
+  padding: 13px 15px;
+  margin: 1px 0 3px;
+
+  &:hover,
+  &-clicked {
+    padding-left: 14px;
+  }
 
   .fc-time {
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 500;
   }
 
   .fc-title {
     padding: 0 5px 5px;
-    font-weight: bold;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  &:hover .fc-time,
+  &-clicked .fc-time,
+  &:hover .fc-title,
+  &-clicked .fc-title {
+    font-weight: 600;
   }
 }
 
@@ -223,6 +247,16 @@ $primaryDarkColor: darken($primaryColor, 10%);
   border-color: rgba(255, 0, 0, 0.5);
 }
 
+.fc-unthemed .fc-basic-view {
+  .fc-scroller {
+    padding: 5px 15px;
+  }
+  .fc-content-skeleton {
+    border-top: 0px;
+  }
+}
+
+
 // List view
 
 .fc-unthemed .fc-list-view .fc-scroller {
@@ -246,20 +280,25 @@ $primaryDarkColor: darken($primaryColor, 10%);
   line-height: 1em;
   padding: 20px 19px 15px 19px;
   font-weight: 500;
+  color: $primaryColor;
 
   .fc-list-heading-alt {
     color: $subtleColor;
   }
 }
 
+.is-small .fc-unthemed .fc-list-heading td {
+  font-size: 1.1em;
+}
+
 .fc-list-item {
   display: block;
-  transition: all .2s,opacity .6s;
+  transition: color .2s ease, border-color .2s ease, opacity .6s ease, box-shadow .2s ease;
   border: none;
-  border-left: 3px solid $primaryColor;
+  border-left: 2px solid darken($borderColor, 35%);
   padding: 3px;
   background-color: #fff;
-  border-radius: 4px;
+  border-radius: 3px;
   color: #333;
   margin: 1px 0;
   box-shadow: 0 1px 2px rgba(0,0,0,.07);
@@ -269,17 +308,23 @@ $primaryDarkColor: darken($primaryColor, 10%);
   font-size: 12px;
 
   &:hover {
-    background: $primaryColor;
-    color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,.12);
+    border-left: 3px solid $primaryColor;
+    color: $primaryColor;
+    font-weight: 600;
+    padding-left: 2px;
   }
 
   td {
     background: transparent;
     border-color: transparent;
+    transform: translateX(0);
+    transition: transform .2s ease;
   }
 
   &:hover td {
     background: transparent;
+    transform: translateX(2px);
   }
 
   .fc-list-item-marker {

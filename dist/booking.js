@@ -501,12 +501,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Show error and warning screen
 	  var triggerError = function(message) {
 	
-	    if (errorTarget) return
+	    // If an error already has been thrown, exit
+	    if (errorTarget) return message
 	
 	    utils.doCallback('errorTriggered', message);
 	    utils.logError(message)
 	
-	    if (!rootTarget) return
+	    // If no target DOM element exists, only do the logging
+	    if (!rootTarget) return message
 	
 	    var messageProcessed = message
 	    var contextProcessed = null

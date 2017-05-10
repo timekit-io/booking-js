@@ -242,11 +242,10 @@ $primaryDarkColor: darken($primaryColor, 10%);
 .fc-unthemed .fc-list-heading td {
   background: transparent;
   border-color: transparent;
-  font-size: 1em;
+  font-size: 1.3em;
   line-height: 1em;
   padding: 20px 19px 15px 19px;
-  text-transform: uppercase;
-  font-weight: 600;
+  font-weight: 500;
 
   .fc-list-heading-alt {
     color: $subtleColor;

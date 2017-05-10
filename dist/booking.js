@@ -809,6 +809,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    newConfig = applyConfigPreset(newConfig, 'availabilityView', newConfig.availabilityView)
 	
 	    // Check for required settings
+	    if (!newConfig.app && !newConfig.timekitConfig.app) {
+	      throw showErrorScreen('A required config setting ("app") was missing');
+	    }
 	    if (!newConfig.email) {
 	      throw showErrorScreen('A required config setting ("email") was missing');
 	    }
@@ -1025,7 +1028,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * @type {Object}
 	   */
 	  var config = {
-	    app: 'demo',
+	    app: '',
 	    apiBaseUrl: 'https://api.timekit.io/',
 	    apiVersion: 'v2',
 	    convertResponseToCamelcase: false,
@@ -1079,10 +1082,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // add http headers if applicable
 	    args.headers = args.headers || headers || {};
 	
-	    if (!args.headers['Timekit-App']) args.headers['Timekit-App'] = config.app;
-	    if (config.inputTimestampFormat) { args.headers['Timekit-InputTimestampFormat'] = config.inputTimestampFormat; }
-	    if (config.outputTimestampFormat) { args.headers['Timekit-OutputTimestampFormat'] = config.outputTimestampFormat; }
-	    if (config.timezone) { args.headers['Timekit-Timezone'] = config.timezone; }
+	    if (!args.headers['Timekit-App'] && config.app) {
+	      args.headers['Timekit-App'] = config.app;
+	    }
+	    if (config.inputTimestampFormat) {
+	      args.headers['Timekit-InputTimestampFormat'] = config.inputTimestampFormat;
+	    }
+	    if (config.outputTimestampFormat) {
+	      args.headers['Timekit-OutputTimestampFormat'] = config.outputTimestampFormat;
+	    }
+	    if (config.timezone) {
+	      args.headers['Timekit-Timezone'] = config.timezone;
+	    }
 	
 	    // add auth headers if not being overwritten by request/asUser
 	    if (!args.headers['Authorization'] && userEmail && userToken) {

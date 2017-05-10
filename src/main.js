@@ -468,12 +468,6 @@ function TimekitBooking() {
 
     var form = bookingPageTarget.children('.bookingjs-form');
 
-    form.find('.bookingjs-form-input').on('input', function() {
-      var field = $(this).closest('.bookingjs-form-field');
-      if (this.value) field.addClass('bookingjs-form-field--dirty');
-      else field.removeClass('bookingjs-form-field--dirty');
-    });
-
     bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
       e.preventDefault();
       var bookingHasBeenCreated = $(form).hasClass('success');
@@ -484,6 +478,13 @@ function TimekitBooking() {
     if (eventData.users) {
       utils.logDebug(['Available users for chosen timeslot:', eventData.users], config);
     }
+
+
+    form.find('.bookingjs-form-input').on('input', function() {
+      var field = $(this).closest('.bookingjs-form-field');
+      if (this.value) field.addClass('bookingjs-form-field--dirty');
+      else field.removeClass('bookingjs-form-field--dirty');
+    });
 
     form.submit(function(e) {
       submitBookingForm(this, e, eventData);

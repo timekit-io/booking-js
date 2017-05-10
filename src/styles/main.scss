@@ -223,6 +223,7 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
       left: 0;
       right: 0;
       padding: 30px;
+      z-index: 10;
       background-color: white;
       opacity: 0;
       transition: opacity 0.3s ease;

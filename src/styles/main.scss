@@ -253,6 +253,35 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
       bottom: 0;
     }
 
+    &-field {
+      position: relative;
+    }
+
+    &-field--dirty &-label {
+      opacity: 1;
+      top: 20px;
+      font-size: 11px;
+      color: $primaryColor;
+    }
+
+    &-field--dirty &-input {
+      padding: 25px 25px 5px;
+    }
+
+    &-field--dirty &-input--textarea {
+      padding: 30px 25px 10px;
+    }
+
+    &-label {
+      position: absolute;
+      top: 30px;
+      left: 25px;
+      color: $textColor;
+      opacity: 0;
+      font-size: 12px;
+      transition: opacity .2s ease, font-size .2s ease, color .2s ease, top .2s ease;
+    }
+
     &-input,
     input, input:invalid
     textarea, textarea:invalid {
@@ -265,10 +294,11 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
       box-shadow: inset 0px 0px 1px 1px rgba(255,255,255, 0);
       text-align: left;
       box-sizing: border-box;
-      line-height: normal;
+      line-height: 1.5em;
       font-family: $fontFamily;
       color: $textColor;
       overflow: auto;
+      border-bottom: 1px solid $borderColor;
 
       &:focus {
         outline: 0;
@@ -287,6 +317,11 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
           box-shadow: inset 0px 0px 1px 1px #D8D8D8;
         }
       }
+    }
+
+    &-input--textarea {
+      padding: 15px 25px 25px;
+      overflow: auto;
     }
 
     &-button {

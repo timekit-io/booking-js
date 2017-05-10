@@ -338,10 +338,10 @@ function TimekitBooking() {
     currentView = currentView || calendarTarget.fullCalendar('getView').name
 
     var view = config.fullCalendar.defaultView
-    var height = 420;
+    var height = 430;
 
     if (rootTarget.width() < 480) {
-      height = 380;
+      height = 390;
       rootTarget.addClass('is-small');
       if (config.avatar) height -= 15;
       if (currentView === 'agendaWeek' || currentView === 'basicDay') {
@@ -351,7 +351,7 @@ function TimekitBooking() {
       rootTarget.removeClass('is-small');
     }
 
-    if (config.bookingFields.comment.enabled) {    height += 84; }
+    if (config.bookingFields.comment.enabled) {    height += 100; }
     if (config.bookingFields.phone.enabled) {      height += 64; }
     if (config.bookingFields.voip.enabled) {       height += 64; }
     if (config.bookingFields.location.enabled) {   height += 64; }
@@ -467,6 +467,12 @@ function TimekitBooking() {
     }));
 
     var form = bookingPageTarget.children('.bookingjs-form');
+
+    form.find('.bookingjs-form-input').on('input', function() {
+      var field = $(this).closest('.bookingjs-form-field');
+      if (this.value) field.addClass('bookingjs-form-field--dirty');
+      else field.removeClass('bookingjs-form-field--dirty');
+    });
 
     bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
       e.preventDefault();

@@ -1,26 +1,48 @@
+<div class="bookingjs-form-field">
+  <label
+    for="input-name"
+    class="bookingjs-form-label label-name">
+    {{ fields.name.placeholder }}
+  </label>
+  <input
+    id="input-name"
+    class="bookingjs-form-input input-name"
+    type="text"
+    name="name"
+    placeholder="{{ fields.name.placeholder }}"
+    {{# fields.name.prefilled }} value="{{ fields.name.prefilled }}" {{/ fields.name.prefilled }}
+    {{# fields.name.locked }} readonly {{/ fields.name.locked }}
+    required
+  />
+</div>
 
-<input
-  class="bookingjs-form-input input-name"
-  type="text"
-  name="name"
-  placeholder="{{ fields.name.placeholder }}"
-  {{# fields.name.prefilled }} value="{{ fields.name.prefilled }}" {{/ fields.name.prefilled }}
-  {{# fields.name.locked }} readonly {{/ fields.name.locked }}
-  required
-/>
-
-<input
-  class="bookingjs-form-input input-email"
-  type="email"
-  name="email"
-  placeholder="{{ fields.email.placeholder }}"
-  {{# fields.email.prefilled }} value="{{ fields.email.prefilled }}" {{/ fields.email.prefilled }}
-  {{# fields.email.locked }} readonly {{/ fields.email.locked }}
-  required
-/>
+<div class="bookingjs-form-field">
+  <label
+    for="input-email"
+    class="bookingjs-form-label label-email">
+    {{ fields.email.placeholder }}
+  </label>
+  <input
+    id="input-email"
+    class="bookingjs-form-input input-email"
+    type="email"
+    name="email"
+    placeholder="{{ fields.email.placeholder }}"
+    {{# fields.email.prefilled }} value="{{ fields.email.prefilled }}" {{/ fields.email.prefilled }}
+    {{# fields.email.locked }} readonly {{/ fields.email.locked }}
+    required
+  />
+</div>
 
 {{# fields.phone.enabled }}
+<div class="bookingjs-form-field">
+  <label
+    for="input-phone"
+    class="bookingjs-form-label label-phone">
+    {{ fields.phone.placeholder }}
+  </label>
   <input
+    id="input-phone"
     class="bookingjs-form-input input-phone"
     type="tel"
     name="phone"
@@ -29,10 +51,18 @@
     {{# fields.phone.required }} required {{/ fields.phone.required }}
     {{# fields.phone.locked }} readonly {{/ fields.phone.locked }}
   />
+</div>
 {{/ fields.phone.enabled }}
 
 {{# fields.voip.enabled }}
+<div class="bookingjs-form-field">
+  <label
+    for="input-voip"
+    class="bookingjs-form-label label-voip">
+    {{ fields.voip.placeholder }}
+  </label>
   <input
+    id="input-voip"
     class="bookingjs-form-input input-voip"
     type="text"
     name="voip"
@@ -41,10 +71,18 @@
     {{# fields.voip.required }} required {{/ fields.voip.required }}
     {{# fields.voip.locked }} readonly {{/ fields.voip.locked }}
   />
+</div>
 {{/ fields.voip.enabled }}
 
 {{# fields.location.enabled }}
+<div class="bookingjs-form-field">
+  <label
+    for="input-location"
+    class="bookingjs-form-label label-location">
+    {{ fields.location.placeholder }}
+  </label>
   <input
+    id="input-location"
     class="bookingjs-form-input input-location"
     type="text"
     name="location"
@@ -53,14 +91,23 @@
     {{# fields.location.required }} required {{/ fields.location.required }}
     {{# fields.location.locked }} readonly {{/ fields.location.locked }}
   />
+</div>
 {{/ fields.location.enabled }}
 
 {{# fields.comment.enabled }}
+<div class="bookingjs-form-field">
+  <label
+    for="input-comment"
+    class="bookingjs-form-label label-comment">
+    {{ fields.comment.placeholder }}
+  </label>
   <textarea
-    class="bookingjs-form-input input-comment"
+    id="input-comment"
+    class="bookingjs-form-input bookingjs-form-input--textarea input-comment"
     rows="3"
     name="comment"
     placeholder="{{ fields.comment.placeholder }}"
     {{# fields.comment.required }} required {{/ fields.comment.required }}
     {{# fields.comment.locked }} readonly {{/ fields.comment.locked }}>{{# fields.comment.prefilled }}{{ fields.comment.prefilled }}{{/ fields.comment.prefilled }}</textarea>
+</div>
 {{/ fields.comment.enabled }}

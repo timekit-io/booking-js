@@ -369,7 +369,8 @@ callbacks: {
   renderCompleted:          function() {},
   showBookingPage:          function(event) {},
   closeBookingPage:         function() {},
-  submitBookingForm:        function(values) {}
+  submitBookingForm:        function(values) {},
+  errorTriggered:           function(message) {}
 }
 ```
 

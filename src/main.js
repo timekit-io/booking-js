@@ -293,7 +293,7 @@ function TimekitBooking() {
 
     }).catch(function(response){
       utils.doCallback('getUserTimezoneFailed', config, response);
-      triggerError(['An error with Timekit getUserTimezone occured', response]);
+      utils.logError(['An error with Timekit getUserTimezone occured', response]);
     });
 
   };

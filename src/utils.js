@@ -12,8 +12,12 @@ module.exports = {
    return !!(object && object.constructor && object.call && object.apply);
   },
 
+  isArray: function(object) {
+   return object && object.constructor === Array;
+  },
+
   doCallback: function(hook, config, arg, deprecated) {
-    if(this.isFunction(config.callbacks[hook])) {
+    if(config.callbacks && this.isFunction(config.callbacks[hook])) {
       if (deprecated) { this.logDeprecated(hook + ' callback has been replaced, please see docs'); }
       config.callbacks[hook](arg);
     }
@@ -21,11 +25,11 @@ module.exports = {
   },
 
   logDebug: function(message, config) {
-    if (config.debug) console.log('TimekitBooking Debug: ', message);
+    if (config && config.debug) console.log('TimekitBooking Debug: ', message);
   },
 
   logError: function(message) {
-    console.error('TimekitBooking Error: ', message);
+    console.warn('TimekitBooking Error: ', message);
   },
 
   logDeprecated: function(message) {

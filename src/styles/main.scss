@@ -30,14 +30,10 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
   box-shadow: 0 3px 40px 0 rgba(0, 0, 0, 0.15);
   margin: 20px auto 20px auto;
   z-index: 10;
-  opacity: 0;
+  opacity: 1;
   color: $textColor;
   border-top: 1px solid $borderColor;
-
-  &.show {
-    transition: opacity 0.3s ease;
-    opacity: 1;
-  }
+  min-height: 200px;
 
   &.has-avatar {
     margin-top: 60px;
@@ -492,6 +488,67 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
         path {
           fill: $primaryColor;
         }
+      }
+    }
+
+  }
+
+  &-error {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    background-color: $bgColor;
+    z-index: 31;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    border-radius: 4px;
+
+    &.show {
+      opacity: 1;
+    }
+
+    &-inner {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      text-align: center;
+      overflow: scroll;
+      max-height: 100%;
+      padding: 30px;
+      box-sizing: border-box;
+      width: 100%;
+    }
+
+    &-icon {
+      svg {
+        height: 30px;
+        width: 30px;
+
+        g {
+          fill: $errorColor;
+        }
+      }
+    }
+
+    &-heading {
+      color: $errorColor;
+      font-size: 15px;
+      margin: 15px 0;
+    }
+
+    &-text {
+      font-size: 12px;
+      color: $textLightColor;
+      word-break: break-word;
+      overflow: scroll;
+
+      &-messag {
+        display: block;
+      }
+      &-context {
+        display: block;
       }
     }
 

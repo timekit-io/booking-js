@@ -1,6 +1,6 @@
 {
   "name": "timekit-booking",
-  "version": "1.14.0",
+  "version": "1.16.0",
   "description": "Make a beautiful embeddable booking widget in minutes",
   "main": "dist/booking.min.js",
   "repository": {
@@ -43,6 +43,6 @@
     "moment": "^2.10.6",
     "moment-timezone": "^0.5.13",
     "sprintf-js": "^1.0.3",
-    "timekit-sdk": "^1.3.0"
+    "timekit-sdk": "^1.7.0"
   }
 }

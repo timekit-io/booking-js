@@ -197,7 +197,7 @@ var timeDateFormat24hdmymon = {
         columnFormat: 'dddd D/M'
       },
       agenda: {
-        columnFormat: 'ddd\n D/M',
+        columnFormat: 'ddd D/M',
         slotLabelFormat: 'HH:mm'
       }
     }
@@ -221,7 +221,7 @@ var timeDateFormat12hmdysun = {
         columnFormat: 'dddd M/D',
       },
       agenda: {
-        columnFormat: 'ddd\n M/D',
+        columnFormat: 'ddd M/D',
         slotLabelFormat: 'h:mma'
       }
     },

@@ -46,8 +46,7 @@ function TimekitBooking() {
     rootTarget = $(targetElement);
 
     if (rootTarget.length === 0) {
-      utils.logError('No target DOM element was found (' + targetElement + ')');
-      return
+      throw triggerError('No target DOM element was found (' + targetElement + ')');
     }
 
     rootTarget.addClass('bookingjs');
@@ -94,7 +93,7 @@ function TimekitBooking() {
     }).catch(function(response){
       utils.doCallback('findTimeFailed', config, response);
       hideLoadingScreen();
-      showErrorScreen(['An error with Timekit FindTime occured', response]);
+      triggerError(['An error with Timekit FindTime occured', response]);
     });
 
   };
@@ -130,7 +129,7 @@ function TimekitBooking() {
     }).catch(function(response){
       utils.doCallback('findTimeTeamFailed', config, response);
       hideLoadingScreen();
-      showErrorScreen(['An error with Timekit FindTimeTeam occured', response]);
+      triggerError(['An error with Timekit FindTimeTeam occured', response]);
     });
 
   };
@@ -172,7 +171,7 @@ function TimekitBooking() {
     }).catch(function(response){
       utils.doCallback('getBookingSlotsFailed', config, response);
       hideLoadingScreen();
-      showErrorScreen(['An error with Timekit GetBookings occured', response]);
+      triggerError(['An error with Timekit GetBookings occured', response]);
     });
 
   };
@@ -294,7 +293,7 @@ function TimekitBooking() {
 
     }).catch(function(response){
       utils.doCallback('getUserTimezoneFailed', config, response);
-      showErrorScreen(['An error with Timekit getUserTimezone occured', response]);
+      utils.logError(['An error with Timekit getUserTimezone occured', response]);
     });
 
   };
@@ -343,10 +342,10 @@ function TimekitBooking() {
     currentView = currentView || calendarTarget.fullCalendar('getView').name
 
     var view = config.fullCalendar.defaultView
-    var height = 420;
+    var height = 430;
 
     if (rootTarget.width() < 480) {
-      height = 380;
+      height = 390;
       rootTarget.addClass('is-small');
       if (config.avatar) height -= 15;
       if (currentView === 'agendaWeek' || currentView === 'basicDay') {
@@ -356,7 +355,7 @@ function TimekitBooking() {
       rootTarget.removeClass('is-small');
     }
 
-    if (config.bookingFields.comment.enabled) {    height += 84; }
+    if (config.bookingFields.comment.enabled) {    height += 100; }
     if (config.bookingFields.phone.enabled) {      height += 64; }
     if (config.bookingFields.voip.enabled) {       height += 64; }
     if (config.bookingFields.location.enabled) {   height += 64; }
@@ -444,16 +443,28 @@ function TimekitBooking() {
   };
 
   // Show error and warning screen
-  var showErrorScreen = function(message) {
+  var triggerError = function(message) {
 
-    if (errorTarget) return
-    var hasContext = utils.isArray(message);
+    // If an error already has been thrown, exit
+    if (errorTarget) return message
 
-    var messageProcessed = hasContext ? message[0] : message;
-    var contextProcessed = hasContext ? JSON.stringify(message[1].data || message[1]) : null
-
-    utils.doCallback('showErrorScreen', config);
+    utils.doCallback('errorTriggered', message);
     utils.logError(message)
+
+    // If no target DOM element exists, only do the logging
+    if (!rootTarget) return message
+
+    var messageProcessed = message
+    var contextProcessed = null
+
+    if (utils.isArray(message)) {
+      messageProcessed = message[0]
+      if (message[1].data) {
+        contextProcessed = JSON.stringify(message[1].data.errors || message[1].data.error || message[1].data)
+      } else {
+        contextProcessed = JSON.stringify(message[1])
+      }
+    }
 
     var template = require('./templates/error.html');
     errorTarget = $(template.render({
@@ -462,26 +473,9 @@ function TimekitBooking() {
       context: contextProcessed
     }));
 
-    errorTarget.children('.bookingjs-errorscreen-close').click(function(e) {
-      e.preventDefault();
-      hideErrorScreen();
-    });
-
     rootTarget.append(errorTarget);
 
     return message
-
-  };
-
-  // Remove the booking page DOM node
-  var hideErrorScreen = function() {
-
-    utils.doCallback('hideLoadingScreen', config);
-    loadingTarget.removeClass('show');
-
-    setTimeout(function(){
-      loadingTarget.remove();
-    }, 500);
 
   };
 
@@ -523,6 +517,13 @@ function TimekitBooking() {
     if (eventData.users) {
       utils.logDebug(['Available users for chosen timeslot:', eventData.users], config);
     }
+
+
+    form.find('.bookingjs-form-input').on('input', function() {
+      var field = $(this).closest('.bookingjs-form-field');
+      if (this.value) field.addClass('bookingjs-form-field--dirty');
+      else field.removeClass('bookingjs-form-field--dirty');
+    });
 
     form.submit(function(e) {
       submitBookingForm(this, e, eventData);
@@ -670,7 +671,7 @@ function TimekitBooking() {
         return designatedUser.email === user._email
       })
       if (teamUser.length < 1 || !teamUser[0]._calendar) {
-        throw showErrorScreen(['Encountered an error when picking designated team user to receive booking', designatedUser, config.timekitFindTimeTeam.users]);
+        throw triggerError(['Encountered an error when picking designated team user to receive booking', designatedUser, config.timekitFindTimeTeam.users]);
       } else {
         timekit = timekit.asUser(designatedUser.email, designatedUser.token)
         args.event.calendar_id = teamUser[0]._calendar
@@ -698,7 +699,7 @@ function TimekitBooking() {
       utils.doCallback('createBookingSuccessful', config, response);
     }).catch(function(response){
       utils.doCallback('createBookingFailed', config, response);
-      showErrorScreen(['An error with Timekit CreateBooking occured', response]);
+      triggerError(['An error with Timekit CreateBooking occured', response]);
     });
 
     return request;
@@ -740,7 +741,7 @@ function TimekitBooking() {
 
     // Check whether a config is supplied
     if(suppliedConfig === undefined || typeof suppliedConfig !== 'object' || $.isEmptyObject(suppliedConfig)) {
-      throw showErrorScreen('No configuration was supplied or found. Please supply a config object upon library initialization');
+      throw triggerError('No configuration was supplied or found. Please supply a config object upon library initialization');
     }
 
     // Extend the default config with supplied settings
@@ -754,16 +755,16 @@ function TimekitBooking() {
 
     // Check for required settings
     if (!newConfig.app && !newConfig.timekitConfig.app) {
-      throw showErrorScreen('A required config setting ("app") was missing');
+      throw triggerError('A required config setting ("app") was missing');
     }
     if (!newConfig.email) {
-      throw showErrorScreen('A required config setting ("email") was missing');
+      throw triggerError('A required config setting ("email") was missing');
     }
     if (!newConfig.apiToken) {
-      throw showErrorScreen('A required config setting ("apiToken") was missing');
+      throw triggerError('A required config setting ("apiToken") was missing');
     }
     if (!newConfig.calendar && newConfig.bookingGraph !== 'group_customer' && newConfig.bookingGraph !== 'group_customer_payment' && !newConfig.timekitFindTimeTeam) {
-      throw showErrorScreen('A required config setting ("calendar") was missing');
+      throw triggerError('A required config setting ("calendar") was missing');
     }
 
     // Set new config to instance config
@@ -831,16 +832,18 @@ function TimekitBooking() {
 
     utils.logDebug(['Supplied config:', suppliedConfig], suppliedConfig);
 
-    // Set rootTarget to the target element and clean before child nodes before continuing
-    prepareDOM(suppliedConfig || {});
+    try {
 
-    // Start from local config
-    if (!suppliedConfig || (!suppliedConfig.widgetId && !suppliedConfig.widgetSlug) || suppliedConfig.disableRemoteLoad) {
-      try {
+      // Set rootTarget to the target element and clean before child nodes before continuing
+      prepareDOM(suppliedConfig || {});
+
+      // Start from local config
+      if (!suppliedConfig || (!suppliedConfig.widgetId && !suppliedConfig.widgetSlug) || suppliedConfig.disableRemoteLoad) {
         return start(suppliedConfig)
-      } catch (e) {
-        return this
       }
+
+    } catch (e) {
+      return this
     }
 
     // Load remote config
@@ -855,7 +858,7 @@ function TimekitBooking() {
       start(mergedConfig)
     })
     .catch(function () {
-      showErrorScreen('The widget could not be found, please double-check your widgetId/widgetSlug');
+      triggerError('The widget could not be found, please double-check your widgetId/widgetSlug');
     })
 
     return this
@@ -875,7 +878,7 @@ function TimekitBooking() {
       return timekit
       .getHostedWidget({ slug: suppliedConfig.widgetSlug })
     } else {
-      throw showErrorScreen('No widget configuration, widgetSlug or widgetId found');
+      throw triggerError('No widget configuration, widgetSlug or widgetId found');
     }
 
   }

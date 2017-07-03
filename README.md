@@ -272,7 +272,7 @@ See `/examples/local-language.htm`
 
 ```javascript
 fullCalendar: {
-  lang: 'de'
+  locale: 'de'
 },
 localization: {
   timeDateFormat: false

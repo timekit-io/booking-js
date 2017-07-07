@@ -843,7 +843,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Get library version
 	  var getVersion = function() {
 	
-	    return ("1.16.0");
+	    return ("1.17.0");
 	
 	  };
 	
@@ -1031,7 +1031,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * @type {Object}
 	   */
 	  var config = {
-	    app: 'demo',
+	    app: '',
 	    apiBaseUrl: 'https://api.timekit.io/',
 	    apiVersion: 'v2',
 	    convertResponseToCamelcase: false,
@@ -1085,10 +1085,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // add http headers if applicable
 	    args.headers = args.headers || headers || {};
 	
-	    if (!args.headers['Timekit-App']) args.headers['Timekit-App'] = config.app;
-	    if (config.inputTimestampFormat) { args.headers['Timekit-InputTimestampFormat'] = config.inputTimestampFormat; }
-	    if (config.outputTimestampFormat) { args.headers['Timekit-OutputTimestampFormat'] = config.outputTimestampFormat; }
-	    if (config.timezone) { args.headers['Timekit-Timezone'] = config.timezone; }
+	    if (!args.headers['Timekit-App'] && config.app) {
+	      args.headers['Timekit-App'] = config.app;
+	    }
+	    if (config.inputTimestampFormat) {
+	      args.headers['Timekit-InputTimestampFormat'] = config.inputTimestampFormat;
+	    }
+	    if (config.outputTimestampFormat) {
+	      args.headers['Timekit-OutputTimestampFormat'] = config.outputTimestampFormat;
+	    }
+	    if (config.timezone) {
+	      args.headers['Timekit-Timezone'] = config.timezone;
+	    }
 	
 	    // add auth headers if not being overwritten by request/asUser
 	    if (!args.headers['Authorization'] && userEmail && userToken) {

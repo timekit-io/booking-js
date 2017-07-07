@@ -25750,13 +25750,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	      locked: false
 	    }
 	  },
-	  timekitConfig: {
-	    app: 'bookingjs'
-	  },
 	  timekitFindTime: {
 	    future: '4 weeks',
 	    length: '1 hour'
 	  },
+	  timekitConfig: {},
 	  timekitCreateBooking: { },
 	  timekitUpdateBooking: { },
 	  fullCalendar: {

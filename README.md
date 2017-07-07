@@ -68,7 +68,7 @@ The simplest and most universally compatible usage is with autoload. This will d
   <script type="text/javascript" src="//cdn.timekit.io/booking-js/v1/booking.min.js" defer></script>
   <script type="text/javascript">
     window.timekitBookingConfig = {
-      app:      'your-app-slug-here',
+      app:      'back-to-the-future',
       email:    'marty.mcfly@timekit.io',
       apiToken: 'bNpbFHRmrfZbtS5nEtCVl8sY5vUkOFCL',
       calendar: '8687f058-5b52-4fa4-885c-9294e52ab7d4',
@@ -89,7 +89,7 @@ If you intent to run multiple instances or want more control over initialization
   <script type="text/javascript">
     var widget = new TimekitBooking();
     widget.init({
-      app:      'your-app-slug-here',
+      app:      'back-to-the-future',
       email:    'marty.mcfly@timekit.io',
       apiToken: 'bNpbFHRmrfZbtS5nEtCVl8sY5vUkOFCL',
       calendar: '8687f058-5b52-4fa4-885c-9294e52ab7d4'

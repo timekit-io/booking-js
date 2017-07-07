@@ -41,7 +41,7 @@
     "console-polyfill": "^0.2.2",
     "fullcalendar": "^3.4.0",
     "moment": "^2.10.6",
-    "moment-timezone": "^0.5.0",
+    "moment-timezone": "^0.5.13",
     "sprintf-js": "^1.0.3",
     "timekit-sdk": "^1.7.0"
   }

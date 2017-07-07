@@ -264,7 +264,7 @@ localization: {
 },
 ```
 
-For full language support, FullCalendar also takes a ["lang" option](http://fullcalendar.io/docs/text/lang/), accompanied by a language file. Make sure to use defer attribute on a script tag loading the language file if you are deferring booking.js, language file should be loaded after booking.js, but before initialization.
+For full language support, FullCalendar also takes a ["locale" option](http://fullcalendar.io/docs/text/lang/), accompanied by a language file. Make sure to use defer attribute on a script tag loading the language file if you are deferring booking.js, language file should be loaded after booking.js, but before initialization.
 
 Remember to set `localization.timeDateFormat` to false so it doesn't override the language file's settings.
 
@@ -272,7 +272,7 @@ See `/examples/local-language.htm`
 
 ```javascript
 fullCalendar: {
-  lang: 'de'
+  locale: 'de'
 },
 localization: {
   timeDateFormat: false

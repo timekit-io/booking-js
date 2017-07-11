@@ -5,7 +5,7 @@ jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 var baseConfig = require('./utils/defaultConfig');
 var mockAjax = require('./utils/mockAjax');
 
-describe('Initialization regular', function() {
+describe('Multiple instances', function() {
 
   beforeEach(function(){
     loadFixtures('main.html');

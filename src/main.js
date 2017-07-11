@@ -11,8 +11,8 @@
 
 // External depenencies
 var $               = require('jquery');
-var timekit         = require('timekit-sdk');
 var interpolate     = require('sprintf-js');
+var timekitSDK      = require('timekit-sdk');
 window.fullcalendar = require('fullcalendar');
 var moment          = window.moment = require('moment');
 require('moment-timezone/builds/moment-timezone-with-data-2012-2022.js');
@@ -27,6 +27,9 @@ require('./styles/main.scss');
 
 // Main library
 function TimekitBooking() {
+
+  // SDK instance
+  var timekit = timekitSDK.newInstance();
 
   // Library config
   var config = {};

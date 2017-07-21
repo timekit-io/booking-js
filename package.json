@@ -8,8 +8,12 @@
     "url": "https://github.com/timekit-io/booking-js.git"
   },
   "scripts": {
-    "build": "webpack && webpack --config webpack.config.min.js",
     "watch": "webpack --watch & webpack --config webpack.config.min.js --watch && kill $!",
+    "build": "webpack && webpack --config webpack.config.min.js --bail",
+    "release:patch": "../flux/flux timekit:release patch booking-js",
+    "release:minor": "../flux/flux timekit:release minor booking-js",
+    "release:major": "../flux/flux timekit:release major booking-js",
+    "deploy": "../capa/capa cdn",
     "test": "webpack && webpack --config webpack.config.min.js && karma start --single-run",
     "test:watch": "webpack && webpack --config webpack.config.min.js && karma start --watch"
   },

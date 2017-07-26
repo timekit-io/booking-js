@@ -12,10 +12,12 @@
     "prod": {
       "check-git-master": true,
       "publish-to-npm": true,
+      "install-npm-deps": true,
+      "build-dist-bundle": "yarn run build",
       "aws-cdn-deploy": "timekit-cdn"
     },
     "staging": {
-      "check-git-master": true,
+      "build-dist-bundle": "yarn run build",
       "aws-cdn-deploy": "timekit-cdn-staging"
     }
   }

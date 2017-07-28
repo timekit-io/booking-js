@@ -20,6 +20,15 @@
   },
   "author": "Timekit Inc.",
   "license": "MIT",
+  "dependencies": {
+    "console-polyfill": "^0.2.2",
+    "es6-promise-promise": "^1.0.0",
+    "fullcalendar": "^3.4.0",
+    "moment": "^2.10.6",
+    "moment-timezone": "^0.5.13",
+    "sprintf-js": "^1.0.3",
+    "timekit-sdk": "^1.10.1"
+  },
   "devDependencies": {
     "autoprefixer-loader": "^3.1.0",
     "css-loader": "^0.21.0",
@@ -41,14 +50,5 @@
     "style-loader": "^0.13.0",
     "svg-inline-loader": "^0.3.0",
     "webpack": "^1.12.2"
-  },
-  "dependencies": {
-    "console-polyfill": "^0.2.2",
-    "es6-promise-promise": "^1.0.0",
-    "fullcalendar": "^3.4.0",
-    "moment": "^2.10.6",
-    "moment-timezone": "^0.5.13",
-    "sprintf-js": "^1.0.3",
-    "timekit-sdk": "^1.10.0"
   }
 }

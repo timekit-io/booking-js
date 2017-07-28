@@ -11,10 +11,11 @@
   "deploy": {
     "prod": {
       "check-git-master": true,
-      "publish-to-npm": true,
       "install-npm-deps": true,
       "build-dist-bundle": "yarn run build",
-      "aws-cdn-deploy": "timekit-cdn"
+      "aws-cdn-deploy": "timekit-cdn",
+      "publish-to-npm": true,
+      "dependent-projects": ["admin"]
     },
     "staging": {
       "build-dist-bundle": "yarn run build",

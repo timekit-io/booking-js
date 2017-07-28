@@ -4085,9 +4085,9 @@ through@~2.3.4:
   version "2.3.8"
   resolved "https://registry.yarnpkg.com/through/-/through-2.3.8.tgz#0dd4c9ffaabc357960b1b724115d7e0e86a2e1f5"
 
-timekit-sdk@^1.9.0:
-  version "1.9.0"
-  resolved "https://registry.yarnpkg.com/timekit-sdk/-/timekit-sdk-1.9.0.tgz#6cd9fae768b1e79c1e01fb6e80d0578d65d86acd"
+timekit-sdk@^1.10.0:
+  version "1.10.0"
+  resolved "https://registry.yarnpkg.com/timekit-sdk/-/timekit-sdk-1.10.0.tgz#ba62a0108d2c5c483dc2c9fb935cefb7852b6c15"
   dependencies:
     axios "^0.12.0"
     base-64 "^0.1.0"

@@ -928,7 +928,7 @@ function TimekitBooking() {
 // Autoload if config is available on window, else export function
 var globalLibraryConfig = window.timekitBookingConfig
 if (window && globalLibraryConfig && globalLibraryConfig.autoload !== false) {
-  $(window).load(function(){
+  $(window).on('load', function(){
     var instance = new TimekitBooking();
     instance.init(globalLibraryConfig);
     module.exports = instance;

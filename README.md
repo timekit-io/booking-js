@@ -27,7 +27,7 @@ You can use the widget in two different ways:
 
 Stuff you need to load:
 
-- [jQuery](https://jquery.com/) (v2.x.x) - primarily because it's a requisite for FullCalendar
+- [jQuery](https://jquery.com/) (v2 - v3) - primarily because it's a requisite for FullCalendar
 
 Bundled together with the library:
 
@@ -40,7 +40,7 @@ Bundled together with the library:
 #### CDN
 To ensure that we can push out updates, improvements and bugfixes to the library, we recommend that you load the library through our CDN. It's hosted on Amazon Cloudfront so it's snappy enough for production.  
 ```html
-<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script type="text/javascript" src="//cdn.timekit.io/booking-js/v1/booking.min.js" defer></script>
 ```
 
@@ -64,7 +64,7 @@ The simplest and most universally compatible usage is with autoload. This will d
 
 ```html
 <div id="bookingjs">
-  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script type="text/javascript" src="//cdn.timekit.io/booking-js/v1/booking.min.js" defer></script>
   <script type="text/javascript">
     window.timekitBookingConfig = {
@@ -84,7 +84,7 @@ If you intent to run multiple instances or want more control over initialization
 
 ```html
 <div id="bookingjs">
-  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script type="text/javascript" src="//cdn.timekit.io/booking-js/v1/booking.min.js"></script>
   <script type="text/javascript">
     var widget = new TimekitBooking();

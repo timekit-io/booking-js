@@ -168,6 +168,20 @@ module.exports = {
   },
 
   // Get widget endpoint
+  getEmbedWidgetExtended: function() {
+
+    jasmine.Ajax.stubRequest(
+      'https://api.timekit.io/v2/widgets/embed/12345'
+    ).andReturn({
+      status: 200,
+      statusText: 'HTTP/1.1 200 OK',
+      contentType: 'application/json',
+      responseText: '{ "data": { "id": "12345", "slug": "my-widget-slug", "config": { "email": "marty.mcfly@timekit.io", "apiToken": "XT1JO879JF1qUXXzmETD5ucgxaDwsFsd", "calendar": "22f86f0c-ee80-470c-95e8-dadd9d05edd2", "name": "Marty McFly", "bookingGraph":"instant", "timekitCreateBooking": { "event": { "where": "Somewhere", "what": "Something" }, "timekitConfig": { "app": "bookingjs-demo" } } } }'
+    });
+
+  },
+
+  // Get widget endpoint
   getNonExistingEmbedWidget: function() {
 
     jasmine.Ajax.stubRequest(

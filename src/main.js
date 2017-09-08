@@ -41,35 +41,9 @@ function TimekitBooking() {
   var loadingTarget;
   var errorTarget;
 
-  // Make sure DOM element is ready and clean it
-  var prepareDOM = function(suppliedConfig) {
 
-    var targetElement = suppliedConfig.targetEl || config.targetEl || defaultConfig.primary.targetEl;
-
-    rootTarget = $(targetElement);
-
-    if (rootTarget.length === 0) {
-      throw triggerError('No target DOM element was found (' + targetElement + ')');
-    }
-
-    rootTarget.addClass('bookingjs');
-    rootTarget.children(':not(script)').remove();
-
-  };
-
-  // Setup the Timekit SDK with correct config
-  var timekitSetupConfig = function() {
-
-    timekit.configure(config.timekitConfig);
-
-  };
-
-  // Setup the Timekit SDK with correct credentials
-  var timekitSetupUser = function() {
-
-    timekit.setUser(config.email, config.apiToken);
-
-  };
+  // AVAILABILITY
+  // -----------------------
 
   // Fetch availabile time through Timekit SDK
   var timekitFindTime = function() {
@@ -148,8 +122,10 @@ function TimekitBooking() {
     }
 
     // scope group booking slots by widget ID if possible
-    if (config.widgetId) requestData.params = {
-      search: 'widget.id:' + config.widgetId
+    if (config.widgetId) {
+      requestData.params = {
+        search: 'widget.id:' + config.widgetId
+      }
     }
 
     timekit
@@ -197,6 +173,10 @@ function TimekitBooking() {
       timekitFindTime();
     }
   }
+
+
+  // CALENDAR INTERACTION
+  // -----------------------
 
   // Go to the first timeslot in a list of timeslots
   var goToFirstEvent = function(firstEventStart) {
@@ -249,82 +229,6 @@ function TimekitBooking() {
 
     // Perform the scrollTo animation
     scrollable.animate({scrollTop: scrollTo});
-
-  };
-
-  // Calculate and display timezone helper
-  var renderTimezoneHelper = function() {
-
-    var localTzOffset = (moment().utcOffset()/60);
-    var timezoneIcon = require('!svg-inline!./assets/timezone-icon.svg');
-
-    var template = require('./templates/timezone-helper.html');
-
-    var timezoneHelperTarget = $(template.render({
-      timezoneIcon: timezoneIcon,
-      loadingText: config.localization.strings.timezoneHelperLoading,
-      loading: true
-    }));
-
-    rootTarget.addClass('has-timezonehelper');
-    rootTarget.append(timezoneHelperTarget);
-
-    var args = {
-      email: config.email
-    };
-
-    utils.doCallback('getUserTimezoneStarted', config, args);
-
-    timekit.getUserTimezone(args).then(function(response){
-
-      utils.doCallback('getUserTimezoneSuccessful', config, response);
-
-      var hostTzOffset = response.data.utc_offset;
-      var tzOffsetDiff = localTzOffset - hostTzOffset;
-      var tzOffsetDiffAbs = Math.abs(localTzOffset - hostTzOffset);
-      var tzDirection = (tzOffsetDiff > 0 ? 'ahead of' : 'behind');
-
-      var template = require('./templates/timezone-helper.html');
-      var newTimezoneHelperTarget = $(template.render({
-        timezoneIcon: timezoneIcon,
-        timezoneDifference: (tzOffsetDiffAbs === 0 ? false : true),
-        timezoneDifferent: interpolate.sprintf(config.localization.strings.timezoneHelperDifferent, tzOffsetDiffAbs, tzDirection, config.name),
-        timezoneSame: interpolate.sprintf(config.localization.strings.timezoneHelperSame, config.name)
-      }));
-
-      timezoneHelperTarget.replaceWith(newTimezoneHelperTarget);
-
-    }).catch(function(response){
-      utils.doCallback('getUserTimezoneFailed', config, response);
-      utils.logError(['An error with Timekit getUserTimezone occured', response]);
-    });
-
-  };
-
-  // Setup and render FullCalendar
-  var initializeCalendar = function() {
-
-    var sizing = decideCalendarSize(config.fullCalendar.defaultView);
-
-    var args = {
-      height: sizing.height,
-      eventClick: clickTimeslot,
-      windowResize: function() {
-        var sizing = decideCalendarSize();
-        calendarTarget.fullCalendar('changeView', sizing.view);
-        calendarTarget.fullCalendar('option', 'height', sizing.height);
-      }
-    };
-
-    $.extend(true, args, config.fullCalendar);
-    args.defaultView = sizing.view;
-
-    calendarTarget = $('<div class="bookingjs-calendar empty-calendar">');
-    rootTarget.append(calendarTarget);
-
-    calendarTarget.fullCalendar(args);
-
-    utils.doCallback('fullCalendarInitialized', config);
 
   };
 
@@ -393,6 +297,10 @@ function TimekitBooking() {
 
   };
 
+
+  // RENDERING EXTRA
+  // -----------------------
+
   // Render the avatar image
   var renderAvatarImage = function() {
 
@@ -416,6 +324,75 @@ function TimekitBooking() {
 
     rootTarget.addClass('has-displayname');
     rootTarget.append(displayNameTarget);
+
+  };
+
+  // Render the powered by Timekit message
+  var renderPoweredByMessage = function(pageTarget) {
+
+    var campaignName = 'widget'
+    var campaignSource = window.location.hostname.replace(/\./g, '-')
+    if (config.widgetId) { campaignName = 'embedded-widget'; }
+    if (config.widgetSlug) { campaignName = 'hosted-widget'; }
+
+    var template = require('./templates/poweredby.html');
+    var timekitLogo = require('!svg-inline!./assets/timekit-logo.svg');
+    var poweredTarget = $(template.render({
+      timekitLogo: timekitLogo,
+      campaignName: campaignName,
+      campaignSource: campaignSource
+    }));
+
+    pageTarget.append(poweredTarget);
+
+  };
+
+  // Calculate and display timezone helper
+  var renderTimezoneHelper = function() {
+
+    var localTzOffset = (moment().utcOffset()/60);
+    var timezoneIcon = require('!svg-inline!./assets/timezone-icon.svg');
+
+    var template = require('./templates/timezone-helper.html');
+
+    var timezoneHelperTarget = $(template.render({
+      timezoneIcon: timezoneIcon,
+      loadingText: config.localization.strings.timezoneHelperLoading,
+      loading: true
+    }));
+
+    rootTarget.addClass('has-timezonehelper');
+    rootTarget.append(timezoneHelperTarget);
+
+    var args = {
+      email: config.email
+    };
+
+    utils.doCallback('getUserTimezoneStarted', config, args);
+
+    timekit.getUserTimezone(args).then(function(response){
+
+      utils.doCallback('getUserTimezoneSuccessful', config, response);
+
+      var hostTzOffset = response.data.utc_offset;
+      var tzOffsetDiff = localTzOffset - hostTzOffset;
+      var tzOffsetDiffAbs = Math.abs(localTzOffset - hostTzOffset);
+      var tzDirection = (tzOffsetDiff > 0 ? 'ahead of' : 'behind');
+
+      var template = require('./templates/timezone-helper.html');
+      var newTimezoneHelperTarget = $(template.render({
+        timezoneIcon: timezoneIcon,
+        timezoneDifference: (tzOffsetDiffAbs === 0 ? false : true),
+        timezoneDifferent: interpolate.sprintf(config.localization.strings.timezoneHelperDifferent, tzOffsetDiffAbs, tzDirection, config.name),
+        timezoneSame: interpolate.sprintf(config.localization.strings.timezoneHelperSame, config.name)
+      }));
+
+      timezoneHelperTarget.replaceWith(newTimezoneHelperTarget);
+
+    }).catch(function(response){
+      utils.doCallback('getUserTimezoneFailed', config, response);
+      utils.logError(['An error with Timekit getUserTimezone occured', response]);
+    });
 
   };
 
@@ -482,6 +459,10 @@ function TimekitBooking() {
 
   };
 
+
+  // RENDERING BOOKING PAGE
+  // -----------------------
+
   // Event handler when a timeslot is clicked in FullCalendar
   var showBookingPage = function(eventData) {
 
@@ -520,7 +501,6 @@ function TimekitBooking() {
     if (eventData.users) {
       utils.logDebug(['Available users for chosen timeslot:', eventData.users], config);
     }
-
 
     form.find('.bookingjs-form-input').on('input', function() {
       var field = $(this).closest('.bookingjs-form-field');
@@ -646,7 +626,8 @@ function TimekitBooking() {
       }
     };
 
-    if (config.bookingFields.location.enabled) { args.event.where = formData.location; }
+    if (config.bookingFields.location.enabled) {
+      args.event.where = formData.location;}
     if (config.bookingFields.comment.enabled) {
       args.event.description += config.bookingFields.comment.placeholder + ': ' + formData.comment + '\n';
     }
@@ -708,25 +689,9 @@ function TimekitBooking() {
     return request;
   };
 
-  // Render the powered by Timekit message
-  var renderPoweredByMessage = function(pageTarget) {
 
-    var campaignName = 'widget'
-    var campaignSource = window.location.hostname.replace(/\./g, '-')
-    if (config.widgetId) { campaignName = 'embedded-widget'; }
-    if (config.widgetSlug) { campaignName = 'hosted-widget'; }
-
-    var template = require('./templates/poweredby.html');
-    var timekitLogo = require('!svg-inline!./assets/timekit-logo.svg');
-    var poweredTarget = $(template.render({
-      timekitLogo: timekitLogo,
-      campaignName: campaignName,
-      campaignSource: campaignSource
-    }));
-
-    pageTarget.append(poweredTarget);
-
-  };
+  // CONFIG
+  // -----------------------
 
   // Set config defaults
   var setConfigDefaults = function(suppliedConfig) {
@@ -794,14 +759,75 @@ function TimekitBooking() {
 
   };
 
+
+  // SETUP AND INIT
+  // -----------------------
+
+  // Make sure DOM element is ready and clean it
+  var prepareDOM = function(suppliedConfig) {
+
+    var targetElement = suppliedConfig.targetEl || config.targetEl || defaultConfig.primary.targetEl;
+
+    rootTarget = $(targetElement);
+
+    if (rootTarget.length === 0) {
+      throw triggerError('No target DOM element was found (' + targetElement + ')');
+    }
+
+    rootTarget.addClass('bookingjs');
+    rootTarget.children(':not(script)').remove();
+
+  };
+
+  // Setup the Timekit SDK with correct config
+  var timekitConfigureSDKGeneral = function() {
+
+    timekit.configure(config.timekitConfig);
+
+  };
+
+  // Setup the Timekit SDK with correct credentials
+  var timekitConfigureSDKUser = function() {
+
+    timekit.setUser(config.email, config.apiToken);
+
+  };
+
+  // Setup and render FullCalendar
+  var initializeCalendar = function() {
+
+    var sizing = decideCalendarSize(config.fullCalendar.defaultView);
+
+    var args = {
+      height: sizing.height,
+      eventClick: clickTimeslot,
+      windowResize: function() {
+        var sizing = decideCalendarSize();
+        calendarTarget.fullCalendar('changeView', sizing.view);
+        calendarTarget.fullCalendar('option', 'height', sizing.height);
+      }
+    };
+
+    $.extend(true, args, config.fullCalendar);
+    args.defaultView = sizing.view;
+
+    calendarTarget = $('<div class="bookingjs-calendar empty-calendar">');
+    rootTarget.append(calendarTarget);
+
+    calendarTarget.fullCalendar(args);
+
+    utils.doCallback('fullCalendarInitialized', config);
+
+  };
+
   // Render method
   var render = function() {
 
     utils.doCallback('renderStarted', config);
 
     // Setup Timekit SDK config
-    timekitSetupConfig();
-    timekitSetupUser();
+    timekitConfigureSDKGeneral();
+    timekitConfigureSDKUser();
 
     // Initialize FullCalendar
     initializeCalendar();
@@ -872,7 +898,7 @@ function TimekitBooking() {
   var loadRemoteConfig = function(suppliedConfig) {
 
     config = setConfigDefaults(suppliedConfig)
-    timekitSetupConfig();
+    timekitConfigureSDKGeneral();
     if (suppliedConfig.widgetId) {
       return timekit
       .getEmbedWidget({ id: suppliedConfig.widgetId })

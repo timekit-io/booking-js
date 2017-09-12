@@ -24,6 +24,7 @@ var defaultConfig = require('./defaults');
 require('./styles/fullcalendar.scss');
 require('./styles/utils.scss');
 require('./styles/main.scss');
+require('./styles/testmode-ribbon.scss');
 
 // Main library
 function TimekitBooking() {
@@ -38,6 +39,7 @@ function TimekitBooking() {
   var rootTarget;
   var calendarTarget;
   var bookingPageTarget;
+  var testmodeRibbonTarget;
   var loadingTarget;
   var errorTarget;
 
@@ -250,6 +252,20 @@ function TimekitBooking() {
 
     // Perform the scrollTo animation
     scrollable.animate({scrollTop: scrollTo});
+
+  };
+
+  // Display ribbon if in testmode
+  var renderTestmodeRibbon = function() {
+
+    var template = require('./templates/testmode-ribbon.html');
+
+    var testmodeRibbonTarget = $(template.render({
+      ribbonText: 'Test Mode',
+    }));
+
+    rootTarget.addClass('has-testmoderibbon');
+    rootTarget.append(testmodeRibbonTarget);
 
   };
 
@@ -830,6 +846,11 @@ function TimekitBooking() {
     // Print out display name
     if (config.name) {
       renderDisplayName();
+    }
+
+    // Add test mode ribbon if app is a test app
+    if (true) { // TODO: update config.testmode once we have a solution for this
+      renderTestmodeRibbon();
     }
 
     utils.doCallback('renderCompleted', config);

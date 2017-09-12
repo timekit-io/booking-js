@@ -196,7 +196,8 @@ function TimekitBooking() {
       // If in normal single-participant mode, call findtime
       timekitFindTime();
     }
-  }
+
+  };
 
   // Go to the first timeslot in a list of timeslots
   var goToFirstEvent = function(firstEventStart) {
@@ -330,6 +331,7 @@ function TimekitBooking() {
 
   // Clicking a timeslot
   var clickTimeslot = function(eventData) {
+
     if (!config.disableConfirmPage) {
       showBookingPage(eventData)
     } else {
@@ -337,7 +339,8 @@ function TimekitBooking() {
       $(this).addClass('fc-event-clicked');
       utils.doCallback('clickTimeslot', config, eventData);
     }
-  }
+
+  };
 
   // Fires when window is resized and calendar must adhere
   var decideCalendarSize = function(currentView) {
@@ -706,6 +709,7 @@ function TimekitBooking() {
     });
 
     return request;
+
   };
 
   // Render the powered by Timekit message
@@ -730,14 +734,18 @@ function TimekitBooking() {
 
   // Set config defaults
   var setConfigDefaults = function(suppliedConfig) {
+
     return $.extend(true, {}, defaultConfig.primary, suppliedConfig);
-  }
+
+  };
 
   var applyConfigPreset = function (config, propertyName, propertyObject) {
+
     var presetCheck = defaultConfig.presets[propertyName][propertyObject];
     if (presetCheck) return $.extend(true, {}, presetCheck, config);
     return config
-  }
+
+  };
 
   // Setup config
   var setConfig = function(suppliedConfig) {
@@ -884,7 +892,7 @@ function TimekitBooking() {
       throw triggerError('No widget configuration, widgetSlug or widgetId found');
     }
 
-  }
+  };
 
   var start = function(suppliedConfig) {
 
@@ -892,7 +900,7 @@ function TimekitBooking() {
     setConfig(suppliedConfig);
     return render();
 
-  }
+  };
 
   var destroy = function() {
 

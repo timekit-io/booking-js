@@ -1,176 +1,76 @@
-// https://www.bypeople.com/pure-css-green-corner-ribbon/
+.corner-ribbon .wrapper {
+  background: transparent;
+  height: 140px;
+  width: 35px;
+  position: absolute;
+  bottom: -34px;
+  right: 19px;
+  transform: rotate(45deg);
+  overflow: hidden;
+  z-index: 31;
+  -webkit-backface-visibility: hidden;
 
-/* ----- Ribbon Rotated Wrapper ---------------------------------------*/ 
-    #corner-ribbon > div > div {
-        background : transparent;
-        height     : 200px;
-        width      : 59px;
-        position   : absolute;
-        bottom     : -55px;
-        right      : 15px;
-        transform  : rotate(45deg);
-        overflow   : hidden;
-        z-index    : 31;
-
-    }
-
-/* ----- Ribbon Container ---------------------------------------*/ 
-    #corner-ribbon > div > div > div {
-        background : transparent;
-        height     : 144px;
-        width      : 141px;
-        position   : absolute;
-        left       : -63px;
-        top        : 29px;
-        overflow   : hidden;
-        transform  : rotate(45deg);
-
-    }
-
-/* ----- Top Curl ---------------------------------------*/ 
-    #corner-ribbon > div > div > div:before {
-        content               : "";
-        display               : block;
-        -webkit-border-radius : 10px 10px 0px 0px;
-        border-radius         : 10px 10px 0px 0px;
-        width                 : 50px;
-        height                : 10px;
-        position              : absolute;
-        right                 : 87px;
-
-        background: rgb(0,138,59); /* Old browsers */
-        /* IE9 SVG, needs conditional override of 'filter' to 'none' */
-        background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIxJSIgc3RvcC1jb2xvcj0iIzAwOGEzYiIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjQ1JSIgc3RvcC1jb2xvcj0iIzBmMzMwYSIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgPC9saW5lYXJHcmFkaWVudD4KICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2dyYWQtdWNnZy1nZW5lcmF0ZWQpIiAvPgo8L3N2Zz4=);
-        background: -moz-linear-gradient(left,  rgba(255,180,110,1) 1%, rgba(88,52,19,1) 45%); /* FF3.6+ */
-        background: -webkit-gradient(linear, left top, right top, color-stop(1%,rgba(255,180,110,1)), color-stop(45%,rgba(88,52,19,1))); /* Chrome,Safari4+ */
-        background: -webkit-linear-gradient(left,  rgba(255,180,110,1) 1%,rgba(88,52,19,1) 45%); /* Chrome10+,Safari5.1+ */
-        background: -o-linear-gradient(left,  rgba(255,180,110,1) 1%,rgba(88,52,19,1) 45%); /* Opera 11.10+ */
-        background: -ms-linear-gradient(left,  rgba(255,180,110,1) 1%,rgba(88,52,19,1) 45%); /* IE10+ */
-        background: linear-gradient(to right,  rgba(255,180,110,1) 1%,rgba(88,52,19,1) 45%); /* W3C */
-        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#008a3b', endColorstr='#583413',GradientType=1 ); /* IE6-8 */
-
-    }
-
-/* ----- Right Curl ---------------------------------------*/ 
-    #corner-ribbon > div > div > div:after {
-        content               : "";
-        display               : block;
-        -webkit-border-radius : 0px 10px 10px 0px;
-        border-radius         : 0px 10px 10px 0px;
-        width                 : 10px;
-        height                : 50px;
-        position              : absolute;
-        right                 : 0px;
-        top                   : 88px;
-
-        background: rgb(15,51,10); /* Old browsers */
-        /* IE9 SVG, needs conditional override of 'filter' to 'none' */
-        background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSI1NSUiIHN0b3AtY29sb3I9IiMwZjMzMGEiIHN0b3Atb3BhY2l0eT0iMSIvPgogICAgPHN0b3Agb2Zmc2V0PSI5OSUiIHN0b3AtY29sb3I9IiMwMDhhM2IiIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
-        background: -moz-linear-gradient(top,  rgba(88,52,19,1) 55%, rgba(255,180,110,1) 99%); /* FF3.6+ */
-        background: -webkit-gradient(linear, left top, left bottom, color-stop(55%,rgba(88,52,19,1)), color-stop(99%,rgba(255,180,110,1))); /* Chrome,Safari4+ */
-        background: -webkit-linear-gradient(top,  rgba(88,52,19,1) 55%,rgba(255,180,110,1) 99%); /* Chrome10+,Safari5.1+ */
-        background: -o-linear-gradient(top,  rgba(88,52,19,1) 55%,rgba(255,180,110,1) 99%); /* Opera 11.10+ */
-        background: -ms-linear-gradient(top,  rgba(88,52,19,1) 55%,rgba(255,180,110,1) 99%); /* IE10+ */
-        background: linear-gradient(to bottom,  rgba(88,52,19,1) 55%,rgba(255,180,110,1) 99%); /* W3C */
-        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#583413', endColorstr='#008a3b',GradientType=0 ); /* IE6-8 */
-
-    }
-
-/* ----- Ribbon ---------------------------------------*/ 
-    #corner-ribbon > div > div > div > div {
-        width              : 200px;
-        height             : 40px;
-        position           : relative;
-        top                : 32px;
-        right              : 9px;
-        z-index            : 1;
-        overflow           : hidden;
-        transform          :rotate(45deg);
-        -ms-transform      :rotate(45deg); /* IE 9 */
-        -moz-transform     :rotate(45deg); /* Firefox */
-        -webkit-transform  :rotate(45deg); /* Safari and Chrome */
-        -o-transform       :rotate(45deg); /* Opera */
-        box-shadow         : inset 0px 0px 0px 3px rgb(239,165,97),inset 0px 0px 0px 4px rgba(0,0,0,0.5),inset 0px 0px 0px 5px rgba(255,255,255,0.4), 0px 21px 5px -18px rgba(0,0,0,0.4); 
-        -webkit-box-shadow : inset 0px 0px 0px 3px rgb(239,165,97),inset 0px 0px 0px 4px rgba(0,0,0,0.5),inset 0px 0px 0px 5px rgba(255,255,255,0.4), 0px 21px 5px -18px rgba(0,0,0,0.4);
-                    
-        background: rgb(0,114,45); /* Old browsers */
-        /* IE9 SVG, needs conditional override of 'filter' to 'none' */
-        background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzAwNzIyZCIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjUxJSIgc3RvcC1jb2xvcj0iIzAwOGEzYiIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMwMDU2MWMiIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
-        background: -moz-linear-gradient(left,  rgba(239,165,97,1) 0%, rgba(255,180,110,1) 51%, rgba(204,136,73,1) 100%); /* FF3.6+ */
-        background: -webkit-gradient(linear, left top, right top, color-stop(0%,rgba(239,165,97,1)), color-stop(51%,rgba(255,180,110,1)), color-stop(100%,rgba(204,136,73,1))); /* Chrome,Safari4+ */
-        background: -webkit-linear-gradient(left,  rgba(239,165,97,1) 0%,rgba(255,180,110,1) 51%,rgba(204,136,73,1) 100%); /* Chrome10+,Safari5.1+ */
-        background: -o-linear-gradient(left,  rgba(239,165,97,1) 0%,rgba(255,180,110,1) 51%,rgba(204,136,73,1) 100%); /* Opera 11.10+ */
-        background: -ms-linear-gradient(left,  rgba(239,165,97,1) 0%,rgba(255,180,110,1) 51%,rgba(204,136,73,1) 100%); /* IE10+ */
-        background: linear-gradient(to right,  rgba(239,165,97,1) 0%,rgba(255,180,110,1) 51%,rgba(204,136,73,1) 100%); /* W3C */
-        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffb46e', endColorstr='#efa561',GradientType=1 ); /* IE6-8 */       
-
-    }
+  .container {
+    background : transparent;
+    height: 110px;
+    width: 110px;
+    position: absolute;
+    left: -54px;
+    top: 15px;
+    overflow: hidden;
+    transform: rotate(45deg);
     
-/* ----- Top Glare ---------------------------------------*/        
-    #corner-ribbon > div > div > div > div:before {
-        content           : "";
-        display           : block;
-        height            : 72px;
-        width             : 13px;
-        position          : relative;
-        top               : -19px;
-        left              : 27px;
-        transform         : rotate(45deg);
-        -ms-transform     : rotate(45deg);
-        -moz-transform    : rotate(45deg);
-        -webkit-transform : rotate(45deg);
-        -o-transform      : rotate(45deg);
-        
-        /* IE9 SVG, needs conditional override of 'filter' to 'none' */
-        background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIxJSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIwIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIwLjYiLz4KICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIwIi8+CiAgPC9saW5lYXJHcmFkaWVudD4KICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2dyYWQtdWNnZy1nZW5lcmF0ZWQpIiAvPgo8L3N2Zz4=);
-        background: -moz-linear-gradient(left,  rgba(255,255,255,0) 1%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0) 100%); /* FF3.6+ */
-        background: -webkit-gradient(linear, left top, right top, color-stop(1%,rgba(255,255,255,0)), color-stop(50%,rgba(255,255,255,0.6)), color-stop(100%,rgba(255,255,255,0))); /* Chrome,Safari4+ */
-        background: -webkit-linear-gradient(left,  rgba(255,255,255,0) 1%,rgba(255,255,255,0.6) 50%,rgba(255,255,255,0) 100%); /* Chrome10+,Safari5.1+ */
-        background: -o-linear-gradient(left,  rgba(255,255,255,0) 1%,rgba(255,255,255,0.6) 50%,rgba(255,255,255,0) 100%); /* Opera 11.10+ */
-        background: -ms-linear-gradient(left,  rgba(255,255,255,0) 1%,rgba(255,255,255,0.6) 50%,rgba(255,255,255,0) 100%); /* IE10+ */
-        background: linear-gradient(to right,  rgba(255,255,255,0) 1%,rgba(255,255,255,0.6) 50%,rgba(255,255,255,0) 100%); /* W3C */
-        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', endColorstr='#00ffffff',GradientType=1 ); /* IE6-8 */
-
+    &:before { /* Top Curl */ 
+      content: "";
+      display: block;
+      position: absolute;
+      right: 94px;
+      top: 0px;
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-bottom: 6px solid #b37943;
     }
 
-/* ----- Right Clear ---------------------------------------*/ 
-    #corner-ribbon > div > div > div > div:after {
-        content           : "";
-        display           : block;
-        height            : 72px;
-        width             : 13px;
-        position          : relative;
-        bottom            : 108px;
-        left              : 158px;
-        transform         : rotate(45deg);
-        -ms-transform     : rotate(45deg);
-        -moz-transform    : rotate(45deg);
-        -webkit-transform : rotate(-45deg);
-        -o-transform      : rotate(45deg);
-
-        /* IE9 SVG, needs conditional override of 'filter' to 'none' */
-        background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIxJSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIwIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIwLjYiLz4KICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIwIi8+CiAgPC9saW5lYXJHcmFkaWVudD4KICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2dyYWQtdWNnZy1nZW5lcmF0ZWQpIiAvPgo8L3N2Zz4=);
-        background: -moz-linear-gradient(left,  rgba(255,255,255,0) 1%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0) 100%); /* FF3.6+ */
-        background: -webkit-gradient(linear, left top, right top, color-stop(1%,rgba(255,255,255,0)), color-stop(50%,rgba(255,255,255,0.6)), color-stop(100%,rgba(255,255,255,0))); /* Chrome,Safari4+ */
-        background: -webkit-linear-gradient(left,  rgba(255,255,255,0) 1%,rgba(255,255,255,0.6) 50%,rgba(255,255,255,0) 100%); /* Chrome10+,Safari5.1+ */
-        background: -o-linear-gradient(left,  rgba(255,255,255,0) 1%,rgba(255,255,255,0.6) 50%,rgba(255,255,255,0) 100%); /* Opera 11.10+ */
-        background: -ms-linear-gradient(left,  rgba(255,255,255,0) 1%,rgba(255,255,255,0.6) 50%,rgba(255,255,255,0) 100%); /* IE10+ */
-        background: linear-gradient(to right,  rgba(255,255,255,0) 1%,rgba(255,255,255,0.6) 50%,rgba(255,255,255,0) 100%); /* W3C */
-        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', endColorstr='#00ffffff',GradientType=1 ); /* IE6-8 */
-
+    &:after { /*  Bottom Curl */ 
+      content: "";
+      display: block;
+      position: absolute;
+      right: 0;
+      top: 92px;
+      width: 0;
+      height: 0;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-left: 6px solid #b37943;
     }
 
-/* ----- Span text ---------------------------------------*/ 
-    #corner-ribbon > div > div > div > div > span {
-        position       : relative;
-        text-align     : center;
-        display        : block;
-        position       : relative;
-        bottom         : 58px;
-        transform      : rotate(180deg);
-        font-size      : 11px;
-        color          : #fff;
-        text-transform : uppercase;
-        font-weight    : bold;
-        
+    .ribbon {
+      width: 140px;
+      height: 21px;
+      position: relative;
+      top: 32px;
+      right: 3px;
+      z-index: 1;
+      overflow: hidden;
+      transform:rotate(45deg);
+      background: #ffb46e;
+
+      > span {
+        position: relative;
+        text-align: center;
+        display: block;
+        position: relative;
+        bottom: -6px;
+        transform: rotate(180deg);
+        font-size: 10px;
+        color: #fff;
+        text-transform: uppercase;
+        font-weight: 400;
+        letter-spacing: 1px;
+        line-height: 1;
+      }
     }
+  }
+}

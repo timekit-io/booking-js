@@ -776,168 +776,167 @@ function TimekitBooking() {
     return request;
   };
 
+  // -----------------------
+  // RENDERING EXTRA
+  // -----------------------
 
-    // -----------------------
-    // RENDERING EXTRA
-    // -----------------------
+  // Render the avatar image
+  var renderAvatarImage = function() {
 
-    // Render the avatar image
-    var renderAvatarImage = function() {
+    var template = require('./templates/user-avatar.html');
+    var avatarTarget = $(template.render({
+      image: config.avatar
+    }));
 
-      var template = require('./templates/user-avatar.html');
-      var avatarTarget = $(template.render({
-        image: config.avatar
-      }));
+    rootTarget.addClass('has-avatar');
+    rootTarget.append(avatarTarget);
 
-      rootTarget.addClass('has-avatar');
-      rootTarget.append(avatarTarget);
+  };
 
+  // Render the avatar image
+  var renderDisplayName = function() {
+
+    var template = require('./templates/user-displayname.html');
+    var displayNameTarget = $(template.render({
+      name: config.name
+    }));
+
+    rootTarget.addClass('has-displayname');
+    rootTarget.append(displayNameTarget);
+
+  };
+
+  // Render the powered by Timekit message
+  var renderPoweredByMessage = function(pageTarget) {
+
+    var campaignName = 'widget'
+    var campaignSource = window.location.hostname.replace(/\./g, '-')
+    if (config.widgetId) { campaignName = 'embedded-widget'; }
+    if (config.widgetSlug) { campaignName = 'hosted-widget'; }
+
+    var template = require('./templates/poweredby.html');
+    var timekitLogo = require('!svg-inline!./assets/timekit-logo.svg');
+    var poweredTarget = $(template.render({
+      timekitLogo: timekitLogo,
+      campaignName: campaignName,
+      campaignSource: campaignSource
+    }));
+
+    pageTarget.append(poweredTarget);
+
+  };
+
+  // Calculate and display timezone helper
+  var renderTimezoneHelper = function() {
+
+    var localTzOffset = (moment().utcOffset()/60);
+    var timezoneIcon = require('!svg-inline!./assets/timezone-icon.svg');
+
+    var template = require('./templates/timezone-helper.html');
+
+    var timezoneHelperTarget = $(template.render({
+      timezoneIcon: timezoneIcon,
+      loadingText: config.localization.strings.timezoneHelperLoading,
+      loading: true
+    }));
+
+    rootTarget.addClass('has-timezonehelper');
+    rootTarget.append(timezoneHelperTarget);
+
+    var args = {
+      email: config.email
     };
 
-    // Render the avatar image
-    var renderDisplayName = function() {
+    utils.doCallback('getUserTimezoneStarted', config, args);
 
-      var template = require('./templates/user-displayname.html');
-      var displayNameTarget = $(template.render({
-        name: config.name
-      }));
+    timekit.getUserTimezone(args).then(function(response){
 
-      rootTarget.addClass('has-displayname');
-      rootTarget.append(displayNameTarget);
+      utils.doCallback('getUserTimezoneSuccessful', config, response);
 
-    };
-
-    // Render the powered by Timekit message
-    var renderPoweredByMessage = function(pageTarget) {
-
-      var campaignName = 'widget'
-      var campaignSource = window.location.hostname.replace(/\./g, '-')
-      if (config.widgetId) { campaignName = 'embedded-widget'; }
-      if (config.widgetSlug) { campaignName = 'hosted-widget'; }
-
-      var template = require('./templates/poweredby.html');
-      var timekitLogo = require('!svg-inline!./assets/timekit-logo.svg');
-      var poweredTarget = $(template.render({
-        timekitLogo: timekitLogo,
-        campaignName: campaignName,
-        campaignSource: campaignSource
-      }));
-
-      pageTarget.append(poweredTarget);
-
-    };
-
-    // Calculate and display timezone helper
-    var renderTimezoneHelper = function() {
-
-      var localTzOffset = (moment().utcOffset()/60);
-      var timezoneIcon = require('!svg-inline!./assets/timezone-icon.svg');
+      var hostTzOffset = response.data.utc_offset;
+      var tzOffsetDiff = localTzOffset - hostTzOffset;
+      var tzOffsetDiffAbs = Math.abs(localTzOffset - hostTzOffset);
+      var tzDirection = (tzOffsetDiff > 0 ? 'ahead of' : 'behind');
 
       var template = require('./templates/timezone-helper.html');
-
-      var timezoneHelperTarget = $(template.render({
+      var newTimezoneHelperTarget = $(template.render({
         timezoneIcon: timezoneIcon,
-        loadingText: config.localization.strings.timezoneHelperLoading,
-        loading: true
+        timezoneDifference: (tzOffsetDiffAbs === 0 ? false : true),
+        timezoneDifferent: interpolate.sprintf(config.localization.strings.timezoneHelperDifferent, tzOffsetDiffAbs, tzDirection, config.name),
+        timezoneSame: interpolate.sprintf(config.localization.strings.timezoneHelperSame, config.name)
       }));
 
-      rootTarget.addClass('has-timezonehelper');
-      rootTarget.append(timezoneHelperTarget);
+      timezoneHelperTarget.replaceWith(newTimezoneHelperTarget);
 
-      var args = {
-        email: config.email
-      };
+    }).catch(function(response){
+      utils.doCallback('getUserTimezoneFailed', config, response);
+      utils.logError(['An error with Timekit getUserTimezone occured', response]);
+    });
 
-      utils.doCallback('getUserTimezoneStarted', config, args);
+  };
 
-      timekit.getUserTimezone(args).then(function(response){
+  // Show loading spinner screen
+  var showLoadingScreen = function() {
 
-        utils.doCallback('getUserTimezoneSuccessful', config, response);
+    utils.doCallback('showLoadingScreen', config);
 
-        var hostTzOffset = response.data.utc_offset;
-        var tzOffsetDiff = localTzOffset - hostTzOffset;
-        var tzOffsetDiffAbs = Math.abs(localTzOffset - hostTzOffset);
-        var tzDirection = (tzOffsetDiff > 0 ? 'ahead of' : 'behind');
+    var template = require('./templates/loading.html');
+    loadingTarget = $(template.render({
+      loadingIcon: require('!svg-inline!./assets/loading-spinner.svg')
+    }));
 
-        var template = require('./templates/timezone-helper.html');
-        var newTimezoneHelperTarget = $(template.render({
-          timezoneIcon: timezoneIcon,
-          timezoneDifference: (tzOffsetDiffAbs === 0 ? false : true),
-          timezoneDifferent: interpolate.sprintf(config.localization.strings.timezoneHelperDifferent, tzOffsetDiffAbs, tzDirection, config.name),
-          timezoneSame: interpolate.sprintf(config.localization.strings.timezoneHelperSame, config.name)
-        }));
+    rootTarget.append(loadingTarget);
 
-        timezoneHelperTarget.replaceWith(newTimezoneHelperTarget);
+  };
 
-      }).catch(function(response){
-        utils.doCallback('getUserTimezoneFailed', config, response);
-        utils.logError(['An error with Timekit getUserTimezone occured', response]);
-      });
+  // Remove the booking page DOM node
+  var hideLoadingScreen = function() {
 
-    };
+    utils.doCallback('hideLoadingScreen', config);
+    loadingTarget.removeClass('show');
 
-    // Show loading spinner screen
-    var showLoadingScreen = function() {
+    setTimeout(function(){
+      loadingTarget.remove();
+    }, 500);
 
-      utils.doCallback('showLoadingScreen', config);
+  };
 
-      var template = require('./templates/loading.html');
-      loadingTarget = $(template.render({
-        loadingIcon: require('!svg-inline!./assets/loading-spinner.svg')
-      }));
+  // Show error and warning screen
+  var triggerError = function(message) {
 
-      rootTarget.append(loadingTarget);
+    // If an error already has been thrown, exit
+    if (errorTarget) return message
 
-    };
+    utils.doCallback('errorTriggered', message);
+    utils.logError(message)
 
-    // Remove the booking page DOM node
-    var hideLoadingScreen = function() {
+    // If no target DOM element exists, only do the logging
+    if (!rootTarget) return message
 
-      utils.doCallback('hideLoadingScreen', config);
-      loadingTarget.removeClass('show');
+    var messageProcessed = message
+    var contextProcessed = null
 
-      setTimeout(function(){
-        loadingTarget.remove();
-      }, 500);
-
-    };
-
-    // Show error and warning screen
-    var triggerError = function(message) {
-
-      // If an error already has been thrown, exit
-      if (errorTarget) return message
-
-      utils.doCallback('errorTriggered', message);
-      utils.logError(message)
-
-      // If no target DOM element exists, only do the logging
-      if (!rootTarget) return message
-
-      var messageProcessed = message
-      var contextProcessed = null
-
-      if (utils.isArray(message)) {
-        messageProcessed = message[0]
-        if (message[1].data) {
-          contextProcessed = JSON.stringify(message[1].data.errors || message[1].data.error || message[1].data)
-        } else {
-          contextProcessed = JSON.stringify(message[1])
-        }
+    if (utils.isArray(message)) {
+      messageProcessed = message[0]
+      if (message[1].data) {
+        contextProcessed = JSON.stringify(message[1].data.errors || message[1].data.error || message[1].data)
+      } else {
+        contextProcessed = JSON.stringify(message[1])
       }
+    }
 
-      var template = require('./templates/error.html');
-      errorTarget = $(template.render({
-        errorWarningIcon: require('!svg-inline!./assets/error-warning-icon.svg'),
-        message: messageProcessed,
-        context: contextProcessed
-      }));
+    var template = require('./templates/error.html');
+    errorTarget = $(template.render({
+      errorWarningIcon: require('!svg-inline!./assets/error-warning-icon.svg'),
+      message: messageProcessed,
+      context: contextProcessed
+    }));
 
-      rootTarget.append(errorTarget);
+    rootTarget.append(errorTarget);
 
-      return message
+    return message
 
-    };
+  };
 
   // Expose methods
   return {

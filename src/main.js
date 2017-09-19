@@ -24,7 +24,7 @@ var defaultConfig = require('./defaults');
 require('./styles/fullcalendar.scss');
 require('./styles/utils.scss');
 require('./styles/main.scss');
-require('./styles/testmode-ribbon.scss');
+require('./styles/testribbon.scss');
 
 // Main library
 function TimekitBooking() {
@@ -39,7 +39,7 @@ function TimekitBooking() {
   var rootTarget;
   var calendarTarget;
   var bookingPageTarget;
-  var testmodeRibbonTarget;
+  var testRibbonTarget;
   var loadingTarget;
   var errorTarget;
 
@@ -95,6 +95,9 @@ function TimekitBooking() {
       // Render available timeslots in FullCalendar
       if(response.data.length > 0) renderCalendarEvents(response.data);
 
+      // Render test ribbon if enabled 
+      if (config.showTestRibbon) renderTestRibbon();
+
     }).catch(function(response){
       utils.doCallback('findTimeFailed', config, response);
       hideLoadingScreen();
@@ -130,6 +133,9 @@ function TimekitBooking() {
 
       // Render available timeslots in FullCalendar
       if(response.data.length > 0) renderCalendarEvents(response.data);
+
+      // Render test ribbon if enabled 
+      if (config.showTestRibbon) renderTestRibbon();
 
     }).catch(function(response){
       utils.doCallback('findTimeTeamFailed', config, response);
@@ -172,6 +178,9 @@ function TimekitBooking() {
 
       // Render available timeslots in FullCalendar
       if(slots.length > 0) renderCalendarEvents(slots);
+
+      // Render test ribbon if enabled 
+      if (config.showTestRibbon) renderTestRibbon();
 
     }).catch(function(response){
       utils.doCallback('getBookingSlotsFailed', config, response);
@@ -255,20 +264,6 @@ function TimekitBooking() {
 
   };
 
-  // Display ribbon if in testmode
-  var renderTestmodeRibbon = function() {
-
-    var template = require('./templates/testmode-ribbon.html');
-
-    var testmodeRibbonTarget = $(template.render({
-      ribbonText: 'Test Mode',
-    }));
-
-    rootTarget.addClass('has-testmoderibbon');
-    rootTarget.append(testmodeRibbonTarget);
-
-  };
-
   // Calculate and display timezone helper
   var renderTimezoneHelper = function() {
 
@@ -315,6 +310,20 @@ function TimekitBooking() {
       utils.doCallback('getUserTimezoneFailed', config, response);
       utils.logError(['An error with Timekit getUserTimezone occured', response]);
     });
+
+  };
+
+  // Display ribbon if in testmode
+  var renderTestRibbon = function() {
+
+    var template = require('./templates/testribbon.html');
+
+    var testRibbonTarget = $(template.render({
+      ribbonText: 'Test Mode',
+    }));
+
+    rootTarget.addClass('has-testribbon');
+    rootTarget.append(testRibbonTarget);
 
   };
 
@@ -409,6 +418,21 @@ function TimekitBooking() {
 
     // Go to first event if enabled
     if (config.goToFirstEvent) goToFirstEvent(eventData[0].start);
+
+  };
+
+  // Show test ribbon if testmode is true
+  var renderTestRibbon = function() {
+
+    // display block yo!
+    var template = require('./templates/testribbon.html');
+
+    var testRibbonTarget = $(template.render({
+      ribbonText: 'Test Mode',
+    }));
+
+    rootTarget.addClass('has-testribbon');
+    rootTarget.append(testRibbonTarget);
 
   };
 
@@ -846,11 +870,6 @@ function TimekitBooking() {
     // Print out display name
     if (config.name) {
       renderDisplayName();
-    }
-
-    // Add test mode ribbon if app is a test app
-    if (true) { // TODO: update config.testmode once we have a solution for this
-      renderTestmodeRibbon();
     }
 
     utils.doCallback('renderCompleted', config);

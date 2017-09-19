@@ -80,7 +80,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	__webpack_require__(43);
 	__webpack_require__(45);
 	__webpack_require__(47);
-	__webpack_require__(49);
+	__webpack_require__(71);
 	
 	// Main library
 	function TimekitBooking() {
@@ -95,7 +95,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var rootTarget;
 	  var calendarTarget;
 	  var bookingPageTarget;
-	  var testmodeRibbonTarget;
+	  var testRibbonTarget;
 	  var loadingTarget;
 	  var errorTarget;
 	
@@ -151,6 +151,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // Render available timeslots in FullCalendar
 	      if(response.data.length > 0) renderCalendarEvents(response.data);
 	
+	      // Render test ribbon if enabled 
+	      if (config.showTestRibbon) renderTestRibbon();
+	
 	    }).catch(function(response){
 	      utils.doCallback('findTimeFailed', config, response);
 	      hideLoadingScreen();
@@ -186,6 +189,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	      // Render available timeslots in FullCalendar
 	      if(response.data.length > 0) renderCalendarEvents(response.data);
+	
+	      // Render test ribbon if enabled 
+	      if (config.showTestRibbon) renderTestRibbon();
 	
 	    }).catch(function(response){
 	      utils.doCallback('findTimeTeamFailed', config, response);
@@ -228,6 +234,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	      // Render available timeslots in FullCalendar
 	      if(slots.length > 0) renderCalendarEvents(slots);
+	
+	      // Render test ribbon if enabled 
+	      if (config.showTestRibbon) renderTestRibbon();
 	
 	    }).catch(function(response){
 	      utils.doCallback('getBookingSlotsFailed', config, response);
@@ -311,20 +320,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  };
 	
-	  // Display ribbon if in testmode
-	  var renderTestmodeRibbon = function() {
-	
-	    var template = __webpack_require__(51);
-	
-	    var testmodeRibbonTarget = $(template.render({
-	      ribbonText: 'Test Mode',
-	    }));
-	
-	    rootTarget.addClass('has-testmoderibbon');
-	    rootTarget.append(testmodeRibbonTarget);
-	
-	  };
-	
 	  // Calculate and display timezone helper
 	  var renderTimezoneHelper = function() {
 	
@@ -371,6 +366,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	      utils.doCallback('getUserTimezoneFailed', config, response);
 	      utils.logError(['An error with Timekit getUserTimezone occured', response]);
 	    });
+	
+	  };
+	
+	  // Display ribbon if in testmode
+	  var renderTestRibbon = function() {
+	
+	    var template = __webpack_require__(70);
+	
+	    var testRibbonTarget = $(template.render({
+	      ribbonText: 'Test Mode',
+	    }));
+	
+	    rootTarget.addClass('has-testribbon');
+	    rootTarget.append(testRibbonTarget);
 	
 	  };
 	
@@ -465,6 +474,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    // Go to first event if enabled
 	    if (config.goToFirstEvent) goToFirstEvent(eventData[0].start);
+	
+	  };
+	
+	  // Show test ribbon if testmode is true
+	  var renderTestRibbon = function() {
+	
+	    // display block yo!
+	    var template = __webpack_require__(70);
+	
+	    var testRibbonTarget = $(template.render({
+	      ribbonText: 'Test Mode',
+	    }));
+	
+	    rootTarget.addClass('has-testribbon');
+	    rootTarget.append(testRibbonTarget);
 	
 	  };
 	
@@ -902,11 +926,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // Print out display name
 	    if (config.name) {
 	      renderDisplayName();
-	    }
-	
-	    // Add test mode ribbon if app is a test app
-	    if (true) { // TODO: update config.testmode once we have a solution for this
-	      renderTestmodeRibbon();
 	    }
 	
 	    utils.doCallback('renderCompleted', config);
@@ -29164,6 +29183,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  bookingGraph: 'instant',
 	  debug: false,
 	  availabilityView: 'agendaWeek',
+	  showTestRibbon: false,
 	  bookingFields: {
 	    name: {
 	      placeholder: 'Full name',
@@ -29553,53 +29573,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 49 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(50);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(39)(content, {"singleton":true});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!../../node_modules/css-loader/index.js?minimize!../../node_modules/autoprefixer-loader/index.js!../../node_modules/sass-loader/index.js!./testmode-ribbon.scss", function() {
-				var newContent = require("!!../../node_modules/css-loader/index.js?minimize!../../node_modules/autoprefixer-loader/index.js!../../node_modules/sass-loader/index.js!./testmode-ribbon.scss");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ }),
-/* 50 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(38)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, ".corner-ribbon .wrapper{height:140px;width:35px;bottom:-34px;right:19px;z-index:31;-webkit-backface-visibility:hidden}.corner-ribbon .wrapper,.corner-ribbon .wrapper .container{background:transparent;position:absolute;-webkit-transform:rotate(45deg);transform:rotate(45deg);overflow:hidden}.corner-ribbon .wrapper .container{height:110px;width:110px;left:-54px;top:15px}.corner-ribbon .wrapper .container:before{content:\"\";display:block;position:absolute;right:94px;top:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:6px solid #b37943}.corner-ribbon .wrapper .container:after{content:\"\";display:block;position:absolute;right:0;top:92px;width:0;height:0;border-top:6px solid transparent;border-bottom:6px solid transparent;border-left:6px solid #b37943}.corner-ribbon .wrapper .container .ribbon{width:140px;height:21px;position:relative;top:32px;right:3px;z-index:1;overflow:hidden;-webkit-transform:rotate(45deg);transform:rotate(45deg);background:#ffb46e}.corner-ribbon .wrapper .container .ribbon>span{text-align:center;display:block;position:relative;bottom:-6px;-webkit-transform:rotate(180deg);transform:rotate(180deg);font-size:10px;color:#fff;text-transform:uppercase;font-weight:400;letter-spacing:1px;line-height:1}", ""]);
-	
-	// exports
-
-
-/***/ }),
-/* 51 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	var H = __webpack_require__(52);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"corner-ribbon\">");t.b("\n" + i);t.b("  <div class=\"wrapper\">");t.b("\n" + i);t.b("    <div class=\"container\">");t.b("\n" + i);t.b("      <div class=\"ribbon\">");t.b("\n" + i);t.b("        <span>");t.b("\n" + i);t.b("          ");t.b(t.v(t.f("ribbonText",c,p,0)));t.b("\n" + i);t.b("        </span>");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"corner-ribbon\">\n  <div class=\"wrapper\">\n    <div class=\"container\">\n      <div class=\"ribbon\">\n        <span>\n          {{ ribbonText }}\n        </span>\n      </div>\n    </div>\n  </div>\n</div>", H);return T; }();
-
-/***/ }),
+/* 49 */,
+/* 50 */,
+/* 51 */,
 /* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -30499,6 +30475,53 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ (function(module, exports) {
 
 	module.exports = "<svg class=\"bookingjs-timekitlogo\" viewBox=\"0 0 513 548\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><title>timekit-logo</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\"><g id=\"timekit-logo\" transform=\"translate(9.000000, 9.000000)\" fill=\"#AEAEAE\"><path d=\"M55.2163313,275.621588 L198.50357,163.134257 C227.693194,140.219007 274.527519,140.836287 303.106573,164.516436 L439.222777,277.300154 L294.687237,386.088734 C265.004826,408.430003 217.635083,407.547293 188.834846,384.15411 L55.2163313,275.621588 Z M29.1450782,296.088768 L22.5453033,301.269906 C-6.64628574,324.186699 -6.96035256,361.73094 21.8567615,385.137832 L188.814783,520.750588 C217.626101,544.152772 265.020127,545.031261 294.666324,522.71725 L471.933566,389.292269 C501.58244,366.976243 502.456142,329.694313 473.870647,306.008826 L465.168534,298.798395 L304.79022,419.511467 C268.948833,446.488455 213.042282,445.460488 178.242802,417.194379 L29.1450782,296.088768 Z\" id=\"Base-layer\"></path><path d=\"M303.106573,18.9036609 L473.870647,160.396052 C502.470886,184.093754 501.573077,221.370515 471.912654,243.695235 L294.687237,377.088734 C265.004826,399.430003 217.635083,398.547293 188.834846,375.15411 L21.8366979,239.50876 C-6.94564818,216.130109 -6.64628574,178.573924 22.5453033,155.657132 L198.50357,17.5214821 C227.708304,-5.40562963 274.527519,-4.77648801 303.106573,18.9036609 Z M292.387775,31.8399435 C269.89295,13.2010897 231.857075,12.6958644 208.877526,30.7359084 L32.9192595,168.871558 C12.2117199,185.127966 12.006219,209.880161 32.4287426,226.468491 L199.426891,362.113841 C222.242635,380.64608 261.076006,381.360119 284.584254,363.666001 L461.809671,230.272501 C482.810002,214.466035 483.387128,190.098964 463.151849,173.332334 L292.387775,31.8399435 Z\" id=\"Middle-layer\" stroke=\"#AEAEAE\" stroke-width=\"18\"></path></g></g></svg>"
+
+/***/ }),
+/* 70 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	var H = __webpack_require__(52);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"corner-ribbon\">");t.b("\n" + i);t.b("  <div class=\"wrapper\">");t.b("\n" + i);t.b("    <div class=\"container\">");t.b("\n" + i);t.b("      <div class=\"ribbon\">");t.b("\n" + i);t.b("        <span>");t.b("\n" + i);t.b("          ");t.b(t.v(t.f("ribbonText",c,p,0)));t.b("\n" + i);t.b("        </span>");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"corner-ribbon\">\n  <div class=\"wrapper\">\n    <div class=\"container\">\n      <div class=\"ribbon\">\n        <span>\n          {{ ribbonText }}\n        </span>\n      </div>\n    </div>\n  </div>\n</div>", H);return T; }();
+
+/***/ }),
+/* 71 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+	
+	// load the styles
+	var content = __webpack_require__(72);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(39)(content, {"singleton":true});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!../../node_modules/css-loader/index.js?minimize!../../node_modules/autoprefixer-loader/index.js!../../node_modules/sass-loader/index.js!./testribbon.scss", function() {
+				var newContent = require("!!../../node_modules/css-loader/index.js?minimize!../../node_modules/autoprefixer-loader/index.js!../../node_modules/sass-loader/index.js!./testribbon.scss");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ }),
+/* 72 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(38)();
+	// imports
+	
+	
+	// module
+	exports.push([module.id, ".corner-ribbon .wrapper{height:140px;width:35px;bottom:-34px;right:19px;z-index:32;-webkit-backface-visibility:hidden}.corner-ribbon .wrapper,.corner-ribbon .wrapper .container{background:transparent;position:absolute;-webkit-transform:rotate(45deg);transform:rotate(45deg);overflow:hidden}.corner-ribbon .wrapper .container{height:110px;width:110px;left:-54px;top:15px}.corner-ribbon .wrapper .container:before{content:\"\";display:block;position:absolute;right:94px;top:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:6px solid #b37943}.corner-ribbon .wrapper .container:after{content:\"\";display:block;position:absolute;right:0;top:92px;width:0;height:0;border-top:6px solid transparent;border-bottom:6px solid transparent;border-left:6px solid #b37943}.corner-ribbon .wrapper .container .ribbon{width:140px;height:21px;position:relative;top:32px;right:3px;z-index:1;overflow:hidden;-webkit-transform:rotate(45deg);transform:rotate(45deg);background:#ffb46e}.corner-ribbon .wrapper .container .ribbon>span{text-align:center;display:block;position:relative;bottom:-6px;-webkit-transform:rotate(180deg);transform:rotate(180deg);font-size:10px;color:#fff;text-transform:uppercase;font-weight:400;letter-spacing:1px;line-height:1}", ""]);
+	
+	// exports
+
 
 /***/ })
 /******/ ])

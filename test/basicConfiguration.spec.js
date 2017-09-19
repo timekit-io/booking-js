@@ -94,7 +94,7 @@ describe('Basic configuration', function() {
 
   });
 
-  it('should not have test mode ribbon by default', function() {
+  it('should not have test mode ribbon by default', function(done) {
 
     var appName = 'my-test-app';
 
@@ -102,10 +102,11 @@ describe('Basic configuration', function() {
 
     expect($('.corner-ribbon')).not.toBeInDOM();
     expect($('.corner-ribbon')).not.toBeVisible();
+    done();
 
   });
 
-  it('should have test mode ribbon when set', function() {
+  it('should have test mode ribbon when set', function(done) {
 
     var appName = 'my-test-app';
     
@@ -118,6 +119,7 @@ describe('Basic configuration', function() {
 
       expect($('.corner-ribbon')).toBeInDOM();
       expect($('.corner-ribbon')).toBeVisible();
+      done();
 
     }, 200);
 

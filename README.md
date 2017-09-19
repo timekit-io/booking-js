@@ -130,6 +130,7 @@ Booking.js is made for various use-cases, so it's really extensible and customiz
   goToFirstEvent:           true, // Display and scroll to the first upcoming event in the calendar (to avoid showing a blank calendar)
   bookingGraph:             'instant', // Set which booking flow graph that should be used (also supports "confirm_decline", see below)
   availabilityView:         'agendaWeek', // Defines the timeslot view (also supports "listing" for a list view)
+  debug:                    false, // Enable debugging mode to output useful state/step data in the console
 
   // Timekit JS SDK (see below)
   timekitConfig:            { ... },

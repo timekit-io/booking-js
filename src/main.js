@@ -96,7 +96,7 @@ function TimekitBooking() {
       if(response.data.length > 0) renderCalendarEvents(response.data);
 
       // Render test ribbon if enabled 
-      if (config.showTestRibbon) renderTestRibbon();
+      if (config.showTestRibbon || response.headers['timekit-testmode']) renderTestRibbon();
 
     }).catch(function(response){
       utils.doCallback('findTimeFailed', config, response);
@@ -134,8 +134,8 @@ function TimekitBooking() {
       // Render available timeslots in FullCalendar
       if(response.data.length > 0) renderCalendarEvents(response.data);
 
-      // Render test ribbon if enabled 
-      if (config.showTestRibbon) renderTestRibbon();
+      // Render test ribbon if enabled
+      if (config.showTestRibbon || response.headers['timekit-testmode']) renderTestRibbon();
 
     }).catch(function(response){
       utils.doCallback('findTimeTeamFailed', config, response);
@@ -180,7 +180,7 @@ function TimekitBooking() {
       if(slots.length > 0) renderCalendarEvents(slots);
 
       // Render test ribbon if enabled 
-      if (config.showTestRibbon) renderTestRibbon();
+      if (config.showTestRibbon || response.headers['timekit-testmode'] || response.headers['timekit-testmode']) renderTestRibbon();
 
     }).catch(function(response){
       utils.doCallback('getBookingSlotsFailed', config, response);

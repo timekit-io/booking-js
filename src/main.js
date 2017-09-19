@@ -41,7 +41,256 @@ function TimekitBooking() {
   var loadingTarget;
   var errorTarget;
 
+  // -----------------------
+  // CONFIG
+  // -----------------------
 
+  // Set config defaults
+  var setConfigDefaults = function(suppliedConfig) {
+    return $.extend(true, {}, defaultConfig.primary, suppliedConfig);
+  }
+
+  // Apply presets if relevant and return modified config
+  var applyConfigPreset = function (config, propertyName, propertyObject) {
+    var presetCheck = defaultConfig.presets[propertyName][propertyObject];
+    if (presetCheck) return $.extend(true, {}, presetCheck, config);
+    return config
+  }
+
+  // Setup config
+  var setConfig = function(suppliedConfig) {
+
+    // Check whether a config is supplied
+    if(suppliedConfig === undefined || typeof suppliedConfig !== 'object' || $.isEmptyObject(suppliedConfig)) {
+      throw triggerError('No configuration was supplied or found. Please supply a config object upon library initialization');
+    }
+
+    // Extend the default config with supplied settings
+    var newConfig = setConfigDefaults(suppliedConfig);
+    if (suppliedConfig.app) newConfig.timekitConfig.app = suppliedConfig.app
+
+    // Apply presets
+    newConfig = applyConfigPreset(newConfig, 'timeDateFormat', newConfig.localization.timeDateFormat)
+    newConfig = applyConfigPreset(newConfig, 'bookingGraph', newConfig.bookingGraph)
+    newConfig = applyConfigPreset(newConfig, 'availabilityView', newConfig.availabilityView)
+
+    // Check for required settings
+    if (!newConfig.app && !newConfig.timekitConfig.app) {
+      throw triggerError('A required config setting ("app") was missing');
+    }
+    if (!newConfig.email) {
+      throw triggerError('A required config setting ("email") was missing');
+    }
+    if (!newConfig.apiToken) {
+      throw triggerError('A required config setting ("apiToken") was missing');
+    }
+    if (!newConfig.calendar && newConfig.bookingGraph !== 'group_customer' && newConfig.bookingGraph !== 'group_customer_payment' && !newConfig.timekitFindTimeTeam) {
+      throw triggerError('A required config setting ("calendar") was missing');
+    }
+
+    // Set new config to instance config
+    config = newConfig;
+
+    utils.logDebug(['Final config:', config], config);
+    utils.logDebug(['Version:', getVersion()], config);
+
+    return config;
+
+  };
+
+  // Get library config
+  var getConfig = function() {
+
+    return config;
+
+  };
+
+  // Get library version
+  var getVersion = function() {
+
+    return VERSION;
+
+  };
+
+  // -----------------------
+  // SETUP AND INIT
+  // -----------------------
+
+  // Make sure DOM element is ready and clean it
+  var prepareDOM = function(suppliedConfig) {
+
+    var targetElement = suppliedConfig.targetEl || config.targetEl || defaultConfig.primary.targetEl;
+
+    rootTarget = $(targetElement);
+
+    if (rootTarget.length === 0) {
+      throw triggerError('No target DOM element was found (' + targetElement + ')');
+    }
+
+    rootTarget.addClass('bookingjs');
+    rootTarget.children(':not(script)').remove();
+
+  };
+
+  // Setup the Timekit SDK with correct config
+  var configureSDKGeneral = function() {
+
+    timekit.configure(config.timekitConfig);
+
+  };
+
+  // Setup the Timekit SDK with correct credentials
+  var configureSDKUser = function() {
+
+    timekit.setUser(config.email, config.apiToken);
+
+  };
+
+  // Setup and render FullCalendar
+  var initializeCalendar = function() {
+
+    var sizing = decideCalendarSize(config.fullCalendar.defaultView);
+
+    var args = {
+      height: sizing.height,
+      eventClick: clickTimeslot,
+      windowResize: function() {
+        var sizing = decideCalendarSize();
+        calendarTarget.fullCalendar('changeView', sizing.view);
+        calendarTarget.fullCalendar('option', 'height', sizing.height);
+      }
+    };
+
+    $.extend(true, args, config.fullCalendar);
+    args.defaultView = sizing.view;
+
+    calendarTarget = $('<div class="bookingjs-calendar empty-calendar">');
+    rootTarget.append(calendarTarget);
+
+    calendarTarget.fullCalendar(args);
+
+    utils.doCallback('fullCalendarInitialized', config);
+
+  };
+
+  // Render method
+  var render = function() {
+
+    utils.doCallback('renderStarted', config);
+
+    // Setup Timekit SDK config
+    configureSDKGeneral();
+    configureSDKUser();
+
+    // Initialize FullCalendar
+    initializeCalendar();
+
+    // Get availability through Timekit SDK
+    getAvailability();
+
+    // Show timezone helper if enabled
+    if (config.localization.showTimezoneHelper) {
+      renderTimezoneHelper();
+    }
+
+    // Show image avatar if set
+    if (config.avatar) {
+      renderAvatarImage();
+    }
+
+    // Print out display name
+    if (config.name) {
+      renderDisplayName();
+    }
+
+    utils.doCallback('renderCompleted', config);
+
+    return this;
+
+  };
+
+  // Initilization method
+  var init = function(suppliedConfig) {
+
+    utils.logDebug(['Supplied config:', suppliedConfig], suppliedConfig);
+
+    try {
+
+      // Set rootTarget to the target element and clean before child nodes before continuing
+      prepareDOM(suppliedConfig || {});
+
+      // Start from local config
+      if (!suppliedConfig || (!suppliedConfig.widgetId && !suppliedConfig.widgetSlug) || suppliedConfig.disableRemoteLoad) {
+        return start(suppliedConfig)
+      }
+
+    } catch (e) {
+      return this
+    }
+
+    // Load remote config
+    loadRemoteConfig(suppliedConfig)
+    .then(function (response) {
+      // save widget ID from remote to reference it when creating bookings
+      var remoteConfig = response.data.config
+      if (response.data.id) remoteConfig.widgetId = response.data.id
+      // merge with supplied config for overwriting settings
+      var mergedConfig = $.extend(true, {}, remoteConfig, suppliedConfig);
+      utils.logDebug(['Remote config:', remoteConfig], mergedConfig);
+      start(mergedConfig)
+    })
+    .catch(function () {
+      triggerError('The widget could not be found, please double-check your widgetId/widgetSlug');
+    })
+
+    return this
+
+  };
+
+  // Load config from remote (embed or hosted)
+  var loadRemoteConfig = function(suppliedConfig) {
+
+    config = setConfigDefaults(suppliedConfig)
+    configureSDKGeneral();
+    if (suppliedConfig.widgetId) {
+      return timekit
+      .getEmbedWidget({ id: suppliedConfig.widgetId })
+    }
+    if (suppliedConfig.widgetSlug) {
+      return timekit
+      .getHostedWidget({ slug: suppliedConfig.widgetSlug })
+    } else {
+      throw triggerError('No widget configuration, widgetSlug or widgetId found');
+    }
+
+  }
+
+  // Handle config and defaults
+  var start = function(suppliedConfig) {
+
+    setConfig(suppliedConfig);
+    return render();
+
+  }
+
+  // Clean up DOM and empty config
+  var destroy = function() {
+
+    prepareDOM({});
+    config = {};
+    return this;
+
+  };
+
+  // The fullCalendar object for advanced puppeting
+  var fullCalendar = function() {
+
+    if (calendarTarget.fullCalendar === undefined) { return undefined; }
+    return calendarTarget.fullCalendar.apply(calendarTarget, arguments);
+
+  };
+
+  // -----------------------
   // AVAILABILITY
   // -----------------------
 
@@ -174,7 +423,7 @@ function TimekitBooking() {
     }
   }
 
-
+  // -----------------------
   // CALENDAR INTERACTION
   // -----------------------
 
@@ -297,170 +546,8 @@ function TimekitBooking() {
 
   };
 
-
-  // RENDERING EXTRA
   // -----------------------
-
-  // Render the avatar image
-  var renderAvatarImage = function() {
-
-    var template = require('./templates/user-avatar.html');
-    var avatarTarget = $(template.render({
-      image: config.avatar
-    }));
-
-    rootTarget.addClass('has-avatar');
-    rootTarget.append(avatarTarget);
-
-  };
-
-  // Render the avatar image
-  var renderDisplayName = function() {
-
-    var template = require('./templates/user-displayname.html');
-    var displayNameTarget = $(template.render({
-      name: config.name
-    }));
-
-    rootTarget.addClass('has-displayname');
-    rootTarget.append(displayNameTarget);
-
-  };
-
-  // Render the powered by Timekit message
-  var renderPoweredByMessage = function(pageTarget) {
-
-    var campaignName = 'widget'
-    var campaignSource = window.location.hostname.replace(/\./g, '-')
-    if (config.widgetId) { campaignName = 'embedded-widget'; }
-    if (config.widgetSlug) { campaignName = 'hosted-widget'; }
-
-    var template = require('./templates/poweredby.html');
-    var timekitLogo = require('!svg-inline!./assets/timekit-logo.svg');
-    var poweredTarget = $(template.render({
-      timekitLogo: timekitLogo,
-      campaignName: campaignName,
-      campaignSource: campaignSource
-    }));
-
-    pageTarget.append(poweredTarget);
-
-  };
-
-  // Calculate and display timezone helper
-  var renderTimezoneHelper = function() {
-
-    var localTzOffset = (moment().utcOffset()/60);
-    var timezoneIcon = require('!svg-inline!./assets/timezone-icon.svg');
-
-    var template = require('./templates/timezone-helper.html');
-
-    var timezoneHelperTarget = $(template.render({
-      timezoneIcon: timezoneIcon,
-      loadingText: config.localization.strings.timezoneHelperLoading,
-      loading: true
-    }));
-
-    rootTarget.addClass('has-timezonehelper');
-    rootTarget.append(timezoneHelperTarget);
-
-    var args = {
-      email: config.email
-    };
-
-    utils.doCallback('getUserTimezoneStarted', config, args);
-
-    timekit.getUserTimezone(args).then(function(response){
-
-      utils.doCallback('getUserTimezoneSuccessful', config, response);
-
-      var hostTzOffset = response.data.utc_offset;
-      var tzOffsetDiff = localTzOffset - hostTzOffset;
-      var tzOffsetDiffAbs = Math.abs(localTzOffset - hostTzOffset);
-      var tzDirection = (tzOffsetDiff > 0 ? 'ahead of' : 'behind');
-
-      var template = require('./templates/timezone-helper.html');
-      var newTimezoneHelperTarget = $(template.render({
-        timezoneIcon: timezoneIcon,
-        timezoneDifference: (tzOffsetDiffAbs === 0 ? false : true),
-        timezoneDifferent: interpolate.sprintf(config.localization.strings.timezoneHelperDifferent, tzOffsetDiffAbs, tzDirection, config.name),
-        timezoneSame: interpolate.sprintf(config.localization.strings.timezoneHelperSame, config.name)
-      }));
-
-      timezoneHelperTarget.replaceWith(newTimezoneHelperTarget);
-
-    }).catch(function(response){
-      utils.doCallback('getUserTimezoneFailed', config, response);
-      utils.logError(['An error with Timekit getUserTimezone occured', response]);
-    });
-
-  };
-
-  // Show loading spinner screen
-  var showLoadingScreen = function() {
-
-    utils.doCallback('showLoadingScreen', config);
-
-    var template = require('./templates/loading.html');
-    loadingTarget = $(template.render({
-      loadingIcon: require('!svg-inline!./assets/loading-spinner.svg')
-    }));
-
-    rootTarget.append(loadingTarget);
-
-  };
-
-  // Remove the booking page DOM node
-  var hideLoadingScreen = function() {
-
-    utils.doCallback('hideLoadingScreen', config);
-    loadingTarget.removeClass('show');
-
-    setTimeout(function(){
-      loadingTarget.remove();
-    }, 500);
-
-  };
-
-  // Show error and warning screen
-  var triggerError = function(message) {
-
-    // If an error already has been thrown, exit
-    if (errorTarget) return message
-
-    utils.doCallback('errorTriggered', message);
-    utils.logError(message)
-
-    // If no target DOM element exists, only do the logging
-    if (!rootTarget) return message
-
-    var messageProcessed = message
-    var contextProcessed = null
-
-    if (utils.isArray(message)) {
-      messageProcessed = message[0]
-      if (message[1].data) {
-        contextProcessed = JSON.stringify(message[1].data.errors || message[1].data.error || message[1].data)
-      } else {
-        contextProcessed = JSON.stringify(message[1])
-      }
-    }
-
-    var template = require('./templates/error.html');
-    errorTarget = $(template.render({
-      errorWarningIcon: require('!svg-inline!./assets/error-warning-icon.svg'),
-      message: messageProcessed,
-      context: contextProcessed
-    }));
-
-    rootTarget.append(errorTarget);
-
-    return message
-
-  };
-
-
-  // RENDERING BOOKING PAGE
+  // BOOKING PAGE
   // -----------------------
 
   // Event handler when a timeslot is clicked in FullCalendar
@@ -690,251 +777,167 @@ function TimekitBooking() {
   };
 
 
-  // CONFIG
-  // -----------------------
+    // -----------------------
+    // RENDERING EXTRA
+    // -----------------------
 
-  // Set config defaults
-  var setConfigDefaults = function(suppliedConfig) {
-    return $.extend(true, {}, defaultConfig.primary, suppliedConfig);
-  }
+    // Render the avatar image
+    var renderAvatarImage = function() {
 
-  var applyConfigPreset = function (config, propertyName, propertyObject) {
-    var presetCheck = defaultConfig.presets[propertyName][propertyObject];
-    if (presetCheck) return $.extend(true, {}, presetCheck, config);
-    return config
-  }
+      var template = require('./templates/user-avatar.html');
+      var avatarTarget = $(template.render({
+        image: config.avatar
+      }));
 
-  // Setup config
-  var setConfig = function(suppliedConfig) {
+      rootTarget.addClass('has-avatar');
+      rootTarget.append(avatarTarget);
 
-    // Check whether a config is supplied
-    if(suppliedConfig === undefined || typeof suppliedConfig !== 'object' || $.isEmptyObject(suppliedConfig)) {
-      throw triggerError('No configuration was supplied or found. Please supply a config object upon library initialization');
-    }
-
-    // Extend the default config with supplied settings
-    var newConfig = setConfigDefaults(suppliedConfig);
-    if (suppliedConfig.app) newConfig.timekitConfig.app = suppliedConfig.app
-
-    // Apply presets
-    newConfig = applyConfigPreset(newConfig, 'timeDateFormat', newConfig.localization.timeDateFormat)
-    newConfig = applyConfigPreset(newConfig, 'bookingGraph', newConfig.bookingGraph)
-    newConfig = applyConfigPreset(newConfig, 'availabilityView', newConfig.availabilityView)
-
-    // Check for required settings
-    if (!newConfig.app && !newConfig.timekitConfig.app) {
-      throw triggerError('A required config setting ("app") was missing');
-    }
-    if (!newConfig.email) {
-      throw triggerError('A required config setting ("email") was missing');
-    }
-    if (!newConfig.apiToken) {
-      throw triggerError('A required config setting ("apiToken") was missing');
-    }
-    if (!newConfig.calendar && newConfig.bookingGraph !== 'group_customer' && newConfig.bookingGraph !== 'group_customer_payment' && !newConfig.timekitFindTimeTeam) {
-      throw triggerError('A required config setting ("calendar") was missing');
-    }
-
-    // Set new config to instance config
-    config = newConfig;
-
-    utils.logDebug(['Final config:', config], config);
-    utils.logDebug(['Version:', getVersion()], config);
-
-    return config;
-
-  };
-
-  // Get library config
-  var getConfig = function() {
-
-    return config;
-
-  };
-
-  // Get library version
-  var getVersion = function() {
-
-    return VERSION;
-
-  };
-
-
-  // SETUP AND INIT
-  // -----------------------
-
-  // Make sure DOM element is ready and clean it
-  var prepareDOM = function(suppliedConfig) {
-
-    var targetElement = suppliedConfig.targetEl || config.targetEl || defaultConfig.primary.targetEl;
-
-    rootTarget = $(targetElement);
-
-    if (rootTarget.length === 0) {
-      throw triggerError('No target DOM element was found (' + targetElement + ')');
-    }
-
-    rootTarget.addClass('bookingjs');
-    rootTarget.children(':not(script)').remove();
-
-  };
-
-  // Setup the Timekit SDK with correct config
-  var timekitConfigureSDKGeneral = function() {
-
-    timekit.configure(config.timekitConfig);
-
-  };
-
-  // Setup the Timekit SDK with correct credentials
-  var timekitConfigureSDKUser = function() {
-
-    timekit.setUser(config.email, config.apiToken);
-
-  };
-
-  // Setup and render FullCalendar
-  var initializeCalendar = function() {
-
-    var sizing = decideCalendarSize(config.fullCalendar.defaultView);
-
-    var args = {
-      height: sizing.height,
-      eventClick: clickTimeslot,
-      windowResize: function() {
-        var sizing = decideCalendarSize();
-        calendarTarget.fullCalendar('changeView', sizing.view);
-        calendarTarget.fullCalendar('option', 'height', sizing.height);
-      }
     };
 
-    $.extend(true, args, config.fullCalendar);
-    args.defaultView = sizing.view;
+    // Render the avatar image
+    var renderDisplayName = function() {
 
-    calendarTarget = $('<div class="bookingjs-calendar empty-calendar">');
-    rootTarget.append(calendarTarget);
+      var template = require('./templates/user-displayname.html');
+      var displayNameTarget = $(template.render({
+        name: config.name
+      }));
 
-    calendarTarget.fullCalendar(args);
+      rootTarget.addClass('has-displayname');
+      rootTarget.append(displayNameTarget);
 
-    utils.doCallback('fullCalendarInitialized', config);
+    };
 
-  };
+    // Render the powered by Timekit message
+    var renderPoweredByMessage = function(pageTarget) {
 
-  // Render method
-  var render = function() {
+      var campaignName = 'widget'
+      var campaignSource = window.location.hostname.replace(/\./g, '-')
+      if (config.widgetId) { campaignName = 'embedded-widget'; }
+      if (config.widgetSlug) { campaignName = 'hosted-widget'; }
 
-    utils.doCallback('renderStarted', config);
+      var template = require('./templates/poweredby.html');
+      var timekitLogo = require('!svg-inline!./assets/timekit-logo.svg');
+      var poweredTarget = $(template.render({
+        timekitLogo: timekitLogo,
+        campaignName: campaignName,
+        campaignSource: campaignSource
+      }));
 
-    // Setup Timekit SDK config
-    timekitConfigureSDKGeneral();
-    timekitConfigureSDKUser();
+      pageTarget.append(poweredTarget);
 
-    // Initialize FullCalendar
-    initializeCalendar();
+    };
 
-    // Get availability through Timekit SDK
-    getAvailability();
+    // Calculate and display timezone helper
+    var renderTimezoneHelper = function() {
 
-    // Show timezone helper if enabled
-    if (config.localization.showTimezoneHelper) {
-      renderTimezoneHelper();
-    }
+      var localTzOffset = (moment().utcOffset()/60);
+      var timezoneIcon = require('!svg-inline!./assets/timezone-icon.svg');
 
-    // Show image avatar if set
-    if (config.avatar) {
-      renderAvatarImage();
-    }
+      var template = require('./templates/timezone-helper.html');
 
-    // Print out display name
-    if (config.name) {
-      renderDisplayName();
-    }
+      var timezoneHelperTarget = $(template.render({
+        timezoneIcon: timezoneIcon,
+        loadingText: config.localization.strings.timezoneHelperLoading,
+        loading: true
+      }));
 
-    utils.doCallback('renderCompleted', config);
+      rootTarget.addClass('has-timezonehelper');
+      rootTarget.append(timezoneHelperTarget);
 
-    return this;
+      var args = {
+        email: config.email
+      };
 
-  };
+      utils.doCallback('getUserTimezoneStarted', config, args);
 
-  // Initilization method
-  var init = function(suppliedConfig) {
+      timekit.getUserTimezone(args).then(function(response){
 
-    utils.logDebug(['Supplied config:', suppliedConfig], suppliedConfig);
+        utils.doCallback('getUserTimezoneSuccessful', config, response);
 
-    try {
+        var hostTzOffset = response.data.utc_offset;
+        var tzOffsetDiff = localTzOffset - hostTzOffset;
+        var tzOffsetDiffAbs = Math.abs(localTzOffset - hostTzOffset);
+        var tzDirection = (tzOffsetDiff > 0 ? 'ahead of' : 'behind');
 
-      // Set rootTarget to the target element and clean before child nodes before continuing
-      prepareDOM(suppliedConfig || {});
+        var template = require('./templates/timezone-helper.html');
+        var newTimezoneHelperTarget = $(template.render({
+          timezoneIcon: timezoneIcon,
+          timezoneDifference: (tzOffsetDiffAbs === 0 ? false : true),
+          timezoneDifferent: interpolate.sprintf(config.localization.strings.timezoneHelperDifferent, tzOffsetDiffAbs, tzDirection, config.name),
+          timezoneSame: interpolate.sprintf(config.localization.strings.timezoneHelperSame, config.name)
+        }));
 
-      // Start from local config
-      if (!suppliedConfig || (!suppliedConfig.widgetId && !suppliedConfig.widgetSlug) || suppliedConfig.disableRemoteLoad) {
-        return start(suppliedConfig)
+        timezoneHelperTarget.replaceWith(newTimezoneHelperTarget);
+
+      }).catch(function(response){
+        utils.doCallback('getUserTimezoneFailed', config, response);
+        utils.logError(['An error with Timekit getUserTimezone occured', response]);
+      });
+
+    };
+
+    // Show loading spinner screen
+    var showLoadingScreen = function() {
+
+      utils.doCallback('showLoadingScreen', config);
+
+      var template = require('./templates/loading.html');
+      loadingTarget = $(template.render({
+        loadingIcon: require('!svg-inline!./assets/loading-spinner.svg')
+      }));
+
+      rootTarget.append(loadingTarget);
+
+    };
+
+    // Remove the booking page DOM node
+    var hideLoadingScreen = function() {
+
+      utils.doCallback('hideLoadingScreen', config);
+      loadingTarget.removeClass('show');
+
+      setTimeout(function(){
+        loadingTarget.remove();
+      }, 500);
+
+    };
+
+    // Show error and warning screen
+    var triggerError = function(message) {
+
+      // If an error already has been thrown, exit
+      if (errorTarget) return message
+
+      utils.doCallback('errorTriggered', message);
+      utils.logError(message)
+
+      // If no target DOM element exists, only do the logging
+      if (!rootTarget) return message
+
+      var messageProcessed = message
+      var contextProcessed = null
+
+      if (utils.isArray(message)) {
+        messageProcessed = message[0]
+        if (message[1].data) {
+          contextProcessed = JSON.stringify(message[1].data.errors || message[1].data.error || message[1].data)
+        } else {
+          contextProcessed = JSON.stringify(message[1])
+        }
       }
 
-    } catch (e) {
-      return this
-    }
+      var template = require('./templates/error.html');
+      errorTarget = $(template.render({
+        errorWarningIcon: require('!svg-inline!./assets/error-warning-icon.svg'),
+        message: messageProcessed,
+        context: contextProcessed
+      }));
 
-    // Load remote config
-    loadRemoteConfig(suppliedConfig)
-    .then(function (response) {
-      // save widget ID from remote to reference it when creating bookings
-      var remoteConfig = response.data.config
-      if (response.data.id) remoteConfig.widgetId = response.data.id
-      // merge with supplied config for overwriting settings
-      var mergedConfig = $.extend(true, {}, remoteConfig, suppliedConfig);
-      utils.logDebug(['Remote config:', remoteConfig], mergedConfig);
-      start(mergedConfig)
-    })
-    .catch(function () {
-      triggerError('The widget could not be found, please double-check your widgetId/widgetSlug');
-    })
+      rootTarget.append(errorTarget);
 
-    return this
+      return message
 
-  };
-
-  // Load config from remote (embed or hosted)
-  var loadRemoteConfig = function(suppliedConfig) {
-
-    config = setConfigDefaults(suppliedConfig)
-    timekitConfigureSDKGeneral();
-    if (suppliedConfig.widgetId) {
-      return timekit
-      .getEmbedWidget({ id: suppliedConfig.widgetId })
-    }
-    if (suppliedConfig.widgetSlug) {
-      return timekit
-      .getHostedWidget({ slug: suppliedConfig.widgetSlug })
-    } else {
-      throw triggerError('No widget configuration, widgetSlug or widgetId found');
-    }
-
-  }
-
-  var start = function(suppliedConfig) {
-
-    // Handle config and defaults
-    setConfig(suppliedConfig);
-    return render();
-
-  }
-
-  var destroy = function() {
-
-    prepareDOM({});
-    config = {};
-    return this;
-
-  };
-
-  // The fullCalendar object for advanced puppeting
-  var fullCalendar = function() {
-
-    if (calendarTarget.fullCalendar === undefined) { return undefined; }
-    return calendarTarget.fullCalendar.apply(calendarTarget, arguments);
-
-  };
+    };
 
   // Expose methods
   return {

@@ -180,7 +180,7 @@ function TimekitBooking() {
       if(slots.length > 0) renderCalendarEvents(slots);
 
       // Render test ribbon if enabled 
-      if (config.showTestRibbon || response.headers['timekit-testmode'] || response.headers['timekit-testmode']) renderTestRibbon();
+      if (config.showTestRibbon || response.headers['timekit-testmode']) renderTestRibbon();
 
     }).catch(function(response){
       utils.doCallback('getBookingSlotsFailed', config, response);
@@ -418,21 +418,6 @@ function TimekitBooking() {
 
     // Go to first event if enabled
     if (config.goToFirstEvent) goToFirstEvent(eventData[0].start);
-
-  };
-
-  // Show test ribbon if testmode is true
-  var renderTestRibbon = function() {
-
-    // display block yo!
-    var template = require('./templates/testribbon.html');
-
-    var testRibbonTarget = $(template.render({
-      ribbonText: 'Test Mode',
-    }));
-
-    rootTarget.addClass('has-testribbon');
-    rootTarget.append(testRibbonTarget);
 
   };
 

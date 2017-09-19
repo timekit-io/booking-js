@@ -94,4 +94,33 @@ describe('Basic configuration', function() {
 
   });
 
+  it('should not have test mode ribbon by default', function() {
+
+    var appName = 'my-test-app';
+
+    createWidget();
+
+    expect($('.corner-ribbon')).not.toBeInDOM();
+    expect($('.corner-ribbon')).not.toBeVisible();
+
+  });
+
+  it('should have test mode ribbon when set', function() {
+
+    var appName = 'my-test-app';
+    
+    var config = {
+      showTestRibbon: true
+    }
+    createWidget(config);
+
+    setTimeout(function() {
+
+      expect($('.corner-ribbon')).toBeInDOM();
+      expect($('.corner-ribbon')).toBeVisible();
+
+    }, 200);
+
+  });
+
 });

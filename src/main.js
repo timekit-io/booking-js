@@ -156,13 +156,19 @@ function TimekitBooking() {
     .makeRequest(requestData)
     .then(function(response){
 
-      var slots = response.data.map(function (item) {
+      var slots = response.data.map(function(item) {
         return {
           title: item.attributes.event_info.what,
           start: item.attributes.event_info.start,
           end: item.attributes.event_info.end,
           booking: item
         }
+      })
+
+      // Make sure to sort the slots chronologically,
+      // otherwise FullCalendar might skip rendering some of them
+      slots.sort(function(a, b) {
+        return moment(a.start).isAfter(b.start)
       })
 
       utils.doCallback('getBookingSlotsSuccessful', config, response);

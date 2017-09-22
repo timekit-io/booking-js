@@ -17,7 +17,6 @@ var primary = {
   bookingGraph: 'instant',
   debug: false,
   availabilityView: 'agendaWeek',
-  showTestRibbon: false,
   bookingFields: {
     name: {
       placeholder: 'Full name',

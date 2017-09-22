@@ -96,8 +96,6 @@ describe('Basic configuration', function() {
 
   it('should not have test mode ribbon by default', function(done) {
 
-    var appName = 'my-test-app';
-
     createWidget();
 
     expect($('.corner-ribbon')).not.toBeInDOM();
@@ -107,8 +105,6 @@ describe('Basic configuration', function() {
   });
 
   it('should have test mode ribbon when set', function(done) {
-
-    var appName = 'my-test-app';
     
     var config = {
       showTestRibbon: true

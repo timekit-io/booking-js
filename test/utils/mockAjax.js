@@ -39,7 +39,7 @@ module.exports = {
       statusText: 'HTTP/1.1 200 OK',
       contentType: 'application/json',
       responseHeaders: {
-        "timekit-testmode": 'true'
+        "Timekit-TestMode": 'true'
       },
       responseText: '{"data":[' +
         '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '"},' +

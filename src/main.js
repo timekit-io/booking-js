@@ -24,7 +24,7 @@ var defaultConfig = require('./defaults');
 require('./styles/fullcalendar.scss');
 require('./styles/utils.scss');
 require('./styles/main.scss');
-require('./styles/testribbon.scss');
+require('./styles/testmoderibbon.scss');
 
 // Main library
 function TimekitBooking() {
@@ -39,7 +39,7 @@ function TimekitBooking() {
   var rootTarget;
   var calendarTarget;
   var bookingPageTarget;
-  var testRibbonTarget;
+  var testModeRibbonTarget;
   var loadingTarget;
   var errorTarget;
 
@@ -96,7 +96,7 @@ function TimekitBooking() {
       if(response.data.length > 0) renderCalendarEvents(response.data);
 
       // Render test ribbon if enabled 
-      if (response.headers['timekit-testmode']) renderTestRibbon();
+      if (response.headers['timekit-testmode']) renderTestModeRibbon();
 
     }).catch(function(response){
       utils.doCallback('findTimeFailed', config, response);
@@ -135,7 +135,7 @@ function TimekitBooking() {
       if(response.data.length > 0) renderCalendarEvents(response.data);
 
       // Render test ribbon if enabled
-      if (response.headers['timekit-testmode']) renderTestRibbon();
+      if (response.headers['timekit-testmode']) renderTestModeRibbon();
 
     }).catch(function(response){
       utils.doCallback('findTimeTeamFailed', config, response);
@@ -180,7 +180,7 @@ function TimekitBooking() {
       if(slots.length > 0) renderCalendarEvents(slots);
 
       // Render test ribbon if enabled 
-      if (response.headers['timekit-testmode']) renderTestRibbon();
+      if (response.headers['timekit-testmode']) renderTestModeRibbon();
 
     }).catch(function(response){
       utils.doCallback('getBookingSlotsFailed', config, response);
@@ -314,16 +314,15 @@ function TimekitBooking() {
   };
 
   // Display ribbon if in testmode
-  var renderTestRibbon = function() {
+  var renderTestModeRibbon = function() {
 
-    var template = require('./templates/testribbon.html');
+    var template = require('./templates/testmoderibbon.html');
 
-    var testRibbonTarget = $(template.render({
+    var testModeRibbonTarget = $(template.render({
       ribbonText: 'Test Mode',
     }));
 
-    rootTarget.addClass('has-testribbon');
-    rootTarget.append(testRibbonTarget);
+    rootTarget.append(testModeRibbonTarget);
 
   };
 

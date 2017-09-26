@@ -95,7 +95,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var rootTarget;
 	  var calendarTarget;
 	  var bookingPageTarget;
-	  var testRibbonTarget;
+	  var testModeRibbonTarget;
 	  var loadingTarget;
 	  var errorTarget;
 	
@@ -152,7 +152,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if(response.data.length > 0) renderCalendarEvents(response.data);
 	
 	      // Render test ribbon if enabled 
-	      if (response.headers['timekit-testmode']) renderTestRibbon();
+	      if (response.headers['timekit-testmode']) renderTestModeRibbon();
 	
 	    }).catch(function(response){
 	      utils.doCallback('findTimeFailed', config, response);
@@ -191,7 +191,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if(response.data.length > 0) renderCalendarEvents(response.data);
 	
 	      // Render test ribbon if enabled
-	      if (response.headers['timekit-testmode']) renderTestRibbon();
+	      if (response.headers['timekit-testmode']) renderTestModeRibbon();
 	
 	    }).catch(function(response){
 	      utils.doCallback('findTimeTeamFailed', config, response);
@@ -236,7 +236,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if(slots.length > 0) renderCalendarEvents(slots);
 	
 	      // Render test ribbon if enabled 
-	      if (response.headers['timekit-testmode']) renderTestRibbon();
+	      if (response.headers['timekit-testmode']) renderTestModeRibbon();
 	
 	    }).catch(function(response){
 	      utils.doCallback('getBookingSlotsFailed', config, response);
@@ -370,16 +370,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 	
 	  // Display ribbon if in testmode
-	  var renderTestRibbon = function() {
+	  var renderTestModeRibbon = function() {
 	
 	    var template = __webpack_require__(56);
 	
-	    var testRibbonTarget = $(template.render({
+	    var testModeRibbonTarget = $(template.render({
 	      ribbonText: 'Test Mode',
 	    }));
 	
-	    rootTarget.addClass('has-testribbon');
-	    rootTarget.append(testRibbonTarget);
+	    rootTarget.append(testModeRibbonTarget);
 	
 	  };
 	
@@ -29572,8 +29571,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!../../node_modules/css-loader/index.js?minimize!../../node_modules/autoprefixer-loader/index.js!../../node_modules/sass-loader/index.js!./testribbon.scss", function() {
-				var newContent = require("!!../../node_modules/css-loader/index.js?minimize!../../node_modules/autoprefixer-loader/index.js!../../node_modules/sass-loader/index.js!./testribbon.scss");
+			module.hot.accept("!!../../node_modules/css-loader/index.js?minimize!../../node_modules/autoprefixer-loader/index.js!../../node_modules/sass-loader/index.js!./testmoderibbon.scss", function() {
+				var newContent = require("!!../../node_modules/css-loader/index.js?minimize!../../node_modules/autoprefixer-loader/index.js!../../node_modules/sass-loader/index.js!./testmoderibbon.scss");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -29591,7 +29590,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 	// module
-	exports.push([module.id, ".corner-ribbon .ribbon-wrapper{height:140px;width:35px;bottom:-34px;right:19px;z-index:32;-webkit-backface-visibility:hidden}.corner-ribbon .ribbon-wrapper,.corner-ribbon .ribbon-wrapper .ribbon-container{background:transparent;position:absolute;-webkit-transform:rotate(45deg);transform:rotate(45deg);overflow:hidden}.corner-ribbon .ribbon-wrapper .ribbon-container{height:110px;width:110px;left:-54px;top:15px}.corner-ribbon .ribbon-wrapper .ribbon-container:before{content:\"\";display:block;position:absolute;right:94px;top:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:6px solid #b37943}.corner-ribbon .ribbon-wrapper .ribbon-container:after{content:\"\";display:block;position:absolute;right:0;top:92px;width:0;height:0;border-top:6px solid transparent;border-bottom:6px solid transparent;border-left:6px solid #b37943}.corner-ribbon .ribbon-wrapper .ribbon-container .ribbon{width:140px;height:21px;position:relative;top:32px;right:3px;z-index:1;overflow:hidden;-webkit-transform:rotate(45deg);transform:rotate(45deg);background:#ffb46e}.corner-ribbon .ribbon-wrapper .ribbon-container .ribbon>span{text-align:center;display:block;position:relative;bottom:-6px;-webkit-transform:rotate(180deg);transform:rotate(180deg);font-size:10px;color:#fff;text-transform:uppercase;font-weight:400;letter-spacing:1px;line-height:1}", ""]);
+	exports.push([module.id, ".ribbon-wrapper{height:140px;width:35px;bottom:-34px;right:19px;z-index:32;-webkit-backface-visibility:hidden}.ribbon-wrapper,.ribbon-wrapper .ribbon-container{background:transparent;position:absolute;-webkit-transform:rotate(45deg);transform:rotate(45deg);overflow:hidden}.ribbon-wrapper .ribbon-container{height:110px;width:110px;left:-54px;top:15px}.ribbon-wrapper .ribbon-container:before{content:\"\";display:block;position:absolute;right:94px;top:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:6px solid #b37943}.ribbon-wrapper .ribbon-container:after{content:\"\";display:block;position:absolute;right:0;top:92px;width:0;height:0;border-top:6px solid transparent;border-bottom:6px solid transparent;border-left:6px solid #b37943}.ribbon-wrapper .ribbon-container .ribbon{width:140px;height:21px;position:relative;top:32px;right:3px;z-index:1;overflow:hidden;-webkit-transform:rotate(45deg);transform:rotate(45deg);background:#ffb46e}.ribbon-wrapper .ribbon-container .ribbon>span{text-align:center;display:block;position:relative;bottom:-6px;-webkit-transform:rotate(180deg);transform:rotate(180deg);font-size:10px;color:#fff;text-transform:uppercase;font-weight:400;letter-spacing:1px;line-height:1}", ""]);
 	
 	// exports
 
@@ -30417,7 +30416,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ (function(module, exports, __webpack_require__) {
 
 	var H = __webpack_require__(53);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"corner-ribbon\">");t.b("\n" + i);t.b("  <div class=\"ribbon-wrapper\">");t.b("\n" + i);t.b("    <div class=\"ribbon-container\">");t.b("\n" + i);t.b("      <div class=\"ribbon\">");t.b("\n" + i);t.b("        <span>");t.b("\n" + i);t.b("          ");t.b(t.v(t.f("ribbonText",c,p,0)));t.b("\n" + i);t.b("        </span>");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"corner-ribbon\">\n  <div class=\"ribbon-wrapper\">\n    <div class=\"ribbon-container\">\n      <div class=\"ribbon\">\n        <span>\n          {{ ribbonText }}\n        </span>\n      </div>\n    </div>\n  </div>\n</div>\n", H);return T; }();
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"ribbon-wrapper\">");t.b("\n" + i);t.b("<div class=\"ribbon-container\">");t.b("\n" + i);t.b("  <div class=\"ribbon\">");t.b("\n" + i);t.b("    <span>");t.b("\n" + i);t.b("      ");t.b(t.v(t.f("ribbonText",c,p,0)));t.b("\n" + i);t.b("    </span>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n" + i);t.b("</div>");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"ribbon-wrapper\">\n<div class=\"ribbon-container\">\n  <div class=\"ribbon\">\n    <span>\n      {{ ribbonText }}\n    </span>\n  </div>\n</div>\n</div>", H);return T; }();
 
 /***/ }),
 /* 57 */

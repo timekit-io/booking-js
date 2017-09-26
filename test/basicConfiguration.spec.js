@@ -98,8 +98,8 @@ describe('Basic configuration', function() {
 
     createWidget();
 
-    expect($('.corner-ribbon')).not.toBeInDOM();
-    expect($('.corner-ribbon')).not.toBeVisible();
+    expect($('.ribbon-wrapper')).not.toBeInDOM();
+    expect($('.ribbon-wrapper')).not.toBeVisible();
     done();
 
   });
@@ -113,8 +113,8 @@ describe('Basic configuration', function() {
 
     setTimeout(function() {
 
-      expect($('.corner-ribbon')).toBeInDOM();
-      expect($('.corner-ribbon')).toBeVisible();
+      expect($('.ribbon-wrapper')).toBeInDOM();
+      expect($('.ribbon-wrapper')).toBeVisible();
       done();
 
     }, 200);

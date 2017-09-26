@@ -30415,7 +30415,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ (function(module, exports, __webpack_require__) {
 
 	var H = __webpack_require__(53);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"ribbon-wrapper\">");t.b("\n" + i);t.b("<div class=\"ribbon-container\">");t.b("\n" + i);t.b("  <div class=\"ribbon\">");t.b("\n" + i);t.b("    <span>");t.b("\n" + i);t.b("      ");t.b(t.v(t.f("ribbonText",c,p,0)));t.b("\n" + i);t.b("    </span>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n" + i);t.b("</div>");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"ribbon-wrapper\">\n<div class=\"ribbon-container\">\n  <div class=\"ribbon\">\n    <span>\n      {{ ribbonText }}\n    </span>\n  </div>\n</div>\n</div>", H);return T; }();
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"ribbon-wrapper\">");t.b("\n" + i);t.b("  <div class=\"ribbon-container\">");t.b("\n" + i);t.b("    <div class=\"ribbon\">");t.b("\n" + i);t.b("      <span>");t.b("\n" + i);t.b("        ");t.b(t.v(t.f("ribbonText",c,p,0)));t.b("\n" + i);t.b("      </span>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"ribbon-wrapper\">\n  <div class=\"ribbon-container\">\n    <div class=\"ribbon\">\n      <span>\n        {{ ribbonText }}\n      </span>\n    </div>\n  </div>\n</div>\n", H);return T; }();
 
 /***/ }),
 /* 57 */

@@ -106,10 +106,9 @@ describe('Basic configuration', function() {
 
   it('should have test mode ribbon when set', function(done) {
     
-    var config = {
-      showTestRibbon: true
-    }
-    createWidget(config);
+    mockAjax.findTimeOnTestModeApp();
+
+    createWidget();
 
     setTimeout(function() {
 

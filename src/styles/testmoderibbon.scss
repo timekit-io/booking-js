@@ -4,7 +4,7 @@
 
 // Test Mode Ribbon
 
-.ribbon-wrapper {
+.bookingjs-ribbon-wrapper {
   background: transparent;
   height: 140px;
   width: 35px;
@@ -16,7 +16,7 @@
   z-index: 32;
   -webkit-backface-visibility: hidden;
 
-  .ribbon-container {
+  .bookingjs-ribbon-container {
     background : transparent;
     height: 110px;
     width: 110px;
@@ -52,7 +52,7 @@
       border-left: 6px solid $ribbonDarkColor;
     }
 
-    .ribbon {
+    .bookingjs-ribbon {
       width: 140px;
       height: 21px;
       position: relative;

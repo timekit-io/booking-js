@@ -98,8 +98,8 @@ describe('Basic configuration', function() {
 
     createWidget();
 
-    expect($('.ribbon-wrapper')).not.toBeInDOM();
-    expect($('.ribbon-wrapper')).not.toBeVisible();
+    expect($('.bookingjs-ribbon-wrapper')).not.toBeInDOM();
+    expect($('.bookingjs-ribbon-wrapper')).not.toBeVisible();
     done();
 
   });
@@ -112,8 +112,8 @@ describe('Basic configuration', function() {
 
     setTimeout(function() {
 
-      expect($('.ribbon-wrapper')).toBeInDOM();
-      expect($('.ribbon-wrapper')).toBeVisible();
+      expect($('.bookingjs-ribbon-wrapper')).toBeInDOM();
+      expect($('.bookingjs-ribbon-wrapper')).toBeVisible();
       done();
 
     }, 200);

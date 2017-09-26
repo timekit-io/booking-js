@@ -39,7 +39,6 @@ function TimekitBooking() {
   var rootTarget;
   var calendarTarget;
   var bookingPageTarget;
-  var testModeRibbonTarget;
   var loadingTarget;
   var errorTarget;
 

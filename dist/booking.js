@@ -95,7 +95,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var rootTarget;
 	  var calendarTarget;
 	  var bookingPageTarget;
-	  var testModeRibbonTarget;
 	  var loadingTarget;
 	  var errorTarget;
 	

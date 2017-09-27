@@ -26,6 +26,31 @@ module.exports = {
 
   },
 
+  // Find time endpoint with testmode: true
+  findTimeOnTestModeApp: function() {
+
+    var today = moment();
+    var tomorrow = moment().add(1, 'day');
+
+    jasmine.Ajax.stubRequest(
+      'https://api.timekit.io/v2/findtime'
+    ).andReturn({
+      status: 200,
+      statusText: 'HTTP/1.1 200 OK',
+      contentType: 'application/json',
+      responseHeaders: {
+        "Timekit-TestMode": 'true'
+      },
+      responseText: '{"data":[' +
+        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '"},' +
+        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '"},' +
+        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '"},' +
+        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '"}' +
+      ']}'
+    });
+
+  },
+
   // Find time endpoint with results long into the future
   findTimeWithDateInFuture: function() {
 

@@ -6,18 +6,7 @@
 
 // Imports
 
-@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600');
-
-// Colors
-
-$bgColor:           #FBFBFB;
-$borderColor:       #ececec;
-$textColor:         #333;
-$textLightColor:    #AEAEAE;
-$primaryColor:      #2e5bec;
-$primaryDarkColor:  darken($primaryColor, 10%);
-$errorColor:        #D83B46;
-$fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
+@import 'variables';
 
 // Classes
 

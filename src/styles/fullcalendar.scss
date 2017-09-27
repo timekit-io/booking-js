@@ -1,11 +1,4 @@
-// Colors
-
-$textColor:       #333;
-$bgColor:         #FBFBFB;
-$borderColor:     #ececec;
-$subtleColor:     darken($borderColor, 25%);
-$primaryColor:    #2e5bec;
-$primaryDarkColor: darken($primaryColor, 10%);
+@import 'variables';
 
 // Classes
 

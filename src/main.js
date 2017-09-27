@@ -24,6 +24,7 @@ var defaultConfig = require('./defaults');
 require('./styles/fullcalendar.scss');
 require('./styles/utils.scss');
 require('./styles/main.scss');
+require('./styles/testmoderibbon.scss');
 
 // Main library
 function TimekitBooking() {
@@ -93,6 +94,9 @@ function TimekitBooking() {
       // Render available timeslots in FullCalendar
       if(response.data.length > 0) renderCalendarEvents(response.data);
 
+      // Render test ribbon if enabled 
+      if (response.headers['timekit-testmode']) renderTestModeRibbon();
+
     }).catch(function(response){
       utils.doCallback('findTimeFailed', config, response);
       hideLoadingScreen();
@@ -128,6 +132,9 @@ function TimekitBooking() {
 
       // Render available timeslots in FullCalendar
       if(response.data.length > 0) renderCalendarEvents(response.data);
+
+      // Render test ribbon if enabled
+      if (response.headers['timekit-testmode']) renderTestModeRibbon();
 
     }).catch(function(response){
       utils.doCallback('findTimeTeamFailed', config, response);
@@ -177,6 +184,9 @@ function TimekitBooking() {
       // Render available timeslots in FullCalendar
       if(slots.length > 0) renderCalendarEvents(slots);
 
+      // Render test ribbon if enabled 
+      if (response.headers['timekit-testmode']) renderTestModeRibbon();
+
     }).catch(function(response){
       utils.doCallback('getBookingSlotsFailed', config, response);
       hideLoadingScreen();
@@ -202,7 +212,8 @@ function TimekitBooking() {
       // If in normal single-participant mode, call findtime
       timekitFindTime();
     }
-  }
+
+  };
 
   // Go to the first timeslot in a list of timeslots
   var goToFirstEvent = function(firstEventStart) {
@@ -307,6 +318,19 @@ function TimekitBooking() {
 
   };
 
+  // Display ribbon if in testmode
+  var renderTestModeRibbon = function() {
+
+    var template = require('./templates/testmoderibbon.html');
+
+    var testModeRibbonTarget = $(template.render({
+      ribbonText: 'Test Mode',
+    }));
+
+    rootTarget.append(testModeRibbonTarget);
+
+  };
+
   // Setup and render FullCalendar
   var initializeCalendar = function() {
 
@@ -336,6 +360,7 @@ function TimekitBooking() {
 
   // Clicking a timeslot
   var clickTimeslot = function(eventData) {
+
     if (!config.disableConfirmPage) {
       showBookingPage(eventData)
     } else {
@@ -343,7 +368,8 @@ function TimekitBooking() {
       $(this).addClass('fc-event-clicked');
       utils.doCallback('clickTimeslot', config, eventData);
     }
-  }
+
+  };
 
   // Fires when window is resized and calendar must adhere
   var decideCalendarSize = function(currentView) {
@@ -712,6 +738,7 @@ function TimekitBooking() {
     });
 
     return request;
+
   };
 
   // Render the powered by Timekit message
@@ -736,14 +763,18 @@ function TimekitBooking() {
 
   // Set config defaults
   var setConfigDefaults = function(suppliedConfig) {
+
     return $.extend(true, {}, defaultConfig.primary, suppliedConfig);
-  }
+
+  };
 
   var applyConfigPreset = function (config, propertyName, propertyObject) {
+
     var presetCheck = defaultConfig.presets[propertyName][propertyObject];
     if (presetCheck) return $.extend(true, {}, presetCheck, config);
     return config
-  }
+
+  };
 
   // Setup config
   var setConfig = function(suppliedConfig) {
@@ -890,7 +921,7 @@ function TimekitBooking() {
       throw triggerError('No widget configuration, widgetSlug or widgetId found');
     }
 
-  }
+  };
 
   var start = function(suppliedConfig) {
 
@@ -898,7 +929,7 @@ function TimekitBooking() {
     setConfig(suppliedConfig);
     return render();
 
-  }
+  };
 
   var destroy = function() {
 

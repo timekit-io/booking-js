@@ -94,4 +94,30 @@ describe('Basic configuration', function() {
 
   });
 
+  it('should not have test mode ribbon by default', function(done) {
+
+    createWidget();
+
+    expect($('.bookingjs-ribbon-wrapper')).not.toBeInDOM();
+    expect($('.bookingjs-ribbon-wrapper')).not.toBeVisible();
+    done();
+
+  });
+
+  it('should have test mode ribbon when set', function(done) {
+    
+    mockAjax.findTimeOnTestModeApp();
+
+    createWidget();
+
+    setTimeout(function() {
+
+      expect($('.bookingjs-ribbon-wrapper')).toBeInDOM();
+      expect($('.bookingjs-ribbon-wrapper')).toBeVisible();
+      done();
+
+    }, 200);
+
+  });
+
 });

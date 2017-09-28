@@ -121,7 +121,7 @@ var bookingInstantPayment = {
 
   timekitCreateBooking: {
     graph: 'instant_payment',
-    action: 'tentative',
+    action: 'create',
     event: {
       invite: true,
       my_rsvp: 'accepted',

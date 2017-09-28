@@ -883,7 +883,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Get library version
 	  var getVersion = function() {
 	
-	    return ("1.20.0");
+	    return ("1.21.0");
 	
 	  };
 	
@@ -29276,7 +29276,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  timekitCreateBooking: {
 	    graph: 'instant_payment',
-	    action: 'tentative',
+	    action: 'create',
 	    event: {
 	      invite: true,
 	      my_rsvp: 'accepted',

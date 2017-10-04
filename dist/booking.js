@@ -581,11 +581,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var dateFormat = config.localization.bookingDateFormat || moment.localeData().longDateFormat('LL');
 	    var timeFormat = config.localization.bookingTimeFormat || moment.localeData().longDateFormat('LT');
 	
+	    var allocatedResource = eventData.resources ? eventData.resources[0].name : false;
+	
 	    bookingPageTarget = $(template.render({
 	      chosenDate:               moment(eventData.start).format(dateFormat),
 	      chosenTime:               moment(eventData.start).format(timeFormat) + ' - ' + moment(eventData.end).format(timeFormat),
 	      allocatedResourcePrefix:  config.localization.strings.allocatedResourcePrefix,
-	      allocatedResource:        eventData.resources[0].name,
+	      allocatedResource:        allocatedResource,
 	      closeIcon:                __webpack_require__(65),
 	      checkmarkIcon:            __webpack_require__(66),
 	      loadingIcon:              __webpack_require__(60),

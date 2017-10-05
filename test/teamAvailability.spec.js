@@ -53,7 +53,7 @@ describe('Team availability', function() {
   it('should show bookable resource name', function(done) {
 
     mockAjax.findTimeTeam();
-    // createWidget();
+
     createWidget(teamAvailabilityConfig);
 
     setTimeout(function() {
@@ -62,7 +62,9 @@ describe('Team availability', function() {
 
       setTimeout(function() {
 
-        expect($('.bookingjs-bookpage-resource')).toBeVisible();
+        var resourceHeader = $('.bookingjs-bookpage-resource').html();
+        var contains = resourceHeader.indexOf('Marty McFly') > -1;
+        expect(contains).toBe(true);
 
         done();
 

@@ -85,6 +85,7 @@ var primary = {
     showTimezoneHelper: true,
     timeDateFormat: '12h-mdy-sun',
     strings: {
+      allocatedResourcePrefix: 'with',
       submitText: 'Book it',
       successMessageTitle: 'Thanks!',
       timezoneHelperLoading: 'Loading..',

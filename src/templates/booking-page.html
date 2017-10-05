@@ -1,7 +1,13 @@
 <div class="bookingjs-bookpage">
   <a class="bookingjs-bookpage-close" href="#">{{& closeIcon }}</a>
-  <h2 class="bookingjs-bookpage-date">{{ chosenDate }}</h2>
-  <h3 class="bookingjs-bookpage-time">{{ chosenTime }}</h3>
+  <div class="bookingjs-bookpage-header">
+    <h2 class="bookingjs-bookpage-date">{{ chosenDate }}</h2>
+    <h3 class="bookingjs-bookpage-time">{{ chosenTime }}</h3>
+    {{#allocatedResource}}
+      <span class="bookingjs-bookpage-resource-prefix">{{ allocatedResourcePrefix }}</span>
+      <h3 class="bookingjs-bookpage-resource">{{ allocatedResource }}</h3>
+    {{/allocatedResource}}
+  </div>
   <form class="bookingjs-form" action="#">
     <div class="bookingjs-form-box">
       <div class="bookingjs-form-success-message">

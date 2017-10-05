@@ -130,6 +130,7 @@
     opacity: 0;
     transition: opacity 0.2s ease;
     border-radius: 4px;
+    text-align: center;
 
     &.show {
       opacity: 1;
@@ -148,31 +149,68 @@
       }
     }
 
+    &-header {
+      min-height: 110px; // so we have margin even without resource name
+    }
+
     &-date,
     h2 {
       text-align: center;
       font-size: 34px;
       font-weight: 400;
-      margin-top: 70px;
+      margin-top: 50px;
       margin-bottom: 10px;
 
       .is-small & {
         font-size: 27px;
-        margin-top: 60px;
       }
     }
 
     &-time,
+    &-resource,
     h3 {
       text-align: center;
       font-size: 17px;
       font-weight: 400;
-      margin-bottom: 50px;
+      margin-bottom: 15px;
       margin-top: 10px;
 
       .is-small & {
         font-size: 15px;
-        margin-bottom: 35px;
+        margin-bottom: 15px;
+      }
+    }
+
+    &-resource-prefix {
+      text-align: center;
+      font-size: 10px;
+      font-weight: 300;
+      display: inline-block;
+      position: relative;
+      &:before {
+        content: "";
+        display: block;
+        width: 40px;
+        height: 0;
+        border-top: 1px solid $borderColor;
+        position: absolute;
+        left: -45px;
+        top: 7px;
+      }
+      &:after {
+        content: "";
+        display: block;
+        width: 40px;
+        height: 0;
+        border-top: 1px solid $borderColor;
+        position: absolute;
+        right: -45px;
+        top: 7px;
+      }
+
+      .is-small & {
+        // font-size: 15px;
+        // margin-bottom: 35px;
       }
     }
   }

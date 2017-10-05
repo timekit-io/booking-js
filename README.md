@@ -286,6 +286,7 @@ See `/examples/local-strings.htm`
 ```javascript
 localization: {
   strings: { // Customize string used in the widget, defaults are shown below
+    allocatedResourcePrefix: 'with',
     submitText: 'Book it',
     successMessageTitle: 'Thanks!',
     successMessageBody: 'An invitation has been sent to: <br /> %s <br /><br /> Please accept the invitation to confirm the booking.',

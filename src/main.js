@@ -525,17 +525,21 @@ function TimekitBooking() {
     var dateFormat = config.localization.bookingDateFormat || moment.localeData().longDateFormat('LL');
     var timeFormat = config.localization.bookingTimeFormat || moment.localeData().longDateFormat('LT');
 
+    var allocatedResource = eventData.users ? eventData.users[0].name : false;
+
     bookingPageTarget = $(template.render({
-      chosenDate:           moment(eventData.start).format(dateFormat),
-      chosenTime:           moment(eventData.start).format(timeFormat) + ' - ' + moment(eventData.end).format(timeFormat),
-      closeIcon:            require('!svg-inline!./assets/close-icon.svg'),
-      checkmarkIcon:        require('!svg-inline!./assets/checkmark-icon.svg'),
-      loadingIcon:          require('!svg-inline!./assets/loading-spinner.svg'),
-      errorIcon:            require('!svg-inline!./assets/error-icon.svg'),
-      submitText:           config.localization.strings.submitText,
-      successMessageTitle:  config.localization.strings.successMessageTitle,
-      successMessageBody:   interpolate.sprintf(config.localization.strings.successMessageBody, '<span class="booked-email"></span>'),
-      fields:               config.bookingFields
+      chosenDate:               moment(eventData.start).format(dateFormat),
+      chosenTime:               moment(eventData.start).format(timeFormat) + ' - ' + moment(eventData.end).format(timeFormat),
+      allocatedResourcePrefix:  config.localization.strings.allocatedResourcePrefix,
+      allocatedResource:        allocatedResource,
+      closeIcon:                require('!svg-inline!./assets/close-icon.svg'),
+      checkmarkIcon:            require('!svg-inline!./assets/checkmark-icon.svg'),
+      loadingIcon:              require('!svg-inline!./assets/loading-spinner.svg'),
+      errorIcon:                require('!svg-inline!./assets/error-icon.svg'),
+      submitText:               config.localization.strings.submitText,
+      successMessageTitle:      config.localization.strings.successMessageTitle,
+      successMessageBody:       interpolate.sprintf(config.localization.strings.successMessageBody, '<span class="booked-email"></span>'),
+      fields:                   config.bookingFields
     }, {
       formFields: fieldsTemplate
     }));

@@ -50,4 +50,25 @@ describe('Team availability', function() {
 
   });
 
+  it('should show bookable resource name', function(done) {
+
+    mockAjax.findTimeTeam();
+    // createWidget();
+    createWidget(teamAvailabilityConfig);
+
+    setTimeout(function() {
+
+      interact.clickEvent();
+
+      setTimeout(function() {
+
+        expect($('.bookingjs-bookpage-resource')).toBeVisible();
+
+        done();
+
+      }, 500);
+    }, 500);
+
+  });
+
 });

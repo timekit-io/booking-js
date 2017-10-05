@@ -581,7 +581,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var dateFormat = config.localization.bookingDateFormat || moment.localeData().longDateFormat('LL');
 	    var timeFormat = config.localization.bookingTimeFormat || moment.localeData().longDateFormat('LT');
 	
-	    var allocatedResource = eventData.resources ? eventData.resources[0].name : false;
+	    var allocatedResource = eventData.users ? eventData.users[0].name : false;
 	
 	    bookingPageTarget = $(template.render({
 	      chosenDate:               moment(eventData.start).format(dateFormat),

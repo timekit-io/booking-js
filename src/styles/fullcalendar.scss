@@ -284,12 +284,15 @@
   font-size: 1.1em;
 }
 
+.fc-unthemed .fc-list-item:hover td {
+  background-color: transparent;
+}
+
 .fc-list-item {
   display: block;
   transition: color .2s ease, border-color .2s ease, opacity .6s ease, box-shadow .2s ease;
   border: none;
   border-left: 2px solid darken($borderColor, 35%);
-  padding: 3px;
   background-color: #fff;
   border-radius: 3px;
   color: #333;

@@ -436,7 +436,7 @@
     &.success &-button,
     &.success &-button:hover {
       max-width: 80px;
-      background-color: #5BAF56;
+      background-color: $successColor;
       cursor: pointer;
 
       .inactive-text { opacity: 0; }

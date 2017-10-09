@@ -289,7 +289,6 @@
   transition: color .2s ease, border-color .2s ease, opacity .6s ease, box-shadow .2s ease;
   border: none;
   border-left: 2px solid darken($borderColor, 35%);
-  padding: 3px;
   background-color: #fff;
   border-radius: 3px;
   color: #333;
@@ -305,7 +304,7 @@
     border-left: 3px solid $primaryColor;
     color: $primaryColor;
     font-weight: 600;
-    padding-left: 2px;
+    overflow-x: hidden;
   }
 
   td {
@@ -313,11 +312,13 @@
     border-color: transparent;
     transform: translateX(0);
     transition: transform .2s ease;
+    padding: 11px 14px;
   }
 
   &:hover td {
     background: transparent;
     transform: translateX(2px);
+    border-color: $borderColor;
   }
 
   .fc-list-item-marker {
@@ -329,8 +330,13 @@
     min-width: 110px;
   }
 
-  .fc-list-item-title a {
-    font-weight: 600;
+  .fc-list-item-title {
+    white-space: nowrap;
+    width: 100%;
+    
+    &a {
+      font-weight: 600;
+    }
   }
 }
 

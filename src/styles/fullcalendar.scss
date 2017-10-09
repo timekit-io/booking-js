@@ -284,6 +284,10 @@
   font-size: 1.1em;
 }
 
+.fc-unthemed .fc-list-item:hover td {
+  background-color: transparent;
+}
+
 .fc-list-item {
   display: block;
   transition: color .2s ease, border-color .2s ease, opacity .6s ease, box-shadow .2s ease;
@@ -304,7 +308,7 @@
     border-left: 3px solid $primaryColor;
     color: $primaryColor;
     font-weight: 600;
-    overflow-x: hidden;
+    padding-left: 2px;
   }
 
   td {
@@ -312,13 +316,11 @@
     border-color: transparent;
     transform: translateX(0);
     transition: transform .2s ease;
-    padding: 11px 14px;
   }
 
   &:hover td {
-    background: transparent;
+    background-color: transparent;
     transform: translateX(2px);
-    border-color: $borderColor;
   }
 
   .fc-list-item-marker {
@@ -330,13 +332,8 @@
     min-width: 110px;
   }
 
-  .fc-list-item-title {
-    white-space: nowrap;
-    width: 100%;
-    
-    &a {
-      font-weight: 600;
-    }
+  .fc-list-item-title a {
+    font-weight: 600;
   }
 }
 

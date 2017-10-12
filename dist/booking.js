@@ -888,7 +888,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Get library version
 	  var getVersion = function() {
 	
-	    return ("1.22.1");
+	    return ("1.22.2");
 	
 	  };
 	

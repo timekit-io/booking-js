@@ -740,6 +740,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    if (config.bookingFields.location.enabled) { args.event.where = formData.location; }
 	    if (config.bookingFields.comment.enabled) {
+	      args.customer.comment = formData.comment;
 	      args.event.description += config.bookingFields.comment.placeholder + ': ' + formData.comment + '\n';
 	    }
 	    if (config.bookingFields.phone.enabled) {

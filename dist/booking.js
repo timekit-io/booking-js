@@ -738,7 +738,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    };
 	
-	    if (config.bookingFields.location.enabled) { args.event.where = formData.location; }
+	    if (config.bookingFields.location.enabled) {
+	      args.customer.where = formData.location;
+	      args.event.where = formData.location;
+	    }
 	    if (config.bookingFields.comment.enabled) {
 	      args.customer.comment = formData.comment;
 	      args.event.description += config.bookingFields.comment.placeholder + ': ' + formData.comment + '\n';
@@ -888,7 +891,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Get library version
 	  var getVersion = function() {
 	
-	    return ("1.22.2");
+	    return ("1.22.3");
 	
 	  };
 	

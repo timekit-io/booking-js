@@ -682,7 +682,10 @@ function TimekitBooking() {
       }
     };
 
-    if (config.bookingFields.location.enabled) { args.event.where = formData.location; }
+    if (config.bookingFields.location.enabled) {
+      args.customer.where = formData.where;
+      args.event.where = formData.location;
+    }
     if (config.bookingFields.comment.enabled) {
       args.customer.comment = formData.comment;
       args.event.description += config.bookingFields.comment.placeholder + ': ' + formData.comment + '\n';

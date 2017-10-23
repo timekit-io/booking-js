@@ -231,7 +231,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // Make sure to sort the slots chronologically,
 	      // otherwise FullCalendar might skip rendering some of them
 	      slots.sort(function(a, b) {
-	        return moment(a.start).isAfter(b.start)
+	        return moment(a.start) - moment(b.start);
 	      })
 	
 	      utils.doCallback('getBookingSlotsSuccessful', config, response);

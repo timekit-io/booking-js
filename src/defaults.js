@@ -61,7 +61,11 @@ var primary = {
     future: '4 weeks',
     length: '1 hour'
   },
-  timekitConfig: {},
+  timekitConfig: {
+    headers: {
+      'Timekit-Context': 'widget'
+    }
+  },
   timekitCreateBooking: { },
   timekitUpdateBooking: { },
   fullCalendar: {

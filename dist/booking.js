@@ -1293,6 +1293,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var axios = __webpack_require__(9);
 	var base64 = __webpack_require__(28);
 	var humps = __webpack_require__(30);
+	var merge = __webpack_require__(70);
 	
 	function Timekit() {
 	
@@ -1304,6 +1305,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var userToken;
 	  var includes = [];
 	  var headers = {};
+	  var nextPayload = {};
 	
 	  /**
 	   * Default config
@@ -1346,6 +1348,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	
 	  /**
+	   * Add the carried payload for next request to the actual payload
+	   * @type {Function}
+	   * @return {String}
+	   */
+	  var mergeNextPayload = function (args) {
+	    if (Object.keys(nextPayload).length === 0) return args
+	    // Merge potential query string params manually
+	    if (nextPayload.params && args.params) {
+	      var nextParams = nextPayload.params
+	      for (var param in nextParams) {
+	        if (typeof args.params[param] !== 'undefined') {
+	          args.params[param] += (';' + nextParams[param])
+	        }
+	      }
+	    }
+	    args = merge(nextPayload, args)
+	    nextPayload = {};
+	    return args
+	  }
+	
+	  /**
 	   * Root Object that holds methods to expose for API consumption
 	   * @type {Object}
 	   */
@@ -1358,12 +1381,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	   */
 	  TK.makeRequest = function(args) {
 	
+	    // Handle chained payload data if applicable
+	    args = mergeNextPayload(args)
+	
 	    // construct URL with base, version and endpoint
 	    args.url = buildUrl(args.url);
 	
 	    // add http headers if applicable
 	    args.headers = args.headers || headers || {};
 	
+	    if (config.headers) {
+	      args.headers = merge(config.headers, args.headers)
+	    }
 	    if (!args.headers['Timekit-App'] && config.app) {
 	      args.headers['Timekit-App'] = config.app;
 	    }
@@ -1496,7 +1525,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * @return {Object}
 	   */
 	  TK.headers = function(data) {
-	    for (var attr in data) { headers[attr] = data[attr]; }
+	    headers = merge(headers, data)
+	    return this;
+	  };
+	
+	  /**
+	   * Add supplied payload to the next request only
+	   * @type {Function}
+	   * @return {Object}
+	   */
+	  TK.carry = function(data) {
+	    nextPayload = merge(nextPayload, data)
 	    return this;
 	  };
 	
@@ -29224,7 +29263,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    future: '4 weeks',
 	    length: '1 hour'
 	  },
-	  timekitConfig: {},
+	  timekitConfig: {
+	    headers: {
+	      'Timekit-Context': 'widget'
+	    }
+	  },
 	  timekitCreateBooking: { },
 	  timekitUpdateBooking: { },
 	  fullCalendar: {
@@ -30516,6 +30559,109 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ (function(module, exports) {
 
 	module.exports = "<svg class=\"bookingjs-timekitlogo\" viewBox=\"0 0 513 548\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><title>timekit-logo</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\"><g id=\"timekit-logo\" transform=\"translate(9.000000, 9.000000)\" fill=\"#AEAEAE\"><path d=\"M55.2163313,275.621588 L198.50357,163.134257 C227.693194,140.219007 274.527519,140.836287 303.106573,164.516436 L439.222777,277.300154 L294.687237,386.088734 C265.004826,408.430003 217.635083,407.547293 188.834846,384.15411 L55.2163313,275.621588 Z M29.1450782,296.088768 L22.5453033,301.269906 C-6.64628574,324.186699 -6.96035256,361.73094 21.8567615,385.137832 L188.814783,520.750588 C217.626101,544.152772 265.020127,545.031261 294.666324,522.71725 L471.933566,389.292269 C501.58244,366.976243 502.456142,329.694313 473.870647,306.008826 L465.168534,298.798395 L304.79022,419.511467 C268.948833,446.488455 213.042282,445.460488 178.242802,417.194379 L29.1450782,296.088768 Z\" id=\"Base-layer\"></path><path d=\"M303.106573,18.9036609 L473.870647,160.396052 C502.470886,184.093754 501.573077,221.370515 471.912654,243.695235 L294.687237,377.088734 C265.004826,399.430003 217.635083,398.547293 188.834846,375.15411 L21.8366979,239.50876 C-6.94564818,216.130109 -6.64628574,178.573924 22.5453033,155.657132 L198.50357,17.5214821 C227.708304,-5.40562963 274.527519,-4.77648801 303.106573,18.9036609 Z M292.387775,31.8399435 C269.89295,13.2010897 231.857075,12.6958644 208.877526,30.7359084 L32.9192595,168.871558 C12.2117199,185.127966 12.006219,209.880161 32.4287426,226.468491 L199.426891,362.113841 C222.242635,380.64608 261.076006,381.360119 284.584254,363.666001 L461.809671,230.272501 C482.810002,214.466035 483.387128,190.098964 463.151849,173.332334 L292.387775,31.8399435 Z\" id=\"Middle-layer\" stroke=\"#AEAEAE\" stroke-width=\"18\"></path></g></g></svg>"
+
+/***/ }),
+/* 70 */
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	var isMergeableObject = function isMergeableObject(value) {
+		return isNonNullObject(value)
+			&& !isSpecial(value)
+	};
+	
+	function isNonNullObject(value) {
+		return !!value && typeof value === 'object'
+	}
+	
+	function isSpecial(value) {
+		var stringValue = Object.prototype.toString.call(value);
+	
+		return stringValue === '[object RegExp]'
+			|| stringValue === '[object Date]'
+			|| isReactElement(value)
+	}
+	
+	// see https://github.com/facebook/react/blob/b5ac963fb791d1298e7f396236383bc955f916c1/src/isomorphic/classic/element/ReactElement.js#L21-L25
+	var canUseSymbol = typeof Symbol === 'function' && Symbol.for;
+	var REACT_ELEMENT_TYPE = canUseSymbol ? Symbol.for('react.element') : 0xeac7;
+	
+	function isReactElement(value) {
+		return value.$$typeof === REACT_ELEMENT_TYPE
+	}
+	
+	function emptyTarget(val) {
+	    return Array.isArray(val) ? [] : {}
+	}
+	
+	function cloneIfNecessary(value, optionsArgument) {
+	    var clone = optionsArgument && optionsArgument.clone === true;
+	    return (clone && isMergeableObject(value)) ? deepmerge(emptyTarget(value), value, optionsArgument) : value
+	}
+	
+	function defaultArrayMerge(target, source, optionsArgument) {
+	    var destination = target.slice();
+	    source.forEach(function(e, i) {
+	        if (typeof destination[i] === 'undefined') {
+	            destination[i] = cloneIfNecessary(e, optionsArgument);
+	        } else if (isMergeableObject(e)) {
+	            destination[i] = deepmerge(target[i], e, optionsArgument);
+	        } else if (target.indexOf(e) === -1) {
+	            destination.push(cloneIfNecessary(e, optionsArgument));
+	        }
+	    });
+	    return destination
+	}
+	
+	function mergeObject(target, source, optionsArgument) {
+	    var destination = {};
+	    if (isMergeableObject(target)) {
+	        Object.keys(target).forEach(function(key) {
+	            destination[key] = cloneIfNecessary(target[key], optionsArgument);
+	        });
+	    }
+	    Object.keys(source).forEach(function(key) {
+	        if (!isMergeableObject(source[key]) || !target[key]) {
+	            destination[key] = cloneIfNecessary(source[key], optionsArgument);
+	        } else {
+	            destination[key] = deepmerge(target[key], source[key], optionsArgument);
+	        }
+	    });
+	    return destination
+	}
+	
+	function deepmerge(target, source, optionsArgument) {
+	    var sourceIsArray = Array.isArray(source);
+	    var targetIsArray = Array.isArray(target);
+	    var options = optionsArgument || { arrayMerge: defaultArrayMerge };
+	    var sourceAndTargetTypesMatch = sourceIsArray === targetIsArray;
+	
+	    if (!sourceAndTargetTypesMatch) {
+	        return cloneIfNecessary(source, optionsArgument)
+	    } else if (sourceIsArray) {
+	        var arrayMerge = options.arrayMerge || defaultArrayMerge;
+	        return arrayMerge(target, source, optionsArgument)
+	    } else {
+	        return mergeObject(target, source, optionsArgument)
+	    }
+	}
+	
+	deepmerge.all = function deepmergeAll(array, optionsArgument) {
+	    if (!Array.isArray(array) || array.length < 2) {
+	        throw new Error('first argument should be an array with at least two elements')
+	    }
+	
+	    // we are sure there are at least 2 values, so it is safe to have no initial value
+	    return array.reduce(function(prev, next) {
+	        return deepmerge(prev, next, optionsArgument)
+	    })
+	};
+	
+	var deepmerge_1 = deepmerge;
+	
+	module.exports = deepmerge_1;
+
 
 /***/ })
 /******/ ])

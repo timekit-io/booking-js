@@ -1055,6 +1055,10 @@ deep-extend@~0.4.0:
   version "0.4.2"
   resolved "https://registry.yarnpkg.com/deep-extend/-/deep-extend-0.4.2.tgz#48b699c27e334bf89f10892be432f6e4c7d34a7f"
 
+deepmerge@^1.5.2:
+  version "1.5.2"
+  resolved "https://registry.yarnpkg.com/deepmerge/-/deepmerge-1.5.2.tgz#10499d868844cdad4fee0842df8c7f6f0c95a753"
+
 define-properties@^1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/define-properties/-/define-properties-1.1.2.tgz#83a73f2fea569898fb737193c8f873caf6d45c94"
@@ -4191,12 +4195,13 @@ time-stamp@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/time-stamp/-/time-stamp-2.0.0.tgz#95c6a44530e15ba8d6f4a3ecb8c3a3fac46da357"
 
-timekit-sdk@^1.10.1:
-  version "1.10.1"
-  resolved "https://registry.yarnpkg.com/timekit-sdk/-/timekit-sdk-1.10.1.tgz#a5b714578191bed703f4a13251cea12977b8d349"
+timekit-sdk@^1.12.0:
+  version "1.12.0"
+  resolved "https://registry.yarnpkg.com/timekit-sdk/-/timekit-sdk-1.12.0.tgz#581749307eac6695fe5b98b404268b9d033ecae7"
   dependencies:
     axios "^0.12.0"
     base-64 "^0.1.0"
+    deepmerge "^1.5.2"
     es6-promise-promise "^1.0.0"
     humps "^0.7.0"
 

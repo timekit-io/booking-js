@@ -27,7 +27,7 @@
     "moment": "^2.10.6",
     "moment-timezone": "^0.5.13",
     "sprintf-js": "^1.0.3",
-    "timekit-sdk": "^1.10.1"
+    "timekit-sdk": "^1.12.0"
   },
   "devDependencies": {
     "autoprefixer-loader": "^3.1.0",

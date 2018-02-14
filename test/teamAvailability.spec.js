@@ -50,4 +50,27 @@ describe('Team availability', function() {
 
   });
 
+  it('should show bookable resource name', function(done) {
+
+    mockAjax.findTimeTeam();
+
+    createWidget(teamAvailabilityConfig);
+
+    setTimeout(function() {
+
+      interact.clickEvent();
+
+      setTimeout(function() {
+
+        var resourceHeader = $('.bookingjs-bookpage-resource').html();
+        var contains = resourceHeader.indexOf('Marty McFly') > -1;
+        expect(contains).toBe(true);
+
+        done();
+
+      }, 500);
+    }, 500);
+
+  });
+
 });

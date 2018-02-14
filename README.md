@@ -70,10 +70,7 @@ The simplest and most universally compatible usage is with autoload. This will d
     window.timekitBookingConfig = {
       app:      'back-to-the-future',
       email:    'marty.mcfly@timekit.io',
-      apiToken: 'bNpbFHRmrfZbtS5nEtCVl8sY5vUkOFCL',
-      calendar: '8687f058-5b52-4fa4-885c-9294e52ab7d4',
-      name:     'Marty McFly',
-      avatar:   '../misc/avatar-mcfly.png'
+      apiToken: 'bNpbFHRmrfZbtS5nEtCVl8sY5vUkOFCL'
     };
   </script>
 </div>
@@ -91,8 +88,7 @@ If you intent to run multiple instances or want more control over initialization
     widget.init({
       app:      'back-to-the-future',
       email:    'marty.mcfly@timekit.io',
-      apiToken: 'bNpbFHRmrfZbtS5nEtCVl8sY5vUkOFCL',
-      calendar: '8687f058-5b52-4fa4-885c-9294e52ab7d4'
+      apiToken: 'bNpbFHRmrfZbtS5nEtCVl8sY5vUkOFCL'
     });
   </script>
 </div>
@@ -120,12 +116,12 @@ Booking.js is made for various use-cases, so it's really extensible and customiz
   app:                      '',   // Your Timekit registered app slug
   email:                    '',   // Your Timekit user's email (used for auth)
   apiToken:                 '',   // Your Timekit user's apiToken (as generated through the wizard)
-  calendar:                 '',   // Your Timekit calendar ID that bookings should end up in
 
   // Optional
-  targetEl:                 '#bookingjs', // Which element should we the library load into
   name:                     '',   // Display name to show in the header and timezone helper
   avatar:                   '',   // Provide an image URL for a circular image avatar
+  calendar:                 '',   // Your Timekit calendar ID that bookings should end up in (defaults to primary calendar)
+  targetEl:                 '#bookingjs', // Which element should we the library load into
   autoload:                 true, // Auto initialization if config object is found on window var
   goToFirstEvent:           true, // Display and scroll to the first upcoming event in the calendar (to avoid showing a blank calendar)
   bookingGraph:             'instant', // Set which booking flow graph that should be used (also supports "confirm_decline", see below)
@@ -207,7 +203,7 @@ timekitCreateBooking: {
     start:        data.start,      // Inserted dynamically from the chosen timeslot
     end:          data.end,        // Inserted dynamically from the chosen timeslot
     what:         config.name + ' x '+ data.name, // Inserted dynamically based on the host and visitors names (you can replace it with a static string)
-    calendar_id:  config.calendar, // Inserted dynamically from the "calendar" setting in the general config
+    calendar_id:  config.calendar, // Inserted dynamically from the "calendar" setting in the general config if present
     participants: [config.email, data.email], // Inserted dynamically based on host and visitors ()
     description:  data.comment || '' // Inserted dynamically based on the visitor's supplied comment (if field is enabled)
   },
@@ -287,6 +283,7 @@ See `/examples/local-strings.htm`
 ```javascript
 localization: {
   strings: { // Customize string used in the widget, defaults are shown below
+    allocatedResourcePrefix: 'with',
     submitText: 'Book it',
     successMessageTitle: 'Thanks!',
     successMessageBody: 'An invitation has been sent to: <br /> %s <br /><br /> Please accept the invitation to confirm the booking.',

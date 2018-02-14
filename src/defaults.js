@@ -61,7 +61,11 @@ var primary = {
     future: '4 weeks',
     length: '1 hour'
   },
-  timekitConfig: {},
+  timekitConfig: {
+    headers: {
+      'Timekit-Context': 'widget'
+    }
+  },
   timekitCreateBooking: { },
   timekitUpdateBooking: { },
   fullCalendar: {
@@ -85,6 +89,7 @@ var primary = {
     showTimezoneHelper: true,
     timeDateFormat: '12h-mdy-sun',
     strings: {
+      allocatedResourcePrefix: 'with',
       submitText: 'Book it',
       successMessageTitle: 'Thanks!',
       timezoneHelperLoading: 'Loading..',
@@ -121,7 +126,7 @@ var bookingInstantPayment = {
 
   timekitCreateBooking: {
     graph: 'instant_payment',
-    action: 'tentative',
+    action: 'create',
     event: {
       invite: true,
       my_rsvp: 'accepted',

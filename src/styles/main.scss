@@ -6,18 +6,7 @@
 
 // Imports
 
-@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600');
-
-// Colors
-
-$bgColor:           #FBFBFB;
-$borderColor:       #ececec;
-$textColor:         #333;
-$textLightColor:    #AEAEAE;
-$primaryColor:      #2e5bec;
-$primaryDarkColor:  darken($primaryColor, 10%);
-$errorColor:        #D83B46;
-$fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
+@import 'variables';
 
 // Classes
 
@@ -141,6 +130,7 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
     opacity: 0;
     transition: opacity 0.2s ease;
     border-radius: 4px;
+    text-align: center;
 
     &.show {
       opacity: 1;
@@ -159,31 +149,68 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
       }
     }
 
+    &-header {
+      min-height: 110px; // so we have margin even without resource name
+    }
+
     &-date,
     h2 {
       text-align: center;
       font-size: 34px;
       font-weight: 400;
-      margin-top: 70px;
+      margin-top: 50px;
       margin-bottom: 10px;
 
       .is-small & {
         font-size: 27px;
-        margin-top: 60px;
       }
     }
 
     &-time,
+    &-resource,
     h3 {
       text-align: center;
       font-size: 17px;
       font-weight: 400;
-      margin-bottom: 50px;
+      margin-bottom: 15px;
       margin-top: 10px;
 
       .is-small & {
         font-size: 15px;
-        margin-bottom: 35px;
+        margin-bottom: 15px;
+      }
+    }
+
+    &-resource-prefix {
+      text-align: center;
+      font-size: 10px;
+      font-weight: 300;
+      display: inline-block;
+      position: relative;
+      &:before {
+        content: "";
+        display: block;
+        width: 40px;
+        height: 0;
+        border-top: 1px solid $borderColor;
+        position: absolute;
+        left: -45px;
+        top: 7px;
+      }
+      &:after {
+        content: "";
+        display: block;
+        width: 40px;
+        height: 0;
+        border-top: 1px solid $borderColor;
+        position: absolute;
+        right: -45px;
+        top: 7px;
+      }
+
+      .is-small & {
+        // font-size: 15px;
+        // margin-bottom: 35px;
       }
     }
   }
@@ -409,7 +436,7 @@ $fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;
     &.success &-button,
     &.success &-button:hover {
       max-width: 80px;
-      background-color: #5BAF56;
+      background-color: $successColor;
       cursor: pointer;
 
       .inactive-text { opacity: 0; }

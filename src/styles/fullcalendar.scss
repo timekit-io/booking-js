@@ -1,11 +1,4 @@
-// Colors
-
-$textColor:       #333;
-$bgColor:         #FBFBFB;
-$borderColor:     #ececec;
-$subtleColor:     darken($borderColor, 25%);
-$primaryColor:    #2e5bec;
-$primaryDarkColor: darken($primaryColor, 10%);
+@import 'variables';
 
 // Classes
 
@@ -270,7 +263,7 @@ $primaryDarkColor: darken($primaryColor, 10%);
 .fc-list-table {
   width: 80%;
   max-width: 400px;
-  margin: 0 auto;
+  margin: 0 auto 30px auto;
 }
 
 .fc-unthemed .fc-list-heading td {
@@ -291,12 +284,15 @@ $primaryDarkColor: darken($primaryColor, 10%);
   font-size: 1.1em;
 }
 
+.fc-unthemed .fc-list-item:hover td {
+  background-color: transparent;
+}
+
 .fc-list-item {
   display: block;
   transition: color .2s ease, border-color .2s ease, opacity .6s ease, box-shadow .2s ease;
   border: none;
   border-left: 2px solid darken($borderColor, 35%);
-  padding: 3px;
   background-color: #fff;
   border-radius: 3px;
   color: #333;

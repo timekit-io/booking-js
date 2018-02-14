@@ -94,7 +94,7 @@ function TimekitBooking() {
       // Render available timeslots in FullCalendar
       if(response.data.length > 0) renderCalendarEvents(response.data);
 
-      // Render test ribbon if enabled 
+      // Render test ribbon if enabled
       if (response.headers['timekit-testmode']) renderTestModeRibbon();
 
     }).catch(function(response){
@@ -184,7 +184,7 @@ function TimekitBooking() {
       // Render available timeslots in FullCalendar
       if(slots.length > 0) renderCalendarEvents(slots);
 
-      // Render test ribbon if enabled 
+      // Render test ribbon if enabled
       if (response.headers['timekit-testmode']) renderTestModeRibbon();
 
     }).catch(function(response){
@@ -672,7 +672,6 @@ function TimekitBooking() {
         what: config.name + ' x ' + formData.name,
         where: 'TBD',
         description: '',
-        calendar_id: config.calendar,
         participants: [formData.email]
       },
       customer: {
@@ -681,6 +680,10 @@ function TimekitBooking() {
         timezone: moment.tz.guess()
       }
     };
+
+    if (config.calendar) {
+      args.event.calendar_id = config.calendar;
+    }
 
     if (config.bookingFields.location.enabled) {
       args.customer.where = formData.location;
@@ -713,11 +716,11 @@ function TimekitBooking() {
       var teamUser = $.grep(config.timekitFindTimeTeam.users, function(user) {
         return designatedUser.email === user._email
       })
-      if (teamUser.length < 1 || !teamUser[0]._calendar) {
+      if (teamUser.length < 1) {
         throw triggerError(['Encountered an error when picking designated team user to receive booking', designatedUser, config.timekitFindTimeTeam.users]);
       } else {
         timekit = timekit.asUser(designatedUser.email, designatedUser.token)
-        args.event.calendar_id = teamUser[0]._calendar
+        if (teamUser[0]._calendar) args.event.calendar_id = teamUser[0]._calendar
       }
       utils.logDebug(['Creating booking for user:', designatedUser], config);
     }
@@ -810,9 +813,6 @@ function TimekitBooking() {
     }
     if (!newConfig.apiToken) {
       throw triggerError('A required config setting ("apiToken") was missing');
-    }
-    if (!newConfig.calendar && newConfig.bookingGraph !== 'group_customer' && newConfig.bookingGraph !== 'group_customer_payment' && !newConfig.timekitFindTimeTeam) {
-      throw triggerError('A required config setting ("calendar") was missing');
     }
 
     // Set new config to instance config

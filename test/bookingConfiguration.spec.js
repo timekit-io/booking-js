@@ -18,7 +18,7 @@ describe('Booking configuration', function() {
     jasmine.Ajax.uninstall();
   });
 
-  it('should be able override default configuration for timekitUpdateBooking and book', function(done) {
+  it('should be able override default configuration for timekitCreateBooking and book', function(done) {
 
     var config = {
       timekitCreateBooking: {
@@ -44,6 +44,44 @@ describe('Booking configuration', function() {
 
           expect(request.url).toBe('https://api.timekit.io/v2/bookings?include=attributes,event,user');
           expect(requestData.event.invite).toBe(false);
+
+          done();
+
+        }, 200);
+      }, 500);
+    }, 500);
+
+  });
+
+  it('should be able override default configuration (extended) for timekitCreateBooking and book', function(done) {
+
+    mockAjax.getEmbedWidgetExtended()
+
+    var config = {
+      widgetId: '12345',
+      timekitCreateBooking: {
+        notify_customer_by_email: {
+          enabled: false
+        }
+      }
+    }
+    createWidget(config);
+
+    setTimeout(function() {
+
+      interact.clickEvent();
+
+      setTimeout(function() {
+
+        interact.fillSubmit();
+
+        setTimeout(function() {
+
+          var request = jasmine.Ajax.requests.mostRecent();
+          var requestData = JSON.parse(request.params);
+
+          expect(request.url).toBe('https://api.timekit.io/v2/bookings?include=attributes,event,user');
+          expect(requestData.notify_customer_by_email.enabled).toBe(false);
 
           done();
 

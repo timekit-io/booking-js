@@ -18,7 +18,7 @@ describe('Basic configuration', function() {
     jasmine.Ajax.uninstall();
   });
 
-  it('should be able to set the name', function() {
+  it('should be able to set the name', function(done) {
 
     var config = {
       name: 'Demo Name'
@@ -30,9 +30,11 @@ describe('Basic configuration', function() {
     expect($('.bookingjs-displayname')).toContainElement('span');
     expect($('.bookingjs-displayname span')).toContainText(config.name);
 
+    done()
+
   });
 
-  it('should be able to set an avatar image', function() {
+  it('should be able to set an avatar image', function(done) {
 
     var config = {
       avatar: '/base/misc/avatar-doc.jpg'
@@ -46,6 +48,8 @@ describe('Basic configuration', function() {
     var source = $('.bookingjs-avatar img').prop('src');
     var contains = source.indexOf(config.avatar) > -1;
     expect(contains).toBe(true);
+
+    done()
 
   });
 

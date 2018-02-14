@@ -11,6 +11,7 @@ describe('Advanced configuration', function() {
   beforeEach(function(){
     loadFixtures('main.html');
     jasmine.Ajax.install();
+    mockAjax.all();
   });
 
   afterEach(function() {

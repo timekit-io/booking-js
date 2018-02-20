@@ -166,7 +166,7 @@ timekitConfig: {
 
 ### - `timekitFindTime`
 
-The Find Time algorithm is a powerful query tool for availability. Booking.js is calling the endpoint `[POST] /findtime` through the JS SDK and takes all the arguments as mentioned on the official [docs](http://developers.timekit.io/docs/findtime). The most powerful aspect are the [filters](http://developers.timekit.io/docs/find-time-filters). By default, there's no filters applied.
+The Find Time algorithm is a powerful query tool for availability. Booking.js is calling the endpoint `[POST] /findtime` through the JS SDK and takes all the arguments as mentioned on the official [docs](https://reference.timekit.io/reference#findtime). The most powerful aspect are the [filters](https://reference.timekit.io/reference#find-time-filters). By default, there's no filters applied.
 
 There's only three default arguments out of the box:
 

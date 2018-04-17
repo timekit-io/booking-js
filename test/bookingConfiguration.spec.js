@@ -18,10 +18,10 @@ describe('Booking configuration', function() {
     jasmine.Ajax.uninstall();
   });
 
-  it('should be able override default configuration for timekitCreateBooking and book', function(done) {
+  it('should be able override default configuration for booking and book', function(done) {
 
     var config = {
-      timekitCreateBooking: {
+      booking: {
         event: {
           invite: false
         }
@@ -53,13 +53,13 @@ describe('Booking configuration', function() {
 
   });
 
-  it('should be able override default configuration (extended) for timekitCreateBooking and book', function(done) {
+  it('should be able override default configuration (extended) for booking and book', function(done) {
 
     mockAjax.getEmbedWidgetExtended()
 
     var config = {
-      widgetId: '12345',
-      timekitCreateBooking: {
+      projectId: '12345',
+      booking: {
         notify_customer_by_email: {
           enabled: false
         }

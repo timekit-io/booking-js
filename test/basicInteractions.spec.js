@@ -106,7 +106,7 @@ describe('Basic interaction', function() {
   it('should be able to book an event and pass widget ID', function(done) {
 
     createWidget({
-      widgetSlug: 'my-widget-slug'
+      projectSlug: 'my-widget-slug'
     });
 
     setTimeout(function() {

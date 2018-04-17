@@ -106,7 +106,7 @@ describe('Advanced configuration', function() {
 
     var widget = new TimekitBooking();
     var config = {
-      widgetId: '12345',
+      projectId: '12345',
       callbacks: {
         renderStarted: updateConfig
       }

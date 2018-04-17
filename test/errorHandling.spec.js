@@ -58,13 +58,13 @@ describe('Error handling', function() {
 
     var widget = new TimekitBooking();
     widget.init({
-      widgetId: '54321'
+      projectId: '54321'
     });
 
     setTimeout(function() {
 
       expect($('.bookingjs-error')).toBeInDOM();
-      expect($('.bookingjs-error-text-message')).toContainText('The widget could not be found, please double-check your widgetId/widgetSlug');
+      expect($('.bookingjs-error-text-message')).toContainText('The widget could not be found, please double-check your projectId/projectSlug');
 
       done()
 
@@ -90,8 +90,8 @@ describe('Error handling', function() {
 
     var widget = new TimekitBooking();
     widget.init({
-      widgetId: '12345',
-      timekitFindTime: {
+      projectId: '12345',
+      availability: {
         future: 'wrong'
       }
     });
@@ -117,7 +117,7 @@ describe('Error handling', function() {
       email:    'marty.mcfly@timekit.io',
       apiToken: 'XT1JO879JF1qUXXzmETD5ucgxaDwsFsd',
       calendar: '22f86f0c-ee80-470c-95e8-dadd9d05edd2',
-      timekitCreateBooking: {
+      booking: {
         event: {
           calendar_id: 'doesnt exist'
         }

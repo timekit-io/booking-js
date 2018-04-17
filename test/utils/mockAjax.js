@@ -11,16 +11,16 @@ module.exports = {
     var tomorrow = moment().add(1, 'day');
 
     jasmine.Ajax.stubRequest(
-      'https://api.timekit.io/v2/findtime'
+      'https://api.timekit.io/v2/availability'
     ).andReturn({
       status: 200,
       statusText: 'HTTP/1.1 200 OK',
       contentType: 'application/json',
       responseText: '{"data":[' +
-        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '"},' +
-        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '"},' +
-        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '"},' +
-        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '"}' +
+        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]},' +
+        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]},' +
+        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]},' +
+        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]}' +
       ']}'
     });
 
@@ -33,7 +33,7 @@ module.exports = {
     var tomorrow = moment().add(1, 'day');
 
     jasmine.Ajax.stubRequest(
-      'https://api.timekit.io/v2/findtime'
+      'https://api.timekit.io/v2/availability'
     ).andReturn({
       status: 200,
       statusText: 'HTTP/1.1 200 OK',
@@ -42,10 +42,10 @@ module.exports = {
         "Timekit-TestMode": 'true'
       },
       responseText: '{"data":[' +
-        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '"},' +
-        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '"},' +
-        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '"},' +
-        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '"}' +
+        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]},' +
+        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]},' +
+        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]},' +
+        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]}' +
       ']}'
     });
 
@@ -57,13 +57,13 @@ module.exports = {
     var future = moment().add(1, 'month').startOf('day');
 
     jasmine.Ajax.stubRequest(
-      'https://api.timekit.io/v2/findtime'
+      'https://api.timekit.io/v2/availability'
     ).andReturn({
       status: 200,
       statusText: 'HTTP/1.1 200 OK',
       contentType: 'application/json',
       responseText: '{"data":[' +
-        '{"start":"' + future.format() + '","end":"' + future.add(1, 'hour').format() + '"}' +
+        '{"start":"' + future.format() + '","end":"' + future.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]}' +
       ']}'
     });
 
@@ -73,7 +73,7 @@ module.exports = {
   findTimeWithNoTimeslots: function() {
 
     jasmine.Ajax.stubRequest(
-      'https://api.timekit.io/v2/findtime'
+      'https://api.timekit.io/v2/availability'
     ).andReturn({
       status: 200,
       statusText: 'HTTP/1.1 200 OK',
@@ -87,7 +87,7 @@ module.exports = {
   findTimeWithError: function() {
 
     jasmine.Ajax.stubRequest(
-      'https://api.timekit.io/v2/findtime'
+      'https://api.timekit.io/v2/availability'
     ).andReturn({
       status: 422,
       statusText: 'HTTP/1.1 422 Unprocessable Entity',
@@ -104,15 +104,16 @@ module.exports = {
     var tomorrow = moment().add(1, 'day');
 
     jasmine.Ajax.stubRequest(
-      'https://api.timekit.io/v2/findtime/team'
+      'https://api.timekit.io/v2/availability'
     ).andReturn({
       status: 200,
       statusText: 'HTTP/1.1 200 OK',
       contentType: 'application/json',
       responseText: '{"data":[' +
-        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '","users": [ { "name": "Marty McFly", "email": "marty.mcfly@timekit.io", "user_id": "bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2", "calendar_ids": [ "22f86f0c-ee80-470c-95e8-dadd9d05edd2" ], "token": "nvHfRSlhvsnlg4rS7Wt28Ty47qdgegwSu3YK7hPW" }, { "name": "Doc Brown", "email": "doc.brown@timekit.io", "user_id": "gxa0b9fa-36aa-4ae6-8096-f3b20fbed1d2", "calendar_ids": [ "11d86f0c-ee80-470c-95e8-dadd9d05edd2" ], "token": "dwHfRSlhvsnlg4rS7Wt28Ty47qdgegwSu3YK7hPW" } ]},' +
-        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '","users": [ { "name": "Marty McFly", "email": "marty.mcfly@timekit.io", "user_id": "bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2", "calendar_ids": [ "22f86f0c-ee80-470c-95e8-dadd9d05edd2" ], "token": "nvHfRSlhvsnlg4rS7Wt28Ty47qdgegwSu3YK7hPW" } ]},' +
-        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '","users": [ { "name": "Doc Brown", "email": "doc.brown@timekit.io", "user_id": "gxa0b9fa-36aa-4ae6-8096-f3b20fbed1d2", "calendar_ids": [ "11d86f0c-ee80-470c-95e8-dadd9d05edd2" ], "token": "dwHfRSlhvsnlg4rS7Wt28Ty47qdgegwSu3YK7hPW" } ]}' +
+        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2","gxa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]},' +
+        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2","gxa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]},' +
+        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2","gxa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]},' +
+        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2","gxa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]}' +
       ']}'
     });
 
@@ -196,12 +197,12 @@ module.exports = {
   getEmbedWidgetExtended: function() {
 
     jasmine.Ajax.stubRequest(
-      'https://api.timekit.io/v2/widgets/embed/12345'
+      'https://api.timekit.io/v2/projects/embed/12345'
     ).andReturn({
       status: 200,
       statusText: 'HTTP/1.1 200 OK',
       contentType: 'application/json',
-      responseText: '{ "data": { "id": "12345", "slug": "my-widget-slug", "config": { "email": "marty.mcfly@timekit.io", "apiToken": "XT1JO879JF1qUXXzmETD5ucgxaDwsFsd", "calendar": "22f86f0c-ee80-470c-95e8-dadd9d05edd2", "name": "Marty McFly", "bookingGraph":"instant", "timekitCreateBooking": { "event": { "where": "Somewhere", "what": "Something" }, "timekitConfig": { "app": "bookingjs-demo" } } } }'
+      responseText: '{ "data": { "id": "12345", "slug": "my-widget-slug", "config": { "email": "marty.mcfly@timekit.io", "apiToken": "XT1JO879JF1qUXXzmETD5ucgxaDwsFsd", "calendar": "22f86f0c-ee80-470c-95e8-dadd9d05edd2", "name": "Marty McFly", "bookingGraph":"instant", "booking": { "event": { "where": "Somewhere", "what": "Something" }, "timekitConfig": { "app": "bookingjs-demo" } } } }'
     });
 
   },
@@ -210,7 +211,7 @@ module.exports = {
   getNonExistingEmbedWidget: function() {
 
     jasmine.Ajax.stubRequest(
-      'https://api.timekit.io/v2/widgets/embed/54321'
+      'https://api.timekit.io/v2/projects/embed/54321'
     ).andReturn({
       status: 404,
       statusText: 'HTTP/1.1 404 Not Found',

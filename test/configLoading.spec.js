@@ -21,7 +21,7 @@ describe('Config loading', function() {
 
     var widget = new TimekitBooking();
     var config = {
-      widgetSlug: 'my-widget-slug'
+      projectSlug: 'my-widget-slug'
     };
     widget.init(config);
 
@@ -43,7 +43,7 @@ describe('Config loading', function() {
 
     var widget = new TimekitBooking();
     var config = {
-      widgetSlug: 'my-widget-slug'
+      projectSlug: 'my-widget-slug'
     };
     widget.init(config);
 
@@ -54,7 +54,7 @@ describe('Config loading', function() {
       var request = jasmine.Ajax.requests.first();
 
       expect(request.url).toBe('https://api.timekit.io/v2/widgets/hosted/my-widget-slug');
-      expect(widget.getConfig().widgetId).toBeDefined();
+      expect(widget.getConfig().projectId).toBeDefined();
       expect($('.bookingjs-calendar')).toBeInDOM();
       done();
 
@@ -65,7 +65,7 @@ describe('Config loading', function() {
 
     var widget = new TimekitBooking();
     var config = {
-      widgetId: '12345'
+      projectId: '12345'
     };
     widget.init(config);
 
@@ -86,7 +86,7 @@ describe('Config loading', function() {
   it('should be able to load local config with widget ID set by disabling remote load', function(done) {
 
     var config = {
-      widgetId: '12345',
+      projectId: '12345',
       disableRemoteLoad: true
     }
     var widget = createWidget(config);
@@ -96,7 +96,7 @@ describe('Config loading', function() {
       var request = jasmine.Ajax.requests.first();
 
       expect(request.url).toBe('https://api.timekit.io/v2/findtime');
-      expect(widget.getConfig().widgetId).toBe('12345');
+      expect(widget.getConfig().projectId).toBe('12345');
       done();
 
     }, 50)

@@ -7,19 +7,11 @@ module.exports = {
   timekitConfig: {
     app: 'bookingjs-demo'
   },
-  timekitFindTimeTeam: {
+  availability: {
     length: '2 hours',
-    users: [
-      {
-        _email: 'marty.mcfly@timekit.io',
-        _calendar: '22f86f0c-ee80-470c-95e8-dadd9d05edd2',
-        calendar_ids: ['22f86f0c-ee80-470c-95e8-dadd9d05edd2']
-      },
-      {
-        _email: 'doc.brown@timekit.io',
-        _calendar: '11d86f0c-ee80-470c-95e8-dadd9d05edd2',
-        calendar_ids: ['11d86f0c-ee80-470c-95e8-dadd9d05edd2']
-      }
+    resources: [
+      '123',
+      '456'
     ]
   }
 }

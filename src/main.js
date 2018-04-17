@@ -77,8 +77,12 @@ function TimekitBooking() {
 
     var args = {};
 
+    if (config.resources) args.resources = config.resources
+    if (config.availability_constraints) args.availability_constraints = config.availability_constraints
+    if (config.projectId) args.project_id = config.projectId
+
     // Only add email to findtime if no calendars or users are explicitly specified
-    $.extend(args, config.timekitFindTime);
+    $.extend(args, config.availability);
 
     utils.doCallback('findTimeStarted', config, args);
 
@@ -86,7 +90,7 @@ function TimekitBooking() {
     .makeRequest({
       method: 'post',
       url: '/availability',
-      data: $.extend({}, { project_id: config.projectId }, config.availability)
+      data: args
     })
     .then(function(response){
 
@@ -685,6 +689,9 @@ function TimekitBooking() {
     //   }
     //   utils.logDebug(['Creating booking for user:', designatedUser], config);
     // }
+    if (typeof eventData.resources === 'undefined' || eventData.resources.length === 0) {
+      throw triggerError(['No resources to pick from when creating booking', eventData]);
+    }
     args.resource_id = eventData.resources[0]
 
     // if a remote widget (has ID) is used, pass that reference when creating booking
@@ -737,7 +744,10 @@ function TimekitBooking() {
   // Set config defaults
   var setConfigDefaults = function(suppliedConfig) {
 
-    if (suppliedConfig.appToken) suppliedConfig.timekitConfig.appToken = suppliedConfig.appToken
+    if (suppliedConfig.appKey) {
+      if (typeof suppliedConfig.timekitConfig === 'undefined') suppliedConfig.timekitConfig = {}
+      suppliedConfig.timekitConfig.appKey = suppliedConfig.appKey
+    }
     return $.extend(true, {}, defaultConfig.primary, suppliedConfig);
 
   };
@@ -767,8 +777,8 @@ function TimekitBooking() {
     newConfig = applyConfigPreset(newConfig, 'availabilityView', newConfig.availabilityView)
 
     // Check for required settings
-    if (!newConfig.appToken) {
-      throw triggerError('A required config setting ("appToken") was missing');
+    if (!newConfig.appKey) {
+      throw triggerError('A required config setting ("appKey") was missing');
     }
 
     // rename the "id" to "project_id"
@@ -816,9 +826,9 @@ function TimekitBooking() {
     // Get availability through Timekit SDK
     getAvailability();
 
-    // Show timezone helper if enabled
+    // TODO Show timezone helper if enabled
     if (config.localization.showTimezoneHelper) {
-      renderTimezoneHelper();
+      // renderTimezoneHelper();
     }
 
     // Show image avatar if set
@@ -848,11 +858,12 @@ function TimekitBooking() {
       prepareDOM(suppliedConfig || {});
 
       // Start from local config
-      if (!suppliedConfig || (!suppliedConfig.projectId && !suppliedConfig.widgetSlug) || suppliedConfig.disableRemoteLoad) {
+      if (!suppliedConfig || (!suppliedConfig.projectId && !suppliedConfig.projectSlug) || suppliedConfig.disableRemoteLoad) {
         return start(suppliedConfig)
       }
 
     } catch (e) {
+      triggerError('Something went wrong initializing the widget' + e);
       return this
     }
 
@@ -880,7 +891,7 @@ function TimekitBooking() {
 
     config = setConfigDefaults(suppliedConfig)
     timekitSetupConfig();
-    if (suppliedConfig.projectId && suppliedConfig.appToken) {
+    if (suppliedConfig.projectId && suppliedConfig.appKey) {
       return timekit
       .makeRequest({
         url: '/projects/embed/' + suppliedConfig.projectId,

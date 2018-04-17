@@ -134,14 +134,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var args = {};
 	
 	    // Only add email to findtime if no calendars or users are explicitly specified
-	    if (!config.timekitFindTime.calendar_ids && !config.timekitFindTime.user_ids) {
-	      args.emails = [config.email];
-	    }
 	    $.extend(args, config.timekitFindTime);
 	
 	    utils.doCallback('findTimeStarted', config, args);
 	
-	    timekit.findTime(args)
+	    timekit
+	    .makeRequest({
+	      method: 'post',
+	      url: '/availability',
+	      data: $.extend({}, { project_id: config.projectId }, config.availability)
+	    })
 	    .then(function(response){
 	
 	      utils.doCallback('findTimeSuccessful', config, response);
@@ -157,45 +159,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      utils.doCallback('findTimeFailed', config, response);
 	      hideLoadingScreen();
 	      triggerError(['An error with Timekit FindTime occured', response]);
-	    });
-	
-	  };
-	
-	  // Fetch availabile team time through Timekit SDK
-	  var timekitFindTimeTeam = function() {
-	
-	    var requestData = {
-	      url: '/findtime/team',
-	      method: 'post',
-	      data: config.timekitFindTimeTeam
-	    }
-	
-	    $.each(config.timekitFindTimeTeam.users, function (index, item) {
-	      $.extend(item, config.timekitFindTime);
-	      // Only add email to findtime if no calendars are explicitly specified
-	      if (!item.calendar_ids && !item.user_ids) {
-	        item.emails = [item._email];
-	      }
-	    })
-	
-	    utils.doCallback('findTimeTeamStarted', config, requestData);
-	
-	    timekit.makeRequest(requestData)
-	    .then(function(response){
-	
-	      utils.doCallback('findTimeTeamSuccessful', config, response);
-	      hideLoadingScreen();
-	
-	      // Render available timeslots in FullCalendar
-	      if(response.data.length > 0) renderCalendarEvents(response.data);
-	
-	      // Render test ribbon if enabled
-	      if (response.headers['timekit-testmode']) renderTestModeRibbon();
-	
-	    }).catch(function(response){
-	      utils.doCallback('findTimeTeamFailed', config, response);
-	      hideLoadingScreen();
-	      triggerError(['An error with Timekit FindTimeTeam occured', response]);
 	    });
 	
 	  };
@@ -261,9 +224,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (config.bookingGraph === 'group_customer' || config.bookingGraph === 'group_customer_payment') {
 	      // If in group bookings mode, fetch slots
 	      timekitGetBookingSlots();
-	    } else if (config.timekitFindTimeTeam) {
-	      // If in team availability mode, call findtime team
-	      timekitFindTimeTeam();
 	    } else {
 	      // If in normal single-participant mode, call findtime
 	      timekitFindTime();
@@ -758,7 +718,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      args.event.description += config.bookingFields.voip.placeholder + ': ' + formData.voip + '\n';
 	    }
 	
-	    $.extend(true, args, config.timekitCreateBooking);
+	    $.extend(true, args, config.booking);
 	
 	    // Handle group booking specifics
 	    if (config.bookingGraph === 'group_customer' || config.bookingGraph === 'group_customer_payment') {
@@ -767,23 +727,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	
 	    // Handle team availability specifics
-	    if (eventData.users) {
-	      var designatedUser = eventData.users[0]
-	      var teamUser = $.grep(config.timekitFindTimeTeam.users, function(user) {
-	        return designatedUser.email === user._email
-	      })
-	      if (teamUser.length < 1) {
-	        throw triggerError(['Encountered an error when picking designated team user to receive booking', designatedUser, config.timekitFindTimeTeam.users]);
-	      } else {
-	        timekit = timekit.asUser(designatedUser.email, designatedUser.token)
-	        if (teamUser[0]._calendar) args.event.calendar_id = teamUser[0]._calendar
-	      }
-	      utils.logDebug(['Creating booking for user:', designatedUser], config);
-	    }
+	    // TODO
+	    // if (eventData.resources) {
+	    //   var designatedUser = eventData.users[0]
+	    //   var teamUser = $.grep(config.timekitFindTimeTeam.users, function(user) {
+	    //     return designatedUser.email === user._email
+	    //   })
+	    //   if (teamUser.length < 1) {
+	    //     throw triggerError(['Encountered an error when picking designated team user to receive booking', designatedUser, config.timekitFindTimeTeam.users]);
+	    //   } else {
+	    //     timekit = timekit.asUser(designatedUser.email, designatedUser.token)
+	    //     if (teamUser[0]._calendar) args.event.calendar_id = teamUser[0]._calendar
+	    //   }
+	    //   utils.logDebug(['Creating booking for user:', designatedUser], config);
+	    // }
+	    args.resource_id = eventData.resources[0]
 	
 	    // if a remote widget (has ID) is used, pass that reference when creating booking
 	    // TODO had to be disabled for team availability because not all members own the widget
-	    if (!eventData.users && config.widgetId) args.widget_id = config.widgetId
+	    if (config.projectId) args.project_id = config.projectId
 	
 	    utils.doCallback('createBookingStarted', config, args);
 	
@@ -831,6 +793,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Set config defaults
 	  var setConfigDefaults = function(suppliedConfig) {
 	
+	    if (suppliedConfig.appToken) suppliedConfig.timekitConfig.appToken = suppliedConfig.appToken
 	    return $.extend(true, {}, defaultConfig.primary, suppliedConfig);
 	
 	  };
@@ -853,7 +816,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    // Extend the default config with supplied settings
 	    var newConfig = setConfigDefaults(suppliedConfig);
-	    if (suppliedConfig.app) newConfig.timekitConfig.app = suppliedConfig.app
 	
 	    // Apply presets
 	    newConfig = applyConfigPreset(newConfig, 'timeDateFormat', newConfig.localization.timeDateFormat)
@@ -861,14 +823,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    newConfig = applyConfigPreset(newConfig, 'availabilityView', newConfig.availabilityView)
 	
 	    // Check for required settings
-	    if (!newConfig.app && !newConfig.timekitConfig.app) {
-	      throw triggerError('A required config setting ("app") was missing');
+	    if (!newConfig.appToken) {
+	      throw triggerError('A required config setting ("appToken") was missing');
 	    }
-	    if (!newConfig.email) {
-	      throw triggerError('A required config setting ("email") was missing');
-	    }
-	    if (!newConfig.apiToken) {
-	      throw triggerError('A required config setting ("apiToken") was missing');
+	
+	    // rename the "id" to "project_id"
+	    if (newConfig.id) {
+	      newConfig.projectId = newConfig.id
+	      delete newConfig.id
 	    }
 	
 	    // Set new config to instance config
@@ -942,7 +904,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      prepareDOM(suppliedConfig || {});
 	
 	      // Start from local config
-	      if (!suppliedConfig || (!suppliedConfig.widgetId && !suppliedConfig.widgetSlug) || suppliedConfig.disableRemoteLoad) {
+	      if (!suppliedConfig || (!suppliedConfig.projectId && !suppliedConfig.widgetSlug) || suppliedConfig.disableRemoteLoad) {
 	        return start(suppliedConfig)
 	      }
 	
@@ -954,15 +916,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    loadRemoteConfig(suppliedConfig)
 	    .then(function (response) {
 	      // save widget ID from remote to reference it when creating bookings
-	      var remoteConfig = response.data.config
-	      if (response.data.id) remoteConfig.widgetId = response.data.id
+	      var remoteConfig = response.data
+	      if (response.data.id) remoteConfig.projectId = response.data.id
 	      // merge with supplied config for overwriting settings
 	      var mergedConfig = $.extend(true, {}, remoteConfig, suppliedConfig);
 	      utils.logDebug(['Remote config:', remoteConfig], mergedConfig);
 	      start(mergedConfig)
 	    })
 	    .catch(function () {
-	      triggerError('The widget could not be found, please double-check your widgetId/widgetSlug');
+	      triggerError('The project could not be found, please double-check your projectId/projectSlug');
 	    })
 	
 	    return this
@@ -974,16 +936,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    config = setConfigDefaults(suppliedConfig)
 	    timekitSetupConfig();
-	    if (suppliedConfig.widgetId) {
+	    if (suppliedConfig.projectId && suppliedConfig.appToken) {
 	      return timekit
-	      .getEmbedWidget({ id: suppliedConfig.widgetId })
+	      .makeRequest({
+	        url: '/projects/embed/' + suppliedConfig.projectId,
+	        method: 'get'
+	      })
 	    }
 	    if (suppliedConfig.widgetSlug) {
 	      return timekit
-	      .getHostedWidget({ slug: suppliedConfig.widgetSlug })
-	    } else {
-	      throw triggerError('No widget configuration, widgetSlug or widgetId found');
+	      .makeRequest({
+	        url: '/projects/hosted/' + suppliedConfig.projectSlug,
+	        method: 'get'
+	      })
 	    }
+	    throw triggerError('No widget configuration, widgetSlug or widgetId found');
 	
 	  };
 	
@@ -1301,8 +1268,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * Auth variables for login gated API methods
 	   * @type {String}
 	   */
-	  var userEmail;
-	  var userToken;
 	  var includes = [];
 	  var headers = {};
 	  var nextPayload = {};
@@ -1317,7 +1282,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    apiVersion: 'v2',
 	    convertResponseToCamelcase: false,
 	    convertRequestToSnakecase: true,
-	    autoFlattenResponse: true
+	    autoFlattenResponse: true,
+	    userEmail: null,
+	    userToken: null,
+	    appToken: null,
 	  };
 	
 	  /**
@@ -1406,9 +1374,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	      args.headers['Timekit-Timezone'] = config.timezone;
 	    }
 	
-	    // add auth headers if not being overwritten by request/asUser
-	    if (!args.headers['Authorization'] && userEmail && userToken) {
-	      args.headers['Authorization'] = 'Basic ' + encodeAuthHeader(userEmail, userToken);
+	    // add auth headers (personal token) if not being overwritten by request/asUser
+	    if (!args.headers['Authorization'] && config.userEmail && config.userToken) {
+	      args.headers['Authorization'] = 'Basic ' + encodeAuthHeader(config.userEmail, config.userToken);
+	    }
+	
+	    // add auth headers (app token)
+	    if (!args.headers['Authorization'] && config.appToken) {
+	      args.headers['Authorization'] = 'Basic ' + encodeAuthHeader('', config.appToken);
 	    }
 	
 	    // reset headers
@@ -1475,8 +1448,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * @type {Function}
 	   */
 	  TK.setUser = function(email, apiToken) {
-	    userEmail = email;
-	    userToken = apiToken;
+	    config.userEmail = email;
+	    config.userToken = apiToken;
+	  };
+	
+	  /**
+	   * Set app token (happens automatically on timekit.auth())
+	   * @type {Function}
+	   */
+	  TK.setAppToken = function(apiToken) {
+	    config.appToken = apiToken;
 	  };
 	
 	  /**
@@ -1486,9 +1467,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	   */
 	  TK.getUser = function() {
 	    return {
-	      email: userEmail,
-	      apiToken: userToken
+	      email: config.userEmail,
+	      apiToken: config.userToken
 	    };
+	  };
+	
+	  /**
+	   * Returns the app token
+	   * @type {Function}
+	   * @return {Object}
+	   */
+	  TK.getAppToken = function() {
+	    return config.appToken
 	  };
 	
 	  /**
@@ -1607,7 +1597,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    });
 	
 	    r.then(function(response) {
-	      TK.setUser(response.data.email, response.data.api_token);
+	
+	      var token = response.data.api_token || response.data.apiToken;
+	      TK.setUser(response.data.email, token);
+	
 	    }).catch(function(){
 	      TK.setUser('','');
 	    });
@@ -29362,17 +29355,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	      locked: false
 	    }
 	  },
-	  timekitFindTime: {
-	    future: '4 weeks',
-	    length: '1 hour'
-	  },
+	  // availability: {
+	  //   future: '4 weeks',
+	  //   length: '1 hour'
+	  // },
 	  timekitConfig: {
 	    headers: {
 	      'Timekit-Context': 'widget'
 	    }
 	  },
-	  timekitCreateBooking: { },
-	  timekitUpdateBooking: { },
+	  booking: { },
 	  fullCalendar: {
 	    views: {
 	      agenda: {
@@ -29409,7 +29401,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Preset: bookingGraph = 'instant'
 	var bookingInstant = {
 	
-	  timekitCreateBooking: {
+	  booking: {
 	    graph: 'instant',
 	    action: 'confirm',
 	    event: {
@@ -29429,7 +29421,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Preset: bookingGraph = 'instant_payment'
 	var bookingInstantPayment = {
 	
-	  timekitCreateBooking: {
+	  booking: {
 	    graph: 'instant_payment',
 	    action: 'create',
 	    event: {
@@ -29449,7 +29441,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Preset: bookingGraph = 'confirm_decline'
 	var bookingConfirmDecline = {
 	
-	  timekitCreateBooking: {
+	  booking: {
 	    graph: 'confirm_decline',
 	    action: 'create',
 	    event: {
@@ -29469,7 +29461,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Preset: bookingGraph = 'group_customer'
 	var bookingGroupCustomer = {
 	
-	  timekitCreateBooking: {
+	  booking: {
 	    graph: 'group_customer',
 	    action: 'create',
 	  },
@@ -29484,7 +29476,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Preset: bookingGraph = 'group_customer_payment'
 	var bookingGroupCustomerPayment = {
 	
-	  timekitCreateBooking: {
+	  booking: {
 	    graph: 'group_customer_payment',
 	    action: 'create',
 	  },

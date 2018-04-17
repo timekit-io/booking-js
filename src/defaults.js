@@ -57,17 +57,16 @@ var primary = {
       locked: false
     }
   },
-  timekitFindTime: {
-    future: '4 weeks',
-    length: '1 hour'
-  },
+  // availability: {
+  //   future: '4 weeks',
+  //   length: '1 hour'
+  // },
   timekitConfig: {
     headers: {
       'Timekit-Context': 'widget'
     }
   },
-  timekitCreateBooking: { },
-  timekitUpdateBooking: { },
+  booking: { },
   fullCalendar: {
     views: {
       agenda: {
@@ -104,7 +103,7 @@ var primary = {
 // Preset: bookingGraph = 'instant'
 var bookingInstant = {
 
-  timekitCreateBooking: {
+  booking: {
     graph: 'instant',
     action: 'confirm',
     event: {
@@ -124,7 +123,7 @@ var bookingInstant = {
 // Preset: bookingGraph = 'instant_payment'
 var bookingInstantPayment = {
 
-  timekitCreateBooking: {
+  booking: {
     graph: 'instant_payment',
     action: 'create',
     event: {
@@ -144,7 +143,7 @@ var bookingInstantPayment = {
 // Preset: bookingGraph = 'confirm_decline'
 var bookingConfirmDecline = {
 
-  timekitCreateBooking: {
+  booking: {
     graph: 'confirm_decline',
     action: 'create',
     event: {
@@ -164,7 +163,7 @@ var bookingConfirmDecline = {
 // Preset: bookingGraph = 'group_customer'
 var bookingGroupCustomer = {
 
-  timekitCreateBooking: {
+  booking: {
     graph: 'group_customer',
     action: 'create',
   },
@@ -179,7 +178,7 @@ var bookingGroupCustomer = {
 // Preset: bookingGraph = 'group_customer_payment'
 var bookingGroupCustomerPayment = {
 
-  timekitCreateBooking: {
+  booking: {
     graph: 'group_customer_payment',
     action: 'create',
   },

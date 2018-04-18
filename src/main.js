@@ -15,6 +15,7 @@ var interpolate     = require('sprintf-js');
 var timekitSDK      = require('timekit-sdk');
 window.fullcalendar = require('fullcalendar');
 var moment          = window.moment = require('moment');
+var stringify       = require('json-stringify-safe');
 require('moment-timezone/builds/moment-timezone-with-data-2012-2022.js');
 require('fullcalendar/dist/fullcalendar.css');
 
@@ -122,8 +123,8 @@ function TimekitBooking() {
     }
 
     // scope group booking slots by widget ID if possible
-    if (config.widgetId) requestData.params = {
-      search: 'widget.id:' + config.widgetId
+    if (config.projectId) requestData.params = {
+      search: 'project.id:' + config.projectId
     }
 
     timekit
@@ -169,7 +170,7 @@ function TimekitBooking() {
 
     calendarTarget.fullCalendar('removeEventSources');
 
-    if (config.bookingGraph === 'group_customer' || config.bookingGraph === 'group_customer_payment') {
+    if (config.booking.graph === 'group_customer' || config.booking.graph === 'group_customer_payment') {
       // If in group bookings mode, fetch slots
       timekitGetBookingSlots();
     } else {
@@ -459,9 +460,9 @@ function TimekitBooking() {
     if (utils.isArray(message)) {
       messageProcessed = message[0]
       if (message[1].data) {
-        contextProcessed = JSON.stringify(message[1].data.errors || message[1].data.error || message[1].data)
+        contextProcessed = stringify(message[1].data.errors || message[1].data.error || message[1].data)
       } else {
-        contextProcessed = JSON.stringify(message[1])
+        contextProcessed = stringify(message[1])
       }
     }
 
@@ -669,9 +670,14 @@ function TimekitBooking() {
     $.extend(true, args, config.booking);
 
     // Handle group booking specifics
-    if (config.bookingGraph === 'group_customer' || config.bookingGraph === 'group_customer_payment') {
+    if (config.booking.graph === 'group_customer' || config.booking.graph === 'group_customer_payment') {
       delete args.event
       args.related = { owner_booking_id: eventData.booking.id }
+      args.resource_id = eventData.booking.resource_id
+    } else if (typeof eventData.resources === 'undefined' || eventData.resources.length === 0) {
+      throw triggerError(['No resources to pick from when creating booking']);
+    } else {
+      args.resource_id = eventData.resources[0]
     }
 
     // Handle team availability specifics
@@ -689,10 +695,6 @@ function TimekitBooking() {
     //   }
     //   utils.logDebug(['Creating booking for user:', designatedUser], config);
     // }
-    if (typeof eventData.resources === 'undefined' || eventData.resources.length === 0) {
-      throw triggerError(['No resources to pick from when creating booking', eventData]);
-    }
-    args.resource_id = eventData.resources[0]
 
     // if a remote widget (has ID) is used, pass that reference when creating booking
     // TODO had to be disabled for team availability because not all members own the widget
@@ -726,8 +728,8 @@ function TimekitBooking() {
 
     var campaignName = 'widget'
     var campaignSource = window.location.hostname.replace(/\./g, '-')
-    if (config.widgetId) { campaignName = 'embedded-widget'; }
-    if (config.widgetSlug) { campaignName = 'hosted-widget'; }
+    if (config.projectId) { campaignName = 'embedded-widget'; }
+    if (config.projectSlug) { campaignName = 'hosted-widget'; }
 
     var template = require('./templates/poweredby.html');
     var timekitLogo = require('!svg-inline!./assets/timekit-logo.svg');
@@ -773,18 +775,12 @@ function TimekitBooking() {
 
     // Apply presets
     newConfig = applyConfigPreset(newConfig, 'timeDateFormat', newConfig.localization.timeDateFormat)
-    newConfig = applyConfigPreset(newConfig, 'bookingGraph', newConfig.bookingGraph)
+    newConfig = applyConfigPreset(newConfig, 'bookingGraph', newConfig.booking.graph)
     newConfig = applyConfigPreset(newConfig, 'availabilityView', newConfig.availabilityView)
 
     // Check for required settings
     if (!newConfig.appKey) {
       throw triggerError('A required config setting ("appKey") was missing');
-    }
-
-    // rename the "id" to "project_id"
-    if (newConfig.id) {
-      newConfig.projectId = newConfig.id
-      delete newConfig.id
     }
 
     // Set new config to instance config
@@ -863,16 +859,22 @@ function TimekitBooking() {
       }
 
     } catch (e) {
-      triggerError('Something went wrong initializing the widget' + e);
       return this
     }
 
     // Load remote config
     loadRemoteConfig(suppliedConfig)
     .then(function (response) {
-      // save widget ID from remote to reference it when creating bookings
       var remoteConfig = response.data
-      if (response.data.id) remoteConfig.projectId = response.data.id
+      // streamline naming of object keys
+      if (remoteConfig.id) {
+        remoteConfig.projectId = remoteConfig.id
+        delete remoteConfig.id
+      }
+      if (remoteConfig.app_key) {
+        remoteConfig.appKey = remoteConfig.app_key
+        delete remoteConfig.app_key
+      }
       // merge with supplied config for overwriting settings
       var mergedConfig = $.extend(true, {}, remoteConfig, suppliedConfig);
       utils.logDebug(['Remote config:', remoteConfig], mergedConfig);
@@ -898,14 +900,14 @@ function TimekitBooking() {
         method: 'get'
       })
     }
-    if (suppliedConfig.widgetSlug) {
+    if (suppliedConfig.projectSlug) {
       return timekit
       .makeRequest({
         url: '/projects/hosted/' + suppliedConfig.projectSlug,
         method: 'get'
       })
     }
-    throw triggerError('No widget configuration, widgetSlug or widgetId found');
+    throw triggerError('No widget configuration, projectSlug or projectId found');
 
   };
 

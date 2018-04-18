@@ -21,7 +21,9 @@ describe('Group bookings', function() {
   it('should be able to book a seat', function(done) {
 
     createWidget({
-      bookingGraph: 'group_customer'
+      booking: {
+        graph: 'group_customer'
+      }
     });
 
     setTimeout(function() {

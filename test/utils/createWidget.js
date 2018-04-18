@@ -6,7 +6,7 @@ var baseConfig = require('./defaultConfig.js');
 module.exports = function(config) {
 
   var newConfig = {};
-  $.extend(true, newConfig, config, baseConfig);
+  $.extend(true, newConfig, baseConfig, config);
 
   var widget = new TimekitBooking();
   widget.init(newConfig);

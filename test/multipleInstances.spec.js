@@ -21,28 +21,18 @@ describe('Multiple instances', function() {
 
     var widget1 = new TimekitBooking();
     widget1.init({
-      email:    'marty.mcfly@timekit.io',
-      apiToken: 'XT1JO879JF1qUXXzmETD5ucgxaDwsFsd',
-      calendar: '22f86f0c-ee80-470c-95e8-dadd9d05edd2',
-      timekitConfig: {
-        app: 'widget-app-1'
-      }
+      appKey: '12345'
     });
 
     var widget2 = new TimekitBooking();
     widget2.init({
-      email:    'doc.brown@timekit.io',
-      apiToken: 'XT1JO879JF1qUXXzmETD5ucgxaDwsFsX',
-      calendar: '22f86f0c-ee80-470c-95e8-dadd9d05eddX',
-      timekitConfig: {
-        app: 'widget-app-2'
-      }
+      appKey: '67890'
     });
 
-    var widget1App = widget1.timekitSdk.getConfig().app
-    var widget2App = widget2.timekitSdk.getConfig().app
+    var widget1AppKey = widget1.timekitSdk.getConfig().appKey
+    var widget2AppKey = widget2.timekitSdk.getConfig().appKey
 
-    expect(widget1App).not.toEqual(widget2App);
+    expect(widget1AppKey).not.toEqual(widget2AppKey);
 
   });
 

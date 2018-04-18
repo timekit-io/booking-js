@@ -31,8 +31,8 @@ describe('Config loading', function() {
 
       var request = jasmine.Ajax.requests.first();
 
-      expect(request.url).toBe('https://api.timekit.io/v2/widgets/hosted/my-widget-slug');
-      expect(widget.getConfig().email).toBeDefined();
+      expect(request.url).toBe('https://api.timekit.io/v2/projects/hosted/my-widget-slug');
+      expect(widget.getConfig().appKey).toBeDefined();
       expect($('.bookingjs-calendar')).toBeInDOM();
       done();
 
@@ -53,7 +53,7 @@ describe('Config loading', function() {
 
       var request = jasmine.Ajax.requests.first();
 
-      expect(request.url).toBe('https://api.timekit.io/v2/widgets/hosted/my-widget-slug');
+      expect(request.url).toBe('https://api.timekit.io/v2/projects/hosted/my-widget-slug');
       expect(widget.getConfig().projectId).toBeDefined();
       expect($('.bookingjs-calendar')).toBeInDOM();
       done();
@@ -65,6 +65,7 @@ describe('Config loading', function() {
 
     var widget = new TimekitBooking();
     var config = {
+      appKey: '12345',
       projectId: '12345'
     };
     widget.init(config);
@@ -75,8 +76,8 @@ describe('Config loading', function() {
 
       var request = jasmine.Ajax.requests.first();
 
-      expect(request.url).toBe('https://api.timekit.io/v2/widgets/embed/12345');
-      expect(widget.getConfig().email).toBeDefined();
+      expect(request.url).toBe('https://api.timekit.io/v2/projects/embed/12345');
+      expect(widget.getConfig().slug).toBeDefined();
       expect($('.bookingjs-calendar')).toBeInDOM();
       done();
 
@@ -95,7 +96,7 @@ describe('Config loading', function() {
 
       var request = jasmine.Ajax.requests.first();
 
-      expect(request.url).toBe('https://api.timekit.io/v2/findtime');
+      expect(request.url).toBe('https://api.timekit.io/v2/availability');
       expect(widget.getConfig().projectId).toBe('12345');
       done();
 

@@ -106,6 +106,7 @@ describe('Advanced configuration', function() {
 
     var widget = new TimekitBooking();
     var config = {
+      appKey: '12345',
       projectId: '12345',
       callbacks: {
         renderStarted: updateConfig
@@ -121,7 +122,7 @@ describe('Advanced configuration', function() {
       expect(config.callbacks.renderStarted).toHaveBeenCalled();
 
       var request = jasmine.Ajax.requests.first();
-      expect(request.url).toBe('https://api.timekit.io/v2/widgets/embed/12345');
+      expect(request.url).toBe('https://api.timekit.io/v2/projects/embed/12345');
 
       var widgetConfig = widget.getConfig()
 

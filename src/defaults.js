@@ -14,7 +14,6 @@ var primary = {
   disableConfirmPage: false,
   showCredits: true,
   goToFirstEvent: true,
-  bookingGraph: 'instant',
   debug: false,
   availabilityView: 'agendaWeek',
   bookingFields: {
@@ -57,16 +56,13 @@ var primary = {
       locked: false
     }
   },
-  // availability: {
-  //   future: '4 weeks',
-  //   length: '1 hour'
-  // },
+  availability: {},
+  booking: {},
   timekitConfig: {
     headers: {
       'Timekit-Context': 'widget'
     }
   },
-  booking: { },
   fullCalendar: {
     views: {
       agenda: {

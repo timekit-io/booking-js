@@ -2,6 +2,8 @@
 
 require('console-polyfill');
 
+var config  = require('./config');
+
 /*
  * Utily functions
  */
@@ -16,16 +18,18 @@ module.exports = {
    return object && object.constructor === Array;
   },
 
-  doCallback: function(hook, config, arg, deprecated) {
-    if(config.callbacks && this.isFunction(config.callbacks[hook])) {
-      if (deprecated) { this.logDeprecated(hook + ' callback has been replaced, please see docs'); }
-      config.callbacks[hook](arg);
+  doCallback: function(hook, arg, deprecated) {
+    if(config.retrieve().callbacks && this.isFunction(config.retrieve().callbacks[hook])) {
+      if (deprecated) {
+        this.logDeprecated(hook + ' callback has been replaced, please see docs');
+      }
+      config.retrieve().callbacks[hook](arg);
     }
-    this.logDebug(['Trigger callback "' + hook + '" with arguments:', arg], config);
+    this.logDebug(['Trigger callback "' + hook + '" with arguments:', arg]);
   },
 
-  logDebug: function(message, config) {
-    if (config && config.debug) console.log('TimekitBooking Debug: ', message);
+  logDebug: function(message) {
+    if (config.retrieve().debug) console.log('TimekitBooking Debug: ', message);
   },
 
   logError: function(message) {

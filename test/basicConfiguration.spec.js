@@ -18,7 +18,7 @@ describe('Basic configuration', function() {
     jasmine.Ajax.uninstall();
   });
 
-  fit('should be able to set the name', function(done) {
+  it('should be able to set the name', function(done) {
 
     var config = {
       name: 'Demo Name'

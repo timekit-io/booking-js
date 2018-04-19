@@ -2,42 +2,48 @@
 
 require('console-polyfill');
 
-var config  = require('./config');
+function InitUtils(deps) {
 
-/*
- * Utily functions
- */
+  var getConfig = deps.config.retrieve;
 
-module.exports = {
-
-  isFunction: function(object) {
+  var isFunction = function(object) {
    return !!(object && object.constructor && object.call && object.apply);
-  },
+  }
 
-  isArray: function(object) {
+  var isArray = function(object) {
    return object && object.constructor === Array;
-  },
+  }
 
-  doCallback: function(hook, arg, deprecated) {
-    if(config.retrieve().callbacks && this.isFunction(config.retrieve().callbacks[hook])) {
+  var doCallback = function(hook, arg, deprecated) {
+    if(getConfig().callbacks && this.isFunction(getConfig().callbacks[hook])) {
       if (deprecated) {
         this.logDeprecated(hook + ' callback has been replaced, please see docs');
       }
-      config.retrieve().callbacks[hook](arg);
+      getConfig().callbacks[hook](arg);
     }
     this.logDebug(['Trigger callback "' + hook + '" with arguments:', arg]);
-  },
+  }
 
-  logDebug: function(message) {
-    if (config.retrieve().debug) console.log('TimekitBooking Debug: ', message);
-  },
+  var logDebug = function(message) {
+    if (getConfig().debug) console.log('TimekitBooking Debug: ', message);
+  }
 
-  logError: function(message) {
+  var logError = function(message) {
     console.warn('TimekitBooking Error: ', message);
-  },
+  }
 
-  logDeprecated: function(message) {
+  var logDeprecated = function(message) {
     console.warn('TimekitBooking Deprecated: ', message);
   }
 
-};
+  return {
+    isFunction: isFunction,
+    isArray: isArray,
+    doCallback: doCallback,
+    logDebug: logDebug,
+    logError: logError,
+    logDeprecated: logDeprecated
+  }
+}
+
+module.exports = InitUtils

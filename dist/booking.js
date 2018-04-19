@@ -4473,6 +4473,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	function InitConfig() {
 	
+	  // Current state
 	  var config = {};
 	
 	  // Merge defaults into passed config
@@ -4508,7 +4509,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    // Apply presets
 	    newConfig = applyConfigPreset(newConfig, 'timeDateFormat', newConfig.localization.timeDateFormat)
-	    newConfig = applyConfigPreset(newConfig, 'bookingGraph', newConfig.booking.graph)
 	    newConfig = applyConfigPreset(newConfig, 'availabilityView', newConfig.availabilityView)
 	
 	    // Check for required settings
@@ -4560,6 +4560,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  goToFirstEvent: true,
 	  debug: false,
 	  availabilityView: 'agendaWeek',
+	  availability: {},
+	  booking: {},
 	  bookingFields: {
 	    name: {
 	      placeholder: 'Full name',
@@ -4600,8 +4602,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      locked: false
 	    }
 	  },
-	  availability: {},
-	  booking: {},
 	  timekitConfig: {
 	    headers: {
 	      'Timekit-Context': 'widget'
@@ -4637,96 +4637,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  },
 	  callbacks: {}
-	
-	};
-	
-	// Preset: bookingGraph = 'instant'
-	var bookingInstant = {
-	
-	  booking: {
-	    graph: 'instant',
-	    action: 'confirm',
-	    event: {
-	      invite: true,
-	      my_rsvp: 'accepted',
-	      sync_provider: true
-	    }
-	  },
-	  localization: {
-	    strings: {
-	      successMessageBody: 'An invitation has been sent to: <br /> %s <br /><br /> Please accept the invitation to confirm the booking.'
-	    }
-	  }
-	
-	};
-	
-	// Preset: bookingGraph = 'instant_payment'
-	var bookingInstantPayment = {
-	
-	  booking: {
-	    graph: 'instant_payment',
-	    action: 'create',
-	    event: {
-	      invite: true,
-	      my_rsvp: 'accepted',
-	      sync_provider: true
-	    }
-	  },
-	  localization: {
-	    strings: {
-	      successMessageBody: "We have received your payment and reserved your timeslot.<br /><br />Have a great day!"
-	    }
-	  }
-	
-	};
-	
-	// Preset: bookingGraph = 'confirm_decline'
-	var bookingConfirmDecline = {
-	
-	  booking: {
-	    graph: 'confirm_decline',
-	    action: 'create',
-	    event: {
-	      invite: true,
-	      my_rsvp: 'accepted',
-	      sync_provider: true
-	    }
-	  },
-	  localization: {
-	    strings: {
-	      successMessageBody: "We have received your request and we'll be in touch when we have reviewed it. <br /><br />Have a great day!"
-	    }
-	  }
-	
-	};
-	
-	// Preset: bookingGraph = 'group_customer'
-	var bookingGroupCustomer = {
-	
-	  booking: {
-	    graph: 'group_customer',
-	    action: 'create',
-	  },
-	  localization: {
-	    strings: {
-	      successMessageBody: "Your seat has been reserved and we've sent you a confirmation by email. <br /><br />Have a great day!"
-	    }
-	  }
-	
-	};
-	
-	// Preset: bookingGraph = 'group_customer_payment'
-	var bookingGroupCustomerPayment = {
-	
-	  booking: {
-	    graph: 'group_customer_payment',
-	    action: 'create',
-	  },
-	  localization: {
-	    strings: {
-	      successMessageBody: "We have received your payment and reserved a seat for you.<br /><br />Have a great day!"
-	    }
-	  }
 	
 	};
 	
@@ -4813,13 +4723,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    timeDateFormat: {
 	      '24h-dmy-mon': timeDateFormat24hdmymon,
 	      '12h-mdy-sun': timeDateFormat12hmdysun
-	    },
-	    bookingGraph: {
-	      'instant': bookingInstant,
-	      'instant_payment': bookingInstantPayment,
-	      'confirm_decline': bookingConfirmDecline,
-	      'group_customer': bookingGroupCustomer,
-	      'group_customer_payment': bookingGroupCustomerPayment
 	    },
 	    availabilityView: {
 	      'agendaWeek': availabilityViewAgendaWeek,

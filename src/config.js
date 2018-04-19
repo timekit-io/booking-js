@@ -4,6 +4,7 @@ var defaultConfig = require('./defaults');
 
 function InitConfig() {
 
+  // Current state
   var config = {};
 
   // Merge defaults into passed config
@@ -39,7 +40,6 @@ function InitConfig() {
 
     // Apply presets
     newConfig = applyConfigPreset(newConfig, 'timeDateFormat', newConfig.localization.timeDateFormat)
-    newConfig = applyConfigPreset(newConfig, 'bookingGraph', newConfig.booking.graph)
     newConfig = applyConfigPreset(newConfig, 'availabilityView', newConfig.availabilityView)
 
     // Check for required settings

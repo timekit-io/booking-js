@@ -60,7 +60,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Booking.js
 	 * http://timekit.io
 	 *
-	 * Copyright 2015 Timekit, Inc.
+	 * Copyright 2018 Timekit, Inc.
 	 * Booking.js is freely distributable under the MIT license.
 	 *
 	 */
@@ -92,15 +92,6 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
-	/*!
-	 * Booking.js
-	 * http://timekit.io
-	 *
-	 * Copyright 2018 Timekit, Inc.
-	 * Booking.js is freely distributable under the MIT license.
-	 *
-	 */
 	
 	var $             = __webpack_require__(1);
 	var timekitSdk    = __webpack_require__(3);
@@ -139,7 +130,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	      // Start from local config
 	      if (!suppliedConfig || (!suppliedConfig.projectId && !suppliedConfig.projectSlug) || suppliedConfig.disableRemoteLoad) {
-	        return start(suppliedConfig)
+	        return startWithConfig(suppliedConfig)
 	      }
 	
 	    } catch (e) {
@@ -163,7 +154,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // merge with supplied config for overwriting settings
 	      var mergedConfig = $.extend(true, {}, remoteConfig, suppliedConfig);
 	      utils.logDebug(['Remote config:', remoteConfig]);
-	      start(mergedConfig)
+	      startWithConfig(mergedConfig)
 	    })
 	    .catch(function () {
 	      render.triggerError('The project could not be found, please double-check your projectId/projectSlug');
@@ -198,7 +189,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 	
 	  // Parse the config and start rendering
-	  var start = function(suppliedConfig) {
+	  var startWithConfig = function(suppliedConfig) {
 	
 	    // Handle config and defaults
 	    try {
@@ -269,7 +260,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    setConfig:    config.parseAndUpdate,
 	    getConfig:    getConfig,
 	    getVersion:   getVersion,
-	    render:       render,
+	    render:       startRender,
 	    init:         init,
 	    destroy:      destroy,
 	    timekitCreateBooking: render.timekitCreateBooking,

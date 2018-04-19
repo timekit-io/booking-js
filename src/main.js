@@ -4,7 +4,7 @@
  * Booking.js
  * http://timekit.io
  *
- * Copyright 2015 Timekit, Inc.
+ * Copyright 2018 Timekit, Inc.
  * Booking.js is freely distributable under the MIT license.
  *
  */

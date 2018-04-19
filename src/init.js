@@ -1,14 +1,5 @@
 'use strict';
 
-/*!
- * Booking.js
- * http://timekit.io
- *
- * Copyright 2018 Timekit, Inc.
- * Booking.js is freely distributable under the MIT license.
- *
- */
-
 var $             = require('jquery');
 var timekitSdk    = require('timekit-sdk');
 
@@ -46,7 +37,7 @@ function Initialize() {
 
       // Start from local config
       if (!suppliedConfig || (!suppliedConfig.projectId && !suppliedConfig.projectSlug) || suppliedConfig.disableRemoteLoad) {
-        return start(suppliedConfig)
+        return startWithConfig(suppliedConfig)
       }
 
     } catch (e) {
@@ -70,7 +61,7 @@ function Initialize() {
       // merge with supplied config for overwriting settings
       var mergedConfig = $.extend(true, {}, remoteConfig, suppliedConfig);
       utils.logDebug(['Remote config:', remoteConfig]);
-      start(mergedConfig)
+      startWithConfig(mergedConfig)
     })
     .catch(function () {
       render.triggerError('The project could not be found, please double-check your projectId/projectSlug');
@@ -105,7 +96,7 @@ function Initialize() {
   };
 
   // Parse the config and start rendering
-  var start = function(suppliedConfig) {
+  var startWithConfig = function(suppliedConfig) {
 
     // Handle config and defaults
     try {
@@ -176,7 +167,7 @@ function Initialize() {
     setConfig:    config.parseAndUpdate,
     getConfig:    getConfig,
     getVersion:   getVersion,
-    render:       render,
+    render:       startRender,
     init:         init,
     destroy:      destroy,
     timekitCreateBooking: render.timekitCreateBooking,

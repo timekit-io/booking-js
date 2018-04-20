@@ -60,11 +60,11 @@ describe('Basic configuration', function() {
     var appKey = '123';
 
     var config = {
-      appKey: appKey
+      app_key: appKey
     }
     var widget = createWidget(config);
 
-    expect(widget.getConfig().appKey).toBe(appKey)
+    expect(widget.getConfig().app_key).toBe(appKey)
     expect(widget.timekitSdk.getConfig().appKey).toBe(appKey)
 
     done()

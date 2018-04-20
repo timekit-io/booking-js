@@ -28,6 +28,9 @@ describe('Group bookings', function() {
 
     setTimeout(function() {
 
+      var request = jasmine.Ajax.requests.mostRecent();
+      expect(request.url).toBe('https://api.timekit.io/v2/bookings/groups');
+
       interact.clickEvent();
 
       setTimeout(function() {
@@ -41,9 +44,11 @@ describe('Group bookings', function() {
           expect($('.bookingjs-form').hasClass('success')).toBe(true);
           expect($('.bookingjs-form-success-message')).toBeVisible();
 
-          var successMessage = $('.bookingjs-form-success-message').html();
-          var contains = successMessage.indexOf('Your seat has been reserved') > -1;
-          expect(contains).toBe(true);
+          var request = jasmine.Ajax.requests.mostRecent();
+          var requestData = JSON.parse(request.params)
+          expect(request.url).toBe('https://api.timekit.io/v2/bookings?include=attributes,event,user');
+          expect(requestData.graph).toBe('group_customer')
+          expect(requestData.related.owner_booking_id).toBe('87623db3-cb5f-41e8-b85b-23b5efd04e07')
 
           done();
 

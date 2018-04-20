@@ -2,11 +2,7 @@
 
 // Default config used across tests
 module.exports = {
-  email:    'marty.mcfly@timekit.io',
-  apiToken: 'XT1JO879JF1qUXXzmETD5ucgxaDwsFsd',
-  sdk: {
-    app: 'bookingjs-demo'
-  },
+  app_key: '12345',
   availability: {
     length: '2 hours',
     resources: [

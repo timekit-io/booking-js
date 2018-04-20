@@ -38,14 +38,14 @@ describe('Error handling', function() {
 
     var widget = new TimekitBooking();
     widget.init({
-      appKey: '12345',
-      projectId: '54321'
+      app_key: '12345',
+      project_id: '54321'
     });
 
     setTimeout(function() {
 
       expect($('.bookingjs-error')).toBeInDOM();
-      expect($('.bookingjs-error-text-message')).toContainText('The project could not be found, please double-check your projectId/projectSlug');
+      expect($('.bookingjs-error-text-message')).toContainText('The project could not be found, please double-check your project_id/project_slug');
 
       done()
 
@@ -59,8 +59,8 @@ describe('Error handling', function() {
 
     var widget = new TimekitBooking();
     widget.init({
-      appKey: '12345',
-      projectId: '12345',
+      app_key: '12345',
+      project_id: '12345',
       availability: {
         future: 'wrong'
       }
@@ -83,7 +83,7 @@ describe('Error handling', function() {
 
     var widget = new TimekitBooking();
     widget.init({
-      appKey: '12345',
+      app_key: '12345',
       booking: {
         event: {
           calendar_id: 'doesnt exist'

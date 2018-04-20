@@ -36,7 +36,7 @@ function Initialize() {
       render.prepareDOM(suppliedConfig || {});
 
       // Start from local config
-      if (!suppliedConfig || (!suppliedConfig.projectId && !suppliedConfig.projectSlug) || suppliedConfig.disable_remote_load) {
+      if (!suppliedConfig || (!suppliedConfig.project_id && !suppliedConfig.project_slug) || suppliedConfig.disable_remote_load) {
         return startWithConfig(suppliedConfig)
       }
 
@@ -51,12 +51,8 @@ function Initialize() {
       var remoteConfig = response.data
       // streamline naming of object keys
       if (remoteConfig.id) {
-        remoteConfig.projectId = remoteConfig.id
+        remoteConfig.project_id = remoteConfig.id
         delete remoteConfig.id
-      }
-      if (remoteConfig.app_key) {
-        remoteConfig.appKey = remoteConfig.app_key
-        delete remoteConfig.app_key
       }
       // TODO fix this on the backend
       if (remoteConfig.ui === null) {
@@ -71,7 +67,7 @@ function Initialize() {
       startWithConfig(mergedConfig)
     })
     .catch(function (e) {
-      render.triggerError('The project could not be found, please double-check your projectId/projectSlug' + e);
+      render.triggerError(['The project could not be found, please double-check your project_id/project_slug', e]);
     })
 
     return this
@@ -84,21 +80,21 @@ function Initialize() {
     var localConfig = config.setDefaults(suppliedConfig);
     config.update(localConfig);
     timekitSetupConfig();
-    if (suppliedConfig.projectId && suppliedConfig.appKey) {
+    if (suppliedConfig.project_id && suppliedConfig.app_key) {
       return sdk
       .makeRequest({
-        url: '/projects/embed/' + suppliedConfig.projectId,
+        url: '/projects/embed/' + suppliedConfig.project_id,
         method: 'get'
       })
     }
-    if (suppliedConfig.projectSlug) {
+    if (suppliedConfig.project_slug) {
       return sdk
       .makeRequest({
-        url: '/projects/hosted/' + suppliedConfig.projectSlug,
+        url: '/projects/hosted/' + suppliedConfig.project_slug,
         method: 'get'
       })
     }
-    throw render.triggerError('No widget configuration, projectSlug or projectId found');
+    throw render.triggerError('No widget configuration, project_slug or project_id found');
 
   };
 

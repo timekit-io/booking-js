@@ -10,9 +10,9 @@ function InitConfig() {
   // Merge defaults into passed config
   var setDefaults = function(suppliedConfig) {
 
-    if (suppliedConfig.appKey) {
+    if (suppliedConfig.app_key) {
       if (typeof suppliedConfig.sdk === 'undefined') suppliedConfig.sdk = {}
-      suppliedConfig.sdk.appKey = suppliedConfig.appKey
+      suppliedConfig.sdk.appKey = suppliedConfig.app_key
     }
     return $.extend(true, {}, defaultConfig.primary, suppliedConfig);
 
@@ -43,8 +43,8 @@ function InitConfig() {
     newConfig = applyConfigPreset(newConfig, 'availabilityView', newConfig.ui.availability_view)
 
     // Check for required settings
-    if (!newConfig.appKey) {
-      throw 'A required config setting ("appKey") was missing';
+    if (!newConfig.app_key) {
+      throw 'A required config setting ("app_key") was missing';
     }
 
     // Set new config to instance config

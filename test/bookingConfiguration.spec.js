@@ -58,7 +58,7 @@ describe('Booking configuration', function() {
     mockAjax.getEmbedWidgetExtended()
 
     var config = {
-      projectId: '12345',
+      project_id: '12345',
       booking: {
         notify_customer_by_email: {
           enabled: false

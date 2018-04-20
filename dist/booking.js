@@ -129,7 +129,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      render.prepareDOM(suppliedConfig || {});
 	
 	      // Start from local config
-	      if (!suppliedConfig || (!suppliedConfig.projectId && !suppliedConfig.projectSlug) || suppliedConfig.disable_remote_load) {
+	      if (!suppliedConfig || (!suppliedConfig.project_id && !suppliedConfig.project_slug) || suppliedConfig.disable_remote_load) {
 	        return startWithConfig(suppliedConfig)
 	      }
 	
@@ -144,12 +144,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var remoteConfig = response.data
 	      // streamline naming of object keys
 	      if (remoteConfig.id) {
-	        remoteConfig.projectId = remoteConfig.id
+	        remoteConfig.project_id = remoteConfig.id
 	        delete remoteConfig.id
-	      }
-	      if (remoteConfig.app_key) {
-	        remoteConfig.appKey = remoteConfig.app_key
-	        delete remoteConfig.app_key
 	      }
 	      // TODO fix this on the backend
 	      if (remoteConfig.ui === null) {
@@ -164,7 +160,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      startWithConfig(mergedConfig)
 	    })
 	    .catch(function (e) {
-	      render.triggerError('The project could not be found, please double-check your projectId/projectSlug' + e);
+	      render.triggerError(['The project could not be found, please double-check your project_id/project_slug', e]);
 	    })
 	
 	    return this
@@ -177,21 +173,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var localConfig = config.setDefaults(suppliedConfig);
 	    config.update(localConfig);
 	    timekitSetupConfig();
-	    if (suppliedConfig.projectId && suppliedConfig.appKey) {
+	    if (suppliedConfig.project_id && suppliedConfig.app_key) {
 	      return sdk
 	      .makeRequest({
-	        url: '/projects/embed/' + suppliedConfig.projectId,
+	        url: '/projects/embed/' + suppliedConfig.project_id,
 	        method: 'get'
 	      })
 	    }
-	    if (suppliedConfig.projectSlug) {
+	    if (suppliedConfig.project_slug) {
 	      return sdk
 	      .makeRequest({
-	        url: '/projects/hosted/' + suppliedConfig.projectSlug,
+	        url: '/projects/hosted/' + suppliedConfig.project_slug,
 	        method: 'get'
 	      })
 	    }
-	    throw render.triggerError('No widget configuration, projectSlug or projectId found');
+	    throw render.triggerError('No widget configuration, project_slug or project_id found');
 	
 	  };
 	
@@ -4486,9 +4482,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Merge defaults into passed config
 	  var setDefaults = function(suppliedConfig) {
 	
-	    if (suppliedConfig.appKey) {
+	    if (suppliedConfig.app_key) {
 	      if (typeof suppliedConfig.sdk === 'undefined') suppliedConfig.sdk = {}
-	      suppliedConfig.sdk.appKey = suppliedConfig.appKey
+	      suppliedConfig.sdk.appKey = suppliedConfig.app_key
 	    }
 	    return $.extend(true, {}, defaultConfig.primary, suppliedConfig);
 	
@@ -4519,8 +4515,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    newConfig = applyConfigPreset(newConfig, 'availabilityView', newConfig.ui.availability_view)
 	
 	    // Check for required settings
-	    if (!newConfig.appKey) {
-	      throw 'A required config setting ("appKey") was missing';
+	    if (!newConfig.app_key) {
+	      throw 'A required config setting ("app_key") was missing';
 	    }
 	
 	    // Set new config to instance config
@@ -4564,8 +4560,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  el: '#bookingjs',
 	  name: '',
 	  autoload: true,
-	  disableRemoteLoad: false,
-	  disableConfirmPage: false,
+	  disable_remote_load: false,
+	  disable_confirm_page: false,
 	  debug: false,
 	  ui: {
 	    show_credits: true,
@@ -4577,14 +4573,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	      allocated_resource_prefix: 'with',
 	      submit_text: 'Book it',
 	      success_message_title: 'Thanks!',
-	      success_message_body: 'We have received your booking.',
+	      success_message_body: 'We have received your booking and sent a confirmation to %s',
 	      timezone_helper_loading: 'Loading..',
 	      timezone_helper_different: 'Your timezone is %s hours %s %s (calendar shown in your local time)',
 	      timezone_helper_same: 'You are in the same timezone as %s'
 	    }
 	  },
 	  availability: {},
-	  booking: {},
+	  booking: {
+	    graph: 'instant'
+	  },
 	  customer_fields: {
 	    name: {
 	      type: 'string',
@@ -4598,6 +4596,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      required: true
 	    }
 	  },
+	  callbacks: {},
 	  sdk: {
 	    headers: {
 	      'Timekit-Context': 'widget'
@@ -4620,7 +4619,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    timezone: 'local',
 	    nowIndicator: true
 	  },
-	  callbacks: {}
 	
 	};
 	
@@ -4850,7 +4848,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    if (getConfig().resources) args.resources = getConfig().resources
 	    if (getConfig().availability_constraints) args.availability_constraints = getConfig().availability_constraints
-	    if (getConfig().projectId) args.project_id = getConfig().projectId
+	    if (getConfig().project_id) args.project_id = getConfig().project_id
 	
 	    // Only add email to findtime if no calendars or users are explicitly specified
 	    $.extend(args, getConfig().availability);
@@ -4893,8 +4891,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	
 	    // scope group booking slots by widget ID if possible
-	    if (getConfig().projectId) requestData.params = {
-	      search: 'project.id:' + getConfig().projectId
+	    if (getConfig().project_id) requestData.params = {
+	      search: 'project.id:' + getConfig().project_id
 	    }
 	
 	    sdk
@@ -5468,7 +5466,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    // if a remote widget (has ID) is used, pass that reference when creating booking
 	    // TODO had to be disabled for team availability because not all members own the widget
-	    if (getConfig().projectId) args.project_id = getConfig().projectId
+	    if (getConfig().project_id) args.project_id = getConfig().project_id
 	
 	    utils.doCallback('createBookingStarted', args);
 	
@@ -5498,8 +5496,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    var campaignName = 'widget'
 	    var campaignSource = window.location.hostname.replace(/\./g, '-')
-	    if (getConfig().projectId) { campaignName = 'embedded-widget'; }
-	    if (getConfig().projectSlug) { campaignName = 'hosted-widget'; }
+	    if (getConfig().project_id) { campaignName = 'embedded-widget'; }
+	    if (getConfig().project_slug) { campaignName = 'hosted-widget'; }
 	
 	    var template = __webpack_require__(76);
 	    var timekitLogo = __webpack_require__(77);

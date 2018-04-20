@@ -74,8 +74,8 @@ describe('Advanced configuration', function() {
 
     var widget = new TimekitBooking();
     var config = {
-      appKey: '12345',
-      projectId: '12345',
+      app_key: '12345',
+      project_id: '12345',
       callbacks: {
         renderStarted: updateConfig
       }

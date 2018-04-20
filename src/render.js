@@ -48,7 +48,7 @@ function InitRender(deps) {
 
     if (getConfig().resources) args.resources = getConfig().resources
     if (getConfig().availability_constraints) args.availability_constraints = getConfig().availability_constraints
-    if (getConfig().projectId) args.project_id = getConfig().projectId
+    if (getConfig().project_id) args.project_id = getConfig().project_id
 
     // Only add email to findtime if no calendars or users are explicitly specified
     $.extend(args, getConfig().availability);
@@ -91,8 +91,8 @@ function InitRender(deps) {
     }
 
     // scope group booking slots by widget ID if possible
-    if (getConfig().projectId) requestData.params = {
-      search: 'project.id:' + getConfig().projectId
+    if (getConfig().project_id) requestData.params = {
+      search: 'project.id:' + getConfig().project_id
     }
 
     sdk
@@ -666,7 +666,7 @@ function InitRender(deps) {
 
     // if a remote widget (has ID) is used, pass that reference when creating booking
     // TODO had to be disabled for team availability because not all members own the widget
-    if (getConfig().projectId) args.project_id = getConfig().projectId
+    if (getConfig().project_id) args.project_id = getConfig().project_id
 
     utils.doCallback('createBookingStarted', args);
 
@@ -696,8 +696,8 @@ function InitRender(deps) {
 
     var campaignName = 'widget'
     var campaignSource = window.location.hostname.replace(/\./g, '-')
-    if (getConfig().projectId) { campaignName = 'embedded-widget'; }
-    if (getConfig().projectSlug) { campaignName = 'hosted-widget'; }
+    if (getConfig().project_id) { campaignName = 'embedded-widget'; }
+    if (getConfig().project_slug) { campaignName = 'hosted-widget'; }
 
     var template = require('./templates/poweredby.html');
     var timekitLogo = require('!svg-inline!./assets/timekit-logo.svg');

@@ -21,12 +21,12 @@ describe('Multiple instances', function() {
 
     var widget1 = new TimekitBooking();
     widget1.init({
-      appKey: '12345'
+      app_key: '12345'
     });
 
     var widget2 = new TimekitBooking();
     widget2.init({
-      appKey: '67890'
+      app_key: '67890'
     });
 
     var widget1SdkAppKey = widget1.timekitSdk.getConfig().appKey
@@ -34,8 +34,8 @@ describe('Multiple instances', function() {
 
     expect(widget1SdkAppKey).not.toEqual(widget2SdkAppKey);
 
-    var widget1ConfigAppKey = widget1.getConfig().appKey
-    var widget2ConfigAppKey = widget2.getConfig().appKey
+    var widget1ConfigAppKey = widget1.getConfig().app_key
+    var widget2ConfigAppKey = widget2.getConfig().app_key
 
     expect(widget1ConfigAppKey).not.toEqual(widget2ConfigAppKey);
 

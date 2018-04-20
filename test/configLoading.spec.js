@@ -21,7 +21,7 @@ describe('Config loading', function() {
 
     var widget = new TimekitBooking();
     var config = {
-      projectSlug: 'my-widget-slug'
+      project_slug: 'my-widget-slug'
     };
     widget.init(config);
 
@@ -32,7 +32,7 @@ describe('Config loading', function() {
       var request = jasmine.Ajax.requests.first();
 
       expect(request.url).toBe('https://api.timekit.io/v2/projects/hosted/my-widget-slug');
-      expect(widget.getConfig().appKey).toBeDefined();
+      expect(widget.getConfig().app_key).toBeDefined();
       expect($('.bookingjs-calendar')).toBeInDOM();
       done();
 
@@ -43,7 +43,7 @@ describe('Config loading', function() {
 
     var widget = new TimekitBooking();
     var config = {
-      projectSlug: 'my-widget-slug'
+      project_slug: 'my-widget-slug'
     };
     widget.init(config);
 
@@ -54,7 +54,7 @@ describe('Config loading', function() {
       var request = jasmine.Ajax.requests.first();
 
       expect(request.url).toBe('https://api.timekit.io/v2/projects/hosted/my-widget-slug');
-      expect(widget.getConfig().projectId).toBeDefined();
+      expect(widget.getConfig().project_id).toBeDefined();
       expect($('.bookingjs-calendar')).toBeInDOM();
       done();
 
@@ -65,8 +65,8 @@ describe('Config loading', function() {
 
     var widget = new TimekitBooking();
     var config = {
-      appKey: '12345',
-      projectId: '12345'
+      app_key: '12345',
+      project_id: '12345'
     };
     widget.init(config);
 
@@ -87,7 +87,7 @@ describe('Config loading', function() {
   it('should be able to load local config with widget ID set by disabling remote load', function(done) {
 
     var config = {
-      projectId: '12345',
+      project_id: '12345',
       disable_remote_load: true
     }
     var widget = createWidget(config);
@@ -97,7 +97,7 @@ describe('Config loading', function() {
       var request = jasmine.Ajax.requests.first();
 
       expect(request.url).toBe('https://api.timekit.io/v2/availability');
-      expect(widget.getConfig().projectId).toBe('12345');
+      expect(widget.getConfig().project_id).toBe('12345');
       done();
 
     }, 50)

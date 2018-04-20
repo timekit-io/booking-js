@@ -22,14 +22,16 @@ var primary = {
       allocated_resource_prefix: 'with',
       submit_text: 'Book it',
       success_message_title: 'Thanks!',
-      success_message_body: 'We have received your booking.',
+      success_message_body: 'We have received your booking and sent a confirmation to %s',
       timezone_helper_loading: 'Loading..',
       timezone_helper_different: 'Your timezone is %s hours %s %s (calendar shown in your local time)',
       timezone_helper_same: 'You are in the same timezone as %s'
     }
   },
   availability: {},
-  booking: {},
+  booking: {
+    graph: 'instant'
+  },
   customer_fields: {
     name: {
       type: 'string',
@@ -43,6 +45,7 @@ var primary = {
       required: true
     }
   },
+  callbacks: {},
   sdk: {
     headers: {
       'Timekit-Context': 'widget'
@@ -65,7 +68,6 @@ var primary = {
     timezone: 'local',
     nowIndicator: true
   },
-  callbacks: {}
 
 };
 

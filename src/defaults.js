@@ -9,8 +9,8 @@ var primary = {
   el: '#bookingjs',
   name: '',
   autoload: true,
-  disableRemoteLoad: false,
-  disableConfirmPage: false,
+  disable_remote_load: false,
+  disable_confirm_page: false,
   debug: false,
   ui: {
     show_credits: true,

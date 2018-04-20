@@ -323,10 +323,10 @@ function InitRender(deps) {
       rootTarget.removeClass('is-small');
     }
 
-    if (getConfig().bookingFields.comment.enabled) {    height += 100; }
-    if (getConfig().bookingFields.phone.enabled) {      height += 64; }
-    if (getConfig().bookingFields.voip.enabled) {       height += 64; }
-    if (getConfig().bookingFields.location.enabled) {   height += 64; }
+    if (getConfig().customer_fields.comment) {    height += 100; }
+    if (getConfig().customer_fields.phone) {      height += 64; }
+    if (getConfig().customer_fields.voip) {       height += 64; }
+    if (getConfig().customer_fields.location) {   height += 64; }
     if (!getConfig().localization.showTimezoneHelper) { height += 33; }
 
     return {
@@ -472,7 +472,7 @@ function InitRender(deps) {
       submitText:               getConfig().localization.strings.submitText,
       successMessageTitle:      getConfig().localization.strings.successMessageTitle,
       successMessageBody:       interpolate.sprintf(getConfig().localization.strings.successMessageBody, '<span class="booked-email"></span>'),
-      fields:                   getConfig().bookingFields
+      fields:                   getConfig().customer_fields
     }, {
       formFields: fieldsTemplate
     }));
@@ -618,21 +618,21 @@ function InitRender(deps) {
       args.event.calendar_id = getConfig().calendar;
     }
 
-    if (getConfig().bookingFields.location.enabled) {
+    if (getConfig().customer_fields.location) {
       args.customer.where = formData.location;
       args.event.where = formData.location;
     }
-    if (getConfig().bookingFields.comment.enabled) {
+    if (getConfig().customer_fields.comment) {
       args.customer.comment = formData.comment;
-      args.event.description += getConfig().bookingFields.comment.placeholder + ': ' + formData.comment + '\n';
+      args.event.description += (getConfig().customer_fields.comment.title || 'comment') + ': ' + formData.comment + '\n';
     }
-    if (getConfig().bookingFields.phone.enabled) {
+    if (getConfig().customer_fields.phone) {
       args.customer.phone = formData.phone;
-      args.event.description += getConfig().bookingFields.phone.placeholder + ': ' + formData.phone + '\n';
+      args.event.description += (getConfig().customer_fields.phone.title || 'phone') + ': ' + formData.phone + '\n';
     }
-    if (getConfig().bookingFields.voip.enabled) {
+    if (getConfig().customer_fields.voip) {
       args.customer.voip = formData.voip;
-      args.event.description += getConfig().bookingFields.voip.placeholder + ': ' + formData.voip + '\n';
+      args.event.description += (getConfig().customer_fields.voip.title || 'voip') + ': ' + formData.voip + '\n';
     }
 
     $.extend(true, args, getConfig().booking);

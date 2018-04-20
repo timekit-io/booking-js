@@ -11,8 +11,8 @@ function InitConfig() {
   var setDefaults = function(suppliedConfig) {
 
     if (suppliedConfig.appKey) {
-      if (typeof suppliedConfig.timekitConfig === 'undefined') suppliedConfig.timekitConfig = {}
-      suppliedConfig.timekitConfig.appKey = suppliedConfig.appKey
+      if (typeof suppliedConfig.sdk === 'undefined') suppliedConfig.sdk = {}
+      suppliedConfig.sdk.appKey = suppliedConfig.appKey
     }
     return $.extend(true, {}, defaultConfig.primary, suppliedConfig);
 
@@ -54,15 +54,19 @@ function InitConfig() {
 
   };
 
+  var update = function (passedConfig) {
+    config = passedConfig
+  }
+
+  var retrieve = function () {
+    return config
+  }
+
   return {
     parseAndUpdate: parseAndUpdate,
     setDefaults: setDefaults,
-    update: function (passedConfig) {
-      config = passedConfig
-    },
-    retrieve: function () {
-      return config
-    }
+    update: update,
+    retrieve: retrieve
   }
 }
 

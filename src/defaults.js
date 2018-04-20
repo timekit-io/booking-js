@@ -18,47 +18,20 @@ var primary = {
   availabilityView: 'agendaWeek',
   availability: {},
   booking: {},
-  bookingFields: {
+  customer_fields: {
     name: {
-      placeholder: 'Full name',
-      prefilled: false,
-      locked: false
+      type: 'string',
+      title: 'Name',
+      required: true
     },
     email: {
-      placeholder: 'E-mail',
-      prefilled: false,
-      locked: false
-    },
-    comment: {
-      enabled: true,
-      placeholder: 'Comment',
-      prefilled: false,
-      required: false,
-      locked: false
-    },
-    phone: {
-      enabled: false,
-      placeholder: 'Phone number',
-      prefilled: false,
-      required: false,
-      locked: false
-    },
-    voip: {
-      enabled: false,
-      placeholder: 'Skype username',
-      prefilled: false,
-      required: false,
-      locked: false
-    },
-    location: {
-      enabled: false,
-      placeholder: 'Location',
-      prefilled: false,
-      required: false,
-      locked: false
+      type: 'string',
+      title: 'E-mail',
+      format: 'email',
+      required: true
     }
   },
-  timekitConfig: {
+  sdk: {
     headers: {
       'Timekit-Context': 'widget'
     }

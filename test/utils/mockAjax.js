@@ -202,7 +202,7 @@ module.exports = {
       status: 200,
       statusText: 'HTTP/1.1 200 OK',
       contentType: 'application/json',
-      responseText: '{ "data": { "id": "12345", "slug": "my-widget-slug", "config": { "email": "marty.mcfly@timekit.io", "apiToken": "XT1JO879JF1qUXXzmETD5ucgxaDwsFsd", "calendar": "22f86f0c-ee80-470c-95e8-dadd9d05edd2", "name": "Marty McFly", "bookingGraph":"instant", "booking": { "event": { "where": "Somewhere", "what": "Something" }, "timekitConfig": { "app": "bookingjs-demo" } } } }'
+      responseText: '{ "data": { "id": "12345", "slug": "my-widget-slug", "config": { "email": "marty.mcfly@timekit.io", "apiToken": "XT1JO879JF1qUXXzmETD5ucgxaDwsFsd", "calendar": "22f86f0c-ee80-470c-95e8-dadd9d05edd2", "name": "Marty McFly", "bookingGraph":"instant", "booking": { "event": { "where": "Somewhere", "what": "Something" }, "sdk": { "app": "bookingjs-demo" } } } }'
     });
 
   },

@@ -2,14 +2,14 @@
   <label
     for="input-name"
     class="bookingjs-form-label label-name">
-    {{ fields.name.placeholder }}
+    {{ fields.name.title }}
   </label>
   <input
     id="input-name"
     class="bookingjs-form-input input-name"
     type="text"
     name="name"
-    placeholder="{{ fields.name.placeholder }}"
+    placeholder="{{ fields.name.title }}"
     {{# fields.name.prefilled }} value="{{ fields.name.prefilled }}" {{/ fields.name.prefilled }}
     {{# fields.name.locked }} readonly {{/ fields.name.locked }}
     required
@@ -20,94 +20,94 @@
   <label
     for="input-email"
     class="bookingjs-form-label label-email">
-    {{ fields.email.placeholder }}
+    {{ fields.email.title }}
   </label>
   <input
     id="input-email"
     class="bookingjs-form-input input-email"
     type="email"
     name="email"
-    placeholder="{{ fields.email.placeholder }}"
+    placeholder="{{ fields.email.title }}"
     {{# fields.email.prefilled }} value="{{ fields.email.prefilled }}" {{/ fields.email.prefilled }}
     {{# fields.email.locked }} readonly {{/ fields.email.locked }}
     required
   />
 </div>
 
-{{# fields.phone.enabled }}
+{{# fields.phone }}
 <div class="bookingjs-form-field">
   <label
     for="input-phone"
     class="bookingjs-form-label label-phone">
-    {{ fields.phone.placeholder }}
+    {{ fields.phone.title }}
   </label>
   <input
     id="input-phone"
     class="bookingjs-form-input input-phone"
     type="tel"
     name="phone"
-    placeholder="{{ fields.phone.placeholder }}"
+    placeholder="{{ fields.phone.title }}"
     {{# fields.phone.prefilled }} value="{{ fields.phone.prefilled }}" {{/ fields.phone.prefilled }}
     {{# fields.phone.required }} required {{/ fields.phone.required }}
     {{# fields.phone.locked }} readonly {{/ fields.phone.locked }}
   />
 </div>
-{{/ fields.phone.enabled }}
+{{/ fields.phone }}
 
-{{# fields.voip.enabled }}
+{{# fields.voip }}
 <div class="bookingjs-form-field">
   <label
     for="input-voip"
     class="bookingjs-form-label label-voip">
-    {{ fields.voip.placeholder }}
+    {{ fields.voip.title }}
   </label>
   <input
     id="input-voip"
     class="bookingjs-form-input input-voip"
     type="text"
     name="voip"
-    placeholder="{{ fields.voip.placeholder }}"
+    placeholder="{{ fields.voip.title }}"
     {{# fields.voip.prefilled }} value="{{ fields.voip.prefilled }}" {{/ fields.voip.prefilled }}
     {{# fields.voip.required }} required {{/ fields.voip.required }}
     {{# fields.voip.locked }} readonly {{/ fields.voip.locked }}
   />
 </div>
-{{/ fields.voip.enabled }}
+{{/ fields.voip }}
 
-{{# fields.location.enabled }}
+{{# fields.location }}
 <div class="bookingjs-form-field">
   <label
     for="input-location"
     class="bookingjs-form-label label-location">
-    {{ fields.location.placeholder }}
+    {{ fields.location.title }}
   </label>
   <input
     id="input-location"
     class="bookingjs-form-input input-location"
     type="text"
     name="location"
-    placeholder="{{ fields.location.placeholder }}"
+    placeholder="{{ fields.location.title }}"
     {{# fields.location.prefilled }} value="{{ fields.location.prefilled }}" {{/ fields.location.prefilled }}
     {{# fields.location.required }} required {{/ fields.location.required }}
     {{# fields.location.locked }} readonly {{/ fields.location.locked }}
   />
 </div>
-{{/ fields.location.enabled }}
+{{/ fields.location }}
 
-{{# fields.comment.enabled }}
+{{# fields.comment }}
 <div class="bookingjs-form-field">
   <label
     for="input-comment"
     class="bookingjs-form-label label-comment">
-    {{ fields.comment.placeholder }}
+    {{ fields.comment.title }}
   </label>
   <textarea
     id="input-comment"
     class="bookingjs-form-input bookingjs-form-input--textarea input-comment"
     rows="3"
     name="comment"
-    placeholder="{{ fields.comment.placeholder }}"
+    placeholder="{{ fields.comment.title }}"
     {{# fields.comment.required }} required {{/ fields.comment.required }}
     {{# fields.comment.locked }} readonly {{/ fields.comment.locked }}>{{# fields.comment.prefilled }}{{ fields.comment.prefilled }}{{/ fields.comment.prefilled }}</textarea>
 </div>
-{{/ fields.comment.enabled }}
+{{/ fields.comment }}

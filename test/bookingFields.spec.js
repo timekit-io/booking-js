@@ -21,15 +21,18 @@ describe('Booking fields', function() {
   it('should be able to add the phone, voip and location field', function(done) {
 
     var config = {
-      bookingFields: {
+      customer_fields: {
         phone: {
-          enabled: true
+          type: 'string',
+          title: 'Phone'
         },
         voip: {
-          enabled: true
+          type: 'string',
+          title: 'VoIP'
         },
         location: {
-          enabled: true
+          type: 'string',
+          title: 'Location'
         }
       }
     }
@@ -45,14 +48,14 @@ describe('Booking fields', function() {
         var phoneInput = $('.input-phone');
         expect(phoneInput).toBeInDOM();
         expect(phoneInput).toBeVisible();
-        expect(phoneInput.attr('placeholder')).toBe('Phone number');
+        expect(phoneInput.attr('placeholder')).toBe('Phone');
         expect(phoneInput.attr('required')).toBe(undefined);
         expect(phoneInput.val()).toBe('');
 
         var voipInput = $('.input-voip');
         expect(voipInput).toBeInDOM();
         expect(voipInput).toBeVisible();
-        expect(voipInput.attr('placeholder')).toBe('Skype username');
+        expect(voipInput.attr('placeholder')).toBe('VoIP');
         expect(voipInput.attr('required')).toBe(undefined);
         expect(voipInput.val()).toBe('');
 
@@ -73,10 +76,10 @@ describe('Booking fields', function() {
   it('should be able to add the phone field, prefilled and required', function(done) {
 
     var config = {
-      bookingFields: {
+      customer_fields: {
         phone: {
-          enabled: true,
-          placeholder: 'My custom placeholder',
+          type: 'string',
+          title: 'My custom placeholder',
           prefilled: '12345678',
           required: true
         }
@@ -94,9 +97,9 @@ describe('Booking fields', function() {
         var phoneInput = $('.input-phone');
         expect(phoneInput).toBeInDOM();
         expect(phoneInput).toBeVisible();
-        expect(phoneInput.attr('placeholder')).toBe(config.bookingFields.phone.placeholder);
+        expect(phoneInput.attr('placeholder')).toBe(config.customer_fields.phone.title);
         expect(phoneInput.attr('required')).toBe('required');
-        expect(phoneInput.val()).toBe(config.bookingFields.phone.prefilled);
+        expect(phoneInput.val()).toBe(config.customer_fields.phone.prefilled);
 
         done();
 
@@ -105,14 +108,10 @@ describe('Booking fields', function() {
 
   });
 
-  it('should be able to disable the comment field', function(done) {
+  it('should not output comment field by default', function(done) {
 
     var config = {
-      bookingFields: {
-        comment: {
-          enabled: false
-        }
-      }
+      customer_fields: {}
     }
 
     createWidget(config);
@@ -136,7 +135,7 @@ describe('Booking fields', function() {
   it('should be able to lock fields for user input', function(done) {
 
     var config = {
-      bookingFields: {
+      customer_fields: {
         name: {
           locked: true,
           prefilled: 'My Test Name'
@@ -145,6 +144,7 @@ describe('Booking fields', function() {
           locked: false
         },
         comment: {
+          title: 'Comment',
           locked: true,
           prefilled: 'This should be submitted'
         }
@@ -184,7 +184,7 @@ describe('Booking fields', function() {
           var request = jasmine.Ajax.requests.mostRecent();
 
           var requestDescription = JSON.parse(request.params).event.description
-          expect(requestDescription).toBe('Comment: ' + config.bookingFields.comment.prefilled + '\n');
+          expect(requestDescription).toBe('Comment: ' + config.customer_fields.comment.prefilled + '\n');
 
           done();
 

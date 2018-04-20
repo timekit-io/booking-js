@@ -19,7 +19,7 @@ function Initialize() {
 
   // Setup the Timekit SDK with correct config
   var timekitSetupConfig = function() {
-    sdk.configure(getConfig().timekitConfig);
+    sdk.configure(getConfig().sdk);
   };
 
   // Initilization method

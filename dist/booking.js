@@ -112,7 +112,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  // Setup the Timekit SDK with correct config
 	  var timekitSetupConfig = function() {
-	    sdk.configure(getConfig().timekitConfig);
+	    sdk.configure(getConfig().sdk);
 	  };
 	
 	  // Initilization method
@@ -4480,8 +4480,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var setDefaults = function(suppliedConfig) {
 	
 	    if (suppliedConfig.appKey) {
-	      if (typeof suppliedConfig.timekitConfig === 'undefined') suppliedConfig.timekitConfig = {}
-	      suppliedConfig.timekitConfig.appKey = suppliedConfig.appKey
+	      if (typeof suppliedConfig.sdk === 'undefined') suppliedConfig.sdk = {}
+	      suppliedConfig.sdk.appKey = suppliedConfig.appKey
 	    }
 	    return $.extend(true, {}, defaultConfig.primary, suppliedConfig);
 	
@@ -4523,15 +4523,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  };
 	
+	  var update = function (passedConfig) {
+	    config = passedConfig
+	  }
+	
+	  var retrieve = function () {
+	    return config
+	  }
+	
 	  return {
 	    parseAndUpdate: parseAndUpdate,
 	    setDefaults: setDefaults,
-	    update: function (passedConfig) {
-	      config = passedConfig
-	    },
-	    retrieve: function () {
-	      return config
-	    }
+	    update: update,
+	    retrieve: retrieve
 	  }
 	}
 	
@@ -4562,47 +4566,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	  availabilityView: 'agendaWeek',
 	  availability: {},
 	  booking: {},
-	  bookingFields: {
+	  customer_fields: {
 	    name: {
-	      placeholder: 'Full name',
-	      prefilled: false,
-	      locked: false
+	      type: 'string',
+	      title: 'Name',
+	      required: true
 	    },
 	    email: {
-	      placeholder: 'E-mail',
-	      prefilled: false,
-	      locked: false
-	    },
-	    comment: {
-	      enabled: true,
-	      placeholder: 'Comment',
-	      prefilled: false,
-	      required: false,
-	      locked: false
-	    },
-	    phone: {
-	      enabled: false,
-	      placeholder: 'Phone number',
-	      prefilled: false,
-	      required: false,
-	      locked: false
-	    },
-	    voip: {
-	      enabled: false,
-	      placeholder: 'Skype username',
-	      prefilled: false,
-	      required: false,
-	      locked: false
-	    },
-	    location: {
-	      enabled: false,
-	      placeholder: 'Location',
-	      prefilled: false,
-	      required: false,
-	      locked: false
+	      type: 'string',
+	      title: 'E-mail',
+	      format: 'email',
+	      required: true
 	    }
 	  },
-	  timekitConfig: {
+	  sdk: {
 	    headers: {
 	      'Timekit-Context': 'widget'
 	    }
@@ -4631,6 +4608,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      allocatedResourcePrefix: 'with',
 	      submitText: 'Book it',
 	      successMessageTitle: 'Thanks!',
+	      successMessageBody: 'We have received your booking.',
 	      timezoneHelperLoading: 'Loading..',
 	      timezoneHelperDifferent: 'Your timezone is %s hours %s %s (calendar shown in your local time)',
 	      timezoneHelperSame: 'You are in the same timezone as %s'
@@ -5141,10 +5119,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      rootTarget.removeClass('is-small');
 	    }
 	
-	    if (getConfig().bookingFields.comment.enabled) {    height += 100; }
-	    if (getConfig().bookingFields.phone.enabled) {      height += 64; }
-	    if (getConfig().bookingFields.voip.enabled) {       height += 64; }
-	    if (getConfig().bookingFields.location.enabled) {   height += 64; }
+	    if (getConfig().customer_fields.comment) {    height += 100; }
+	    if (getConfig().customer_fields.phone) {      height += 64; }
+	    if (getConfig().customer_fields.voip) {       height += 64; }
+	    if (getConfig().customer_fields.location) {   height += 64; }
 	    if (!getConfig().localization.showTimezoneHelper) { height += 33; }
 	
 	    return {
@@ -5290,7 +5268,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      submitText:               getConfig().localization.strings.submitText,
 	      successMessageTitle:      getConfig().localization.strings.successMessageTitle,
 	      successMessageBody:       interpolate.sprintf(getConfig().localization.strings.successMessageBody, '<span class="booked-email"></span>'),
-	      fields:                   getConfig().bookingFields
+	      fields:                   getConfig().customer_fields
 	    }, {
 	      formFields: fieldsTemplate
 	    }));
@@ -5436,21 +5414,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	      args.event.calendar_id = getConfig().calendar;
 	    }
 	
-	    if (getConfig().bookingFields.location.enabled) {
+	    if (getConfig().customer_fields.location) {
 	      args.customer.where = formData.location;
 	      args.event.where = formData.location;
 	    }
-	    if (getConfig().bookingFields.comment.enabled) {
+	    if (getConfig().customer_fields.comment) {
 	      args.customer.comment = formData.comment;
-	      args.event.description += getConfig().bookingFields.comment.placeholder + ': ' + formData.comment + '\n';
+	      args.event.description += (getConfig().customer_fields.comment.title || 'comment') + ': ' + formData.comment + '\n';
 	    }
-	    if (getConfig().bookingFields.phone.enabled) {
+	    if (getConfig().customer_fields.phone) {
 	      args.customer.phone = formData.phone;
-	      args.event.description += getConfig().bookingFields.phone.placeholder + ': ' + formData.phone + '\n';
+	      args.event.description += (getConfig().customer_fields.phone.title || 'phone') + ': ' + formData.phone + '\n';
 	    }
-	    if (getConfig().bookingFields.voip.enabled) {
+	    if (getConfig().customer_fields.voip) {
 	      args.customer.voip = formData.voip;
-	      args.event.description += getConfig().bookingFields.voip.placeholder + ': ' + formData.voip + '\n';
+	      args.event.description += (getConfig().customer_fields.voip.title || 'voip') + ': ' + formData.voip + '\n';
 	    }
 	
 	    $.extend(true, args, getConfig().booking);
@@ -30810,7 +30788,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ (function(module, exports, __webpack_require__) {
 
 	var H = __webpack_require__(61);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-name\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-name\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.d("fields.name.placeholder",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-name\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-name\"");t.b("\n" + i);t.b("    type=\"text\"");t.b("\n" + i);t.b("    name=\"name\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.name.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.name.prefilled",c,p,1),c,p,0,340,377,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.name.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.name.locked",c,p,1),c,p,0,435,445,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("    required");t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"bookingjs-form-field\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-email\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-email\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.d("fields.email.placeholder",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-email\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-email\"");t.b("\n" + i);t.b("    type=\"email\"");t.b("\n" + i);t.b("    name=\"email\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.email.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.email.prefilled",c,p,1),c,p,0,846,884,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.email.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.email.locked",c,p,1),c,p,0,944,954,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("    required");t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);if(t.s(t.d("fields.phone.enabled",c,p,1),c,p,0,1034,1600,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("<div class=\"bookingjs-form-field\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-phone\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-phone\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.d("fields.phone.placeholder",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-phone\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-phone\"");t.b("\n" + i);t.b("    type=\"tel\"");t.b("\n" + i);t.b("    name=\"phone\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.phone.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.phone.prefilled",c,p,1),c,p,0,1382,1420,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.phone.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.phone.required",c,p,1),c,p,0,1482,1492,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.phone.locked",c,p,1),c,p,0,1551,1561,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n" + i);});c.pop();}t.b("\n" + i);if(t.s(t.d("fields.voip.enabled",c,p,1),c,p,0,1655,2208,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("<div class=\"bookingjs-form-field\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-voip\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-voip\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.d("fields.voip.placeholder",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-voip\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-voip\"");t.b("\n" + i);t.b("    type=\"text\"");t.b("\n" + i);t.b("    name=\"voip\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.voip.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.voip.prefilled",c,p,1),c,p,0,1996,2033,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.voip.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.voip.required",c,p,1),c,p,0,2093,2103,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.voip.locked",c,p,1),c,p,0,2160,2170,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n" + i);});c.pop();}t.b("\n" + i);if(t.s(t.d("fields.location.enabled",c,p,1),c,p,0,2266,2875,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("<div class=\"bookingjs-form-field\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-location\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-location\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.d("fields.location.placeholder",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-location\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-location\"");t.b("\n" + i);t.b("    type=\"text\"");t.b("\n" + i);t.b("    name=\"location\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.location.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.location.prefilled",c,p,1),c,p,0,2639,2680,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.location.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.location.required",c,p,1),c,p,0,2748,2758,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.location.locked",c,p,1),c,p,0,2823,2833,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n" + i);});c.pop();}t.b("\n" + i);if(t.s(t.d("fields.comment.enabled",c,p,1),c,p,0,2936,3554,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("<div class=\"bookingjs-form-field\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-comment\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-comment\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.d("fields.comment.placeholder",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <textarea");t.b("\n" + i);t.b("    id=\"input-comment\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input bookingjs-form-input--textarea input-comment\"");t.b("\n" + i);t.b("    rows=\"3\"");t.b("\n" + i);t.b("    name=\"comment\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.comment.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.comment.required",c,p,1),c,p,0,3331,3341,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.comment.locked",c,p,1),c,p,0,3404,3414,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b(">");if(t.s(t.d("fields.comment.prefilled",c,p,1),c,p,0,3474,3504,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(t.v(t.d("fields.comment.prefilled",c,p,0)));});c.pop();}t.b("</textarea>");t.b("\n" + i);t.b("</div>");t.b("\n" + i);});c.pop();}return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field\">\n  <label\n    for=\"input-name\"\n    class=\"bookingjs-form-label label-name\">\n    {{ fields.name.placeholder }}\n  </label>\n  <input\n    id=\"input-name\"\n    class=\"bookingjs-form-input input-name\"\n    type=\"text\"\n    name=\"name\"\n    placeholder=\"{{ fields.name.placeholder }}\"\n    {{# fields.name.prefilled }} value=\"{{ fields.name.prefilled }}\" {{/ fields.name.prefilled }}\n    {{# fields.name.locked }} readonly {{/ fields.name.locked }}\n    required\n  />\n</div>\n\n<div class=\"bookingjs-form-field\">\n  <label\n    for=\"input-email\"\n    class=\"bookingjs-form-label label-email\">\n    {{ fields.email.placeholder }}\n  </label>\n  <input\n    id=\"input-email\"\n    class=\"bookingjs-form-input input-email\"\n    type=\"email\"\n    name=\"email\"\n    placeholder=\"{{ fields.email.placeholder }}\"\n    {{# fields.email.prefilled }} value=\"{{ fields.email.prefilled }}\" {{/ fields.email.prefilled }}\n    {{# fields.email.locked }} readonly {{/ fields.email.locked }}\n    required\n  />\n</div>\n\n{{# fields.phone.enabled }}\n<div class=\"bookingjs-form-field\">\n  <label\n    for=\"input-phone\"\n    class=\"bookingjs-form-label label-phone\">\n    {{ fields.phone.placeholder }}\n  </label>\n  <input\n    id=\"input-phone\"\n    class=\"bookingjs-form-input input-phone\"\n    type=\"tel\"\n    name=\"phone\"\n    placeholder=\"{{ fields.phone.placeholder }}\"\n    {{# fields.phone.prefilled }} value=\"{{ fields.phone.prefilled }}\" {{/ fields.phone.prefilled }}\n    {{# fields.phone.required }} required {{/ fields.phone.required }}\n    {{# fields.phone.locked }} readonly {{/ fields.phone.locked }}\n  />\n</div>\n{{/ fields.phone.enabled }}\n\n{{# fields.voip.enabled }}\n<div class=\"bookingjs-form-field\">\n  <label\n    for=\"input-voip\"\n    class=\"bookingjs-form-label label-voip\">\n    {{ fields.voip.placeholder }}\n  </label>\n  <input\n    id=\"input-voip\"\n    class=\"bookingjs-form-input input-voip\"\n    type=\"text\"\n    name=\"voip\"\n    placeholder=\"{{ fields.voip.placeholder }}\"\n    {{# fields.voip.prefilled }} value=\"{{ fields.voip.prefilled }}\" {{/ fields.voip.prefilled }}\n    {{# fields.voip.required }} required {{/ fields.voip.required }}\n    {{# fields.voip.locked }} readonly {{/ fields.voip.locked }}\n  />\n</div>\n{{/ fields.voip.enabled }}\n\n{{# fields.location.enabled }}\n<div class=\"bookingjs-form-field\">\n  <label\n    for=\"input-location\"\n    class=\"bookingjs-form-label label-location\">\n    {{ fields.location.placeholder }}\n  </label>\n  <input\n    id=\"input-location\"\n    class=\"bookingjs-form-input input-location\"\n    type=\"text\"\n    name=\"location\"\n    placeholder=\"{{ fields.location.placeholder }}\"\n    {{# fields.location.prefilled }} value=\"{{ fields.location.prefilled }}\" {{/ fields.location.prefilled }}\n    {{# fields.location.required }} required {{/ fields.location.required }}\n    {{# fields.location.locked }} readonly {{/ fields.location.locked }}\n  />\n</div>\n{{/ fields.location.enabled }}\n\n{{# fields.comment.enabled }}\n<div class=\"bookingjs-form-field\">\n  <label\n    for=\"input-comment\"\n    class=\"bookingjs-form-label label-comment\">\n    {{ fields.comment.placeholder }}\n  </label>\n  <textarea\n    id=\"input-comment\"\n    class=\"bookingjs-form-input bookingjs-form-input--textarea input-comment\"\n    rows=\"3\"\n    name=\"comment\"\n    placeholder=\"{{ fields.comment.placeholder }}\"\n    {{# fields.comment.required }} required {{/ fields.comment.required }}\n    {{# fields.comment.locked }} readonly {{/ fields.comment.locked }}>{{# fields.comment.prefilled }}{{ fields.comment.prefilled }}{{/ fields.comment.prefilled }}</textarea>\n</div>\n{{/ fields.comment.enabled }}\n", H);return T; }();
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-name\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-name\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.d("fields.name.title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-name\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-name\"");t.b("\n" + i);t.b("    type=\"text\"");t.b("\n" + i);t.b("    name=\"name\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.name.title",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.name.prefilled",c,p,1),c,p,0,328,365,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.name.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.name.locked",c,p,1),c,p,0,423,433,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("    required");t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"bookingjs-form-field\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-email\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-email\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.d("fields.email.title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-email\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-email\"");t.b("\n" + i);t.b("    type=\"email\"");t.b("\n" + i);t.b("    name=\"email\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.email.title",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.email.prefilled",c,p,1),c,p,0,822,860,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.email.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.email.locked",c,p,1),c,p,0,920,930,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("    required");t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);if(t.s(t.d("fields.phone",c,p,1),c,p,0,1002,1556,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("<div class=\"bookingjs-form-field\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-phone\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-phone\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.d("fields.phone.title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-phone\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-phone\"");t.b("\n" + i);t.b("    type=\"tel\"");t.b("\n" + i);t.b("    name=\"phone\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.phone.title",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.phone.prefilled",c,p,1),c,p,0,1338,1376,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.phone.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.phone.required",c,p,1),c,p,0,1438,1448,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.phone.locked",c,p,1),c,p,0,1507,1517,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n" + i);});c.pop();}t.b("\n" + i);if(t.s(t.d("fields.voip",c,p,1),c,p,0,1595,2136,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("<div class=\"bookingjs-form-field\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-voip\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-voip\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.d("fields.voip.title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-voip\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-voip\"");t.b("\n" + i);t.b("    type=\"text\"");t.b("\n" + i);t.b("    name=\"voip\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.voip.title",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.voip.prefilled",c,p,1),c,p,0,1924,1961,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.voip.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.voip.required",c,p,1),c,p,0,2021,2031,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.voip.locked",c,p,1),c,p,0,2088,2098,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n" + i);});c.pop();}t.b("\n" + i);if(t.s(t.d("fields.location",c,p,1),c,p,0,2178,2775,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("<div class=\"bookingjs-form-field\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-location\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-location\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.d("fields.location.title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-location\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-location\"");t.b("\n" + i);t.b("    type=\"text\"");t.b("\n" + i);t.b("    name=\"location\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.location.title",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.location.prefilled",c,p,1),c,p,0,2539,2580,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.location.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.location.required",c,p,1),c,p,0,2648,2658,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.location.locked",c,p,1),c,p,0,2723,2733,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n" + i);});c.pop();}t.b("\n" + i);if(t.s(t.d("fields.comment",c,p,1),c,p,0,2820,3426,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("<div class=\"bookingjs-form-field\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-comment\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-comment\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.d("fields.comment.title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <textarea");t.b("\n" + i);t.b("    id=\"input-comment\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input bookingjs-form-input--textarea input-comment\"");t.b("\n" + i);t.b("    rows=\"3\"");t.b("\n" + i);t.b("    name=\"comment\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.comment.title",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.comment.required",c,p,1),c,p,0,3203,3213,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.comment.locked",c,p,1),c,p,0,3276,3286,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b(">");if(t.s(t.d("fields.comment.prefilled",c,p,1),c,p,0,3346,3376,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(t.v(t.d("fields.comment.prefilled",c,p,0)));});c.pop();}t.b("</textarea>");t.b("\n" + i);t.b("</div>");t.b("\n" + i);});c.pop();}return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field\">\n  <label\n    for=\"input-name\"\n    class=\"bookingjs-form-label label-name\">\n    {{ fields.name.title }}\n  </label>\n  <input\n    id=\"input-name\"\n    class=\"bookingjs-form-input input-name\"\n    type=\"text\"\n    name=\"name\"\n    placeholder=\"{{ fields.name.title }}\"\n    {{# fields.name.prefilled }} value=\"{{ fields.name.prefilled }}\" {{/ fields.name.prefilled }}\n    {{# fields.name.locked }} readonly {{/ fields.name.locked }}\n    required\n  />\n</div>\n\n<div class=\"bookingjs-form-field\">\n  <label\n    for=\"input-email\"\n    class=\"bookingjs-form-label label-email\">\n    {{ fields.email.title }}\n  </label>\n  <input\n    id=\"input-email\"\n    class=\"bookingjs-form-input input-email\"\n    type=\"email\"\n    name=\"email\"\n    placeholder=\"{{ fields.email.title }}\"\n    {{# fields.email.prefilled }} value=\"{{ fields.email.prefilled }}\" {{/ fields.email.prefilled }}\n    {{# fields.email.locked }} readonly {{/ fields.email.locked }}\n    required\n  />\n</div>\n\n{{# fields.phone }}\n<div class=\"bookingjs-form-field\">\n  <label\n    for=\"input-phone\"\n    class=\"bookingjs-form-label label-phone\">\n    {{ fields.phone.title }}\n  </label>\n  <input\n    id=\"input-phone\"\n    class=\"bookingjs-form-input input-phone\"\n    type=\"tel\"\n    name=\"phone\"\n    placeholder=\"{{ fields.phone.title }}\"\n    {{# fields.phone.prefilled }} value=\"{{ fields.phone.prefilled }}\" {{/ fields.phone.prefilled }}\n    {{# fields.phone.required }} required {{/ fields.phone.required }}\n    {{# fields.phone.locked }} readonly {{/ fields.phone.locked }}\n  />\n</div>\n{{/ fields.phone }}\n\n{{# fields.voip }}\n<div class=\"bookingjs-form-field\">\n  <label\n    for=\"input-voip\"\n    class=\"bookingjs-form-label label-voip\">\n    {{ fields.voip.title }}\n  </label>\n  <input\n    id=\"input-voip\"\n    class=\"bookingjs-form-input input-voip\"\n    type=\"text\"\n    name=\"voip\"\n    placeholder=\"{{ fields.voip.title }}\"\n    {{# fields.voip.prefilled }} value=\"{{ fields.voip.prefilled }}\" {{/ fields.voip.prefilled }}\n    {{# fields.voip.required }} required {{/ fields.voip.required }}\n    {{# fields.voip.locked }} readonly {{/ fields.voip.locked }}\n  />\n</div>\n{{/ fields.voip }}\n\n{{# fields.location }}\n<div class=\"bookingjs-form-field\">\n  <label\n    for=\"input-location\"\n    class=\"bookingjs-form-label label-location\">\n    {{ fields.location.title }}\n  </label>\n  <input\n    id=\"input-location\"\n    class=\"bookingjs-form-input input-location\"\n    type=\"text\"\n    name=\"location\"\n    placeholder=\"{{ fields.location.title }}\"\n    {{# fields.location.prefilled }} value=\"{{ fields.location.prefilled }}\" {{/ fields.location.prefilled }}\n    {{# fields.location.required }} required {{/ fields.location.required }}\n    {{# fields.location.locked }} readonly {{/ fields.location.locked }}\n  />\n</div>\n{{/ fields.location }}\n\n{{# fields.comment }}\n<div class=\"bookingjs-form-field\">\n  <label\n    for=\"input-comment\"\n    class=\"bookingjs-form-label label-comment\">\n    {{ fields.comment.title }}\n  </label>\n  <textarea\n    id=\"input-comment\"\n    class=\"bookingjs-form-input bookingjs-form-input--textarea input-comment\"\n    rows=\"3\"\n    name=\"comment\"\n    placeholder=\"{{ fields.comment.title }}\"\n    {{# fields.comment.required }} required {{/ fields.comment.required }}\n    {{# fields.comment.locked }} readonly {{/ fields.comment.locked }}>{{# fields.comment.prefilled }}{{ fields.comment.prefilled }}{{/ fields.comment.prefilled }}</textarea>\n</div>\n{{/ fields.comment }}\n", H);return T; }();
 
 /***/ }),
 /* 72 */

@@ -28,7 +28,7 @@ function InitRender(deps) {
   // Make sure DOM element is ready and clean it
   var prepareDOM = function(suppliedConfig) {
 
-    var targetElement = suppliedConfig.targetEl || getConfig().targetEl;
+    var targetElement = suppliedConfig.el || getConfig().el;
 
     rootTarget = $(targetElement);
 
@@ -212,7 +212,7 @@ function InitRender(deps) {
 
     var timezoneHelperTarget = $(template.render({
       timezoneIcon: timezoneIcon,
-      loadingText: getConfig().localization.strings.timezoneHelperLoading,
+      loadingText: getConfig().ui.localization.timezone_helper_loading,
       loading: true
     }));
 
@@ -238,8 +238,8 @@ function InitRender(deps) {
       var newTimezoneHelperTarget = $(template.render({
         timezoneIcon: timezoneIcon,
         timezoneDifference: (tzOffsetDiffAbs === 0 ? false : true),
-        timezoneDifferent: interpolate.sprintf(getConfig().localization.strings.timezoneHelperDifferent, tzOffsetDiffAbs, tzDirection, getConfig().name),
-        timezoneSame: interpolate.sprintf(getConfig().localization.strings.timezoneHelperSame, getConfig().name)
+        timezoneDifferent: interpolate.sprintf(getConfig().ui.localization.timezone_helper_different, tzOffsetDiffAbs, tzDirection, getConfig().name),
+        timezoneSame: interpolate.sprintf(getConfig().ui.localization.timezone_helper_same, getConfig().name)
       }));
 
       timezoneHelperTarget.replaceWith(newTimezoneHelperTarget);
@@ -294,7 +294,7 @@ function InitRender(deps) {
   // Clicking a timeslot
   var clickTimeslot = function(eventData) {
 
-    if (!getConfig().disableConfirmPage) {
+    if (!getConfig().disable_confirm_page) {
       showBookingPage(eventData)
     } else {
       $('.fc-event-clicked').removeClass('fc-event-clicked');
@@ -315,7 +315,7 @@ function InitRender(deps) {
     if (rootTarget.width() < 480) {
       height = 390;
       rootTarget.addClass('is-small');
-      if (getConfig().avatar) height -= 15;
+      if (getConfig().ui.avatar) height -= 15;
       if (currentView === 'agendaWeek' || currentView === 'basicDay') {
         view = 'basicDay';
       }
@@ -327,7 +327,7 @@ function InitRender(deps) {
     if (getConfig().customer_fields.phone) {      height += 64; }
     if (getConfig().customer_fields.voip) {       height += 64; }
     if (getConfig().customer_fields.location) {   height += 64; }
-    if (!getConfig().localization.showTimezoneHelper) { height += 33; }
+    if (!getConfig().ui.show_timezone_helper) {   height += 33; }
 
     return {
       height: height,
@@ -354,7 +354,7 @@ function InitRender(deps) {
     calendarTarget.removeClass('empty-calendar');
 
     // Go to first event if enabled
-    if (getConfig().goToFirstEvent) goToFirstEvent(eventData[0].start);
+    goToFirstEvent(eventData[0].start);
 
   };
 
@@ -363,7 +363,7 @@ function InitRender(deps) {
 
     var template = require('./templates/user-avatar.html');
     var avatarTarget = $(template.render({
-      image: getConfig().avatar
+      image: getConfig().ui.avatar
     }));
 
     rootTarget.addClass('has-avatar');
@@ -455,23 +455,23 @@ function InitRender(deps) {
     var fieldsTemplate = require('./templates/booking-fields.html');
     var template = require('./templates/booking-page.html');
 
-    var dateFormat = getConfig().localization.bookingDateFormat || moment.localeData().longDateFormat('LL');
-    var timeFormat = getConfig().localization.bookingTimeFormat || moment.localeData().longDateFormat('LT');
+    var dateFormat = getConfig().ui.booking_date_format || moment.localeData().longDateFormat('LL');
+    var timeFormat = getConfig().ui.booking_time_format || moment.localeData().longDateFormat('LT');
 
     var allocatedResource = eventData.users ? eventData.users[0].name : false;
 
     bookingPageTarget = $(template.render({
       chosenDate:               moment(eventData.start).format(dateFormat),
       chosenTime:               moment(eventData.start).format(timeFormat) + ' - ' + moment(eventData.end).format(timeFormat),
-      allocatedResourcePrefix:  getConfig().localization.strings.allocatedResourcePrefix,
+      allocated_resource_prefix:  getConfig().ui.localization.allocated_resource_prefix,
       allocatedResource:        allocatedResource,
       closeIcon:                require('!svg-inline!./assets/close-icon.svg'),
       checkmarkIcon:            require('!svg-inline!./assets/checkmark-icon.svg'),
       loadingIcon:              require('!svg-inline!./assets/loading-spinner.svg'),
       errorIcon:                require('!svg-inline!./assets/error-icon.svg'),
-      submitText:               getConfig().localization.strings.submitText,
-      successMessageTitle:      getConfig().localization.strings.successMessageTitle,
-      successMessageBody:       interpolate.sprintf(getConfig().localization.strings.successMessageBody, '<span class="booked-email"></span>'),
+      submitText:               getConfig().ui.localization.submit_text,
+      successMessageTitle:      getConfig().ui.localization.success_message_title,
+      successMessageBody:       interpolate.sprintf(getConfig().ui.localization.success_message_body, '<span class="booked-email"></span>'),
       fields:                   getConfig().customer_fields
     }, {
       formFields: fieldsTemplate
@@ -502,7 +502,7 @@ function InitRender(deps) {
     });
 
     // Show powered by Timekit message
-    if (getConfig().showCredits) {
+    if (getConfig().ui.show_credits) {
       renderPoweredByMessage(bookingPageTarget);
     }
 
@@ -671,7 +671,7 @@ function InitRender(deps) {
     utils.doCallback('createBookingStarted', args);
 
     var requestHeaders = {
-      'Timekit-OutputTimestampFormat': 'Y-m-d ' + getConfig().localization.emailTimeFormat + ' (P e)'
+      'Timekit-OutputTimestampFormat': 'Y-m-d ' + getConfig().ui.localization.email_time_format + ' (P e)'
     };
 
     var request = sdk

@@ -36,7 +36,7 @@ function Initialize() {
       render.prepareDOM(suppliedConfig || {});
 
       // Start from local config
-      if (!suppliedConfig || (!suppliedConfig.projectId && !suppliedConfig.projectSlug) || suppliedConfig.disableRemoteLoad) {
+      if (!suppliedConfig || (!suppliedConfig.projectId && !suppliedConfig.projectSlug) || suppliedConfig.disable_remote_load) {
         return startWithConfig(suppliedConfig)
       }
 
@@ -58,13 +58,20 @@ function Initialize() {
         remoteConfig.appKey = remoteConfig.app_key
         delete remoteConfig.app_key
       }
+      // TODO fix this on the backend
+      if (remoteConfig.ui === null) {
+        remoteConfig.ui = {}
+      }
+      if (remoteConfig.customer_fields === null) {
+        remoteConfig.customer_fields = {}
+      }
       // merge with supplied config for overwriting settings
       var mergedConfig = $.extend(true, {}, remoteConfig, suppliedConfig);
       utils.logDebug(['Remote config:', remoteConfig]);
       startWithConfig(mergedConfig)
     })
-    .catch(function () {
-      render.triggerError('The project could not be found, please double-check your projectId/projectSlug');
+    .catch(function (e) {
+      render.triggerError('The project could not be found, please double-check your projectId/projectSlug' + e);
     })
 
     return this
@@ -127,12 +134,12 @@ function Initialize() {
     render.getAvailability();
 
     // TODO Show timezone helper if enabled
-    if (getConfig().localization.showTimezoneHelper) {
+    if (getConfig().ui.show_timezone_helper) {
       // renderTimezoneHelper();
     }
 
     // Show image avatar if set
-    if (getConfig().avatar) {
+    if (getConfig().ui.avatar) {
       render.renderAvatarImage();
     }
 

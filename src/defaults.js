@@ -6,16 +6,28 @@
 
 var primary = {
 
-  targetEl: '#bookingjs',
+  el: '#bookingjs',
   name: '',
-  avatar: '',
   autoload: true,
   disableRemoteLoad: false,
   disableConfirmPage: false,
-  showCredits: true,
-  goToFirstEvent: true,
   debug: false,
-  availabilityView: 'agendaWeek',
+  ui: {
+    show_credits: true,
+    availability_view: 'agendaWeek',
+    avatar: '',
+    show_timezone_helper: true,
+    time_date_format: '12h-mdy-sun',
+    localization: {
+      allocated_resource_prefix: 'with',
+      submit_text: 'Book it',
+      success_message_title: 'Thanks!',
+      success_message_body: 'We have received your booking.',
+      timezone_helper_loading: 'Loading..',
+      timezone_helper_different: 'Your timezone is %s hours %s %s (calendar shown in your local time)',
+      timezone_helper_same: 'You are in the same timezone as %s'
+    }
+  },
   availability: {},
   booking: {},
   customer_fields: {
@@ -53,19 +65,6 @@ var primary = {
     timezone: 'local',
     nowIndicator: true
   },
-  localization: {
-    showTimezoneHelper: true,
-    timeDateFormat: '12h-mdy-sun',
-    strings: {
-      allocatedResourcePrefix: 'with',
-      submitText: 'Book it',
-      successMessageTitle: 'Thanks!',
-      successMessageBody: 'We have received your booking.',
-      timezoneHelperLoading: 'Loading..',
-      timezoneHelperDifferent: 'Your timezone is %s hours %s %s (calendar shown in your local time)',
-      timezoneHelperSame: 'You are in the same timezone as %s'
-    }
-  },
   callbacks: {}
 
 };
@@ -86,10 +85,10 @@ var timeDateFormat24hdmymon = {
       }
     }
   },
-  localization: {
-    bookingDateFormat: 'D. MMMM YYYY',
-    bookingTimeFormat: 'HH:mm',
-    emailTimeFormat: 'H:i'
+  ui: {
+    booking_date_format: 'D. MMMM YYYY',
+    booking_time_format: 'HH:mm',
+    email_time_format: 'H:i'
   }
 
 };
@@ -110,10 +109,10 @@ var timeDateFormat12hmdysun = {
       }
     },
   },
-  localization: {
-    bookingDateFormat: 'MMMM D, YYYY',
-    bookingTimeFormat: 'h:mma',
-    emailTimeFormat: 'h:ia'
+  ui: {
+    booking_date_format: 'MMMM D, YYYY',
+    booking_time_format: 'h:mma',
+    email_time_format: 'h:ia'
   }
 
 };

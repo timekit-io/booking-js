@@ -39,8 +39,8 @@ function InitConfig() {
     var newConfig = setDefaults(suppliedConfig);
 
     // Apply presets
-    newConfig = applyConfigPreset(newConfig, 'timeDateFormat', newConfig.localization.timeDateFormat)
-    newConfig = applyConfigPreset(newConfig, 'availabilityView', newConfig.availabilityView)
+    newConfig = applyConfigPreset(newConfig, 'timeDateFormat', newConfig.ui.time_date_format)
+    newConfig = applyConfigPreset(newConfig, 'availabilityView', newConfig.ui.availability_view)
 
     // Check for required settings
     if (!newConfig.appKey) {

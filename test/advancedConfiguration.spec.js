@@ -18,14 +18,11 @@ describe('Advanced configuration', function() {
     jasmine.Ajax.uninstall();
   });
 
-  it('should go to the first upcoming event when goToFirstEvent is set', function(done) {
+  it('should go to the first upcoming event automatically', function(done) {
 
     mockAjax.findTimeWithDateInFuture();
 
-    var config = {
-      goToFirstEvent: true
-    }
-    var widget = createWidget(config);
+    var widget = createWidget();
 
     setTimeout(function() {
 
@@ -39,35 +36,6 @@ describe('Advanced configuration', function() {
         var scrollable = $('.bookingjs-calendar').find('.fc-scroller');
         var scrollTop = scrollable.scrollTop();
         expect(scrollTop).not.toBe(321);
-
-        done();
-
-      }, 300);
-    }, 100);
-
-  });
-
-  it('should go to current date when goToFirstEvent is disabled', function(done) {
-
-    mockAjax.findTimeWithDateInFuture();
-
-    var config = {
-      goToFirstEvent: false
-    }
-    var widget = createWidget(config);
-
-    setTimeout(function() {
-
-      var today = moment();
-
-      var calendarDate = widget.fullCalendar('getDate');
-      expect(calendarDate.format('YYYY-MM-DD')).toBe(today.format('YYYY-MM-DD'));
-
-      setTimeout(function() {
-
-        var scrollable = $('.bookingjs-calendar').find('.fc-scroller');
-        var scrollTop = scrollable.scrollTop();
-        expect(scrollTop).toBe(321);
 
         done();
 

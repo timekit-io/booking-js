@@ -88,7 +88,7 @@ describe('Config loading', function() {
 
     var config = {
       projectId: '12345',
-      disableRemoteLoad: true
+      disable_remote_load: true
     }
     var widget = createWidget(config);
 

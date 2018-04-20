@@ -37,7 +37,9 @@ describe('Basic configuration', function() {
   it('should be able to set an avatar image', function(done) {
 
     var config = {
-      avatar: '/base/misc/avatar-doc.jpg'
+      ui: {
+        avatar: '/base/misc/avatar-doc.jpg'
+      }
     }
     createWidget(config);
 
@@ -46,7 +48,7 @@ describe('Basic configuration', function() {
     expect($('.bookingjs-avatar')).toContainElement('img');
 
     var source = $('.bookingjs-avatar img').prop('src');
-    var contains = source.indexOf(config.avatar) > -1;
+    var contains = source.indexOf(config.ui.avatar) > -1;
     expect(contains).toBe(true);
 
     done()

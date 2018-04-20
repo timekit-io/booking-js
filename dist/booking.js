@@ -129,7 +129,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      render.prepareDOM(suppliedConfig || {});
 	
 	      // Start from local config
-	      if (!suppliedConfig || (!suppliedConfig.projectId && !suppliedConfig.projectSlug) || suppliedConfig.disableRemoteLoad) {
+	      if (!suppliedConfig || (!suppliedConfig.projectId && !suppliedConfig.projectSlug) || suppliedConfig.disable_remote_load) {
 	        return startWithConfig(suppliedConfig)
 	      }
 	
@@ -151,13 +151,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	        remoteConfig.appKey = remoteConfig.app_key
 	        delete remoteConfig.app_key
 	      }
+	      // TODO fix this on the backend
+	      if (remoteConfig.ui === null) {
+	        remoteConfig.ui = {}
+	      }
+	      if (remoteConfig.customer_fields === null) {
+	        remoteConfig.customer_fields = {}
+	      }
 	      // merge with supplied config for overwriting settings
 	      var mergedConfig = $.extend(true, {}, remoteConfig, suppliedConfig);
 	      utils.logDebug(['Remote config:', remoteConfig]);
 	      startWithConfig(mergedConfig)
 	    })
-	    .catch(function () {
-	      render.triggerError('The project could not be found, please double-check your projectId/projectSlug');
+	    .catch(function (e) {
+	      render.triggerError('The project could not be found, please double-check your projectId/projectSlug' + e);
 	    })
 	
 	    return this
@@ -220,12 +227,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    render.getAvailability();
 	
 	    // TODO Show timezone helper if enabled
-	    if (getConfig().localization.showTimezoneHelper) {
+	    if (getConfig().ui.show_timezone_helper) {
 	      // renderTimezoneHelper();
 	    }
 	
 	    // Show image avatar if set
-	    if (getConfig().avatar) {
+	    if (getConfig().ui.avatar) {
 	      render.renderAvatarImage();
 	    }
 	
@@ -4508,8 +4515,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var newConfig = setDefaults(suppliedConfig);
 	
 	    // Apply presets
-	    newConfig = applyConfigPreset(newConfig, 'timeDateFormat', newConfig.localization.timeDateFormat)
-	    newConfig = applyConfigPreset(newConfig, 'availabilityView', newConfig.availabilityView)
+	    newConfig = applyConfigPreset(newConfig, 'timeDateFormat', newConfig.ui.time_date_format)
+	    newConfig = applyConfigPreset(newConfig, 'availabilityView', newConfig.ui.availability_view)
 	
 	    // Check for required settings
 	    if (!newConfig.appKey) {
@@ -4554,16 +4561,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var primary = {
 	
-	  targetEl: '#bookingjs',
+	  el: '#bookingjs',
 	  name: '',
-	  avatar: '',
 	  autoload: true,
 	  disableRemoteLoad: false,
 	  disableConfirmPage: false,
-	  showCredits: true,
-	  goToFirstEvent: true,
 	  debug: false,
-	  availabilityView: 'agendaWeek',
+	  ui: {
+	    show_credits: true,
+	    availability_view: 'agendaWeek',
+	    avatar: '',
+	    show_timezone_helper: true,
+	    time_date_format: '12h-mdy-sun',
+	    localization: {
+	      allocated_resource_prefix: 'with',
+	      submit_text: 'Book it',
+	      success_message_title: 'Thanks!',
+	      success_message_body: 'We have received your booking.',
+	      timezone_helper_loading: 'Loading..',
+	      timezone_helper_different: 'Your timezone is %s hours %s %s (calendar shown in your local time)',
+	      timezone_helper_same: 'You are in the same timezone as %s'
+	    }
+	  },
 	  availability: {},
 	  booking: {},
 	  customer_fields: {
@@ -4601,19 +4620,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    timezone: 'local',
 	    nowIndicator: true
 	  },
-	  localization: {
-	    showTimezoneHelper: true,
-	    timeDateFormat: '12h-mdy-sun',
-	    strings: {
-	      allocatedResourcePrefix: 'with',
-	      submitText: 'Book it',
-	      successMessageTitle: 'Thanks!',
-	      successMessageBody: 'We have received your booking.',
-	      timezoneHelperLoading: 'Loading..',
-	      timezoneHelperDifferent: 'Your timezone is %s hours %s %s (calendar shown in your local time)',
-	      timezoneHelperSame: 'You are in the same timezone as %s'
-	    }
-	  },
 	  callbacks: {}
 	
 	};
@@ -4634,10 +4640,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    }
 	  },
-	  localization: {
-	    bookingDateFormat: 'D. MMMM YYYY',
-	    bookingTimeFormat: 'HH:mm',
-	    emailTimeFormat: 'H:i'
+	  ui: {
+	    booking_date_format: 'D. MMMM YYYY',
+	    booking_time_format: 'HH:mm',
+	    email_time_format: 'H:i'
 	  }
 	
 	};
@@ -4658,10 +4664,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    },
 	  },
-	  localization: {
-	    bookingDateFormat: 'MMMM D, YYYY',
-	    bookingTimeFormat: 'h:mma',
-	    emailTimeFormat: 'h:ia'
+	  ui: {
+	    booking_date_format: 'MMMM D, YYYY',
+	    booking_time_format: 'h:mma',
+	    email_time_format: 'h:ia'
 	  }
 	
 	};
@@ -4824,7 +4830,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Make sure DOM element is ready and clean it
 	  var prepareDOM = function(suppliedConfig) {
 	
-	    var targetElement = suppliedConfig.targetEl || getConfig().targetEl;
+	    var targetElement = suppliedConfig.el || getConfig().el;
 	
 	    rootTarget = $(targetElement);
 	
@@ -5008,7 +5014,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    var timezoneHelperTarget = $(template.render({
 	      timezoneIcon: timezoneIcon,
-	      loadingText: getConfig().localization.strings.timezoneHelperLoading,
+	      loadingText: getConfig().ui.localization.timezone_helper_loading,
 	      loading: true
 	    }));
 	
@@ -5034,8 +5040,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var newTimezoneHelperTarget = $(template.render({
 	        timezoneIcon: timezoneIcon,
 	        timezoneDifference: (tzOffsetDiffAbs === 0 ? false : true),
-	        timezoneDifferent: interpolate.sprintf(getConfig().localization.strings.timezoneHelperDifferent, tzOffsetDiffAbs, tzDirection, getConfig().name),
-	        timezoneSame: interpolate.sprintf(getConfig().localization.strings.timezoneHelperSame, getConfig().name)
+	        timezoneDifferent: interpolate.sprintf(getConfig().ui.localization.timezone_helper_different, tzOffsetDiffAbs, tzDirection, getConfig().name),
+	        timezoneSame: interpolate.sprintf(getConfig().ui.localization.timezone_helper_same, getConfig().name)
 	      }));
 	
 	      timezoneHelperTarget.replaceWith(newTimezoneHelperTarget);
@@ -5090,7 +5096,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Clicking a timeslot
 	  var clickTimeslot = function(eventData) {
 	
-	    if (!getConfig().disableConfirmPage) {
+	    if (!getConfig().disable_confirm_page) {
 	      showBookingPage(eventData)
 	    } else {
 	      $('.fc-event-clicked').removeClass('fc-event-clicked');
@@ -5111,7 +5117,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (rootTarget.width() < 480) {
 	      height = 390;
 	      rootTarget.addClass('is-small');
-	      if (getConfig().avatar) height -= 15;
+	      if (getConfig().ui.avatar) height -= 15;
 	      if (currentView === 'agendaWeek' || currentView === 'basicDay') {
 	        view = 'basicDay';
 	      }
@@ -5123,7 +5129,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (getConfig().customer_fields.phone) {      height += 64; }
 	    if (getConfig().customer_fields.voip) {       height += 64; }
 	    if (getConfig().customer_fields.location) {   height += 64; }
-	    if (!getConfig().localization.showTimezoneHelper) { height += 33; }
+	    if (!getConfig().ui.show_timezone_helper) {   height += 33; }
 	
 	    return {
 	      height: height,
@@ -5150,7 +5156,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    calendarTarget.removeClass('empty-calendar');
 	
 	    // Go to first event if enabled
-	    if (getConfig().goToFirstEvent) goToFirstEvent(eventData[0].start);
+	    goToFirstEvent(eventData[0].start);
 	
 	  };
 	
@@ -5159,7 +5165,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    var template = __webpack_require__(65);
 	    var avatarTarget = $(template.render({
-	      image: getConfig().avatar
+	      image: getConfig().ui.avatar
 	    }));
 	
 	    rootTarget.addClass('has-avatar');
@@ -5251,23 +5257,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var fieldsTemplate = __webpack_require__(71);
 	    var template = __webpack_require__(72);
 	
-	    var dateFormat = getConfig().localization.bookingDateFormat || moment.localeData().longDateFormat('LL');
-	    var timeFormat = getConfig().localization.bookingTimeFormat || moment.localeData().longDateFormat('LT');
+	    var dateFormat = getConfig().ui.booking_date_format || moment.localeData().longDateFormat('LL');
+	    var timeFormat = getConfig().ui.booking_time_format || moment.localeData().longDateFormat('LT');
 	
 	    var allocatedResource = eventData.users ? eventData.users[0].name : false;
 	
 	    bookingPageTarget = $(template.render({
 	      chosenDate:               moment(eventData.start).format(dateFormat),
 	      chosenTime:               moment(eventData.start).format(timeFormat) + ' - ' + moment(eventData.end).format(timeFormat),
-	      allocatedResourcePrefix:  getConfig().localization.strings.allocatedResourcePrefix,
+	      allocated_resource_prefix:  getConfig().ui.localization.allocated_resource_prefix,
 	      allocatedResource:        allocatedResource,
 	      closeIcon:                __webpack_require__(73),
 	      checkmarkIcon:            __webpack_require__(74),
 	      loadingIcon:              __webpack_require__(68),
 	      errorIcon:                __webpack_require__(75),
-	      submitText:               getConfig().localization.strings.submitText,
-	      successMessageTitle:      getConfig().localization.strings.successMessageTitle,
-	      successMessageBody:       interpolate.sprintf(getConfig().localization.strings.successMessageBody, '<span class="booked-email"></span>'),
+	      submitText:               getConfig().ui.localization.submit_text,
+	      successMessageTitle:      getConfig().ui.localization.success_message_title,
+	      successMessageBody:       interpolate.sprintf(getConfig().ui.localization.success_message_body, '<span class="booked-email"></span>'),
 	      fields:                   getConfig().customer_fields
 	    }, {
 	      formFields: fieldsTemplate
@@ -5298,7 +5304,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    });
 	
 	    // Show powered by Timekit message
-	    if (getConfig().showCredits) {
+	    if (getConfig().ui.show_credits) {
 	      renderPoweredByMessage(bookingPageTarget);
 	    }
 	
@@ -5467,7 +5473,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    utils.doCallback('createBookingStarted', args);
 	
 	    var requestHeaders = {
-	      'Timekit-OutputTimestampFormat': 'Y-m-d ' + getConfig().localization.emailTimeFormat + ' (P e)'
+	      'Timekit-OutputTimestampFormat': 'Y-m-d ' + getConfig().ui.localization.email_time_format + ' (P e)'
 	    };
 	
 	    var request = sdk

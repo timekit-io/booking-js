@@ -4602,7 +4602,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      'Timekit-Context': 'widget'
 	    }
 	  },
-	  fullCalendar: {
+	  fullcalendar: {
 	    views: {
 	      agenda: {
 	        displayEventEnd: false
@@ -4625,7 +4625,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Preset: timeDateFormat = '24h-dmy-mon'
 	var timeDateFormat24hdmymon = {
 	
-	  fullCalendar: {
+	  fullcalendar: {
 	    timeFormat: 'HH:mm',
 	    firstDay: 1,
 	    views: {
@@ -4649,7 +4649,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Preset: timeDateFormat = '12h-mdy-sun'
 	var timeDateFormat12hmdysun = {
 	
-	  fullCalendar: {
+	  fullcalendar: {
 	    timeFormat: 'h:mma',
 	    firstDay: 0,
 	    views: {
@@ -4673,7 +4673,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Preset: availabilityView = 'agendaWeek'
 	var availabilityViewAgendaWeek = {
 	
-	  fullCalendar: {
+	  fullcalendar: {
 	    header: {
 	      left: '',
 	      center: '',
@@ -4687,7 +4687,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Preset: availabilityView = 'listing'
 	var availabilityViewListing = {
 	
-	  fullCalendar: {
+	  fullcalendar: {
 	    header: {
 	      left: '',
 	      center: '',
@@ -4975,8 +4975,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    // If minTime is set in fullCalendar config, subtract that from the scollTo calculationn
 	    var minTimeHeight = 0;
-	    if (getConfig().fullCalendar.minTime) {
-	      var minTime = moment(getConfig().fullCalendar.minTime, 'HH:mm:ss').format('H');
+	    if (getConfig().fullcalendar.minTime) {
+	      var minTime = moment(getConfig().fullcalendar.minTime, 'HH:mm:ss').format('H');
 	      minTimeHeight = hourHeight * minTime;
 	    }
 	
@@ -5067,7 +5067,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Setup and render FullCalendar
 	  var initializeCalendar = function() {
 	
-	    var sizing = decideCalendarSize(getConfig().fullCalendar.defaultView);
+	    var sizing = decideCalendarSize(getConfig().fullcalendar.defaultView);
 	
 	    var args = {
 	      height: sizing.height,
@@ -5079,7 +5079,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    };
 	
-	    $.extend(true, args, getConfig().fullCalendar);
+	    $.extend(true, args, getConfig().fullcalendar);
 	    args.defaultView = sizing.view;
 	
 	    calendarTarget = $('<div class="bookingjs-calendar empty-calendar">');
@@ -5109,7 +5109,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    currentView = currentView || calendarTarget.fullCalendar('getView').name
 	
-	    var view = getConfig().fullCalendar.defaultView
+	    var view = getConfig().fullcalendar.defaultView
 	    var height = 430;
 	
 	    if (rootTarget.width() < 480) {

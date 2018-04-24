@@ -175,8 +175,8 @@ function InitRender(deps) {
 
     // If minTime is set in fullCalendar config, subtract that from the scollTo calculationn
     var minTimeHeight = 0;
-    if (getConfig().fullCalendar.minTime) {
-      var minTime = moment(getConfig().fullCalendar.minTime, 'HH:mm:ss').format('H');
+    if (getConfig().fullcalendar.minTime) {
+      var minTime = moment(getConfig().fullcalendar.minTime, 'HH:mm:ss').format('H');
       minTimeHeight = hourHeight * minTime;
     }
 
@@ -267,7 +267,7 @@ function InitRender(deps) {
   // Setup and render FullCalendar
   var initializeCalendar = function() {
 
-    var sizing = decideCalendarSize(getConfig().fullCalendar.defaultView);
+    var sizing = decideCalendarSize(getConfig().fullcalendar.defaultView);
 
     var args = {
       height: sizing.height,
@@ -279,7 +279,7 @@ function InitRender(deps) {
       }
     };
 
-    $.extend(true, args, getConfig().fullCalendar);
+    $.extend(true, args, getConfig().fullcalendar);
     args.defaultView = sizing.view;
 
     calendarTarget = $('<div class="bookingjs-calendar empty-calendar">');
@@ -309,7 +309,7 @@ function InitRender(deps) {
 
     currentView = currentView || calendarTarget.fullCalendar('getView').name
 
-    var view = getConfig().fullCalendar.defaultView
+    var view = getConfig().fullcalendar.defaultView
     var height = 430;
 
     if (rootTarget.width() < 480) {

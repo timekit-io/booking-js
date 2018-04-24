@@ -102,4 +102,38 @@ describe('Advanced configuration', function() {
 
   });
 
+  it('should be able to inject custom fullcalendar settings and register callbacks', function(done) {
+
+    mockAjax.all();
+
+    function fcCallback () {}
+
+    var config = {
+      fullcalendar: {
+        buttonText: {
+          today: 'idag'
+        }
+      },
+      callbacks: {
+        fullCalendarInitialized: function () {}
+      }
+    }
+
+    spyOn(config.callbacks, 'fullCalendarInitialized').and.callThrough();
+
+    createWidget(config);
+
+    setTimeout(function() {
+
+      expect(config.callbacks.fullCalendarInitialized).toHaveBeenCalled();
+
+      var todayButton = $('.fc-today-button')
+      expect(todayButton.text()).toBe('idag')
+
+      done();
+
+    }, 600);
+
+  });
+
 });

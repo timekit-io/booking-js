@@ -51,7 +51,7 @@ var primary = {
       'Timekit-Context': 'widget'
     }
   },
-  fullCalendar: {
+  fullcalendar: {
     views: {
       agenda: {
         displayEventEnd: false
@@ -74,7 +74,7 @@ var primary = {
 // Preset: timeDateFormat = '24h-dmy-mon'
 var timeDateFormat24hdmymon = {
 
-  fullCalendar: {
+  fullcalendar: {
     timeFormat: 'HH:mm',
     firstDay: 1,
     views: {
@@ -98,7 +98,7 @@ var timeDateFormat24hdmymon = {
 // Preset: timeDateFormat = '12h-mdy-sun'
 var timeDateFormat12hmdysun = {
 
-  fullCalendar: {
+  fullcalendar: {
     timeFormat: 'h:mma',
     firstDay: 0,
     views: {
@@ -122,7 +122,7 @@ var timeDateFormat12hmdysun = {
 // Preset: availabilityView = 'agendaWeek'
 var availabilityViewAgendaWeek = {
 
-  fullCalendar: {
+  fullcalendar: {
     header: {
       left: '',
       center: '',
@@ -136,7 +136,7 @@ var availabilityViewAgendaWeek = {
 // Preset: availabilityView = 'listing'
 var availabilityViewListing = {
 
-  fullCalendar: {
+  fullcalendar: {
     header: {
       left: '',
       center: '',

@@ -310,10 +310,10 @@ function InitRender(deps) {
     currentView = currentView || calendarTarget.fullCalendar('getView').name
 
     var view = getConfig().fullcalendar.defaultView
-    var height = 430;
+    var height = 485;
 
     if (rootTarget.width() < 480) {
-      height = 390;
+      height = 455;
       rootTarget.addClass('is-small');
       if (getConfig().ui.avatar) height -= 15;
       if (currentView === 'agendaWeek' || currentView === 'basicDay') {
@@ -458,7 +458,7 @@ function InitRender(deps) {
     var dateFormat = getConfig().ui.booking_date_format || moment.localeData().longDateFormat('LL');
     var timeFormat = getConfig().ui.booking_time_format || moment.localeData().longDateFormat('LT');
 
-    var allocatedResource = eventData.users ? eventData.users[0].name : false;
+    var allocatedResource = eventData.resources ? eventData.resources[0].name : false;
 
     bookingPageTarget = $(template.render({
       chosenDate:               moment(eventData.start).format(dateFormat),
@@ -486,8 +486,8 @@ function InitRender(deps) {
       hideBookingPage();
     });
 
-    if (eventData.users) {
-      utils.logDebug(['Available users for chosen timeslot:', eventData.users]);
+    if (eventData.resources) {
+      utils.logDebug(['Available users for chosen timeslot:', eventData.resources]);
     }
 
 

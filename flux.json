@@ -19,7 +19,7 @@
     },
     "staging": {
       "build-dist-bundle": "yarn run build",
-      "aws-cdn-deploy": "timekit-cdn-staging"
+      "aws-cdn-deploy": "timekit-cdn-staging/booking-js/v1"
     }
   }
 }

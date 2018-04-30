@@ -5263,7 +5263,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    bookingPageTarget = $(template.render({
 	      chosenDate:               moment(eventData.start).format(dateFormat),
 	      chosenTime:               moment(eventData.start).format(timeFormat) + ' - ' + moment(eventData.end).format(timeFormat),
-	      allocated_resource_prefix:  getConfig().ui.localization.allocated_resource_prefix,
+	      allocatedResourcePrefix:  getConfig().ui.localization.allocated_resource_prefix,
 	      allocatedResource:        allocatedResource,
 	      closeIcon:                __webpack_require__(73),
 	      checkmarkIcon:            __webpack_require__(74),
@@ -5445,7 +5445,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    } else if (typeof eventData.resources === 'undefined' || eventData.resources.length === 0) {
 	      throw triggerError(['No resources to pick from when creating booking']);
 	    } else {
-	      args.resource_id = eventData.resources[0]
+	      args.resource_id = eventData.resources[0].id
 	    }
 	
 	    // Handle team availability specifics

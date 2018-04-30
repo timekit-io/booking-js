@@ -13,7 +13,7 @@
       "check-git-master": true,
       "install-npm-deps": true,
       "build-dist-bundle": "yarn run build",
-      "aws-cdn-deploy": "timekit-cdn",
+      "aws-cdn-deploy": "timekit-cdn/booking-js/v1",
       "publish-to-npm": true,
       "dependent-projects": ["admin"]
     },

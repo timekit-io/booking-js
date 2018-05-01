@@ -5399,14 +5399,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var timekitCreateBooking = function(formData, eventData) {
 	
 	    var args = {
-	      event: {
-	        start: eventData.start.format(),
-	        end: eventData.end.format(),
-	        what: getConfig().name + ' x ' + formData.name,
-	        where: 'TBD',
-	        description: '',
-	        participants: [formData.email]
-	      },
+	      start: eventData.start.format(),
+	      end: eventData.end.format(),
 	      customer: {
 	        name: formData.name,
 	        email: formData.email,
@@ -5415,24 +5409,33 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	
 	    if (getConfig().calendar) {
-	      args.event.calendar_id = getConfig().calendar;
+	      args.calendar_id = getConfig().calendar;
 	    }
 	
 	    if (getConfig().customer_fields.location) {
 	      args.customer.where = formData.location;
-	      args.event.where = formData.location;
+	      args.where = formData.location;
 	    }
 	    if (getConfig().customer_fields.comment) {
 	      args.customer.comment = formData.comment;
-	      args.event.description += (getConfig().customer_fields.comment.title || 'comment') + ': ' + formData.comment + '\n';
+	      args.description += (getConfig().customer_fields.comment.title || 'comment') + ': ' + formData.comment + '\n';
 	    }
 	    if (getConfig().customer_fields.phone) {
 	      args.customer.phone = formData.phone;
-	      args.event.description += (getConfig().customer_fields.phone.title || 'phone') + ': ' + formData.phone + '\n';
+	      args.description += (getConfig().customer_fields.phone.title || 'phone') + ': ' + formData.phone + '\n';
 	    }
 	    if (getConfig().customer_fields.voip) {
 	      args.customer.voip = formData.voip;
-	      args.event.description += (getConfig().customer_fields.voip.title || 'voip') + ': ' + formData.voip + '\n';
+	      args.description += (getConfig().customer_fields.voip.title || 'voip') + ': ' + formData.voip + '\n';
+	    }
+	
+	    if (!getConfig().project_id) {
+	      $.extend(true, args, {
+	        what: getConfig().name + ' x ' + formData.name,
+	        where: 'TBD',
+	        description: '',
+	        participants: [formData.email]
+	      });
 	    }
 	
 	    $.extend(true, args, getConfig().booking);

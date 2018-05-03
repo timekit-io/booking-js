@@ -608,10 +608,6 @@ function InitRender(deps) {
       }
     };
 
-    if (getConfig().calendar) {
-      args.calendar_id = getConfig().calendar;
-    }
-
     if (getConfig().customer_fields.location) {
       args.customer.where = formData.location;
       args.where = formData.location;
@@ -629,12 +625,13 @@ function InitRender(deps) {
       args.description += (getConfig().customer_fields.voip.title || 'voip') + ': ' + formData.voip + '\n';
     }
 
-    if (!getConfig().project_id) {
+    if (getConfig().project_id) {
+      args.project_id = getConfig().project_id
+    } else {
       $.extend(true, args, {
-        what: getConfig().name + ' x ' + formData.name,
-        where: 'TBD',
-        description: '',
-        participants: [formData.email]
+        what: 'Meeting with ' + formData.name,
+        where: '',
+        description: ''
       });
     }
 
@@ -642,7 +639,6 @@ function InitRender(deps) {
 
     // Handle group booking specifics
     if (getConfig().booking.graph === 'group_customer' || getConfig().booking.graph === 'group_customer_payment') {
-      delete args.event
       args.related = { owner_booking_id: eventData.booking.id }
       args.resource_id = eventData.booking.resource_id
     } else if (typeof eventData.resources === 'undefined' || eventData.resources.length === 0) {
@@ -650,26 +646,6 @@ function InitRender(deps) {
     } else {
       args.resource_id = eventData.resources[0].id
     }
-
-    // Handle team availability specifics
-    // TODO
-    // if (eventData.resources) {
-    //   var designatedUser = eventData.users[0]
-    //   var teamUser = $.grep(getConfig().timekitFindTimeTeam.users, function(user) {
-    //     return designatedUser.email === user._email
-    //   })
-    //   if (teamUser.length < 1) {
-    //     throw triggerError(['Encountered an error when picking designated team user to receive booking', designatedUser, getConfig().timekitFindTimeTeam.users]);
-    //   } else {
-    //     timekit = timekit.asUser(designatedUser.email, designatedUser.token)
-    //     if (teamUser[0]._calendar) args.event.calendar_id = teamUser[0]._calendar
-    //   }
-    //   utils.logDebug(['Creating booking for user:', designatedUser]);
-    // }
-
-    // if a remote widget (has ID) is used, pass that reference when creating booking
-    // TODO had to be disabled for team availability because not all members own the widget
-    if (getConfig().project_id) args.project_id = getConfig().project_id
 
     utils.doCallback('createBookingStarted', args);
 

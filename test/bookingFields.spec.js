@@ -183,7 +183,7 @@ describe('Booking fields', function() {
 
           var request = jasmine.Ajax.requests.mostRecent();
 
-          var requestDescription = JSON.parse(request.params).event.description
+          var requestDescription = JSON.parse(request.params).description
           expect(requestDescription).toBe('Comment: ' + config.customer_fields.comment.prefilled + '\n');
 
           done();

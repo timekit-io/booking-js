@@ -5408,6 +5408,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    };
 	
+	    if (getConfig().project_id) {
+	      args.project_id = getConfig().project_id
+	    } else {
+	      $.extend(true, args, {
+	        what: 'Meeting with ' + formData.name,
+	        where: '',
+	        description: ''
+	      });
+	    }
+	
 	    if (getConfig().customer_fields.location) {
 	      args.customer.where = formData.location;
 	      args.where = formData.location;
@@ -5423,16 +5433,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (getConfig().customer_fields.voip) {
 	      args.customer.voip = formData.voip;
 	      args.description += (getConfig().customer_fields.voip.title || 'voip') + ': ' + formData.voip + '\n';
-	    }
-	
-	    if (getConfig().project_id) {
-	      args.project_id = getConfig().project_id
-	    } else {
-	      $.extend(true, args, {
-	        what: 'Meeting with ' + formData.name,
-	        where: '',
-	        description: ''
-	      });
 	    }
 	
 	    $.extend(true, args, getConfig().booking);

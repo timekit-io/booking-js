@@ -608,6 +608,16 @@ function InitRender(deps) {
       }
     };
 
+    if (getConfig().project_id) {
+      args.project_id = getConfig().project_id
+    } else {
+      $.extend(true, args, {
+        what: 'Meeting with ' + formData.name,
+        where: '',
+        description: ''
+      });
+    }
+
     if (getConfig().customer_fields.location) {
       args.customer.where = formData.location;
       args.where = formData.location;
@@ -625,19 +635,6 @@ function InitRender(deps) {
       args.description += (getConfig().customer_fields.voip.title || 'voip') + ': ' + formData.voip + '\n';
     }
 
-    if (getConfig().project_id) {
-      args.project_id = getConfig().project_id
-    } else {
-      $.extend(true, args, {
-        what: 'Meeting with ' + formData.name,
-        where: '',
-        description: ''
-      });
-    }
-
-    $.extend(true, args, getConfig().booking);
-
-    // Handle group booking specifics
     if (getConfig().booking.graph === 'group_customer' || getConfig().booking.graph === 'group_customer_payment') {
       args.related = { owner_booking_id: eventData.booking.id }
       args.resource_id = eventData.booking.resource_id
@@ -646,6 +643,8 @@ function InitRender(deps) {
     } else {
       args.resource_id = eventData.resources[0].id
     }
+
+    $.extend(true, args, getConfig().booking);
 
     utils.doCallback('createBookingStarted', args);
 

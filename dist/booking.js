@@ -4564,6 +4564,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  disable_confirm_page: false,
 	  debug: false,
 	  ui: {
+	    display_name: '',
 	    show_credits: true,
 	    availability_view: 'agendaWeek',
 	    avatar: '',
@@ -4580,9 +4581,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  },
 	  availability: {},
-	  booking: {
-	    graph: 'instant'
-	  },
+	  booking: {},
 	  customer_fields: {
 	    name: {
 	      type: 'string',
@@ -5176,7 +5175,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    var template = __webpack_require__(66);
 	    var displayNameTarget = $(template.render({
-	      name: getConfig().name
+	      name: getConfig().ui.display_name
 	    }));
 	
 	    rootTarget.addClass('has-displayname');
@@ -5435,9 +5434,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      args.description += (getConfig().customer_fields.voip.title || 'voip') + ': ' + formData.voip + '\n';
 	    }
 	
-	    $.extend(true, args, getConfig().booking);
-	
-	    // Handle group booking specifics
 	    if (getConfig().booking.graph === 'group_customer' || getConfig().booking.graph === 'group_customer_payment') {
 	      args.related = { owner_booking_id: eventData.booking.id }
 	      args.resource_id = eventData.booking.resource_id
@@ -5446,6 +5442,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    } else {
 	      args.resource_id = eventData.resources[0].id
 	    }
+	
+	    $.extend(true, args, getConfig().booking);
 	
 	    utils.doCallback('createBookingStarted', args);
 	

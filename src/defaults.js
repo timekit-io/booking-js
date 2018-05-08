@@ -13,6 +13,7 @@ var primary = {
   disable_confirm_page: false,
   debug: false,
   ui: {
+    display_name: '',
     show_credits: true,
     availability_view: 'agendaWeek',
     avatar: '',
@@ -29,9 +30,7 @@ var primary = {
     }
   },
   availability: {},
-  booking: {
-    graph: 'instant'
-  },
+  booking: {},
   customer_fields: {
     name: {
       type: 'string',

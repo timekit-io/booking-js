@@ -376,7 +376,7 @@ function InitRender(deps) {
 
     var template = require('./templates/user-displayname.html');
     var displayNameTarget = $(template.render({
-      name: getConfig().name
+      name: getConfig().ui.display_name
     }));
 
     rootTarget.addClass('has-displayname');

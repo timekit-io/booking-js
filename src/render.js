@@ -200,55 +200,6 @@ function InitRender(deps) {
 
   };
 
-  // Calculate and display timezone helper
-  var renderTimezoneHelper = function() {
-
-    var localTzOffset = (moment().utcOffset()/60);
-    var timezoneIcon = require('!svg-inline!./assets/timezone-icon.svg');
-
-    var template = require('./templates/timezone-helper.html');
-
-    var timezoneHelperTarget = $(template.render({
-      timezoneIcon: timezoneIcon,
-      loadingText: getConfig().ui.localization.timezone_helper_loading,
-      loading: true
-    }));
-
-    rootTarget.addClass('has-timezonehelper');
-    rootTarget.append(timezoneHelperTarget);
-
-    var args = {
-      email: getConfig().email
-    };
-
-    utils.doCallback('getUserTimezoneStarted', args);
-
-    sdk.getUserTimezone(args).then(function(response){
-
-      utils.doCallback('getUserTimezoneSuccessful', response);
-
-      var hostTzOffset = response.data.utc_offset;
-      var tzOffsetDiff = localTzOffset - hostTzOffset;
-      var tzOffsetDiffAbs = Math.abs(localTzOffset - hostTzOffset);
-      var tzDirection = (tzOffsetDiff > 0 ? 'ahead of' : 'behind');
-
-      var template = require('./templates/timezone-helper.html');
-      var newTimezoneHelperTarget = $(template.render({
-        timezoneIcon: timezoneIcon,
-        timezoneDifference: (tzOffsetDiffAbs === 0 ? false : true),
-        timezoneDifferent: interpolate.sprintf(getConfig().ui.localization.timezone_helper_different, tzOffsetDiffAbs, tzDirection, getConfig().name),
-        timezoneSame: interpolate.sprintf(getConfig().ui.localization.timezone_helper_same, getConfig().name)
-      }));
-
-      timezoneHelperTarget.replaceWith(newTimezoneHelperTarget);
-
-    }).catch(function(response){
-      utils.doCallback('getUserTimezoneFailed', response);
-      utils.logError(['An error with Timekit getUserTimezone occured', response]);
-    });
-
-  };
-
   // Display ribbon if in testmode
   var renderTestModeRibbon = function() {
 
@@ -325,7 +276,6 @@ function InitRender(deps) {
     if (getConfig().customer_fields.phone) {      height += 64; }
     if (getConfig().customer_fields.voip) {       height += 64; }
     if (getConfig().customer_fields.location) {   height += 64; }
-    if (!getConfig().ui.show_timezone_helper) {   height += 33; }
 
     return {
       height: height,
@@ -467,9 +417,8 @@ function InitRender(deps) {
       checkmarkIcon:            require('!svg-inline!./assets/checkmark-icon.svg'),
       loadingIcon:              require('!svg-inline!./assets/loading-spinner.svg'),
       errorIcon:                require('!svg-inline!./assets/error-icon.svg'),
-      submitText:               getConfig().ui.localization.submit_text,
-      successMessageTitle:      getConfig().ui.localization.success_message_title,
-      successMessageBody:       interpolate.sprintf(getConfig().ui.localization.success_message_body, '<span class="booked-email"></span>'),
+      submitText:               getConfig().ui.localization.submit_button,
+      successMessage:           interpolate.sprintf(getConfig().ui.localization.success_message, '<span class="booked-email"></span>'),
       fields:                   getConfig().customer_fields
     }, {
       formFields: fieldsTemplate
@@ -696,7 +645,6 @@ function InitRender(deps) {
   return {
     prepareDOM: prepareDOM,
     getAvailability: getAvailability,
-    renderTimezoneHelper: renderTimezoneHelper,
     initializeCalendar: initializeCalendar,
     renderAvatarImage: renderAvatarImage,
     renderDisplayName: renderDisplayName,

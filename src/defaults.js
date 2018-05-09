@@ -17,16 +17,11 @@ var primary = {
     show_credits: true,
     availability_view: 'agendaWeek',
     avatar: '',
-    show_timezone_helper: false,
     time_date_format: '12h-mdy-sun',
     localization: {
       allocated_resource_prefix: 'with',
-      submit_text: 'Book it',
-      success_message_title: 'Thanks!',
-      success_message_body: 'We have received your booking and sent a confirmation to %s',
-      timezone_helper_loading: 'Loading..',
-      timezone_helper_different: 'Your timezone is %s hours %s %s (calendar shown in your local time)',
-      timezone_helper_same: 'You are in the same timezone as %s'
+      submit_button: 'Book it',
+      success_message: 'We have received your booking and sent a confirmation to %s',
     }
   },
   availability: {},

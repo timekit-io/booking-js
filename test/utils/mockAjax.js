@@ -119,20 +119,6 @@ module.exports = {
 
   },
 
-  // Get user timezone endpoint
-  userTimezone: function() {
-
-    jasmine.Ajax.stubRequest(
-      'https://api.timekit.io/v2/users/timezone/marty.mcfly@timekit.io'
-    ).andReturn({
-      status: 200,
-      statusText: 'HTTP/1.1 200 OK',
-      contentType: 'application/json',
-      responseText: '{"data":{"timezone":"America\/Los_Angeles","utc_offset":-8}}'
-    });
-
-  },
-
   // Create booking endpoint
   createBooking: function() {
 
@@ -202,7 +188,7 @@ module.exports = {
       status: 200,
       statusText: 'HTTP/1.1 200 OK',
       contentType: 'application/json',
-      responseText: '{ "data": { "id": "12345", "slug": "my-widget-slug", "name": "Marty McFly", "app_key": "test_widget_key_XT1JO879JF1qUXXzmETD5ucgxaDwsFsd", "ui": { "display_name": "McFlys Widget", "localization": { "submit_text": "Book McFly" } }, "booking": { "graph": "confirm_decline" }, "availability": { "length": "3 hours" }, "customer_fields": { "phone": { "title": "Phone Number" } } } }'
+      responseText: '{ "data": { "id": "12345", "slug": "my-widget-slug", "name": "Marty McFly", "app_key": "test_widget_key_XT1JO879JF1qUXXzmETD5ucgxaDwsFsd", "ui": { "display_name": "McFlys Widget", "localization": { "submit_button": "Book McFly" } }, "booking": { "graph": "confirm_decline" }, "availability": { "length": "3 hours" }, "customer_fields": { "phone": { "title": "Phone Number" } } } }'
     });
 
   },
@@ -247,7 +233,6 @@ module.exports = {
 
     this.findTime();
     this.findTimeTeam();
-    this.userTimezone();
     this.createBooking();
     this.getHostedWidget();
     this.getEmbedWidget();

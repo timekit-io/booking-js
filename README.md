@@ -4,7 +4,7 @@
 
 [**Releases & changelog**](https://github.com/timekit-io/booking-js/releases)
 
-> Make a beautiful embeddable booking widget in minutes.
+> Make a beautiful embeddable booking widget in minutes running on the Timekit API.
 
 ![Booking.js Screenshot](misc/widget-screenshot.png)
 

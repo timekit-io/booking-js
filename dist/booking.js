@@ -4572,16 +4572,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    show_credits: true,
 	    availability_view: 'agendaWeek',
 	    avatar: '',
-	    show_timezone_helper: false,
 	    time_date_format: '12h-mdy-sun',
 	    localization: {
 	      allocated_resource_prefix: 'with',
-	      submit_text: 'Book it',
-	      success_message_title: 'Thanks!',
-	      success_message_body: 'We have received your booking and sent a confirmation to %s',
-	      timezone_helper_loading: 'Loading..',
-	      timezone_helper_different: 'Your timezone is %s hours %s %s (calendar shown in your local time)',
-	      timezone_helper_same: 'You are in the same timezone as %s'
+	      submit_button: 'Book it',
+	      success_message: 'We have received your booking and sent a confirmation to %s',
 	    }
 	  },
 	  availability: {},
@@ -5038,55 +5033,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  };
 	
-	  // Calculate and display timezone helper
-	  var renderTimezoneHelper = function() {
-	
-	    var localTzOffset = (moment().utcOffset()/60);
-	    var timezoneIcon = __webpack_require__(59);
-	
-	    var template = __webpack_require__(60);
-	
-	    var timezoneHelperTarget = $(template.render({
-	      timezoneIcon: timezoneIcon,
-	      loadingText: getConfig().ui.localization.timezone_helper_loading,
-	      loading: true
-	    }));
-	
-	    rootTarget.addClass('has-timezonehelper');
-	    rootTarget.append(timezoneHelperTarget);
-	
-	    var args = {
-	      email: getConfig().email
-	    };
-	
-	    utils.doCallback('getUserTimezoneStarted', args);
-	
-	    sdk.getUserTimezone(args).then(function(response){
-	
-	      utils.doCallback('getUserTimezoneSuccessful', response);
-	
-	      var hostTzOffset = response.data.utc_offset;
-	      var tzOffsetDiff = localTzOffset - hostTzOffset;
-	      var tzOffsetDiffAbs = Math.abs(localTzOffset - hostTzOffset);
-	      var tzDirection = (tzOffsetDiff > 0 ? 'ahead of' : 'behind');
-	
-	      var template = __webpack_require__(60);
-	      var newTimezoneHelperTarget = $(template.render({
-	        timezoneIcon: timezoneIcon,
-	        timezoneDifference: (tzOffsetDiffAbs === 0 ? false : true),
-	        timezoneDifferent: interpolate.sprintf(getConfig().ui.localization.timezone_helper_different, tzOffsetDiffAbs, tzDirection, getConfig().name),
-	        timezoneSame: interpolate.sprintf(getConfig().ui.localization.timezone_helper_same, getConfig().name)
-	      }));
-	
-	      timezoneHelperTarget.replaceWith(newTimezoneHelperTarget);
-	
-	    }).catch(function(response){
-	      utils.doCallback('getUserTimezoneFailed', response);
-	      utils.logError(['An error with Timekit getUserTimezone occured', response]);
-	    });
-	
-	  };
-	
 	  // Display ribbon if in testmode
 	  var renderTestModeRibbon = function() {
 	
@@ -5163,7 +5109,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (getConfig().customer_fields.phone) {      height += 64; }
 	    if (getConfig().customer_fields.voip) {       height += 64; }
 	    if (getConfig().customer_fields.location) {   height += 64; }
-	    if (!getConfig().ui.show_timezone_helper) {   height += 33; }
 	
 	    return {
 	      height: height,
@@ -5305,9 +5250,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      checkmarkIcon:            __webpack_require__(74),
 	      loadingIcon:              __webpack_require__(68),
 	      errorIcon:                __webpack_require__(75),
-	      submitText:               getConfig().ui.localization.submit_text,
-	      successMessageTitle:      getConfig().ui.localization.success_message_title,
-	      successMessageBody:       interpolate.sprintf(getConfig().ui.localization.success_message_body, '<span class="booked-email"></span>'),
+	      submitText:               getConfig().ui.localization.submit_button,
+	      successMessage:           interpolate.sprintf(getConfig().ui.localization.success_message, '<span class="booked-email"></span>'),
 	      fields:                   getConfig().customer_fields
 	    }, {
 	      formFields: fieldsTemplate
@@ -5534,7 +5478,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return {
 	    prepareDOM: prepareDOM,
 	    getAvailability: getAvailability,
-	    renderTimezoneHelper: renderTimezoneHelper,
 	    initializeCalendar: initializeCalendar,
 	    renderAvatarImage: renderAvatarImage,
 	    renderDisplayName: renderDisplayName,
@@ -27151,19 +27094,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 59 */
-/***/ (function(module, exports) {
-
-	module.exports = "<svg class=\"bookingjs-timezoneicon\" viewBox=\"0 0 98 98\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>Shape</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"timezone-icon\" sketch:type=\"MSLayerGroup\" fill=\"#AEAEAE\"><path d=\"M37.656,1.387 L39.381,2.516 L46.176,3.475 L49.313,2.778 L55.186,3.495 L56.364,5.065 L52.274,4.52 L48.092,6.262 L49.293,9.385 L53.613,11.348 L54.189,7.395 L58.285,7.133 L64.121,12.707 L65.775,14.887 L66.56,16.28 L62.029,18.067 L55.185,21.169 L54.624,24.206 L50.095,28.476 L50.271,32.572 L48.9,32.559 L48.353,29.086 L45.757,28.238 L38.294,28.631 L35.286,34.137 L37.901,37.274 L42.221,34.917 L42.516,38.755 L44.172,40.062 L47.131,43.46 L46.985,47.751 L52.448,49.034 L56.454,46.159 L58.284,46.768 L65.003,49.45 L74.433,52.985 L76.396,57.698 L83.111,60.968 L84.644,66.732 L80.062,71.857 L74.66,77.519 L68.933,80.482 L63.04,84.408 L55.185,89.515 L50.835,93.941 L49.292,92.263 L52.782,83.419 L53.663,73.167 L46.15,66.34 L46.199,60.596 L48.164,58.239 L50.471,51.415 L45.809,48.811 L42.664,43.706 L37.75,41.817 L30.047,37.667 L26.904,29.024 L25.334,33.344 L22.977,26.276 L23.762,15.671 L27.69,12.136 L26.512,9.779 L29.26,5.459 L23.905,6.99 C9.611,15.545 0.01,31.135 0.01,49.006 C0.01,76.062 21.945,98 49.006,98 C76.062,98 98,76.062 98,49.006 C98,21.947 76.062,0.012 49.006,0.012 C45.092,0.012 41.305,0.52 37.656,1.387 Z\" id=\"Shape\" sketch:type=\"MSShapeGroup\"></path></g></g></svg>"
-
-/***/ }),
-/* 60 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	var H = __webpack_require__(61);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-timezonehelper\">");t.b("\n");t.b("\n" + i);t.b("  ");t.b(t.t(t.f("timezoneIcon",c,p,0)));t.b("\n");t.b("\n" + i);if(t.s(t.f("loading",c,p,1),c,p,0,79,117,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("    <span>");t.b(t.v(t.f("loadingText",c,p,0)));t.b("</span>");t.b("\n" + i);});c.pop();}t.b("\n" + i);if(!t.s(t.f("loading",c,p,1),c,p,1,0,0,"")){if(t.s(t.f("timezoneDifference",c,p,1),c,p,0,179,227,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("      <span>");t.b(t.v(t.f("timezoneDifferent",c,p,0)));t.b("</span>");t.b("\n" + i);});c.pop();}t.b("\n" + i);if(!t.s(t.f("timezoneDifference",c,p,1),c,p,1,0,0,"")){t.b("      <span>");t.b(t.v(t.f("timezoneSame",c,p,0)));t.b("</span>");t.b("\n" + i);};};t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-timezonehelper\">\n\n  {{& timezoneIcon }}\n\n  {{# loading }}\n    <span>{{ loadingText }}</span>\n  {{/ loading }}\n\n  {{^ loading }}\n    {{# timezoneDifference }}\n      <span>{{ timezoneDifferent }}</span>\n    {{/ timezoneDifference }}\n\n    {{^ timezoneDifference }}\n      <span>{{ timezoneSame }}</span>\n    {{/ timezoneDifference }}\n  {{/ loading }}\n\n</div>\n", H);return T; }();
-
-/***/ }),
+/* 59 */,
+/* 60 */,
 /* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -28025,7 +27957,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ (function(module, exports, __webpack_require__) {
 
 	var H = __webpack_require__(61);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-bookpage\">");t.b("\n" + i);t.b("  <a class=\"bookingjs-bookpage-close\" href=\"#\">");t.b(t.t(t.f("closeIcon",c,p,0)));t.b("</a>");t.b("\n" + i);t.b("  <div class=\"bookingjs-bookpage-header\">");t.b("\n" + i);t.b("    <h2 class=\"bookingjs-bookpage-date\">");t.b(t.v(t.f("chosenDate",c,p,0)));t.b("</h2>");t.b("\n" + i);t.b("    <h3 class=\"bookingjs-bookpage-time\">");t.b(t.v(t.f("chosenTime",c,p,0)));t.b("</h3>");t.b("\n" + i);if(t.s(t.f("allocatedResource",c,p,1),c,p,0,293,465,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("      <span class=\"bookingjs-bookpage-resource-prefix\">");t.b(t.v(t.f("allocatedResourcePrefix",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <h3 class=\"bookingjs-bookpage-resource\">");t.b(t.v(t.f("allocatedResource",c,p,0)));t.b("</h3>");t.b("\n" + i);});c.pop();}t.b("  </div>");t.b("\n" + i);t.b("  <form class=\"bookingjs-form\" action=\"#\">");t.b("\n" + i);t.b("    <div class=\"bookingjs-form-box\">");t.b("\n" + i);t.b("      <div class=\"bookingjs-form-success-message\">");t.b("\n" + i);t.b("        <div class=\"bookingjs-form-success-message-body\">");t.b(t.t(t.f("successMessageBody",c,p,0)));t.b("</div>");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("      <div class=\"bookingjs-form-fields\">");t.b("\n" + i);t.b(t.rp("<formFields0",c,p,"        "));t.b("      </div>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <button class=\"bookingjs-form-button\" type=\"submit\">");t.b("\n" + i);t.b("      <span class=\"inactive-text\">");t.b(t.v(t.f("submitText",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"loading-text\">");t.b(t.t(t.f("loadingIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"error-text\">");t.b(t.t(t.f("errorIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"success-text\">");t.b(t.t(t.f("checkmarkIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("    </button>");t.b("\n" + i);t.b("  </form>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {"<formFields0":{name:"formFields", partials: {}, subs: {  }}}, subs: {  }}, "<div class=\"bookingjs-bookpage\">\n  <a class=\"bookingjs-bookpage-close\" href=\"#\">{{& closeIcon }}</a>\n  <div class=\"bookingjs-bookpage-header\">\n    <h2 class=\"bookingjs-bookpage-date\">{{ chosenDate }}</h2>\n    <h3 class=\"bookingjs-bookpage-time\">{{ chosenTime }}</h3>\n    {{#allocatedResource}}\n      <span class=\"bookingjs-bookpage-resource-prefix\">{{ allocatedResourcePrefix }}</span>\n      <h3 class=\"bookingjs-bookpage-resource\">{{ allocatedResource }}</h3>\n    {{/allocatedResource}}\n  </div>\n  <form class=\"bookingjs-form\" action=\"#\">\n    <div class=\"bookingjs-form-box\">\n      <div class=\"bookingjs-form-success-message\">\n        <div class=\"bookingjs-form-success-message-body\">{{& successMessageBody }}</div>\n      </div>\n      <div class=\"bookingjs-form-fields\">\n        {{> formFields }}\n      </div>\n    </div>\n    <button class=\"bookingjs-form-button\" type=\"submit\">\n      <span class=\"inactive-text\">{{ submitText }}</span>\n      <span class=\"loading-text\">{{& loadingIcon }}</span>\n      <span class=\"error-text\">{{& errorIcon }}</span>\n      <span class=\"success-text\">{{& checkmarkIcon }}</span>\n    </button>\n  </form>\n</div>\n", H);return T; }();
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-bookpage\">");t.b("\n" + i);t.b("  <a class=\"bookingjs-bookpage-close\" href=\"#\">");t.b(t.t(t.f("closeIcon",c,p,0)));t.b("</a>");t.b("\n" + i);t.b("  <div class=\"bookingjs-bookpage-header\">");t.b("\n" + i);t.b("    <h2 class=\"bookingjs-bookpage-date\">");t.b(t.v(t.f("chosenDate",c,p,0)));t.b("</h2>");t.b("\n" + i);t.b("    <h3 class=\"bookingjs-bookpage-time\">");t.b(t.v(t.f("chosenTime",c,p,0)));t.b("</h3>");t.b("\n" + i);if(t.s(t.f("allocatedResource",c,p,1),c,p,0,293,465,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("      <span class=\"bookingjs-bookpage-resource-prefix\">");t.b(t.v(t.f("allocatedResourcePrefix",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <h3 class=\"bookingjs-bookpage-resource\">");t.b(t.v(t.f("allocatedResource",c,p,0)));t.b("</h3>");t.b("\n" + i);});c.pop();}t.b("  </div>");t.b("\n" + i);t.b("  <form class=\"bookingjs-form\" action=\"#\">");t.b("\n" + i);t.b("    <div class=\"bookingjs-form-box\">");t.b("\n" + i);t.b("      <div class=\"bookingjs-form-success-message\">");t.b("\n" + i);t.b("        <div class=\"bookingjs-form-success-message-body\">");t.b(t.t(t.f("successMessage",c,p,0)));t.b("</div>");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("      <div class=\"bookingjs-form-fields\">");t.b("\n" + i);t.b(t.rp("<formFields0",c,p,"        "));t.b("      </div>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <button class=\"bookingjs-form-button\" type=\"submit\">");t.b("\n" + i);t.b("      <span class=\"inactive-text\">");t.b(t.v(t.f("submitText",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"loading-text\">");t.b(t.t(t.f("loadingIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"error-text\">");t.b(t.t(t.f("errorIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"success-text\">");t.b(t.t(t.f("checkmarkIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("    </button>");t.b("\n" + i);t.b("  </form>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {"<formFields0":{name:"formFields", partials: {}, subs: {  }}}, subs: {  }}, "<div class=\"bookingjs-bookpage\">\n  <a class=\"bookingjs-bookpage-close\" href=\"#\">{{& closeIcon }}</a>\n  <div class=\"bookingjs-bookpage-header\">\n    <h2 class=\"bookingjs-bookpage-date\">{{ chosenDate }}</h2>\n    <h3 class=\"bookingjs-bookpage-time\">{{ chosenTime }}</h3>\n    {{#allocatedResource}}\n      <span class=\"bookingjs-bookpage-resource-prefix\">{{ allocatedResourcePrefix }}</span>\n      <h3 class=\"bookingjs-bookpage-resource\">{{ allocatedResource }}</h3>\n    {{/allocatedResource}}\n  </div>\n  <form class=\"bookingjs-form\" action=\"#\">\n    <div class=\"bookingjs-form-box\">\n      <div class=\"bookingjs-form-success-message\">\n        <div class=\"bookingjs-form-success-message-body\">{{& successMessage }}</div>\n      </div>\n      <div class=\"bookingjs-form-fields\">\n        {{> formFields }}\n      </div>\n    </div>\n    <button class=\"bookingjs-form-button\" type=\"submit\">\n      <span class=\"inactive-text\">{{ submitText }}</span>\n      <span class=\"loading-text\">{{& loadingIcon }}</span>\n      <span class=\"error-text\">{{& errorIcon }}</span>\n      <span class=\"success-text\">{{& checkmarkIcon }}</span>\n    </button>\n  </form>\n</div>\n", H);return T; }();
 
 /***/ }),
 /* 73 */

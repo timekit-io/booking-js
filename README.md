@@ -353,21 +353,21 @@ Inspect to source code to learn more about in which order callbacks are fired. C
 
 ```javascript
 callbacks: {
-  findTimeStarted:          function(args) {},
-  findTimeSuccessful:       function(response) {},
-  findTimeFailed:           function(response) {},
-  createBookingStarted:     function(args) {},
-  createBookingSuccessful:  function(response) {},
-  createBookingFailed:      function(response) {},
-  getUserTimezoneStarted:   function(args) {},
-  getUserTimezoneSuccessful:function(response) {},
-  getUserTimezoneFailed:    function(response) {},
-  fullCalendarInitialized:  function() {},
-  renderCompleted:          function() {},
-  showBookingPage:          function(event) {},
-  closeBookingPage:         function() {},
-  submitBookingForm:        function(values) {},
-  errorTriggered:           function(message) {}
+  fetchAvailabilityStarted:     function(args) {},
+  fetchAvailabilitySuccessful:  function(response) {},
+  fetchAvailabilityFailed:      function(response) {},
+  createBookingStarted:         function(args) {},
+  createBookingSuccessful:      function(response) {},
+  createBookingFailed:          function(response) {},
+  getUserTimezoneStarted:       function(args) {},
+  getUserTimezoneSuccessful:    function(response) {},
+  getUserTimezoneFailed:        function(response) {},
+  fullCalendarInitialized:      function() {},
+  renderCompleted:              function() {},
+  showBookingPage:              function(event) {},
+  closeBookingPage:             function() {},
+  submitBookingForm:            function(values) {},
+  errorTriggered:               function(message) {}
 }
 ```
 

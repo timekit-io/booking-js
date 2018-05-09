@@ -19,20 +19,20 @@
         '42b956f0-be11-4af3-9221-19e899fcd1fb'
       ],
       callbacks: {
-        findTimeStarted:          function(args)      { console.log('findTimeStarted', args); },
-        findTimeSuccessful:       function(response)  { console.log('findTimeSuccessful', response); },
-        findTimeFailed:           function(response)  { console.log('findTimeFailed', response); },
-        createBookingStarted:     function(args)      { console.log('createBookingStarted', args); },
-        createBookingSuccessful:  function(response)  { console.log('createBookingSuccessful', response); },
-        createBookingFailed:      function(response)  { console.log('createBookingFailed', response); },
-        getUserTimezoneStarted:   function(args)      { console.log('getUserTimezoneStarted', args); },
-        getUserTimezoneSuccesful: function(response)  { console.log('getUserTimezoneSuccesful', response); },
-        getUserTimezoneFailed:    function(response)  { console.log('getUserTimezoneFailed', response); },
-        fullCalendarInitialized:  function()          { console.log('fullCalendarInitialized'); },
-        renderCompleted:          function()          { console.log('renderCompleted'); },
-        showBookingPage:          function(slot)      { console.log('showBookingPage', slot); },
-        closeBookingPage:         function()          { console.log('closeBookingPage'); },
-        submitBookingForm:        function(values)    { console.log('submitBookingForm', values); }
+        fetchAvailabilityStarted:     function(args)      { console.log('fetchAvailabilityStarted', args); },
+        fetchAvailabilitySuccessful:  function(response)  { console.log('fetchAvailabilitySuccessful', response); },
+        fetchAvailabilityFailed:      function(response)  { console.log('fetchAvailabilityFailed', response); },
+        createBookingStarted:         function(args)      { console.log('createBookingStarted', args); },
+        createBookingSuccessful:      function(response)  { console.log('createBookingSuccessful', response); },
+        createBookingFailed:          function(response)  { console.log('createBookingFailed', response); },
+        getUserTimezoneStarted:       function(args)      { console.log('getUserTimezoneStarted', args); },
+        getUserTimezoneSuccesful:     function(response)  { console.log('getUserTimezoneSuccesful', response); },
+        getUserTimezoneFailed:        function(response)  { console.log('getUserTimezoneFailed', response); },
+        fullCalendarInitialized:      function()          { console.log('fullCalendarInitialized'); },
+        renderCompleted:              function()          { console.log('renderCompleted'); },
+        showBookingPage:              function(slot)      { console.log('showBookingPage', slot); },
+        closeBookingPage:             function()          { console.log('closeBookingPage'); },
+        submitBookingForm:            function(values)    { console.log('submitBookingForm', values); }
       }
     });
   </script>

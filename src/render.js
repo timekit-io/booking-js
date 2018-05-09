@@ -51,7 +51,7 @@ function InitRender(deps) {
 
     $.extend(args, getConfig().availability);
 
-    utils.doCallback('findTimeStarted', args);
+    utils.doCallback('fetchAvailabilityStarted', args);
 
     sdk
     .makeRequest({
@@ -61,7 +61,7 @@ function InitRender(deps) {
     })
     .then(function(response){
 
-      utils.doCallback('findTimeSuccessful', response);
+      utils.doCallback('fetchAvailabilitySuccessful', response);
       hideLoadingScreen();
 
       // Render available timeslots in FullCalendar
@@ -71,7 +71,7 @@ function InitRender(deps) {
       if (response.headers['timekit-testmode']) renderTestModeRibbon();
 
     }).catch(function(response){
-      utils.doCallback('findTimeFailed', response);
+      utils.doCallback('fetchAvailabilityFailed', response);
       hideLoadingScreen();
       triggerError(['An error with Timekit FindTime occured', response]);
     });

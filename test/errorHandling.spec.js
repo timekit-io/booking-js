@@ -26,7 +26,7 @@ describe('Error handling', function() {
     widget.init();
 
     expect($('.bookingjs-error')).toBeInDOM();
-    expect($('.bookingjs-error-text-message')).toContainText('No configuration was supplied or found. Please supply a config object upon library initialization');
+    expect($('.bookingjs-error-text-message')).toContainText('No configuration was supplied. Please supply a config object upon library initialization');
 
     done()
 
@@ -45,7 +45,25 @@ describe('Error handling', function() {
     setTimeout(function() {
 
       expect($('.bookingjs-error')).toBeInDOM();
-      expect($('.bookingjs-error-text-message')).toContainText('The project could not be found, please double-check your project_id/project_slug');
+      expect($('.bookingjs-error-text-message')).toContainText('The project could not be found, please double-check your "project_id" and "app_key"');
+
+      done()
+
+    }, 100);
+
+  });
+
+  it('should show error if project ID is supplied but no app key', function(done) {
+
+    var widget = new TimekitBooking();
+    widget.init({
+      project_id: '54321'
+    });
+
+    setTimeout(function() {
+
+      expect($('.bookingjs-error')).toBeInDOM();
+      expect($('.bookingjs-error-text-message')).toContainText('Missing "app_key" in conjunction with "project_id", please provide your "app_key" for authentication');
 
       done()
 

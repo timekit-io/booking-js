@@ -77,7 +77,7 @@ describe('Config loading', function() {
       var request = jasmine.Ajax.requests.first();
 
       expect(request.url).toBe('https://api.timekit.io/v2/projects/embed/12345');
-      expect(widget.getConfig().slug).toBeDefined();
+      expect(widget.getConfig().project_slug).toBeDefined();
       expect($('.bookingjs-calendar')).toBeInDOM();
       done();
 

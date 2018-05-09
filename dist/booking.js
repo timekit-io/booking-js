@@ -110,115 +110,136 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var render  = new RenderDep({ config: config, utils: utils, sdk: sdk });
 	  var getConfig = config.retrieve;
 	
-	  // Setup the Timekit SDK with correct config
-	  var timekitSetupConfig = function() {
-	    sdk.configure(getConfig().sdk);
-	  };
-	
 	  // Initilization method
 	  var init = function(suppliedConfig) {
-	
+	    // Make sure that SDK is ready and debug flag is checked early
 	    var localConfig = config.setDefaults(suppliedConfig || {});
 	    config.update(localConfig);
-	
+	    utils.logDebug(['Version:', getVersion()]);
 	    utils.logDebug(['Supplied config:', suppliedConfig]);
 	
+	    // Set rootTarget to the target element and clean before child nodes before continuing
 	    try {
-	
-	      // Set rootTarget to the target element and clean before child nodes before continuing
 	      render.prepareDOM(suppliedConfig || {});
-	
-	      // Start from local config
-	      if (!suppliedConfig || (!suppliedConfig.project_id && !suppliedConfig.project_slug) || suppliedConfig.disable_remote_load) {
-	        return startWithConfig(suppliedConfig)
-	      }
-	
 	    } catch (e) {
 	      utils.logError(e)
 	      return this
 	    }
 	
-	    // Load remote config
-	    loadRemoteConfig(suppliedConfig)
-	    .then(function (response) {
-	      var remoteConfig = response.data
-	      // streamline naming of object keys
-	      if (remoteConfig.id) {
-	        remoteConfig.project_id = remoteConfig.id
-	        delete remoteConfig.id
-	      }
-	      // merge with supplied config for overwriting settings
-	      var mergedConfig = $.extend(true, {}, remoteConfig, suppliedConfig);
-	      utils.logDebug(['Remote config:', remoteConfig]);
-	      startWithConfig(mergedConfig)
-	    })
-	    .catch(function (e) {
-	      render.triggerError(['The project could not be found, please double-check your project_id/project_slug', e]);
-	    })
+	    // Check whether a config is supplied
+	    if (!utils.doesConfigExist(suppliedConfig)) {
+	      render.triggerError('No configuration was supplied. Please supply a config object upon library initialization');
+	      return this
+	    }
+	
+	    // Start from local config
+	    if (!utils.isRemoteProject(suppliedConfig) || suppliedConfig.disable_remote_load) {
+	      return startWithConfig(suppliedConfig)
+	    }
+	
+	    // Load remote embedded config
+	    if (utils.isEmbeddedProject(suppliedConfig)) {
+	      loadRemoteEmbeddedProject(suppliedConfig)
+	    }
+	
+	    // Load remote hosted config
+	    if (utils.isHostedProject(suppliedConfig)) {
+	      loadRemoteHostedProject(suppliedConfig)
+	    }
 	
 	    return this
-	
 	  };
 	
-	  // Load config from remote (embed or hosted)
-	  var loadRemoteConfig = function(suppliedConfig) {
-	
-	    var localConfig = config.setDefaults(suppliedConfig);
-	    config.update(localConfig);
-	    timekitSetupConfig();
-	    if (suppliedConfig.project_id && suppliedConfig.app_key) {
-	      return sdk
-	      .makeRequest({
-	        url: '/projects/embed/' + suppliedConfig.project_id,
-	        method: 'get'
-	      })
-	    }
-	    if (suppliedConfig.project_slug) {
-	      return sdk
-	      .makeRequest({
-	        url: '/projects/hosted/' + suppliedConfig.project_slug,
-	        method: 'get'
-	      })
-	    }
-	    throw render.triggerError('No widget configuration, project_slug or project_id found');
-	
+	  // Setup the Timekit SDK with correct config
+	  var configureSdk = function(sdkConfig) {
+	    sdk.configure(getConfig().sdk);
 	  };
+	
+	  var loadRemoteEmbeddedProject = function(suppliedConfig) {
+	    // App key is required when fetching an embedded project, bail if not fund
+	    if (!suppliedConfig.app_key) {
+	      render.triggerError('Missing "app_key" in conjunction with "project_id", please provide your "app_key" for authentication');
+	      return this
+	    }
+	    configureSdk();
+	    sdk.makeRequest({
+	      url: '/projects/embed/' + suppliedConfig.project_id,
+	      method: 'get'
+	    })
+	    .then(function(response) {
+	      remoteConfigLoaded(response, suppliedConfig)
+	    })
+	    .catch(function (e) {
+	      render.triggerError(['The project could not be found, please double-check your "project_id" and "app_key"', e]);
+	    })
+	  }
+	
+	  var loadRemoteHostedProject = function (suppliedConfig) {
+	    configureSdk();
+	    sdk.makeRequest({
+	      url: '/projects/hosted/' + suppliedConfig.project_slug,
+	      method: 'get'
+	    })
+	    .then(function(response) {
+	      remoteConfigLoaded(response, suppliedConfig)
+	    })
+	    .catch(function (e) {
+	      render.triggerError(['The project could not be found, please double-check your "project_slug"', e]);
+	    })
+	  }
+	
+	  // Process retrieved project config and start
+	  var remoteConfigLoaded = function (response, suppliedConfig) {
+	    var remoteConfig = response.data
+	    // streamline naming of object keys
+	    if (remoteConfig.id) {
+	      remoteConfig.project_id = remoteConfig.id
+	      delete remoteConfig.id
+	    }
+	    if (remoteConfig.slug) {
+	      remoteConfig.project_slug = remoteConfig.slug
+	      delete remoteConfig.slug
+	    }
+	    // TODO fix this on the backend
+	    if (remoteConfig.ui === null) {
+	      remoteConfig.ui = {}
+	    }
+	    if (remoteConfig.customer_fields === null) {
+	      remoteConfig.customer_fields = {}
+	    }
+	    // merge with supplied config for overwriting settings
+	    var mergedConfig = $.extend(true, {}, remoteConfig, suppliedConfig);
+	    utils.logDebug(['Remote config:', remoteConfig]);
+	    startWithConfig(mergedConfig)
+	  }
 	
 	  // Parse the config and start rendering
 	  var startWithConfig = function(suppliedConfig) {
-	
 	    // Handle config and defaults
 	    try {
 	      config.parseAndUpdate(suppliedConfig);
-	      utils.logDebug(['Final config:', getConfig()]);
-	      utils.logDebug(['Version:', getVersion()]);
 	    } catch (e) {
 	      render.triggerError(e);
 	      return this
 	    }
 	
-	    return startRender();
+	    utils.logDebug(['Final config:', getConfig()]);
 	
+	    return startRender();
 	  };
 	
 	  // Render method
 	  var startRender = function() {
-	
 	    utils.doCallback('renderStarted');
 	
 	    // Setup Timekit SDK config
-	    timekitSetupConfig();
+	    configureSdk();
 	
 	    // Initialize FullCalendar
 	    render.initializeCalendar();
 	
 	    // Get availability through Timekit SDK
 	    render.getAvailability();
-	
-	    // TODO Show timezone helper if enabled
-	    // if (getConfig().ui.show_timezone_helper) {
-	      // renderTimezoneHelper();
-	    // }
 	
 	    // Show image avatar if set
 	    if (getConfig().ui.avatar) {
@@ -233,22 +254,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    utils.doCallback('renderCompleted');
 	
 	    return this;
-	
 	  };
 	
 	  // Get library version
 	  var getVersion = function() {
-	
 	    return ("1.24.3");
-	
 	  };
 	
 	  var destroy = function() {
-	
 	    render.prepareDOM({});
 	    config.update({});
 	    return this;
-	
 	  };
 	
 	  // Expose methods
@@ -4472,13 +4488,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Current state
 	  var config = {};
 	
+	  // Setup defaults for the SDK
+	  var prepareSdkConfig = function(suppliedConfig) {
+	    if (typeof suppliedConfig.sdk === 'undefined') suppliedConfig.sdk = {}
+	    if (suppliedConfig.app_key) suppliedConfig.sdk.appKey = suppliedConfig.app_key
+	    return $.extend(true, {}, defaultConfig.primary.sdk, suppliedConfig.sdk);
+	  }
+	
 	  // Merge defaults into passed config
 	  var setDefaults = function(suppliedConfig) {
 	
-	    if (suppliedConfig.app_key) {
-	      if (typeof suppliedConfig.sdk === 'undefined') suppliedConfig.sdk = {}
-	      suppliedConfig.sdk.appKey = suppliedConfig.app_key
-	    }
+	    suppliedConfig.sdk = prepareSdkConfig(suppliedConfig)
 	    return $.extend(true, {}, defaultConfig.primary, suppliedConfig);
 	
 	  };
@@ -4495,11 +4515,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Setup config
 	  var parseAndUpdate = function(suppliedConfig) {
 	
-	    // Check whether a config is supplied
-	    if(suppliedConfig === undefined || typeof suppliedConfig !== 'object' || $.isEmptyObject(suppliedConfig)) {
-	      throw 'No configuration was supplied or found. Please supply a config object upon library initialization';
-	    }
-	
 	    // Extend the default config with supplied settings
 	    var newConfig = setDefaults(suppliedConfig);
 	
@@ -4513,7 +4528,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	
 	    // Set new config to instance config
-	    config = newConfig;
+	    update(newConfig);
 	
 	    return config;
 	
@@ -4528,6 +4543,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	
 	  return {
+	    prepareSdkConfig: prepareSdkConfig,
 	    parseAndUpdate: parseAndUpdate,
 	    setDefaults: setDefaults,
 	    update: update,
@@ -4748,13 +4764,36 @@ return /******/ (function(modules) { // webpackBootstrap
 	    console.warn('TimekitBooking Deprecated: ', message);
 	  }
 	
+	  // Helper to decide if it's an embedded remote project
+	  var isEmbeddedProject = function(suppliedConfig) {
+	    return typeof suppliedConfig.project_id !== 'undefined'
+	  };
+	
+	  // Helper to decide if it's an hosted remote project
+	  var isHostedProject = function(suppliedConfig) {
+	    return typeof suppliedConfig.project_slug !== 'undefined'
+	  };
+	
+	  // Helper to decide if it's an embedded or hosted remote project
+	  var isRemoteProject = function(suppliedConfig) {
+	    return (isEmbeddedProject(suppliedConfig) || isHostedProject(suppliedConfig))
+	  };
+	
+	  var doesConfigExist = function (suppliedConfig) {
+	    return (suppliedConfig !== undefined && typeof suppliedConfig === 'object' && !$.isEmptyObject(suppliedConfig))
+	  }
+	
 	  return {
 	    isFunction: isFunction,
 	    isArray: isArray,
 	    doCallback: doCallback,
 	    logDebug: logDebug,
 	    logError: logError,
-	    logDeprecated: logDeprecated
+	    logDeprecated: logDeprecated,
+	    isEmbeddedProject: isEmbeddedProject,
+	    isHostedProject: isHostedProject,
+	    isRemoteProject: isRemoteProject,
+	    doesConfigExist: doesConfigExist
 	  }
 	}
 	

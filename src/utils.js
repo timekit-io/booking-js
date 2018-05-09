@@ -36,13 +36,36 @@ function InitUtils(deps) {
     console.warn('TimekitBooking Deprecated: ', message);
   }
 
+  // Helper to decide if it's an embedded remote project
+  var isEmbeddedProject = function(suppliedConfig) {
+    return typeof suppliedConfig.project_id !== 'undefined'
+  };
+
+  // Helper to decide if it's an hosted remote project
+  var isHostedProject = function(suppliedConfig) {
+    return typeof suppliedConfig.project_slug !== 'undefined'
+  };
+
+  // Helper to decide if it's an embedded or hosted remote project
+  var isRemoteProject = function(suppliedConfig) {
+    return (isEmbeddedProject(suppliedConfig) || isHostedProject(suppliedConfig))
+  };
+
+  var doesConfigExist = function (suppliedConfig) {
+    return (suppliedConfig !== undefined && typeof suppliedConfig === 'object' && !$.isEmptyObject(suppliedConfig))
+  }
+
   return {
     isFunction: isFunction,
     isArray: isArray,
     doCallback: doCallback,
     logDebug: logDebug,
     logError: logError,
-    logDeprecated: logDeprecated
+    logDeprecated: logDeprecated,
+    isEmbeddedProject: isEmbeddedProject,
+    isHostedProject: isHostedProject,
+    isRemoteProject: isRemoteProject,
+    doesConfigExist: doesConfigExist
   }
 }
 

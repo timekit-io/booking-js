@@ -17,115 +17,136 @@ function Initialize() {
   var render  = new RenderDep({ config: config, utils: utils, sdk: sdk });
   var getConfig = config.retrieve;
 
-  // Setup the Timekit SDK with correct config
-  var timekitSetupConfig = function() {
-    sdk.configure(getConfig().sdk);
-  };
-
   // Initilization method
   var init = function(suppliedConfig) {
-
+    // Make sure that SDK is ready and debug flag is checked early
     var localConfig = config.setDefaults(suppliedConfig || {});
     config.update(localConfig);
-
+    utils.logDebug(['Version:', getVersion()]);
     utils.logDebug(['Supplied config:', suppliedConfig]);
 
+    // Set rootTarget to the target element and clean before child nodes before continuing
     try {
-
-      // Set rootTarget to the target element and clean before child nodes before continuing
       render.prepareDOM(suppliedConfig || {});
-
-      // Start from local config
-      if (!suppliedConfig || (!suppliedConfig.project_id && !suppliedConfig.project_slug) || suppliedConfig.disable_remote_load) {
-        return startWithConfig(suppliedConfig)
-      }
-
     } catch (e) {
       utils.logError(e)
       return this
     }
 
-    // Load remote config
-    loadRemoteConfig(suppliedConfig)
-    .then(function (response) {
-      var remoteConfig = response.data
-      // streamline naming of object keys
-      if (remoteConfig.id) {
-        remoteConfig.project_id = remoteConfig.id
-        delete remoteConfig.id
-      }
-      // merge with supplied config for overwriting settings
-      var mergedConfig = $.extend(true, {}, remoteConfig, suppliedConfig);
-      utils.logDebug(['Remote config:', remoteConfig]);
-      startWithConfig(mergedConfig)
-    })
-    .catch(function (e) {
-      render.triggerError(['The project could not be found, please double-check your project_id/project_slug', e]);
-    })
+    // Check whether a config is supplied
+    if (!utils.doesConfigExist(suppliedConfig)) {
+      render.triggerError('No configuration was supplied. Please supply a config object upon library initialization');
+      return this
+    }
+
+    // Start from local config
+    if (!utils.isRemoteProject(suppliedConfig) || suppliedConfig.disable_remote_load) {
+      return startWithConfig(suppliedConfig)
+    }
+
+    // Load remote embedded config
+    if (utils.isEmbeddedProject(suppliedConfig)) {
+      loadRemoteEmbeddedProject(suppliedConfig)
+    }
+
+    // Load remote hosted config
+    if (utils.isHostedProject(suppliedConfig)) {
+      loadRemoteHostedProject(suppliedConfig)
+    }
 
     return this
-
   };
 
-  // Load config from remote (embed or hosted)
-  var loadRemoteConfig = function(suppliedConfig) {
-
-    var localConfig = config.setDefaults(suppliedConfig);
-    config.update(localConfig);
-    timekitSetupConfig();
-    if (suppliedConfig.project_id && suppliedConfig.app_key) {
-      return sdk
-      .makeRequest({
-        url: '/projects/embed/' + suppliedConfig.project_id,
-        method: 'get'
-      })
-    }
-    if (suppliedConfig.project_slug) {
-      return sdk
-      .makeRequest({
-        url: '/projects/hosted/' + suppliedConfig.project_slug,
-        method: 'get'
-      })
-    }
-    throw render.triggerError('No widget configuration, project_slug or project_id found');
-
+  // Setup the Timekit SDK with correct config
+  var configureSdk = function(sdkConfig) {
+    sdk.configure(getConfig().sdk);
   };
+
+  var loadRemoteEmbeddedProject = function(suppliedConfig) {
+    // App key is required when fetching an embedded project, bail if not fund
+    if (!suppliedConfig.app_key) {
+      render.triggerError('Missing "app_key" in conjunction with "project_id", please provide your "app_key" for authentication');
+      return this
+    }
+    configureSdk();
+    sdk.makeRequest({
+      url: '/projects/embed/' + suppliedConfig.project_id,
+      method: 'get'
+    })
+    .then(function(response) {
+      remoteConfigLoaded(response, suppliedConfig)
+    })
+    .catch(function (e) {
+      render.triggerError(['The project could not be found, please double-check your "project_id" and "app_key"', e]);
+    })
+  }
+
+  var loadRemoteHostedProject = function (suppliedConfig) {
+    configureSdk();
+    sdk.makeRequest({
+      url: '/projects/hosted/' + suppliedConfig.project_slug,
+      method: 'get'
+    })
+    .then(function(response) {
+      remoteConfigLoaded(response, suppliedConfig)
+    })
+    .catch(function (e) {
+      render.triggerError(['The project could not be found, please double-check your "project_slug"', e]);
+    })
+  }
+
+  // Process retrieved project config and start
+  var remoteConfigLoaded = function (response, suppliedConfig) {
+    var remoteConfig = response.data
+    // streamline naming of object keys
+    if (remoteConfig.id) {
+      remoteConfig.project_id = remoteConfig.id
+      delete remoteConfig.id
+    }
+    if (remoteConfig.slug) {
+      remoteConfig.project_slug = remoteConfig.slug
+      delete remoteConfig.slug
+    }
+    // TODO fix this on the backend
+    if (remoteConfig.ui === null) {
+      remoteConfig.ui = {}
+    }
+    if (remoteConfig.customer_fields === null) {
+      remoteConfig.customer_fields = {}
+    }
+    // merge with supplied config for overwriting settings
+    var mergedConfig = $.extend(true, {}, remoteConfig, suppliedConfig);
+    utils.logDebug(['Remote config:', remoteConfig]);
+    startWithConfig(mergedConfig)
+  }
 
   // Parse the config and start rendering
   var startWithConfig = function(suppliedConfig) {
-
     // Handle config and defaults
     try {
       config.parseAndUpdate(suppliedConfig);
-      utils.logDebug(['Final config:', getConfig()]);
-      utils.logDebug(['Version:', getVersion()]);
     } catch (e) {
       render.triggerError(e);
       return this
     }
 
-    return startRender();
+    utils.logDebug(['Final config:', getConfig()]);
 
+    return startRender();
   };
 
   // Render method
   var startRender = function() {
-
     utils.doCallback('renderStarted');
 
     // Setup Timekit SDK config
-    timekitSetupConfig();
+    configureSdk();
 
     // Initialize FullCalendar
     render.initializeCalendar();
 
     // Get availability through Timekit SDK
     render.getAvailability();
-
-    // TODO Show timezone helper if enabled
-    // if (getConfig().ui.show_timezone_helper) {
-      // renderTimezoneHelper();
-    // }
 
     // Show image avatar if set
     if (getConfig().ui.avatar) {
@@ -140,22 +161,17 @@ function Initialize() {
     utils.doCallback('renderCompleted');
 
     return this;
-
   };
 
   // Get library version
   var getVersion = function() {
-
     return VERSION;
-
   };
 
   var destroy = function() {
-
     render.prepareDOM({});
     config.update({});
     return this;
-
   };
 
   // Expose methods

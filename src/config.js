@@ -7,13 +7,17 @@ function InitConfig() {
   // Current state
   var config = {};
 
+  // Setup defaults for the SDK
+  var prepareSdkConfig = function(suppliedConfig) {
+    if (typeof suppliedConfig.sdk === 'undefined') suppliedConfig.sdk = {}
+    if (suppliedConfig.app_key) suppliedConfig.sdk.appKey = suppliedConfig.app_key
+    return $.extend(true, {}, defaultConfig.primary.sdk, suppliedConfig.sdk);
+  }
+
   // Merge defaults into passed config
   var setDefaults = function(suppliedConfig) {
 
-    if (suppliedConfig.app_key) {
-      if (typeof suppliedConfig.sdk === 'undefined') suppliedConfig.sdk = {}
-      suppliedConfig.sdk.appKey = suppliedConfig.app_key
-    }
+    suppliedConfig.sdk = prepareSdkConfig(suppliedConfig)
     return $.extend(true, {}, defaultConfig.primary, suppliedConfig);
 
   };
@@ -30,11 +34,6 @@ function InitConfig() {
   // Setup config
   var parseAndUpdate = function(suppliedConfig) {
 
-    // Check whether a config is supplied
-    if(suppliedConfig === undefined || typeof suppliedConfig !== 'object' || $.isEmptyObject(suppliedConfig)) {
-      throw 'No configuration was supplied or found. Please supply a config object upon library initialization';
-    }
-
     // Extend the default config with supplied settings
     var newConfig = setDefaults(suppliedConfig);
 
@@ -48,7 +47,7 @@ function InitConfig() {
     }
 
     // Set new config to instance config
-    config = newConfig;
+    update(newConfig);
 
     return config;
 
@@ -63,6 +62,7 @@ function InitConfig() {
   }
 
   return {
+    prepareSdkConfig: prepareSdkConfig,
     parseAndUpdate: parseAndUpdate,
     setDefaults: setDefaults,
     update: update,

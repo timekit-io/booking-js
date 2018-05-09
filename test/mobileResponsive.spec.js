@@ -26,7 +26,9 @@ describe('Mobile & responsive', function() {
   it('should be able change day in mobile mode by clicking arrows', function(done) {
 
     createWidget({
-      name: 'John Doe'
+      ui: {
+        display_name: 'John Doe'
+      }
     });
 
     expect($('.fc-basicDay-view')).toBeInDOM()

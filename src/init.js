@@ -54,13 +54,6 @@ function Initialize() {
         remoteConfig.project_id = remoteConfig.id
         delete remoteConfig.id
       }
-      // TODO fix this on the backend
-      if (remoteConfig.ui === null) {
-        remoteConfig.ui = {}
-      }
-      if (remoteConfig.customer_fields === null) {
-        remoteConfig.customer_fields = {}
-      }
       // merge with supplied config for overwriting settings
       var mergedConfig = $.extend(true, {}, remoteConfig, suppliedConfig);
       utils.logDebug(['Remote config:', remoteConfig]);
@@ -130,9 +123,9 @@ function Initialize() {
     render.getAvailability();
 
     // TODO Show timezone helper if enabled
-    if (getConfig().ui.show_timezone_helper) {
+    // if (getConfig().ui.show_timezone_helper) {
       // renderTimezoneHelper();
-    }
+    // }
 
     // Show image avatar if set
     if (getConfig().ui.avatar) {
@@ -140,7 +133,7 @@ function Initialize() {
     }
 
     // Print out display name
-    if (getConfig().name) {
+    if (getConfig().ui.display_name) {
       render.renderDisplayName();
     }
 

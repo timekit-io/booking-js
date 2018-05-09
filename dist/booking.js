@@ -147,13 +147,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        remoteConfig.project_id = remoteConfig.id
 	        delete remoteConfig.id
 	      }
-	      // TODO fix this on the backend
-	      if (remoteConfig.ui === null) {
-	        remoteConfig.ui = {}
-	      }
-	      if (remoteConfig.customer_fields === null) {
-	        remoteConfig.customer_fields = {}
-	      }
 	      // merge with supplied config for overwriting settings
 	      var mergedConfig = $.extend(true, {}, remoteConfig, suppliedConfig);
 	      utils.logDebug(['Remote config:', remoteConfig]);
@@ -223,9 +216,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    render.getAvailability();
 	
 	    // TODO Show timezone helper if enabled
-	    if (getConfig().ui.show_timezone_helper) {
+	    // if (getConfig().ui.show_timezone_helper) {
 	      // renderTimezoneHelper();
-	    }
+	    // }
 	
 	    // Show image avatar if set
 	    if (getConfig().ui.avatar) {
@@ -233,7 +226,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	
 	    // Print out display name
-	    if (getConfig().name) {
+	    if (getConfig().ui.display_name) {
 	      render.renderDisplayName();
 	    }
 	
@@ -4568,7 +4561,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    show_credits: true,
 	    availability_view: 'agendaWeek',
 	    avatar: '',
-	    show_timezone_helper: true,
+	    show_timezone_helper: false,
 	    time_date_format: '12h-mdy-sun',
 	    localization: {
 	      allocated_resource_prefix: 'with',

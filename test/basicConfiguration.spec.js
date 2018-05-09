@@ -22,7 +22,7 @@ describe('Basic configuration', function() {
 
     var config = {
       ui: {
-        dispay_name: 'Demo Name'
+        display_name: 'Demo Name'
       }
     }
     createWidget(config);

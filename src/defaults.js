@@ -17,7 +17,7 @@ var primary = {
     show_credits: true,
     availability_view: 'agendaWeek',
     avatar: '',
-    show_timezone_helper: true,
+    show_timezone_helper: false,
     time_date_format: '12h-mdy-sun',
     localization: {
       allocated_resource_prefix: 'with',

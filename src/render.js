@@ -559,7 +559,9 @@ function InitRender(deps) {
       args.project_id = getConfig().project_id
     } else {
       $.extend(true, args, {
-        what: 'Meeting with ' + formData.name
+        what: 'Meeting with ' + formData.name,
+        where: 'TBD',
+        description: ''
       });
     }
 

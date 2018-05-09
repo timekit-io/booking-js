@@ -57,9 +57,7 @@ var primaryWithoutProject = {
     mode: 'roundrobin_random'
   },
   booking: {
-    graph: 'instant',
-    where: 'TBD',
-    description: ''
+    graph: 'instant'
   },
   customer_fields: {
     name: {

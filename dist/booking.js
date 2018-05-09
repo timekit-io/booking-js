@@ -4612,9 +4612,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    mode: 'roundrobin_random'
 	  },
 	  booking: {
-	    graph: 'instant',
-	    where: 'TBD',
-	    description: ''
+	    graph: 'instant'
 	  },
 	  customer_fields: {
 	    name: {
@@ -5384,7 +5382,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      args.project_id = getConfig().project_id
 	    } else {
 	      $.extend(true, args, {
-	        what: 'Meeting with ' + formData.name
+	        what: 'Meeting with ' + formData.name,
+	        where: 'TBD',
+	        description: ''
 	      });
 	    }
 	

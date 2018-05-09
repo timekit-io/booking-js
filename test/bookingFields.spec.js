@@ -18,10 +18,14 @@ describe('Booking fields', function() {
     jasmine.Ajax.uninstall();
   });
 
-  it('should be able to add the phone, voip and location field', function(done) {
+  it('should be able to add the comment, phone, voip and location field', function(done) {
 
     var config = {
       customer_fields: {
+        comment: {
+          type: 'string',
+          title: 'Comment'
+        },
         phone: {
           type: 'string',
           title: 'Phone'
@@ -44,6 +48,12 @@ describe('Booking fields', function() {
       interact.clickEvent();
 
       setTimeout(function() {
+
+        var commentInput = $('.input-comment');
+        expect(commentInput).toBeInDOM();
+        expect(commentInput).toBeVisible();
+        expect(commentInput.attr('placeholder')).toBe('Comment');
+        expect(commentInput.attr('required')).toBe(undefined);
 
         var phoneInput = $('.input-phone');
         expect(phoneInput).toBeInDOM();
@@ -172,6 +182,7 @@ describe('Booking fields', function() {
         var commentInput = $('.input-comment');
         expect(commentInput.prop('readonly')).toBe(true);
         expect(commentInput.is('[readonly]')).toBe(true);
+        expect(commentInput.val()).toBe('This should be submitted');
 
         $('.bookingjs-form-button').click();
 

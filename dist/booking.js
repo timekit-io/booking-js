@@ -4560,40 +4560,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	
 	var primary = {
-	
 	  el: '#bookingjs',
 	  name: '',
 	  autoload: true,
 	  disable_remote_load: false,
 	  disable_confirm_page: false,
 	  debug: false,
-	  ui: {
-	    display_name: '',
-	    show_credits: true,
-	    availability_view: 'agendaWeek',
-	    avatar: '',
-	    time_date_format: '12h-mdy-sun',
-	    localization: {
-	      allocated_resource_prefix: 'with',
-	      submit_button: 'Book it',
-	      success_message: 'We have received your booking and sent a confirmation to %s',
-	    }
-	  },
+	  ui: {},
 	  availability: {},
 	  booking: {},
-	  customer_fields: {
-	    name: {
-	      type: 'string',
-	      title: 'Name',
-	      required: true
-	    },
-	    email: {
-	      type: 'string',
-	      title: 'E-mail',
-	      format: 'email',
-	      required: true
-	    }
-	  },
+	  customer_fields: {},
 	  callbacks: {},
 	  sdk: {
 	    headers: {
@@ -4616,11 +4592,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	    scrollTime: '08:00:00',
 	    timezone: 'local',
 	    nowIndicator: true
-	  },
-	
+	  }
 	};
 	
 	var primaryWithoutProject = {
+	  ui: {
+	    display_name: '',
+	    show_credits: true,
+	    availability_view: 'agendaWeek',
+	    avatar: '',
+	    time_date_format: '12h-mdy-sun',
+	    localization: {
+	      allocated_resource_prefix: 'with',
+	      submit_button: 'Book it',
+	      success_message: 'We have received your booking and sent a confirmation to %s',
+	    }
+	  },
 	  availability: {
 	    mode: 'roundrobin_random'
 	  },
@@ -4628,12 +4615,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	    graph: 'instant',
 	    where: 'TBD',
 	    description: ''
+	  },
+	  customer_fields: {
+	    name: {
+	      type: 'string',
+	      title: 'Name',
+	      required: true
+	    },
+	    email: {
+	      type: 'string',
+	      title: 'E-mail',
+	      format: 'email',
+	      required: true
+	    }
 	  }
 	}
 	
 	// Preset: timeDateFormat = '24h-dmy-mon'
 	var timeDateFormat24hdmymon = {
-	
+	  ui: {
+	    booking_date_format: 'D. MMMM YYYY',
+	    booking_time_format: 'HH:mm',
+	    email_time_format: 'H:i'
+	  },
 	  fullcalendar: {
 	    timeFormat: 'HH:mm',
 	    firstDay: 1,
@@ -4646,18 +4650,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	        slotLabelFormat: 'HH:mm'
 	      }
 	    }
-	  },
-	  ui: {
-	    booking_date_format: 'D. MMMM YYYY',
-	    booking_time_format: 'HH:mm',
-	    email_time_format: 'H:i'
 	  }
-	
 	};
 	
 	// Preset: timeDateFormat = '12h-mdy-sun'
 	var timeDateFormat12hmdysun = {
-	
+	  ui: {
+	    booking_date_format: 'MMMM D, YYYY',
+	    booking_time_format: 'h:mma',
+	    email_time_format: 'h:ia'
+	  },
 	  fullcalendar: {
 	    timeFormat: 'h:mma',
 	    firstDay: 0,
@@ -4669,19 +4671,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        columnFormat: 'ddd M/D',
 	        slotLabelFormat: 'h:mma'
 	      }
-	    },
-	  },
-	  ui: {
-	    booking_date_format: 'MMMM D, YYYY',
-	    booking_time_format: 'h:mma',
-	    email_time_format: 'h:ia'
+	    }
 	  }
-	
 	};
 	
 	// Preset: availabilityView = 'agendaWeek'
 	var availabilityViewAgendaWeek = {
-	
 	  fullcalendar: {
 	    header: {
 	      left: '',
@@ -4690,12 +4685,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 	    defaultView: 'agendaWeek'
 	  }
-	
 	}
 	
 	// Preset: availabilityView = 'listing'
 	var availabilityViewListing = {
-	
 	  fullcalendar: {
 	    header: {
 	      left: '',
@@ -4704,7 +4697,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 	    defaultView: 'listing'
 	  }
-	
 	}
 	
 	// Export objects

@@ -160,7 +160,7 @@ module.exports = {
       status: 200,
       statusText: 'HTTP/1.1 200 OK',
       contentType: 'application/json',
-      responseText: '{ "data": {"id": "12345", "slug": "my-widget-slug", "name": "Marty McFly", "app_key": "XT1JO879JF1qUXXzmETD5ucgxaDwsFsd"} }'
+      responseText: '{ "data": { "id": "12345", "slug": "my-widget-slug", "name": "Marty McFly", "app_key": "XT1JO879JF1qUXXzmETD5ucgxaDwsFsd", "ui": { "display_name": "", "show_credits": true, "availability_view": "agendaWeek", "avatar": "", "time_date_format": "12h-mdy-sun", "localization": { "allocated_resource_prefix": "with", "submit_button": "Book it", "success_message": "We have received your booking and sent a confirmation to %s" } }, "booking": { "graph": "instant" }, "customer_fields": { "name": { "type": "string", "title": "Name", "required": true }, "email": { "type": "string", "title": "E-mail", "format": "email", "required": true } } } }'
     });
 
   },
@@ -174,7 +174,7 @@ module.exports = {
       status: 200,
       statusText: 'HTTP/1.1 200 OK',
       contentType: 'application/json',
-      responseText: '{ "data": {"id": "12345", "slug": "my-widget-slug", "name": "Marty McFly"} }'
+      responseText: '{ "data": { "id": "12345", "slug": "my-widget-slug", "name": "Marty McFly", "app_key": "XT1JO879JF1qUXXzmETD5ucgxaDwsFsd", "ui": { "display_name": "", "show_credits": true, "availability_view": "agendaWeek", "avatar": "", "time_date_format": "12h-mdy-sun", "localization": { "allocated_resource_prefix": "with", "submit_button": "Book it", "success_message": "We have received your booking and sent a confirmation to %s" } }, "booking": { "graph": "instant" }, "customer_fields": { "name": { "type": "string", "title": "Name", "required": true }, "email": { "type": "string", "title": "E-mail", "format": "email", "required": true } } } }'
     });
 
   },
@@ -188,7 +188,7 @@ module.exports = {
       status: 200,
       statusText: 'HTTP/1.1 200 OK',
       contentType: 'application/json',
-      responseText: '{ "data": { "id": "12345", "slug": "my-widget-slug", "name": "Marty McFly", "app_key": "test_widget_key_XT1JO879JF1qUXXzmETD5ucgxaDwsFsd", "ui": { "display_name": "McFlys Widget", "localization": { "submit_button": "Book McFly" } }, "booking": { "graph": "confirm_decline" }, "availability": { "length": "3 hours" }, "customer_fields": { "phone": { "title": "Phone Number" } } } }'
+      responseText: '{ "data": { "id": "12345", "slug": "my-widget-slug", "name": "Marty McFly", "app_key": "XT1JO879JF1qUXXzmETD5ucgxaDwsFsd", "ui": { "display_name": "McFlys Widget", "show_credits": true, "availability_view": "agendaWeek", "avatar": "", "time_date_format": "12h-mdy-sun", "localization": { "allocated_resource_prefix": "with", "submit_button": "Book McFly", "success_message": "We have received your booking and sent a confirmation to %s" } }, "booking": { "graph": "confirm_decline" }, "customer_fields": { "name": { "type": "string", "title": "Name", "required": true }, "email": { "type": "string", "title": "E-mail", "format": "email", "required": true }, "phone": { "title": "Phone Number" } } } }'
     });
 
   },

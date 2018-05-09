@@ -50,7 +50,7 @@ var primaryWithoutProject = {
     localization: {
       allocated_resource_prefix: 'with',
       submit_button: 'Book it',
-      success_message: 'We have received your booking and sent a confirmation to %s',
+      success_message: 'We have received your booking and sent a confirmation to %s'
     }
   },
   availability: {

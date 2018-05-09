@@ -137,15 +137,15 @@ describe('Booking fields', function() {
     var config = {
       customer_fields: {
         name: {
-          locked: true,
+          readonly: true,
           prefilled: 'My Test Name'
         },
         email: {
-          locked: false
+          readonly: false
         },
         comment: {
           title: 'Comment',
-          locked: true,
+          readonly: true,
           prefilled: 'This should be submitted'
         }
       }

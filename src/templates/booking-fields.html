@@ -11,7 +11,7 @@
     name="name"
     placeholder="{{ fields.name.title }}"
     {{# fields.name.prefilled }} value="{{ fields.name.prefilled }}" {{/ fields.name.prefilled }}
-    {{# fields.name.locked }} readonly {{/ fields.name.locked }}
+    {{# fields.name.readonly }} readonly {{/ fields.name.readonly }}
     required
   />
 </div>
@@ -29,7 +29,7 @@
     name="email"
     placeholder="{{ fields.email.title }}"
     {{# fields.email.prefilled }} value="{{ fields.email.prefilled }}" {{/ fields.email.prefilled }}
-    {{# fields.email.locked }} readonly {{/ fields.email.locked }}
+    {{# fields.email.readonly }} readonly {{/ fields.email.readonly }}
     required
   />
 </div>
@@ -49,7 +49,7 @@
     placeholder="{{ fields.phone.title }}"
     {{# fields.phone.prefilled }} value="{{ fields.phone.prefilled }}" {{/ fields.phone.prefilled }}
     {{# fields.phone.required }} required {{/ fields.phone.required }}
-    {{# fields.phone.locked }} readonly {{/ fields.phone.locked }}
+    {{# fields.phone.readonly }} readonly {{/ fields.phone.readonly }}
   />
 </div>
 {{/ fields.phone }}
@@ -69,7 +69,7 @@
     placeholder="{{ fields.voip.title }}"
     {{# fields.voip.prefilled }} value="{{ fields.voip.prefilled }}" {{/ fields.voip.prefilled }}
     {{# fields.voip.required }} required {{/ fields.voip.required }}
-    {{# fields.voip.locked }} readonly {{/ fields.voip.locked }}
+    {{# fields.voip.readonly }} readonly {{/ fields.voip.readonly }}
   />
 </div>
 {{/ fields.voip }}
@@ -89,7 +89,7 @@
     placeholder="{{ fields.location.title }}"
     {{# fields.location.prefilled }} value="{{ fields.location.prefilled }}" {{/ fields.location.prefilled }}
     {{# fields.location.required }} required {{/ fields.location.required }}
-    {{# fields.location.locked }} readonly {{/ fields.location.locked }}
+    {{# fields.location.readonly }} readonly {{/ fields.location.readonly }}
   />
 </div>
 {{/ fields.location }}
@@ -108,6 +108,6 @@
     name="comment"
     placeholder="{{ fields.comment.title }}"
     {{# fields.comment.required }} required {{/ fields.comment.required }}
-    {{# fields.comment.locked }} readonly {{/ fields.comment.locked }}>{{# fields.comment.prefilled }}{{ fields.comment.prefilled }}{{/ fields.comment.prefilled }}</textarea>
+    {{# fields.comment.readonly }} readonly {{/ fields.comment.readonly }}>{{# fields.comment.prefilled }}{{ fields.comment.prefilled }}{{/ fields.comment.prefilled }}</textarea>
 </div>
 {{/ fields.comment }}

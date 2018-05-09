@@ -29,12 +29,8 @@ var primary = {
       timezone_helper_same: 'You are in the same timezone as %s'
     }
   },
-  availability: {
-    mode: 'roundrobin_random'
-  },
-  booking: {
-    graph: 'instant'
-  },
+  availability: {},
+  booking: {},
   customer_fields: {
     name: {
       type: 'string',
@@ -73,6 +69,17 @@ var primary = {
   },
 
 };
+
+var primaryWithoutProject = {
+  availability: {
+    mode: 'roundrobin_random'
+  },
+  booking: {
+    graph: 'instant',
+    where: 'TBD',
+    description: ''
+  }
+}
 
 // Preset: timeDateFormat = '24h-dmy-mon'
 var timeDateFormat24hdmymon = {
@@ -153,6 +160,7 @@ var availabilityViewListing = {
 // Export objects
 module.exports = {
   primary: primary,
+  primaryWithoutProject: primaryWithoutProject,
   presets: {
     timeDateFormat: {
       '24h-dmy-mon': timeDateFormat24hdmymon,

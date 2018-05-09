@@ -46,11 +46,9 @@ function InitRender(deps) {
 
     var args = {};
 
-    if (getConfig().resources) args.resources = getConfig().resources
-    if (getConfig().availability_constraints) args.availability_constraints = getConfig().availability_constraints
     if (getConfig().project_id) args.project_id = getConfig().project_id
+    if (getConfig().resources) args.resources = getConfig().resources
 
-    // Only add email to findtime if no calendars or users are explicitly specified
     $.extend(args, getConfig().availability);
 
     utils.doCallback('findTimeStarted', args);
@@ -612,9 +610,7 @@ function InitRender(deps) {
       args.project_id = getConfig().project_id
     } else {
       $.extend(true, args, {
-        what: 'Meeting with ' + formData.name,
-        where: 'TBD',
-        description: ''
+        what: 'Meeting with ' + formData.name
       });
     }
 

@@ -41,7 +41,8 @@ function Initialize() {
 
     // Start from local config
     if (!utils.isRemoteProject(suppliedConfig) || suppliedConfig.disable_remote_load) {
-      return startWithConfig(suppliedConfig)
+      mergedConfig = config.setDefaultsWithoutProject(suppliedConfig)
+      return startWithConfig(mergedConfig)
     }
 
     // Load remote embedded config
@@ -74,7 +75,7 @@ function Initialize() {
       method: 'get'
     })
     .then(function(response) {
-      remoteConfigLoaded(response, suppliedConfig)
+      remoteProjectLoaded(response, suppliedConfig)
     })
     .catch(function (e) {
       render.triggerError(['The project could not be found, please double-check your "project_id" and "app_key"', e]);
@@ -88,7 +89,7 @@ function Initialize() {
       method: 'get'
     })
     .then(function(response) {
-      remoteConfigLoaded(response, suppliedConfig)
+      remoteProjectLoaded(response, suppliedConfig)
     })
     .catch(function (e) {
       render.triggerError(['The project could not be found, please double-check your "project_slug"', e]);
@@ -96,7 +97,7 @@ function Initialize() {
   }
 
   // Process retrieved project config and start
-  var remoteConfigLoaded = function (response, suppliedConfig) {
+  var remoteProjectLoaded = function (response, suppliedConfig) {
     var remoteConfig = response.data
     // streamline naming of object keys
     if (remoteConfig.id) {

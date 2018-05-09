@@ -16,19 +16,20 @@ function InitConfig() {
 
   // Merge defaults into passed config
   var setDefaults = function(suppliedConfig) {
-
     suppliedConfig.sdk = prepareSdkConfig(suppliedConfig)
     return $.extend(true, {}, defaultConfig.primary, suppliedConfig);
+  };
 
+  // Merge defaults into passed config
+  var setDefaultsWithoutProject = function(suppliedConfig) {
+    return $.extend(true, {}, defaultConfig.primaryWithoutProject, suppliedConfig);
   };
 
   // Apply the config presets given a configuration
   var applyConfigPreset = function (localConfig, propertyName, propertyObject) {
-
     var presetCheck = defaultConfig.presets[propertyName][propertyObject];
     if (presetCheck) return $.extend(true, {}, presetCheck, localConfig);
     return localConfig
-
   };
 
   // Setup config
@@ -62,9 +63,9 @@ function InitConfig() {
   }
 
   return {
-    prepareSdkConfig: prepareSdkConfig,
     parseAndUpdate: parseAndUpdate,
     setDefaults: setDefaults,
+    setDefaultsWithoutProject: setDefaultsWithoutProject,
     update: update,
     retrieve: retrieve
   }

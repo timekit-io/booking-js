@@ -134,7 +134,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    // Start from local config
 	    if (!utils.isRemoteProject(suppliedConfig) || suppliedConfig.disable_remote_load) {
-	      return startWithConfig(suppliedConfig)
+	      mergedConfig = config.setDefaultsWithoutProject(suppliedConfig)
+	      return startWithConfig(mergedConfig)
 	    }
 	
 	    // Load remote embedded config
@@ -167,7 +168,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      method: 'get'
 	    })
 	    .then(function(response) {
-	      remoteConfigLoaded(response, suppliedConfig)
+	      remoteProjectLoaded(response, suppliedConfig)
 	    })
 	    .catch(function (e) {
 	      render.triggerError(['The project could not be found, please double-check your "project_id" and "app_key"', e]);
@@ -181,7 +182,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      method: 'get'
 	    })
 	    .then(function(response) {
-	      remoteConfigLoaded(response, suppliedConfig)
+	      remoteProjectLoaded(response, suppliedConfig)
 	    })
 	    .catch(function (e) {
 	      render.triggerError(['The project could not be found, please double-check your "project_slug"', e]);
@@ -189,7 +190,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	
 	  // Process retrieved project config and start
-	  var remoteConfigLoaded = function (response, suppliedConfig) {
+	  var remoteProjectLoaded = function (response, suppliedConfig) {
 	    var remoteConfig = response.data
 	    // streamline naming of object keys
 	    if (remoteConfig.id) {
@@ -4490,19 +4491,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  // Merge defaults into passed config
 	  var setDefaults = function(suppliedConfig) {
-	
 	    suppliedConfig.sdk = prepareSdkConfig(suppliedConfig)
 	    return $.extend(true, {}, defaultConfig.primary, suppliedConfig);
+	  };
 	
+	  // Merge defaults into passed config
+	  var setDefaultsWithoutProject = function(suppliedConfig) {
+	    return $.extend(true, {}, defaultConfig.primaryWithoutProject, suppliedConfig);
 	  };
 	
 	  // Apply the config presets given a configuration
 	  var applyConfigPreset = function (localConfig, propertyName, propertyObject) {
-	
 	    var presetCheck = defaultConfig.presets[propertyName][propertyObject];
 	    if (presetCheck) return $.extend(true, {}, presetCheck, localConfig);
 	    return localConfig
-	
 	  };
 	
 	  // Setup config
@@ -4536,9 +4538,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	
 	  return {
-	    prepareSdkConfig: prepareSdkConfig,
 	    parseAndUpdate: parseAndUpdate,
 	    setDefaults: setDefaults,
+	    setDefaultsWithoutProject: setDefaultsWithoutProject,
 	    update: update,
 	    retrieve: retrieve
 	  }
@@ -4582,12 +4584,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      timezone_helper_same: 'You are in the same timezone as %s'
 	    }
 	  },
-	  availability: {
-	    mode: 'roundrobin_random'
-	  },
-	  booking: {
-	    graph: 'instant'
-	  },
+	  availability: {},
+	  booking: {},
 	  customer_fields: {
 	    name: {
 	      type: 'string',
@@ -4626,6 +4624,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	
 	};
+	
+	var primaryWithoutProject = {
+	  availability: {
+	    mode: 'roundrobin_random'
+	  },
+	  booking: {
+	    graph: 'instant',
+	    where: 'TBD',
+	    description: ''
+	  }
+	}
 	
 	// Preset: timeDateFormat = '24h-dmy-mon'
 	var timeDateFormat24hdmymon = {
@@ -4706,6 +4715,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Export objects
 	module.exports = {
 	  primary: primary,
+	  primaryWithoutProject: primaryWithoutProject,
 	  presets: {
 	    timeDateFormat: {
 	      '24h-dmy-mon': timeDateFormat24hdmymon,
@@ -4874,11 +4884,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    var args = {};
 	
-	    if (getConfig().resources) args.resources = getConfig().resources
-	    if (getConfig().availability_constraints) args.availability_constraints = getConfig().availability_constraints
 	    if (getConfig().project_id) args.project_id = getConfig().project_id
+	    if (getConfig().resources) args.resources = getConfig().resources
 	
-	    // Only add email to findtime if no calendars or users are explicitly specified
 	    $.extend(args, getConfig().availability);
 	
 	    utils.doCallback('findTimeStarted', args);
@@ -5440,9 +5448,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      args.project_id = getConfig().project_id
 	    } else {
 	      $.extend(true, args, {
-	        what: 'Meeting with ' + formData.name,
-	        where: 'TBD',
-	        description: ''
+	        what: 'Meeting with ' + formData.name
 	      });
 	    }
 	

@@ -41,7 +41,7 @@ function Initialize() {
 
     // Start from local config
     if (!utils.isRemoteProject(suppliedConfig) || suppliedConfig.disable_remote_load) {
-      mergedConfig = config.setDefaultsWithoutProject(suppliedConfig)
+      var mergedConfig = config.setDefaultsWithoutProject(suppliedConfig)
       return startWithConfig(mergedConfig)
     }
 

@@ -21,14 +21,16 @@ describe('Basic configuration', function() {
   it('should be able to set the name', function(done) {
 
     var config = {
-      name: 'Demo Name'
+      ui: {
+        dispay_name: 'Demo Name'
+      }
     }
     createWidget(config);
 
     expect($('.bookingjs-displayname')).toBeInDOM();
     expect($('.bookingjs-displayname')).toBeVisible();
     expect($('.bookingjs-displayname')).toContainElement('span');
-    expect($('.bookingjs-displayname span')).toContainText(config.name);
+    expect($('.bookingjs-displayname span')).toContainText(config.ui.display_name);
 
     done()
 

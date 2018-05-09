@@ -9,18 +9,17 @@
  </head>
  <body>
 
+  <div id="bookingjs"></div>
   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script type="text/javascript" src="../dist/booking.js"></script>
-  <div id="bookingjs">
-    <script type="text/javascript">
-      TimekitBooking().init({
-        app_key: 'live_widget_key_yYXHsUurvCUctNYflzGDMqEJo6mol0Yo',
-        booking: {
-          graph: 'group_customer'
-        }
-      });
-    </script>
-  </div>
+  <script type="text/javascript">
+    TimekitBooking().init({
+      app_key: 'live_widget_key_yYXHsUurvCUctNYflzGDMqEJo6mol0Yo',
+      booking: {
+        graph: 'group_customer'
+      }
+    });
+  </script>
 
 </body>
 </html>

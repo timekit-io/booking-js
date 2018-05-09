@@ -2,7 +2,7 @@
 <html>
  <head>
   <meta charset="UTF-8">
-  <title>Booking.js remote config example</title>
+  <title>Booking.js remote project example</title>
   <style type="text/css">
     body { background-color: #E6E6E6; max-width: 700px; margin: 0 auto; }
   </style>
@@ -10,13 +10,13 @@
  <body>
 
   <div id="bookingjs"></div>
-  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js" defer></script>
-  <script type="text/javascript" src="../dist/booking.js" defer></script>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script type="text/javascript" src="../dist/booking.js"></script>
   <script type="text/javascript">
-    window.timekitBookingConfig = {
+    TimekitBooking().init({
       app_key: 'live_widget_key_yYXHsUurvCUctNYflzGDMqEJo6mol0Yo',
-      widget_slug: 'cw6cbm48'
-    };
+      project_id: 'e3638e05-c138-4c85-8958-6142229919cf'
+    })
   </script>
 
 </body>

@@ -107,13 +107,6 @@ function Initialize() {
       remoteConfig.project_slug = remoteConfig.slug
       delete remoteConfig.slug
     }
-    // TODO fix this on the backend
-    if (remoteConfig.ui === null) {
-      remoteConfig.ui = {}
-    }
-    if (remoteConfig.customer_fields === null) {
-      remoteConfig.customer_fields = {}
-    }
     // merge with supplied config for overwriting settings
     var mergedConfig = $.extend(true, {}, remoteConfig, suppliedConfig);
     utils.logDebug(['Remote config:', remoteConfig]);

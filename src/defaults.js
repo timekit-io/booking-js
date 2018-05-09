@@ -29,8 +29,12 @@ var primary = {
       timezone_helper_same: 'You are in the same timezone as %s'
     }
   },
-  availability: {},
-  booking: {},
+  availability: {
+    mode: 'roundrobin_random'
+  },
+  booking: {
+    graph: 'instant'
+  },
   customer_fields: {
     name: {
       type: 'string',

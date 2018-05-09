@@ -200,13 +200,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      remoteConfig.project_slug = remoteConfig.slug
 	      delete remoteConfig.slug
 	    }
-	    // TODO fix this on the backend
-	    if (remoteConfig.ui === null) {
-	      remoteConfig.ui = {}
-	    }
-	    if (remoteConfig.customer_fields === null) {
-	      remoteConfig.customer_fields = {}
-	    }
 	    // merge with supplied config for overwriting settings
 	    var mergedConfig = $.extend(true, {}, remoteConfig, suppliedConfig);
 	    utils.logDebug(['Remote config:', remoteConfig]);
@@ -4589,8 +4582,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	      timezone_helper_same: 'You are in the same timezone as %s'
 	    }
 	  },
-	  availability: {},
-	  booking: {},
+	  availability: {
+	    mode: 'roundrobin_random'
+	  },
+	  booking: {
+	    graph: 'instant'
+	  },
 	  customer_fields: {
 	    name: {
 	      type: 'string',
@@ -5444,7 +5441,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    } else {
 	      $.extend(true, args, {
 	        what: 'Meeting with ' + formData.name,
-	        where: '',
+	        where: 'TBD',
 	        description: ''
 	      });
 	    }

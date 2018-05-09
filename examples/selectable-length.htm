@@ -46,8 +46,7 @@
   </style>
  </head>
  <body>
-  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-  <script type="text/javascript" src="../dist/booking.js"></script>
+
   <div class="buttons">
     <a href="#" class="button" data-duration="1 hour">
       <span class="button__title">Haircut and dyeing</span>
@@ -58,30 +57,34 @@
       <span class="button__duration">2 hours</span>
     </a>
   </div>
-  <div id="bookingjs">
-    <script type="text/javascript">
-      // register event hooks to buttons
-      $('.button').click(function(e) {
-        e.preventDefault();
-        var button = $(this);
-        var allButtons = $('.button');
-        allButtons.removeClass('button--selected');
-        button.addClass('button--selected');
-        var buttonDuration = button.attr('data-duration')
-        initalizeWidget(buttonDuration);
-      })
-      // initialize booking.js with passed settings
-      function initalizeWidget(duration) {
-        var widget = new TimekitBooking();
-        widget.init({
-          app_key: 'live_widget_key_yYXHsUurvCUctNYflzGDMqEJo6mol0Yo',
-          resources: [ '42b956f0-be11-4af3-9221-19e899fcd1fb' ],
-          availability: {
-            length: duration
-          }
-        });
-      }
-    </script>
-  </div>
+  <div id="bookingjs"></div>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script type="text/javascript" src="../dist/booking.js"></script>
+  <script type="text/javascript">
+    // register event hooks to buttons
+    $('.button').click(function(e) {
+      e.preventDefault();
+      var button = $(this);
+      var allButtons = $('.button');
+      allButtons.removeClass('button--selected');
+      button.addClass('button--selected');
+      var buttonDuration = button.attr('data-duration')
+      initalizeWidget(buttonDuration);
+    })
+    // initialize booking.js with passed settings
+    function initalizeWidget(duration) {
+      var widget = new TimekitBooking();
+      widget.init({
+        app_key: 'live_widget_key_yYXHsUurvCUctNYflzGDMqEJo6mol0Yo',
+        resources: [
+          '42b956f0-be11-4af3-9221-19e899fcd1fb'
+        ],
+        availability: {
+          length: duration
+        }
+      });
+    }
+  </script>
+
 </body>
 </html>

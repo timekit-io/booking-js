@@ -613,7 +613,7 @@ function InitRender(deps) {
     } else {
       $.extend(true, args, {
         what: 'Meeting with ' + formData.name,
-        where: '',
+        where: 'TBD',
         description: ''
       });
     }

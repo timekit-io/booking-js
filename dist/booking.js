@@ -5407,7 +5407,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    if (getConfig().booking.graph === 'group_customer' || getConfig().booking.graph === 'group_customer_payment') {
 	      args.related = { owner_booking_id: eventData.booking.id }
-	      args.resource_id = eventData.booking.resource_id
+	      args.resource_id = eventData.booking.resource.id
 	    } else if (typeof eventData.resources === 'undefined' || eventData.resources.length === 0) {
 	      throw triggerError(['No resources to pick from when creating booking']);
 	    } else {

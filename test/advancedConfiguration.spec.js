@@ -5,6 +5,7 @@ jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 var moment = require('moment');
 var createWidget = require('./utils/createWidget');
 var mockAjax = require('./utils/mockAjax');
+var interact = require('./utils/commonInteractions');
 
 describe('Advanced configuration', function() {
 

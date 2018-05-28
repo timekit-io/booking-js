@@ -17,6 +17,7 @@ var primary = {
   bookingGraph: 'instant',
   debug: false,
   availabilityView: 'agendaWeek',
+  createBookingResponseInclude: ['attributes', 'event', 'user'],
   bookingFields: {
     name: {
       placeholder: 'Full name',

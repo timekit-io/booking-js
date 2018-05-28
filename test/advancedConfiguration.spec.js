@@ -5,6 +5,7 @@ jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 var moment = require('moment');
 var createWidget = require('./utils/createWidget');
 var mockAjax = require('./utils/mockAjax');
+var interact = require('./utils/commonInteractions');
 
 describe('Advanced configuration', function() {
 
@@ -130,6 +131,37 @@ describe('Advanced configuration', function() {
       done();
 
     }, 100)
+
+  });
+
+  it('should be able to set which dynamic includes that CreateBooking request returns in response', function(done) {
+
+    mockAjax.createBookingWithCustomIncludes();
+
+    var config = {
+      createBookingResponseInclude: ['provider_event', 'attributes', 'event', 'user']
+    }
+    createWidget(config);
+
+    setTimeout(function() {
+
+      interact.clickEvent();
+
+      setTimeout(function() {
+
+        interact.fillSubmit();
+
+        setTimeout(function() {
+
+          var request = jasmine.Ajax.requests.mostRecent();
+          var requestData = JSON.parse(request.params);
+
+          expect(request.url).toBe('https://api.timekit.io/v2/bookings?include=provider_event,attributes,event,user');
+          done();
+
+        }, 200);
+      }, 500);
+    }, 500);
 
   });
 

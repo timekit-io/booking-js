@@ -736,7 +736,7 @@ function TimekitBooking() {
     };
 
     var request = timekit
-    .include('attributes', 'event', 'user')
+    .include(config.createBookingResponseInclude)
     .headers(requestHeaders)
     .createBooking(args);
 

@@ -69,18 +69,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	var $               = __webpack_require__(1);
 	var interpolate     = __webpack_require__(2);
 	var timekitSDK      = __webpack_require__(4);
-	window.fullcalendar = __webpack_require__(32);
-	var moment          = window.moment = __webpack_require__(33);
-	__webpack_require__(36);
-	__webpack_require__(37);
+	window.fullcalendar = __webpack_require__(35);
+	var moment          = window.moment = __webpack_require__(36);
+	__webpack_require__(39);
+	__webpack_require__(40);
 	
 	// Internal dependencies
-	var utils         = __webpack_require__(41);
-	var defaultConfig = __webpack_require__(43);
-	__webpack_require__(44);
-	__webpack_require__(46);
-	__webpack_require__(48);
-	__webpack_require__(50);
+	var utils         = __webpack_require__(44);
+	var defaultConfig = __webpack_require__(46);
+	__webpack_require__(47);
+	__webpack_require__(49);
+	__webpack_require__(51);
+	__webpack_require__(53);
 	
 	// Main library
 	function TimekitBooking() {
@@ -329,9 +329,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var renderTimezoneHelper = function() {
 	
 	    var localTzOffset = (moment().utcOffset()/60);
-	    var timezoneIcon = __webpack_require__(52);
+	    var timezoneIcon = __webpack_require__(55);
 	
-	    var template = __webpack_require__(53);
+	    var template = __webpack_require__(56);
 	
 	    var timezoneHelperTarget = $(template.render({
 	      timezoneIcon: timezoneIcon,
@@ -357,7 +357,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var tzOffsetDiffAbs = Math.abs(localTzOffset - hostTzOffset);
 	      var tzDirection = (tzOffsetDiff > 0 ? 'ahead of' : 'behind');
 	
-	      var template = __webpack_require__(53);
+	      var template = __webpack_require__(56);
 	      var newTimezoneHelperTarget = $(template.render({
 	        timezoneIcon: timezoneIcon,
 	        timezoneDifference: (tzOffsetDiffAbs === 0 ? false : true),
@@ -377,7 +377,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Display ribbon if in testmode
 	  var renderTestModeRibbon = function() {
 	
-	    var template = __webpack_require__(57);
+	    var template = __webpack_require__(60);
 	
 	    var testModeRibbonTarget = $(template.render({
 	      ribbonText: 'Test Mode',
@@ -484,7 +484,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Render the avatar image
 	  var renderAvatarImage = function() {
 	
-	    var template = __webpack_require__(58);
+	    var template = __webpack_require__(61);
 	    var avatarTarget = $(template.render({
 	      image: config.avatar
 	    }));
@@ -497,7 +497,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Render the avatar image
 	  var renderDisplayName = function() {
 	
-	    var template = __webpack_require__(59);
+	    var template = __webpack_require__(62);
 	    var displayNameTarget = $(template.render({
 	      name: config.name
 	    }));
@@ -512,9 +512,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    utils.doCallback('showLoadingScreen', config);
 	
-	    var template = __webpack_require__(60);
+	    var template = __webpack_require__(63);
 	    loadingTarget = $(template.render({
-	      loadingIcon: __webpack_require__(61)
+	      loadingIcon: __webpack_require__(64)
 	    }));
 	
 	    rootTarget.append(loadingTarget);
@@ -557,9 +557,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    }
 	
-	    var template = __webpack_require__(62);
+	    var template = __webpack_require__(65);
 	    errorTarget = $(template.render({
-	      errorWarningIcon: __webpack_require__(63),
+	      errorWarningIcon: __webpack_require__(66),
 	      message: messageProcessed,
 	      context: contextProcessed
 	    }));
@@ -575,8 +575,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    utils.doCallback('showBookingPage', config, eventData);
 	
-	    var fieldsTemplate = __webpack_require__(64);
-	    var template = __webpack_require__(65);
+	    var fieldsTemplate = __webpack_require__(67);
+	    var template = __webpack_require__(68);
 	
 	    var dateFormat = config.localization.bookingDateFormat || moment.localeData().longDateFormat('LL');
 	    var timeFormat = config.localization.bookingTimeFormat || moment.localeData().longDateFormat('LT');
@@ -588,10 +588,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      chosenTime:               moment(eventData.start).format(timeFormat) + ' - ' + moment(eventData.end).format(timeFormat),
 	      allocatedResourcePrefix:  config.localization.strings.allocatedResourcePrefix,
 	      allocatedResource:        allocatedResource,
-	      closeIcon:                __webpack_require__(66),
-	      checkmarkIcon:            __webpack_require__(67),
-	      loadingIcon:              __webpack_require__(61),
-	      errorIcon:                __webpack_require__(68),
+	      closeIcon:                __webpack_require__(69),
+	      checkmarkIcon:            __webpack_require__(70),
+	      loadingIcon:              __webpack_require__(64),
+	      errorIcon:                __webpack_require__(71),
 	      submitText:               config.localization.strings.submitText,
 	      successMessageTitle:      config.localization.strings.successMessageTitle,
 	      successMessageBody:       interpolate.sprintf(config.localization.strings.successMessageBody, '<span class="booked-email"></span>'),
@@ -792,7 +792,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	
 	    var request = timekit
-	    .include('attributes', 'event', 'user')
+	    .include(config.createBookingResponseInclude)
 	    .headers(requestHeaders)
 	    .createBooking(args);
 	
@@ -816,8 +816,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (config.widgetId) { campaignName = 'embedded-widget'; }
 	    if (config.widgetSlug) { campaignName = 'hosted-widget'; }
 	
-	    var template = __webpack_require__(69);
-	    var timekitLogo = __webpack_require__(70);
+	    var template = __webpack_require__(72);
+	    var timekitLogo = __webpack_require__(73);
 	    var poweredTarget = $(template.render({
 	      timekitLogo: timekitLogo,
 	      campaignName: campaignName,
@@ -1291,9 +1291,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *
 	 */
 	var axios = __webpack_require__(9);
-	var base64 = __webpack_require__(28);
-	var humps = __webpack_require__(30);
-	var merge = __webpack_require__(31);
+	var humps = __webpack_require__(28);
+	var merge = __webpack_require__(29);
+	var utils = __webpack_require__(30);
+	var endpoints = __webpack_require__(33);
+	var deprecatedEndpoints = __webpack_require__(34);
 	
 	function Timekit() {
 	
@@ -1301,8 +1303,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * Auth variables for login gated API methods
 	   * @type {String}
 	   */
-	  var userEmail;
-	  var userToken;
 	  var includes = [];
 	  var headers = {};
 	  var nextPayload = {};
@@ -1317,56 +1317,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    apiVersion: 'v2',
 	    convertResponseToCamelcase: false,
 	    convertRequestToSnakecase: true,
-	    autoFlattenResponse: true
+	    autoFlattenResponse: true,
+	    resourceEmail: null,
+	    resourceKey: null,
+	    appKey: null,
 	  };
-	
-	  /**
-	   * Generate base64 string for basic auth purposes
-	   * @type {Function}
-	   * @return {String}
-	   */
-	
-	  var encodeAuthHeader = function(email, token) {
-	    return base64.encode(email + ':' + token);
-	  };
-	
-	  /**
-	   * Build absolute URL for API call
-	   * @type {Function}
-	   * @return {String}
-	   */
-	  var buildUrl = function(endpoint) {
-	    return config.apiBaseUrl + config.apiVersion + endpoint;
-	  };
-	
-	  var copyResponseMetaData = function(response) {
-	    if (Object.keys(response.data).length < 2) return
-	    response.metaData = {}
-	    Object.keys(response.data).forEach(function(key) {
-	      if (key !== 'data') response.metaData[key] = response.data[key]
-	    })
-	  }
-	
-	  /**
-	   * Add the carried payload for next request to the actual payload
-	   * @type {Function}
-	   * @return {String}
-	   */
-	  var mergeNextPayload = function (args) {
-	    if (Object.keys(nextPayload).length === 0) return args
-	    // Merge potential query string params manually
-	    if (nextPayload.params && args.params) {
-	      var nextParams = nextPayload.params
-	      for (var param in nextParams) {
-	        if (typeof args.params[param] !== 'undefined') {
-	          args.params[param] += (';' + nextParams[param])
-	        }
-	      }
-	    }
-	    args = merge(nextPayload, args)
-	    nextPayload = {};
-	    return args
-	  }
 	
 	  /**
 	   * Root Object that holds methods to expose for API consumption
@@ -1382,10 +1337,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  TK.makeRequest = function(args) {
 	
 	    // Handle chained payload data if applicable
-	    args = mergeNextPayload(args)
+	    args = utils.mergeNextPayload(args, nextPayload)
+	    nextPayload = {};
 	
 	    // construct URL with base, version and endpoint
-	    args.url = buildUrl(args.url);
+	    args.url = utils.buildUrl(args.url, config);
 	
 	    // add http headers if applicable
 	    args.headers = args.headers || headers || {};
@@ -1406,9 +1362,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	      args.headers['Timekit-Timezone'] = config.timezone;
 	    }
 	
-	    // add auth headers if not being overwritten by request/asUser
-	    if (!args.headers['Authorization'] && userEmail && userToken) {
-	      args.headers['Authorization'] = 'Basic ' + encodeAuthHeader(userEmail, userToken);
+	    // add auth headers (personal token) if not being overwritten by request/asUser
+	    if (!args.headers['Authorization'] && config.resourceEmail && config.resourceKey) {
+	      args.headers['Authorization'] = 'Basic ' + utils.encodeAuthHeader(config.resourceEmail, config.resourceKey);
+	    }
+	
+	    // add auth headers (app token)
+	    if (!args.headers['Authorization'] && config.appKey) {
+	      args.headers['Authorization'] = 'Basic ' + utils.encodeAuthHeader('', config.appKey);
 	    }
 	
 	    // reset headers
@@ -1430,8 +1391,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var interceptor = axios.interceptors.response.use(function (response) {
 	      if (response.data && response.data.data) {
 	        if (config.autoFlattenResponse) {
-	          copyResponseMetaData(response)
-	          response.data = response.data.data;
+	          response = utils.copyResponseMetaData(response)
 	        }
 	        if (config.convertResponseToCamelcase) {
 	          response.data = humps.camelizeKeys(response.data);
@@ -1474,9 +1434,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * Set the active user manually (happens automatically on timekit.auth())
 	   * @type {Function}
 	   */
-	  TK.setUser = function(email, apiToken) {
-	    userEmail = email;
-	    userToken = apiToken;
+	  TK.setUser = function(email, apiKey) {
+	    config.resourceEmail = email;
+	    config.resourceKey = apiKey;
 	  };
 	
 	  /**
@@ -1486,17 +1446,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	   */
 	  TK.getUser = function() {
 	    return {
-	      email: userEmail,
-	      apiToken: userToken
+	      email: config.resourceEmail,
+	      apiToken: config.resourceKey
 	    };
+	  };
+	
+	  /**
+	   * Set app token (happens automatically on timekit.auth())
+	   * @type {Function}
+	   */
+	  TK.setAppKey = function(apiKey) {
+	    config.appKey = apiKey;
+	  };
+	
+	  /**
+	   * Returns the app token
+	   * @type {Function}
+	   * @return {Object}
+	   */
+	  TK.getAppKey = function() {
+	    return config.appKey
 	  };
 	
 	  /**
 	   * Set the active user temporarily for the next request (fluent/chainable return)
 	   * @type {Function}
 	   */
-	  TK.asUser = function(email, apiToken) {
-	    headers['Authorization'] = 'Basic ' + encodeAuthHeader(email, apiToken);
+	  TK.asUser = function(email, apiKey) {
+	    headers['Authorization'] = 'Basic ' + utils.encodeAuthHeader(email, apiKey);
 	    return this;
 	  };
 	
@@ -1514,8 +1491,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * @type {Function}
 	   * @return {Object}
 	   */
-	  TK.include = function() {
-	    includes = Array.prototype.slice.call(arguments);
+	  TK.include = function(arg) {
+	    if (Array.isArray(arg)) includes = arg
+	    else includes = Array.prototype.slice.call(arguments);
 	    return this;
 	  };
 	
@@ -1540,21 +1518,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 	
 	  /**
-	   * Get user's connected accounts
+	   * Return a new instance of the SDK
 	   * @type {Function}
-	   * @return {Promise}
+	   * @return {Object}
 	   */
-	  TK.getAccounts = function() {
-	
-	    return TK.makeRequest({
-	      url: '/accounts',
-	      method: 'get'
-	    });
-	
+	  TK.newInstance = function() {
+	    return new Timekit();
 	  };
 	
 	  /**
 	   * Redirect to the Google signup/login page
+	   * Kept this in this file (not endpoints.js) because of internal dependencies to headers, config etc.
 	   * @type {Function}
 	   * @return {String}
 	   */
@@ -1565,694 +1539,54 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // If app header exists (using .asApp() function), use that
 	    if (headers['Timekit-App']) {
 	      app = headers['Timekit-App'];
-	      delete headers['Timekit-App'];
 	    }
 	
-	    var url = buildUrl('/accounts/google/signup') + '?Timekit-App=' + app + (data && data.callback ? '&callback=' + data.callback : '');
+	    var baseUrl = utils.buildUrl('/accounts/google/signup', config);
+	    var finalUrl = baseUrl + '?Timekit-App=' + app + (data && data.callback ? '&callback=' + data.callback : '')
 	
 	    if(shouldAutoRedirect && window) {
-	      window.location.href = url;
+	      window.location.href = finalUrl;
 	    } else {
-	      return url;
+	      return finalUrl;
 	    }
 	
 	  };
 	
 	  /**
-	   * Initiate an account sync
+	   * Redirect to the Microsoft signup/login page
+	   * Kept this in this file (not endpoints.js) because of internal dependencies to headers, config etc.
 	   * @type {Function}
-	   * @return {Promise}
+	   * @return {String}
 	   */
-	  TK.accountSync = function(data) {
+	  TK.accountMicrosoftSignup = function(data, shouldAutoRedirect) {
 	
-	    return TK.makeRequest({
-	      url: '/accounts/sync',
-	      method: 'get',
-	      params: data
-	    });
+	    var app = config.app;
+	
+	    // If app header exists (using .asApp() function), use that
+	    if (headers['Timekit-App']) {
+	      app = headers['Timekit-App'];
+	    }
+	
+	    var baseUrl = utils.buildUrl('/accounts/microsoft/signup', config);
+	    var finalUrl = baseUrl + '?Timekit-App=' + app + (data && data.callback ? '&callback=' + data.callback : '')
+	
+	    if(shouldAutoRedirect && window) {
+	      window.location.href = finalUrl;
+	    } else {
+	      return finalUrl;
+	    }
 	
 	  };
 	
 	  /**
-	   * Authenticate a user to retrive API token for future calls
-	   * @type {Function}
-	   * @return {Promise}
+	   * Import endpoint defintions
 	   */
-	  TK.auth = function(data) {
-	
-	    var r = TK.makeRequest({
-	      url: '/auth',
-	      method: 'post',
-	      data: data
-	    });
-	
-	    r.then(function(response) {
-	      TK.setUser(response.data.email, response.data.api_token);
-	    }).catch(function(){
-	      TK.setUser('','');
-	    });
-	
-	    return r;
-	
-	  };
+	  TK = endpoints(TK)
 	
 	  /**
-	   * Get list of apps
-	   * @type {Function}
-	   * @return {Promise}
+	   * Import deprecated endpoint defintions
 	   */
-	  TK.getApps = function() {
-	
-	    return TK.makeRequest({
-	      url: '/apps',
-	      method: 'get'
-	    });
-	
-	  };
-	
-	  /**
-	   * Get settings for a specific app
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.getApp = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/apps/' + data.slug,
-	      method: 'get'
-	    });
-	
-	  };
-	
-	  /**
-	   * Create a new Timekit app
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.createApp = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/apps',
-	      method: 'post',
-	      data: data
-	    });
-	
-	  };
-	
-	  /**
-	   * Update settings for a specific app
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.updateApp = function(data) {
-	
-	    var slug = data.slug;
-	    delete data.slug;
-	
-	    return TK.makeRequest({
-	      url: '/apps/' + slug,
-	      method: 'put',
-	      data: data
-	    });
-	
-	  };
-	
-	  /**
-	   * Delete an app
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.deleteApp = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/apps/' + data.slug,
-	      method: 'delete'
-	    });
-	
-	  };
-	
-	  /**
-	   * Get users calendars that are present on Timekit (synced from providers)
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.getCalendars = function() {
-	
-	    return TK.makeRequest({
-	      url: '/calendars',
-	      method: 'get'
-	    });
-	
-	  };
-	
-	  /**
-	   * Get users calendars that are present on Timekit (synced from providers)
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.getCalendar = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/calendars/' + data.id,
-	      method: 'get'
-	    });
-	
-	  };
-	
-	  /**
-	   * Create a new calendar for current user
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.createCalendar = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/calendars/',
-	      method: 'post',
-	      data: data
-	    });
-	
-	  };
-	
-	  /**
-	   * Update a calendar for current user
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.updateCalendar = function(data) {
-	
-	    var id = data.id;
-	    delete data.id;
-	
-	    return TK.makeRequest({
-	      url: '/calendars/' + id,
-	      method: 'put',
-	      data: data
-	    });
-	
-	  };
-	
-	  /**
-	   * Delete a calendar
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.deleteCalendar = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/calendars/' + data.id,
-	      method: 'delete'
-	    });
-	
-	  };
-	
-	  /**
-	   * Get all user's events
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.getEvents = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/events',
-	      method: 'get',
-	      params: data
-	    });
-	
-	  };
-	
-	  /**
-	   * Get a user's event by ID
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.getEvent = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/events/' + data.id,
-	      method: 'get'
-	    });
-	
-	  };
-	
-	  /**
-	   * Create a new event
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.createEvent = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/events',
-	      method: 'post',
-	      data: data
-	    });
-	
-	  };
-	
-	  /**
-	   * Update an existing event
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.updateEvent = function(data) {
-	
-	    var id = data.id;
-	    delete data.id;
-	
-	    return TK.makeRequest({
-	      url: '/events/' + id,
-	      method: 'put',
-	      data: data
-	    });
-	
-	  };
-	
-	  /**
-	   * Delete a user's event by ID
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.deleteEvent = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/events/' + data.id,
-	      method: 'delete'
-	    });
-	
-	  };
-	
-	  /**
-	   * Find mutual availability across multiple users/calendars
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.findTime = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/findtime',
-	      method: 'post',
-	      data: data
-	    });
-	
-	  };
-	
-	  /**
-	   * Find bulk availability across multiple users/calendars
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.findTimeBulk = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/findtime/bulk',
-	      method: 'post',
-	      data: data
-	    });
-	
-	  };
-	
-	  /**
-	   * Find team availability across multiple users/calendars
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.findTimeTeam = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/findtime/team',
-	      method: 'post',
-	      data: data
-	    });
-	
-	  };
-	
-	  /**
-	   * Create a findtime filtercollection
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.createFindTimeFilterCollection = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/findtime/filtercollections',
-	      method: 'post',
-	      data: data
-	    });
-	
-	  };
-	
-	  /**
-	   * Get findtime filtercollections
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.getFindTimeFilterCollections = function() {
-	
-	    return TK.makeRequest({
-	      url: '/findtime/filtercollections',
-	      method: 'get'
-	    });
-	
-	  };
-	
-	  /**
-	   * Update a findtime filtercollections
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.updateFindTimeFilterCollection = function(data) {
-	
-	    var id = data.id;
-	    delete data.id;
-	
-	    return TK.makeRequest({
-	      url: '/findtime/filtercollections/' + id,
-	      method: 'get',
-	      data: data
-	    });
-	
-	  };
-	
-	  /**
-	   * Create a new user with the given properties
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.createUser = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/users',
-	      method: 'post',
-	      data: data
-	    });
-	
-	  };
-	
-	  /**
-	   * Fetch current user data from server
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.getUserInfo = function() {
-	
-	    return TK.makeRequest({
-	      url: '/users/me',
-	      method: 'get'
-	    });
-	
-	  };
-	
-	  /**
-	   * Fetch current user data from server
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.updateUser = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/users/me',
-	      method: 'put',
-	      data: data
-	    });
-	
-	  };
-	
-	  /**
-	   * Reset password for a user
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.resetUserPassword = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/users/resetpassword',
-	      method: 'post',
-	      data: data
-	    });
-	
-	  };
-	
-	  /**
-	   * Get a specific users' timezone
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.getUserTimezone = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/users/timezone/' + data.email,
-	      method: 'get'
-	    });
-	
-	  };
-	
-	  /**
-	   * Get all user auth credentials
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.getCredentials = function() {
-	
-	    return TK.makeRequest({
-	      url: '/credentials',
-	      method: 'get'
-	    });
-	
-	  };
-	
-	  /**
-	   * Create a new pair of auth credentials
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.createCredential = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/credentials',
-	      method: 'post',
-	      data: data
-	    });
-	
-	  };
-	
-	  /**
-	   * Delete a pair of auth credentials
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.deleteCredential = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/credentials/' + data.id,
-	      method: 'delete'
-	    });
-	
-	  };
-	
-	  /**
-	   * Get all bookings
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.getBookings = function() {
-	
-	    return TK.makeRequest({
-	      url: '/bookings',
-	      method: 'get'
-	    });
-	
-	  };
-	
-	  /**
-	   * Get specific booking
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.getBooking = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/bookings/' + data.id,
-	      method: 'get'
-	    });
-	
-	  };
-	
-	  /**
-	   * Create a new booking
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.createBooking = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/bookings',
-	      method: 'post',
-	      data: data
-	    });
-	
-	  };
-	
-	  /**
-	   * Update an existing booking
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.updateBooking = function(data) {
-	
-	    var id = data.id;
-	    delete data.id;
-	
-	    var action = data.action;
-	    delete data.action;
-	
-	    return TK.makeRequest({
-	      url: '/bookings/' + id + '/' + action,
-	      method: 'put',
-	      data: data
-	    });
-	
-	  };
-	
-	  /**
-	   * Get all bookings
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.getGroupBookings = function() {
-	
-	    return TK.makeRequest({
-	      url: '/bookings/groups',
-	      method: 'get'
-	    });
-	
-	  };
-	
-	  /**
-	   * Get specific booking
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.getGroupBooking = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/bookings/' + data.id + '/groups',
-	      method: 'get'
-	    });
-	
-	  };
-	
-	  /**
-	   * Get widgets
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.getWidgets = function() {
-	
-	    return TK.makeRequest({
-	      url: '/widgets',
-	      method: 'get'
-	    });
-	
-	  };
-	
-	  /**
-	   * Get a specific widget
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.getWidget = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/widgets/' + data.id,
-	      method: 'get'
-	    });
-	
-	  };
-	
-	  /**
-	   * Get public widget by slug
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.getHostedWidget = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/widgets/hosted/' + data.slug,
-	      method: 'get'
-	    });
-	
-	  };
-	
-	  /**
-	   * Get public widget by slug
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.getEmbedWidget = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/widgets/embed/' + data.id,
-	      method: 'get'
-	    });
-	
-	  };
-	
-	  /**
-	   * Create a new widget
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.createWidget = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/widgets',
-	      method: 'post',
-	      data: data
-	    });
-	
-	  };
-	
-	  /**
-	   * Update an existing widget
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.updateWidget = function(data) {
-	
-	    var id = data.id;
-	    delete data.id;
-	
-	    return TK.makeRequest({
-	      url: '/widgets/' + id,
-	      method: 'put',
-	      data: data
-	    });
-	
-	  };
-	
-	  /**
-	   * Delete a widget
-	   * @type {Function}
-	   * @return {Promise}
-	   */
-	  TK.deleteWidget = function(data) {
-	
-	    return TK.makeRequest({
-	      url: '/widgets/' + data.id,
-	      method: 'delete'
-	    });
-	
-	  };
-	
-	  /**
-	   * Return a new instance of the SDK
-	   * @type {Function}
-	   * @return {Object}
-	   */
-	  TK.newInstance = function() {
-	    return new Timekit();
-	  }
+	  TK = deprecatedEndpoints(TK)
 	
 	  return TK;
 	
@@ -4842,6 +4176,312 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;// =========
+	// = humps =
+	// =========
+	// version 0.7.0
+	// Underscore-to-camelCase converter (and vice versa)
+	// for strings and object keys
+	
+	// humps is copyright © 2012+ Dom Christie
+	// Released under the MIT license.
+	
+	
+	;(function(global) {
+	
+	  var _processKeys = function(convert, obj, separator, ignoreNumbers) {
+	    if(!_isObject(obj) || _isDate(obj) || _isRegExp(obj) || _isBoolean(obj)) {
+	      return obj;
+	    }
+	
+	    var output,
+	        i = 0,
+	        l = 0;
+	
+	    if(_isArray(obj)) {
+	      output = [];
+	      for(l=obj.length; i<l; i++) {
+	        output.push(_processKeys(convert, obj[i], separator, ignoreNumbers));
+	      }
+	    }
+	    else {
+	      output = {};
+	      for(var key in obj) {
+	        if(obj.hasOwnProperty(key)) {
+	          output[convert(key, separator, ignoreNumbers)] = _processKeys(convert, obj[key], separator, ignoreNumbers);
+	        }
+	      }
+	    }
+	    return output;
+	  };
+	
+	  // String conversion methods
+	
+	  var separateWords = function(string, separator, ignoreNumbers) {
+	    if (typeof separator === 'undefined') {
+	      separator = '_';
+	    }
+	
+	    var regexp = /([a-z])([A-Z0-9])/g;
+	
+	    if (ignoreNumbers) {
+	      regexp = /([a-z])([A-Z])/g;
+	    }
+	
+	    return string.replace(regexp, '$1'+ separator +'$2');
+	  };
+	
+	  var camelize = function(string) {
+	    if (_isNumerical(string)) {
+	      return string;
+	    }
+	    string = string.replace(/[\-_\s]+(.)?/g, function(match, chr) {
+	      return chr ? chr.toUpperCase() : '';
+	    });
+	    // Ensure 1st char is always lowercase
+	    return string.substr(0, 1).toLowerCase() + string.substr(1);
+	  };
+	
+	  var pascalize = function(string) {
+	    var camelized = camelize(string);
+	    // Ensure 1st char is always uppercase
+	    return camelized.substr(0, 1).toUpperCase() + camelized.substr(1);
+	  };
+	
+	  var decamelize = function(string, separator, ignoreNumbers) {
+	    return separateWords(string, separator, ignoreNumbers).toLowerCase();
+	  };
+	
+	  // Utilities
+	  // Taken from Underscore.js
+	
+	  var toString = Object.prototype.toString;
+	
+	  var _isObject = function(obj) {
+	    return obj === Object(obj);
+	  };
+	  var _isArray = function(obj) {
+	    return toString.call(obj) == '[object Array]';
+	  };
+	  var _isDate = function(obj) {
+	    return toString.call(obj) == '[object Date]';
+	  };
+	  var _isRegExp = function(obj) {
+	    return toString.call(obj) == '[object RegExp]';
+	  };
+	  var _isBoolean = function(obj) {
+	    return toString.call(obj) == '[object Boolean]';
+	  };
+	
+	  // Performant way to determine if obj coerces to a number
+	  var _isNumerical = function(obj) {
+	    obj = obj - 0;
+	    return obj === obj;
+	  };
+	
+	  var humps = {
+	    camelize: camelize,
+	    decamelize: decamelize,
+	    pascalize: pascalize,
+	    depascalize: decamelize,
+	    camelizeKeys: function(object) {
+	      return _processKeys(camelize, object);
+	    },
+	    decamelizeKeys: function(object, separator, ignoreNumbers) {
+	      return _processKeys(decamelize, object, separator, ignoreNumbers);
+	    },
+	    pascalizeKeys: function(object) {
+	      return _processKeys(pascalize, object);
+	    },
+	    depascalizeKeys: function () {
+	      return this.decamelizeKeys.apply(this, arguments);
+	    }
+	  };
+	
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_FACTORY__ = (humps), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.call(exports, __webpack_require__, exports, module)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof module !== 'undefined' && module.exports) {
+	    module.exports = humps;
+	  } else {
+	    global.humps = humps;
+	  }
+	
+	})(this);
+
+
+/***/ }),
+/* 29 */
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	var isMergeableObject = function isMergeableObject(value) {
+		return isNonNullObject(value)
+			&& !isSpecial(value)
+	};
+	
+	function isNonNullObject(value) {
+		return !!value && typeof value === 'object'
+	}
+	
+	function isSpecial(value) {
+		var stringValue = Object.prototype.toString.call(value);
+	
+		return stringValue === '[object RegExp]'
+			|| stringValue === '[object Date]'
+			|| isReactElement(value)
+	}
+	
+	// see https://github.com/facebook/react/blob/b5ac963fb791d1298e7f396236383bc955f916c1/src/isomorphic/classic/element/ReactElement.js#L21-L25
+	var canUseSymbol = typeof Symbol === 'function' && Symbol.for;
+	var REACT_ELEMENT_TYPE = canUseSymbol ? Symbol.for('react.element') : 0xeac7;
+	
+	function isReactElement(value) {
+		return value.$$typeof === REACT_ELEMENT_TYPE
+	}
+	
+	function emptyTarget(val) {
+	    return Array.isArray(val) ? [] : {}
+	}
+	
+	function cloneIfNecessary(value, optionsArgument) {
+	    var clone = optionsArgument && optionsArgument.clone === true;
+	    return (clone && isMergeableObject(value)) ? deepmerge(emptyTarget(value), value, optionsArgument) : value
+	}
+	
+	function defaultArrayMerge(target, source, optionsArgument) {
+	    var destination = target.slice();
+	    source.forEach(function(e, i) {
+	        if (typeof destination[i] === 'undefined') {
+	            destination[i] = cloneIfNecessary(e, optionsArgument);
+	        } else if (isMergeableObject(e)) {
+	            destination[i] = deepmerge(target[i], e, optionsArgument);
+	        } else if (target.indexOf(e) === -1) {
+	            destination.push(cloneIfNecessary(e, optionsArgument));
+	        }
+	    });
+	    return destination
+	}
+	
+	function mergeObject(target, source, optionsArgument) {
+	    var destination = {};
+	    if (isMergeableObject(target)) {
+	        Object.keys(target).forEach(function(key) {
+	            destination[key] = cloneIfNecessary(target[key], optionsArgument);
+	        });
+	    }
+	    Object.keys(source).forEach(function(key) {
+	        if (!isMergeableObject(source[key]) || !target[key]) {
+	            destination[key] = cloneIfNecessary(source[key], optionsArgument);
+	        } else {
+	            destination[key] = deepmerge(target[key], source[key], optionsArgument);
+	        }
+	    });
+	    return destination
+	}
+	
+	function deepmerge(target, source, optionsArgument) {
+	    var sourceIsArray = Array.isArray(source);
+	    var targetIsArray = Array.isArray(target);
+	    var options = optionsArgument || { arrayMerge: defaultArrayMerge };
+	    var sourceAndTargetTypesMatch = sourceIsArray === targetIsArray;
+	
+	    if (!sourceAndTargetTypesMatch) {
+	        return cloneIfNecessary(source, optionsArgument)
+	    } else if (sourceIsArray) {
+	        var arrayMerge = options.arrayMerge || defaultArrayMerge;
+	        return arrayMerge(target, source, optionsArgument)
+	    } else {
+	        return mergeObject(target, source, optionsArgument)
+	    }
+	}
+	
+	deepmerge.all = function deepmergeAll(array, optionsArgument) {
+	    if (!Array.isArray(array) || array.length < 2) {
+	        throw new Error('first argument should be an array with at least two elements')
+	    }
+	
+	    // we are sure there are at least 2 values, so it is safe to have no initial value
+	    return array.reduce(function(prev, next) {
+	        return deepmerge(prev, next, optionsArgument)
+	    })
+	};
+	
+	var deepmerge_1 = deepmerge;
+	
+	module.exports = deepmerge_1;
+
+
+/***/ }),
+/* 30 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	var base64 = __webpack_require__(31);
+	var merge = __webpack_require__(29);
+	
+	module.exports = {
+	
+	  /**
+	   * Generate base64 string for basic auth purposes
+	   * @type {Function}
+	   * @return {String}
+	   */
+	  encodeAuthHeader: function(email, token) {
+	    return base64.encode(email + ':' + token);
+	  },
+	
+	  /**
+	   * Retrieve metadata from response.data object and save it on response.metaData instead
+	   * @type {Function}
+	   * @return {String}
+	   */
+	  copyResponseMetaData: function(response) {
+	    if (Object.keys(response.data).length > 1) {
+	      response.metaData = {}
+	      Object.keys(response.data).forEach(function(key) {
+	        if (key !== 'data') response.metaData[key] = response.data[key]
+	      })
+	    }
+	    response.data = response.data.data;
+	    return response
+	  },
+	
+	  /**
+	   * Add the carried payload for next request to the actual payload
+	   * @type {Function}
+	   * @return {String}
+	   */
+	  mergeNextPayload: function (args, nextPayload) {
+	    if (Object.keys(nextPayload).length === 0) return args
+	    // Merge potential query string params manually
+	    if (nextPayload.params && args.params) {
+	      var nextParams = nextPayload.params
+	      for (var param in nextParams) {
+	        if (typeof args.params[param] !== 'undefined') {
+	          args.params[param] += (';' + nextParams[param])
+	        }
+	      }
+	    }
+	    args = merge(nextPayload, args)
+	    return args
+	  },
+	
+	  /**
+	   * Build absolute URL for API call
+	   * @type {Function}
+	   * @return {String}
+	   */
+	  buildUrl: function(endpoint, config) {
+	    return config.apiBaseUrl + config.apiVersion + endpoint;
+	  }
+	
+	}
+
+
+/***/ }),
+/* 31 */
+/***/ (function(module, exports, __webpack_require__) {
+
 	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(module, global) {/*! http://mths.be/base64 v0.1.0 by @mathias | MIT license */
 	;(function(root) {
 	
@@ -5006,10 +4646,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	}(this));
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(29)(module), (function() { return this; }())))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(32)(module), (function() { return this; }())))
 
 /***/ }),
-/* 29 */
+/* 32 */
 /***/ (function(module, exports) {
 
 	module.exports = function(module) {
@@ -5025,247 +4665,1032 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 30 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;// =========
-	// = humps =
-	// =========
-	// version 0.7.0
-	// Underscore-to-camelCase converter (and vice versa)
-	// for strings and object keys
+	var utils = __webpack_require__(30)
 	
-	// humps is copyright © 2012+ Dom Christie
-	// Released under the MIT license.
+	module.exports = function (TK) {
 	
+	  /**
+	   * Get user's connected accounts
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getAccounts = function() {
 	
-	;(function(global) {
-	
-	  var _processKeys = function(convert, obj, separator, ignoreNumbers) {
-	    if(!_isObject(obj) || _isDate(obj) || _isRegExp(obj) || _isBoolean(obj)) {
-	      return obj;
-	    }
-	
-	    var output,
-	        i = 0,
-	        l = 0;
-	
-	    if(_isArray(obj)) {
-	      output = [];
-	      for(l=obj.length; i<l; i++) {
-	        output.push(_processKeys(convert, obj[i], separator, ignoreNumbers));
-	      }
-	    }
-	    else {
-	      output = {};
-	      for(var key in obj) {
-	        if(obj.hasOwnProperty(key)) {
-	          output[convert(key, separator, ignoreNumbers)] = _processKeys(convert, obj[key], separator, ignoreNumbers);
-	        }
-	      }
-	    }
-	    return output;
-	  };
-	
-	  // String conversion methods
-	
-	  var separateWords = function(string, separator, ignoreNumbers) {
-	    if (typeof separator === 'undefined') {
-	      separator = '_';
-	    }
-	
-	    var regexp = /([a-z])([A-Z0-9])/g;
-	
-	    if (ignoreNumbers) {
-	      regexp = /([a-z])([A-Z])/g;
-	    }
-	
-	    return string.replace(regexp, '$1'+ separator +'$2');
-	  };
-	
-	  var camelize = function(string) {
-	    if (_isNumerical(string)) {
-	      return string;
-	    }
-	    string = string.replace(/[\-_\s]+(.)?/g, function(match, chr) {
-	      return chr ? chr.toUpperCase() : '';
+	    return TK.makeRequest({
+	      url: '/accounts',
+	      method: 'get'
 	    });
-	    // Ensure 1st char is always lowercase
-	    return string.substr(0, 1).toLowerCase() + string.substr(1);
+	
 	  };
 	
-	  var pascalize = function(string) {
-	    var camelized = camelize(string);
-	    // Ensure 1st char is always uppercase
-	    return camelized.substr(0, 1).toUpperCase() + camelized.substr(1);
+	  /**
+	   * Initiate a Google account sync
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.accountGoogleSync = function() {
+	
+	    return TK.makeRequest({
+	      url: '/accounts/sync',
+	      method: 'post'
+	    });
+	
 	  };
 	
-	  var decamelize = function(string, separator, ignoreNumbers) {
-	    return separateWords(string, separator, ignoreNumbers).toLowerCase();
+	  /**
+	   * Initiate a Microsoft account sync
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.accountMicrosoftSync = function() {
+	
+	    return TK.makeRequest({
+	      url: '/accounts/microsoft/sync',
+	      method: 'post'
+	    });
+	
 	  };
 	
-	  // Utilities
-	  // Taken from Underscore.js
+	  /**
+	   * Authenticate a user to retrive API token for future calls
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.auth = function(data) {
 	
-	  var toString = Object.prototype.toString;
+	    var r = TK.makeRequest({
+	      url: '/auth',
+	      method: 'post',
+	      data: data
+	    });
 	
-	  var _isObject = function(obj) {
-	    return obj === Object(obj);
-	  };
-	  var _isArray = function(obj) {
-	    return toString.call(obj) == '[object Array]';
-	  };
-	  var _isDate = function(obj) {
-	    return toString.call(obj) == '[object Date]';
-	  };
-	  var _isRegExp = function(obj) {
-	    return toString.call(obj) == '[object RegExp]';
-	  };
-	  var _isBoolean = function(obj) {
-	    return toString.call(obj) == '[object Boolean]';
-	  };
+	    r.then(function(response) {
 	
-	  // Performant way to determine if obj coerces to a number
-	  var _isNumerical = function(obj) {
-	    obj = obj - 0;
-	    return obj === obj;
-	  };
+	      var token = response.data.api_token || response.data.apiToken;
 	
-	  var humps = {
-	    camelize: camelize,
-	    decamelize: decamelize,
-	    pascalize: pascalize,
-	    depascalize: decamelize,
-	    camelizeKeys: function(object) {
-	      return _processKeys(camelize, object);
-	    },
-	    decamelizeKeys: function(object, separator, ignoreNumbers) {
-	      return _processKeys(decamelize, object, separator, ignoreNumbers);
-	    },
-	    pascalizeKeys: function(object) {
-	      return _processKeys(pascalize, object);
-	    },
-	    depascalizeKeys: function () {
-	      return this.decamelizeKeys.apply(this, arguments);
-	    }
+	      TK.setUser(response.data.email, token);
+	
+	    }).catch(function(){
+	      TK.setUser('','');
+	    });
+	
+	    return r;
+	
 	  };
 	
-	  if (true) {
-	    !(__WEBPACK_AMD_DEFINE_FACTORY__ = (humps), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.call(exports, __webpack_require__, exports, module)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	  } else if (typeof module !== 'undefined' && module.exports) {
-	    module.exports = humps;
-	  } else {
-	    global.humps = humps;
-	  }
+	  /**
+	   * Get list of apps
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getApps = function() {
 	
-	})(this);
+	    return TK.makeRequest({
+	      url: '/apps',
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Get settings for a specific app
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getApp = function() {
+	
+	    return TK.makeRequest({
+	      url: '/app',
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Create a new Timekit app
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.createApp = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/apps',
+	      method: 'post',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Update settings for a specific app
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.updateApp = function(data) {
+	
+	    var slug = data.slug;
+	    delete data.slug;
+	
+	    return TK.makeRequest({
+	      url: '/apps/' + slug,
+	      method: 'put',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Delete an app
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.deleteApp = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/apps/' + data.slug,
+	      method: 'delete'
+	    });
+	
+	  };
+	
+	  /**
+	   * Fetch current resource data from server
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getResources = function() {
+	
+	    return TK.makeRequest({
+	      url: '/resources',
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Fetch current resource data from server
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getResource = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/resources/' + data.id,
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Create a new resource with the given properties
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.createResource = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/resources',
+	      method: 'post',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Fetch current resource data from server
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.updateResource = function(data) {
+	
+	    var id = data.id;
+	    delete data.id;
+	
+	    return TK.makeRequest({
+	      url: '/resources/' + id,
+	      method: 'put',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Reset password for a resource
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.resetResourcePassword = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/resources/resetpassword',
+	      method: 'post',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Get a specific resource's timezone
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getResourceTimezone = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/resources/timezone/' + data.email,
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Get users calendars that are present on Timekit (synced from providers)
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getCalendars = function() {
+	
+	    return TK.makeRequest({
+	      url: '/calendars',
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Get users calendars that are present on Timekit (synced from providers)
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getCalendar = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/calendars/' + data.id,
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Create a new calendar for current user
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.createCalendar = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/calendars/',
+	      method: 'post',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Update a calendar for current user
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.updateCalendar = function(data) {
+	
+	    var id = data.id;
+	    delete data.id;
+	
+	    return TK.makeRequest({
+	      url: '/calendars/' + id,
+	      method: 'put',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Delete a calendar
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.deleteCalendar = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/calendars/' + data.id,
+	      method: 'delete'
+	    });
+	
+	  };
+	
+	  /**
+	   * Get all user's events
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getEvents = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/events',
+	      method: 'get',
+	      params: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Get a user's event by ID
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getEvent = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/events/' + data.id,
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Create a new event
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.createEvent = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/events',
+	      method: 'post',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Update an existing event
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.updateEvent = function(data) {
+	
+	    var id = data.id;
+	    delete data.id;
+	
+	    return TK.makeRequest({
+	      url: '/events/' + id,
+	      method: 'put',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Delete a user's event by ID
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.deleteEvent = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/events/' + data.id,
+	      method: 'delete'
+	    });
+	
+	  };
+	
+	  /**
+	   * Find mutual availability across multiple users/calendars
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.findTime = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/findtime',
+	      method: 'post',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Find bulk availability across multiple users/calendars
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.findTimeBulk = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/findtime/bulk',
+	      method: 'post',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Find team availability across multiple users/calendars
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.findTimeTeam = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/findtime/team',
+	      method: 'post',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Fetch availability on the new availability endpoint (successor to findtime)
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.fetchAvailability = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/availability',
+	      method: 'post',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Get all user auth credentials
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getCredentials = function() {
+	
+	    return TK.makeRequest({
+	      url: '/credentials',
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Create a new pair of auth credentials
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.createCredential = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/credentials',
+	      method: 'post',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Delete a pair of auth credentials
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.deleteCredential = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/credentials/' + data.id,
+	      method: 'delete'
+	    });
+	
+	  };
+	
+	  /**
+	   * Get all bookings
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getBookings = function() {
+	
+	    return TK.makeRequest({
+	      url: '/bookings',
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Get specific booking
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getBooking = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/bookings/' + data.id,
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Create a new booking
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.createBooking = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/bookings',
+	      method: 'post',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Create bookings in bulk
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.createBookingsBulk = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/bookings/bulk',
+	      method: 'post',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Update an existing booking
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.updateBooking = function(data) {
+	
+	    var id = data.id;
+	    delete data.id;
+	
+	    var action = data.action;
+	    delete data.action;
+	
+	    return TK.makeRequest({
+	      url: '/bookings/' + id + '/' + action,
+	      method: 'put',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Update an bookings in bulk
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.updateBookingsBulk = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/bookings/bulk',
+	      method: 'put',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Get all bookings
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getGroupBookings = function() {
+	
+	    return TK.makeRequest({
+	      url: '/bookings/groups',
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Get specific booking
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getGroupBooking = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/bookings/' + data.id + '/groups',
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Get all projects
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getProjects = function() {
+	
+	    return TK.makeRequest({
+	      url: '/projects',
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Get a project
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getProject = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/projects/' + data.id,
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Get a project for public use on hosted page
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getHostedProject = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/projects/hosted/' + data.slug,
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Get a project for embedding on website
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getEmbedProject = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/projects/embed/' + data.id,
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Create a new project
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.createProject = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/projects',
+	      method: 'post',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Update an existing project
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.updateProject = function(data) {
+	
+	    var id = data.id;
+	    delete data.id;
+	
+	    return TK.makeRequest({
+	      url: '/projects/' + id,
+	      method: 'put',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Delete a project
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.deleteProject = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/projects/' + data.id,
+	      method: 'delete'
+	    });
+	
+	  };
+	
+	  /**
+	   * Add a resource to a project
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.addProjectResource = function(data) {
+	
+	    var id = data.id;
+	    delete data.id;
+	
+	    return TK.makeRequest({
+	      url: '/projects/' + id + '/resources',
+	      method: 'post',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Set resources for a project
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.setProjectResources = function(data) {
+	
+	    var id = data.id;
+	    delete data.id;
+	
+	    return TK.makeRequest({
+	      url: '/projects/' + id + '/resources',
+	      method: 'put',
+	      data: data.resources
+	    });
+	
+	  };
+	
+	  /**
+	   * Remove a resource from a project
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.removeProjectResource = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/projects/' + data.id + '/resources/' + data.resourceId,
+	      method: 'delete'
+	    });
+	
+	  };
+	
+	  return TK;
+	
+	}
 
 
 /***/ }),
-/* 31 */
+/* 34 */
 /***/ (function(module, exports) {
 
-	'use strict';
+	module.exports = function (TK) {
 	
-	var isMergeableObject = function isMergeableObject(value) {
-		return isNonNullObject(value)
-			&& !isSpecial(value)
-	};
+	  /**
+	   * Initiate an account sync
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.accountSync = function(data) {
 	
-	function isNonNullObject(value) {
-		return !!value && typeof value === 'object'
-	}
-	
-	function isSpecial(value) {
-		var stringValue = Object.prototype.toString.call(value);
-	
-		return stringValue === '[object RegExp]'
-			|| stringValue === '[object Date]'
-			|| isReactElement(value)
-	}
-	
-	// see https://github.com/facebook/react/blob/b5ac963fb791d1298e7f396236383bc955f916c1/src/isomorphic/classic/element/ReactElement.js#L21-L25
-	var canUseSymbol = typeof Symbol === 'function' && Symbol.for;
-	var REACT_ELEMENT_TYPE = canUseSymbol ? Symbol.for('react.element') : 0xeac7;
-	
-	function isReactElement(value) {
-		return value.$$typeof === REACT_ELEMENT_TYPE
-	}
-	
-	function emptyTarget(val) {
-	    return Array.isArray(val) ? [] : {}
-	}
-	
-	function cloneIfNecessary(value, optionsArgument) {
-	    var clone = optionsArgument && optionsArgument.clone === true;
-	    return (clone && isMergeableObject(value)) ? deepmerge(emptyTarget(value), value, optionsArgument) : value
-	}
-	
-	function defaultArrayMerge(target, source, optionsArgument) {
-	    var destination = target.slice();
-	    source.forEach(function(e, i) {
-	        if (typeof destination[i] === 'undefined') {
-	            destination[i] = cloneIfNecessary(e, optionsArgument);
-	        } else if (isMergeableObject(e)) {
-	            destination[i] = deepmerge(target[i], e, optionsArgument);
-	        } else if (target.indexOf(e) === -1) {
-	            destination.push(cloneIfNecessary(e, optionsArgument));
-	        }
+	    return TK.makeRequest({
+	      url: '/accounts/sync',
+	      method: 'get',
+	      params: data
 	    });
-	    return destination
-	}
 	
-	function mergeObject(target, source, optionsArgument) {
-	    var destination = {};
-	    if (isMergeableObject(target)) {
-	        Object.keys(target).forEach(function(key) {
-	            destination[key] = cloneIfNecessary(target[key], optionsArgument);
-	        });
-	    }
-	    Object.keys(source).forEach(function(key) {
-	        if (!isMergeableObject(source[key]) || !target[key]) {
-	            destination[key] = cloneIfNecessary(source[key], optionsArgument);
-	        } else {
-	            destination[key] = deepmerge(target[key], source[key], optionsArgument);
-	        }
+	  };
+	
+	  /**
+	   * Get widgets
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getWidgets = function() {
+	
+	    return TK.makeRequest({
+	      url: '/widgets',
+	      method: 'get'
 	    });
-	    return destination
+	
+	  };
+	
+	  /**
+	   * Get a specific widget
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getWidget = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/widgets/' + data.id,
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Get public widget by slug
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getHostedWidget = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/widgets/hosted/' + data.slug,
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Get public widget by id
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getEmbedWidget = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/widgets/embed/' + data.id,
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Create a new widget
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.createWidget = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/widgets',
+	      method: 'post',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Update an existing widget
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.updateWidget = function(data) {
+	
+	    var id = data.id;
+	    delete data.id;
+	
+	    return TK.makeRequest({
+	      url: '/widgets/' + id,
+	      method: 'put',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Delete a widget
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.deleteWidget = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/widgets/' + data.id,
+	      method: 'delete'
+	    });
+	
+	  };
+	
+	  /**
+	   * Create a new user with the given properties
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.createUser = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/users',
+	      method: 'post',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Fetch current user data from server
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getUserInfo = function() {
+	
+	    return TK.makeRequest({
+	      url: '/users/me',
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Fetch current user data from server
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.updateUser = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/users/me',
+	      method: 'put',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Reset password for a user
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.resetUserPassword = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/users/resetpassword',
+	      method: 'post',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Get a specific users' timezone
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getUserTimezone = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/users/timezone/' + data.email,
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Create a findtime filtercollection
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.createFindTimeFilterCollection = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/findtime/filtercollections',
+	      method: 'post',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Get findtime filtercollections
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getFindTimeFilterCollections = function() {
+	
+	    return TK.makeRequest({
+	      url: '/findtime/filtercollections',
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Update a findtime filtercollections
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.updateFindTimeFilterCollection = function(data) {
+	
+	    var id = data.id;
+	    delete data.id;
+	
+	    return TK.makeRequest({
+	      url: '/findtime/filtercollections/' + id,
+	      method: 'get',
+	      data: data
+	    });
+	
+	  };
+	
+	  return TK;
+	
 	}
-	
-	function deepmerge(target, source, optionsArgument) {
-	    var sourceIsArray = Array.isArray(source);
-	    var targetIsArray = Array.isArray(target);
-	    var options = optionsArgument || { arrayMerge: defaultArrayMerge };
-	    var sourceAndTargetTypesMatch = sourceIsArray === targetIsArray;
-	
-	    if (!sourceAndTargetTypesMatch) {
-	        return cloneIfNecessary(source, optionsArgument)
-	    } else if (sourceIsArray) {
-	        var arrayMerge = options.arrayMerge || defaultArrayMerge;
-	        return arrayMerge(target, source, optionsArgument)
-	    } else {
-	        return mergeObject(target, source, optionsArgument)
-	    }
-	}
-	
-	deepmerge.all = function deepmergeAll(array, optionsArgument) {
-	    if (!Array.isArray(array) || array.length < 2) {
-	        throw new Error('first argument should be an array with at least two elements')
-	    }
-	
-	    // we are sure there are at least 2 values, so it is safe to have no initial value
-	    return array.reduce(function(prev, next) {
-	        return deepmerge(prev, next, optionsArgument)
-	    })
-	};
-	
-	var deepmerge_1 = deepmerge;
-	
-	module.exports = deepmerge_1;
 
 
 /***/ }),
-/* 32 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -5276,7 +5701,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	(function(factory) {
 		if (true) {
-			!(__WEBPACK_AMD_DEFINE_ARRAY__ = [ __webpack_require__(1), __webpack_require__(33) ], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+			!(__WEBPACK_AMD_DEFINE_ARRAY__ = [ __webpack_require__(1), __webpack_require__(36) ], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 		}
 		else if (typeof exports === 'object') { // Node/CommonJS
 			module.exports = factory(require('jquery'), require('moment'));
@@ -23111,7 +23536,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 
 /***/ }),
-/* 33 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(module) {//! moment.js
@@ -24943,7 +25368,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            module && module.exports) {
 	        try {
 	            oldLocale = globalLocale._abbr;
-	            __webpack_require__(34)("./" + name);
+	            __webpack_require__(37)("./" + name);
 	            // because defineLocale currently also sets the global locale, we
 	            // want to undo that for lazy loaded locales
 	            getSetGlobalLocale(oldLocale);
@@ -27578,15 +28003,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	})));
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(29)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(32)(module)))
 
 /***/ }),
-/* 34 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var map = {
-		"./en-gb": 35,
-		"./en-gb.js": 35
+		"./en-gb": 38,
+		"./en-gb.js": 38
 	};
 	function webpackContext(req) {
 		return __webpack_require__(webpackContextResolve(req));
@@ -27599,11 +28024,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	webpackContext.resolve = webpackContextResolve;
 	module.exports = webpackContext;
-	webpackContext.id = 34;
+	webpackContext.id = 37;
 
 
 /***/ }),
-/* 35 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -27611,7 +28036,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	//! author : Chris Gedrim : https://github.com/chrisgedrim
 	
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(33)) :
+	    true ? factory(__webpack_require__(36)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
@@ -27675,7 +28100,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 36 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;//! moment-timezone.js
@@ -27689,7 +28114,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		/*global define*/
 		if (true) {
-			!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(33)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));                 // AMD
+			!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(36)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));                 // AMD
 		} else if (typeof module === 'object' && module.exports) {
 			module.exports = factory(require('moment')); // Node
 		} else {
@@ -28882,16 +29307,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 37 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(38);
+	var content = __webpack_require__(41);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(40)(content, {"singleton":true});
+	var update = __webpack_require__(43)(content, {"singleton":true});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -28908,10 +29333,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ }),
-/* 38 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(39)();
+	exports = module.exports = __webpack_require__(42)();
 	// imports
 	
 	
@@ -28922,7 +29347,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 39 */
+/* 42 */
 /***/ (function(module, exports) {
 
 	/*
@@ -28978,7 +29403,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 40 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/*
@@ -29230,12 +29655,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 41 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	__webpack_require__(42);
+	__webpack_require__(45);
 	
 	/*
 	 * Utily functions
@@ -29275,7 +29700,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 42 */
+/* 45 */
 /***/ (function(module, exports) {
 
 	// Console-polyfill. MIT license.
@@ -29300,7 +29725,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 43 */
+/* 46 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -29322,6 +29747,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  bookingGraph: 'instant',
 	  debug: false,
 	  availabilityView: 'agendaWeek',
+	  createBookingResponseInclude: ['attributes', 'event', 'user'],
 	  bookingFields: {
 	    name: {
 	      placeholder: 'Full name',
@@ -29596,16 +30022,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 44 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(45);
+	var content = __webpack_require__(48);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(40)(content, {"singleton":true});
+	var update = __webpack_require__(43)(content, {"singleton":true});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -29622,10 +30048,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ }),
-/* 45 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(39)();
+	exports = module.exports = __webpack_require__(42)();
 	// imports
 	exports.push([module.id, "@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);", ""]);
 	
@@ -29636,16 +30062,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 46 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(47);
+	var content = __webpack_require__(50);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(40)(content, {"singleton":true});
+	var update = __webpack_require__(43)(content, {"singleton":true});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -29662,10 +30088,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ }),
-/* 47 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(39)();
+	exports = module.exports = __webpack_require__(42)();
 	// imports
 	
 	
@@ -29676,16 +30102,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 48 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(49);
+	var content = __webpack_require__(52);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(40)(content, {"singleton":true});
+	var update = __webpack_require__(43)(content, {"singleton":true});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -29702,10 +30128,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ }),
-/* 49 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(39)();
+	exports = module.exports = __webpack_require__(42)();
 	// imports
 	exports.push([module.id, "@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);", ""]);
 	
@@ -29716,16 +30142,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 50 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(51);
+	var content = __webpack_require__(54);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(40)(content, {"singleton":true});
+	var update = __webpack_require__(43)(content, {"singleton":true});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -29742,10 +30168,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ }),
-/* 51 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(39)();
+	exports = module.exports = __webpack_require__(42)();
 	// imports
 	exports.push([module.id, "@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);", ""]);
 	
@@ -29756,20 +30182,20 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 52 */
+/* 55 */
 /***/ (function(module, exports) {
 
 	module.exports = "<svg class=\"bookingjs-timezoneicon\" viewBox=\"0 0 98 98\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>Shape</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"timezone-icon\" sketch:type=\"MSLayerGroup\" fill=\"#AEAEAE\"><path d=\"M37.656,1.387 L39.381,2.516 L46.176,3.475 L49.313,2.778 L55.186,3.495 L56.364,5.065 L52.274,4.52 L48.092,6.262 L49.293,9.385 L53.613,11.348 L54.189,7.395 L58.285,7.133 L64.121,12.707 L65.775,14.887 L66.56,16.28 L62.029,18.067 L55.185,21.169 L54.624,24.206 L50.095,28.476 L50.271,32.572 L48.9,32.559 L48.353,29.086 L45.757,28.238 L38.294,28.631 L35.286,34.137 L37.901,37.274 L42.221,34.917 L42.516,38.755 L44.172,40.062 L47.131,43.46 L46.985,47.751 L52.448,49.034 L56.454,46.159 L58.284,46.768 L65.003,49.45 L74.433,52.985 L76.396,57.698 L83.111,60.968 L84.644,66.732 L80.062,71.857 L74.66,77.519 L68.933,80.482 L63.04,84.408 L55.185,89.515 L50.835,93.941 L49.292,92.263 L52.782,83.419 L53.663,73.167 L46.15,66.34 L46.199,60.596 L48.164,58.239 L50.471,51.415 L45.809,48.811 L42.664,43.706 L37.75,41.817 L30.047,37.667 L26.904,29.024 L25.334,33.344 L22.977,26.276 L23.762,15.671 L27.69,12.136 L26.512,9.779 L29.26,5.459 L23.905,6.99 C9.611,15.545 0.01,31.135 0.01,49.006 C0.01,76.062 21.945,98 49.006,98 C76.062,98 98,76.062 98,49.006 C98,21.947 76.062,0.012 49.006,0.012 C45.092,0.012 41.305,0.52 37.656,1.387 Z\" id=\"Shape\" sketch:type=\"MSShapeGroup\"></path></g></g></svg>"
 
 /***/ }),
-/* 53 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var H = __webpack_require__(54);
+	var H = __webpack_require__(57);
 	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-timezonehelper\">");t.b("\n");t.b("\n" + i);t.b("  ");t.b(t.t(t.f("timezoneIcon",c,p,0)));t.b("\n");t.b("\n" + i);if(t.s(t.f("loading",c,p,1),c,p,0,79,117,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("    <span>");t.b(t.v(t.f("loadingText",c,p,0)));t.b("</span>");t.b("\n" + i);});c.pop();}t.b("\n" + i);if(!t.s(t.f("loading",c,p,1),c,p,1,0,0,"")){if(t.s(t.f("timezoneDifference",c,p,1),c,p,0,179,227,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("      <span>");t.b(t.v(t.f("timezoneDifferent",c,p,0)));t.b("</span>");t.b("\n" + i);});c.pop();}t.b("\n" + i);if(!t.s(t.f("timezoneDifference",c,p,1),c,p,1,0,0,"")){t.b("      <span>");t.b(t.v(t.f("timezoneSame",c,p,0)));t.b("</span>");t.b("\n" + i);};};t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-timezonehelper\">\n\n  {{& timezoneIcon }}\n\n  {{# loading }}\n    <span>{{ loadingText }}</span>\n  {{/ loading }}\n\n  {{^ loading }}\n    {{# timezoneDifference }}\n      <span>{{ timezoneDifferent }}</span>\n    {{/ timezoneDifference }}\n\n    {{^ timezoneDifference }}\n      <span>{{ timezoneSame }}</span>\n    {{/ timezoneDifference }}\n  {{/ loading }}\n\n</div>\n", H);return T; }();
 
 /***/ }),
-/* 54 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/*
@@ -29789,14 +30215,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	// This file is for use with Node.js. See dist/ for browser files.
 	
-	var Hogan = __webpack_require__(55);
-	Hogan.Template = __webpack_require__(56).Template;
+	var Hogan = __webpack_require__(58);
+	Hogan.Template = __webpack_require__(59).Template;
 	Hogan.template = Hogan.Template;
 	module.exports = Hogan;
 
 
 /***/ }),
-/* 55 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/*
@@ -30225,7 +30651,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 56 */
+/* 59 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/*
@@ -30572,93 +30998,93 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 57 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	var H = __webpack_require__(54);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-ribbon-wrapper\">");t.b("\n" + i);t.b("  <div class=\"bookingjs-ribbon-container\">");t.b("\n" + i);t.b("    <div class=\"bookingjs-ribbon\">");t.b("\n" + i);t.b("      <span>");t.b("\n" + i);t.b("        ");t.b(t.v(t.f("ribbonText",c,p,0)));t.b("\n" + i);t.b("      </span>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-ribbon-wrapper\">\n  <div class=\"bookingjs-ribbon-container\">\n    <div class=\"bookingjs-ribbon\">\n      <span>\n        {{ ribbonText }}\n      </span>\n    </div>\n  </div>\n</div>\n", H);return T; }();
-
-/***/ }),
-/* 58 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	var H = __webpack_require__(54);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-avatar\">");t.b("\n" + i);t.b("  <img src=\"");t.b(t.t(t.f("image",c,p,0)));t.b("\" />");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-avatar\">\n  <img src=\"{{& image }}\" />\n</div>\n", H);return T; }();
-
-/***/ }),
-/* 59 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	var H = __webpack_require__(54);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-displayname\">");t.b("\n" + i);t.b("  <span>");t.b(t.v(t.f("name",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-displayname\">\n  <span>{{ name }}</span>\n</div>\n", H);return T; }();
-
-/***/ }),
 /* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var H = __webpack_require__(54);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-loading show\">");t.b("\n" + i);t.b("  <div class=\"bookingjs-loading-icon\">");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("loadingIcon",c,p,0)));t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-loading show\">\n  <div class=\"bookingjs-loading-icon\">\n    {{& loadingIcon }}\n  </div>\n</div>\n", H);return T; }();
+	var H = __webpack_require__(57);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-ribbon-wrapper\">");t.b("\n" + i);t.b("  <div class=\"bookingjs-ribbon-container\">");t.b("\n" + i);t.b("    <div class=\"bookingjs-ribbon\">");t.b("\n" + i);t.b("      <span>");t.b("\n" + i);t.b("        ");t.b(t.v(t.f("ribbonText",c,p,0)));t.b("\n" + i);t.b("      </span>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-ribbon-wrapper\">\n  <div class=\"bookingjs-ribbon-container\">\n    <div class=\"bookingjs-ribbon\">\n      <span>\n        {{ ribbonText }}\n      </span>\n    </div>\n  </div>\n</div>\n", H);return T; }();
 
 /***/ }),
 /* 61 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-	module.exports = "<svg version=\"1.1\" id=\"loader-1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" viewBox=\"0 0 38 38\" xml:space=\"preserve\"><path fill=\"#fff\" d=\"M38,19 C38,8.50658975 29.4934102,0 19,0 C8.50658975,0 0,8.50658975 0,19 L5,19 C5,11.2680135 11.2680135,5 19,5 C26.7319865,5 33,11.2680135 33,19 L38,19 Z\" id=\"Oval-1\" sketch:type=\"MSShapeGroup\"></path></path></svg>"
+	var H = __webpack_require__(57);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-avatar\">");t.b("\n" + i);t.b("  <img src=\"");t.b(t.t(t.f("image",c,p,0)));t.b("\" />");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-avatar\">\n  <img src=\"{{& image }}\" />\n</div>\n", H);return T; }();
 
 /***/ }),
 /* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var H = __webpack_require__(54);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-error show\">");t.b("\n" + i);t.b("  <div class=\"bookingjs-error-inner\">");t.b("\n" + i);t.b("    <div class=\"bookingjs-error-icon\">");t.b("\n" + i);t.b("      ");t.b(t.t(t.f("errorWarningIcon",c,p,0)));t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <div class=\"bookingjs-error-heading\">");t.b("\n" + i);t.b("      Ouch, we've encountered a problem");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <div class=\"bookingjs-error-text\">");t.b("\n" + i);t.b("      <span class=\"bookingjs-error-text-message\">");t.b(t.t(t.f("message",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"bookingjs-error-text-context\">");t.b(t.t(t.f("context",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-error show\">\n  <div class=\"bookingjs-error-inner\">\n    <div class=\"bookingjs-error-icon\">\n      {{& errorWarningIcon }}\n    </div>\n    <div class=\"bookingjs-error-heading\">\n      Ouch, we've encountered a problem\n    </div>\n    <div class=\"bookingjs-error-text\">\n      <span class=\"bookingjs-error-text-message\">{{& message }}</span>\n      <span class=\"bookingjs-error-text-context\">{{& context }}</span>\n    </div>\n  </div>\n</div>\n", H);return T; }();
+	var H = __webpack_require__(57);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-displayname\">");t.b("\n" + i);t.b("  <span>");t.b(t.v(t.f("name",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-displayname\">\n  <span>{{ name }}</span>\n</div>\n", H);return T; }();
 
 /***/ }),
 /* 63 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-	module.exports = "<svg viewBox=\"0 0 62 55\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><title>error-warning-icon</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\"><g id=\"error-warning-icon\" fill-rule=\"nonzero\" fill=\"#D83B46\"><path d=\"M60.2,41.5 L38.7,5.3 C37.1,2.5 34.2,0.9 31,0.9 C27.8,0.9 24.9,2.5 23.3,5.3 L1.8,41.5 C0.1,44.3 0.1,47.7 1.7,50.5 C3.3,53.3 6.2,55 9.5,55 L52.4,55 C55.7,55 58.6,53.3 60.2,50.5 C61.9,47.7 61.9,44.3 60.2,41.5 Z M55.1,47.6 C54.8,48.1 54.1,49.1 52.5,49.1 L9.5,49.1 C7.9,49.1 7.2,48 6.9,47.6 C6.6,47.1 6.1,45.9 6.9,44.6 L28.4,8.4 C29.2,7.1 30.5,6.9 31,6.9 C31.5,6.9 32.8,7 33.6,8.4 L55.1,44.6 C55.9,45.9 55.3,47.1 55.1,47.6 Z\" id=\"Shape\"></path><path d=\"M31,15.2 C29.3,15.2 28,16.5 28,18.2 L28,34.2 C28,35.9 29.3,37.2 31,37.2 C32.7,37.2 34,35.9 34,34.2 L34,18.2 C34,16.6 32.7,15.2 31,15.2 Z\" id=\"Shape\"></path><path d=\"M31,38.8 C29.3,38.8 28,40.1 28,41.8 L28,42.8 C28,44.5 29.3,45.8 31,45.8 C32.7,45.8 34,44.5 34,42.8 L34,41.8 C34,40.1 32.7,38.8 31,38.8 Z\" id=\"Shape\"></path></g></g></svg>"
+	var H = __webpack_require__(57);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-loading show\">");t.b("\n" + i);t.b("  <div class=\"bookingjs-loading-icon\">");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("loadingIcon",c,p,0)));t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-loading show\">\n  <div class=\"bookingjs-loading-icon\">\n    {{& loadingIcon }}\n  </div>\n</div>\n", H);return T; }();
 
 /***/ }),
 /* 64 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-	var H = __webpack_require__(54);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-name\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-name\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.d("fields.name.placeholder",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-name\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-name\"");t.b("\n" + i);t.b("    type=\"text\"");t.b("\n" + i);t.b("    name=\"name\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.name.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.name.prefilled",c,p,1),c,p,0,340,377,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.name.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.name.locked",c,p,1),c,p,0,435,445,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("    required");t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"bookingjs-form-field\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-email\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-email\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.d("fields.email.placeholder",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-email\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-email\"");t.b("\n" + i);t.b("    type=\"email\"");t.b("\n" + i);t.b("    name=\"email\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.email.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.email.prefilled",c,p,1),c,p,0,846,884,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.email.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.email.locked",c,p,1),c,p,0,944,954,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("    required");t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);if(t.s(t.d("fields.phone.enabled",c,p,1),c,p,0,1034,1600,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("<div class=\"bookingjs-form-field\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-phone\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-phone\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.d("fields.phone.placeholder",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-phone\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-phone\"");t.b("\n" + i);t.b("    type=\"tel\"");t.b("\n" + i);t.b("    name=\"phone\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.phone.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.phone.prefilled",c,p,1),c,p,0,1382,1420,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.phone.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.phone.required",c,p,1),c,p,0,1482,1492,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.phone.locked",c,p,1),c,p,0,1551,1561,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n" + i);});c.pop();}t.b("\n" + i);if(t.s(t.d("fields.voip.enabled",c,p,1),c,p,0,1655,2208,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("<div class=\"bookingjs-form-field\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-voip\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-voip\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.d("fields.voip.placeholder",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-voip\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-voip\"");t.b("\n" + i);t.b("    type=\"text\"");t.b("\n" + i);t.b("    name=\"voip\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.voip.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.voip.prefilled",c,p,1),c,p,0,1996,2033,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.voip.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.voip.required",c,p,1),c,p,0,2093,2103,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.voip.locked",c,p,1),c,p,0,2160,2170,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n" + i);});c.pop();}t.b("\n" + i);if(t.s(t.d("fields.location.enabled",c,p,1),c,p,0,2266,2875,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("<div class=\"bookingjs-form-field\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-location\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-location\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.d("fields.location.placeholder",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-location\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-location\"");t.b("\n" + i);t.b("    type=\"text\"");t.b("\n" + i);t.b("    name=\"location\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.location.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.location.prefilled",c,p,1),c,p,0,2639,2680,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.location.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.location.required",c,p,1),c,p,0,2748,2758,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.location.locked",c,p,1),c,p,0,2823,2833,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n" + i);});c.pop();}t.b("\n" + i);if(t.s(t.d("fields.comment.enabled",c,p,1),c,p,0,2936,3554,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("<div class=\"bookingjs-form-field\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-comment\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-comment\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.d("fields.comment.placeholder",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <textarea");t.b("\n" + i);t.b("    id=\"input-comment\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input bookingjs-form-input--textarea input-comment\"");t.b("\n" + i);t.b("    rows=\"3\"");t.b("\n" + i);t.b("    name=\"comment\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.comment.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.comment.required",c,p,1),c,p,0,3331,3341,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.comment.locked",c,p,1),c,p,0,3404,3414,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b(">");if(t.s(t.d("fields.comment.prefilled",c,p,1),c,p,0,3474,3504,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(t.v(t.d("fields.comment.prefilled",c,p,0)));});c.pop();}t.b("</textarea>");t.b("\n" + i);t.b("</div>");t.b("\n" + i);});c.pop();}return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field\">\n  <label\n    for=\"input-name\"\n    class=\"bookingjs-form-label label-name\">\n    {{ fields.name.placeholder }}\n  </label>\n  <input\n    id=\"input-name\"\n    class=\"bookingjs-form-input input-name\"\n    type=\"text\"\n    name=\"name\"\n    placeholder=\"{{ fields.name.placeholder }}\"\n    {{# fields.name.prefilled }} value=\"{{ fields.name.prefilled }}\" {{/ fields.name.prefilled }}\n    {{# fields.name.locked }} readonly {{/ fields.name.locked }}\n    required\n  />\n</div>\n\n<div class=\"bookingjs-form-field\">\n  <label\n    for=\"input-email\"\n    class=\"bookingjs-form-label label-email\">\n    {{ fields.email.placeholder }}\n  </label>\n  <input\n    id=\"input-email\"\n    class=\"bookingjs-form-input input-email\"\n    type=\"email\"\n    name=\"email\"\n    placeholder=\"{{ fields.email.placeholder }}\"\n    {{# fields.email.prefilled }} value=\"{{ fields.email.prefilled }}\" {{/ fields.email.prefilled }}\n    {{# fields.email.locked }} readonly {{/ fields.email.locked }}\n    required\n  />\n</div>\n\n{{# fields.phone.enabled }}\n<div class=\"bookingjs-form-field\">\n  <label\n    for=\"input-phone\"\n    class=\"bookingjs-form-label label-phone\">\n    {{ fields.phone.placeholder }}\n  </label>\n  <input\n    id=\"input-phone\"\n    class=\"bookingjs-form-input input-phone\"\n    type=\"tel\"\n    name=\"phone\"\n    placeholder=\"{{ fields.phone.placeholder }}\"\n    {{# fields.phone.prefilled }} value=\"{{ fields.phone.prefilled }}\" {{/ fields.phone.prefilled }}\n    {{# fields.phone.required }} required {{/ fields.phone.required }}\n    {{# fields.phone.locked }} readonly {{/ fields.phone.locked }}\n  />\n</div>\n{{/ fields.phone.enabled }}\n\n{{# fields.voip.enabled }}\n<div class=\"bookingjs-form-field\">\n  <label\n    for=\"input-voip\"\n    class=\"bookingjs-form-label label-voip\">\n    {{ fields.voip.placeholder }}\n  </label>\n  <input\n    id=\"input-voip\"\n    class=\"bookingjs-form-input input-voip\"\n    type=\"text\"\n    name=\"voip\"\n    placeholder=\"{{ fields.voip.placeholder }}\"\n    {{# fields.voip.prefilled }} value=\"{{ fields.voip.prefilled }}\" {{/ fields.voip.prefilled }}\n    {{# fields.voip.required }} required {{/ fields.voip.required }}\n    {{# fields.voip.locked }} readonly {{/ fields.voip.locked }}\n  />\n</div>\n{{/ fields.voip.enabled }}\n\n{{# fields.location.enabled }}\n<div class=\"bookingjs-form-field\">\n  <label\n    for=\"input-location\"\n    class=\"bookingjs-form-label label-location\">\n    {{ fields.location.placeholder }}\n  </label>\n  <input\n    id=\"input-location\"\n    class=\"bookingjs-form-input input-location\"\n    type=\"text\"\n    name=\"location\"\n    placeholder=\"{{ fields.location.placeholder }}\"\n    {{# fields.location.prefilled }} value=\"{{ fields.location.prefilled }}\" {{/ fields.location.prefilled }}\n    {{# fields.location.required }} required {{/ fields.location.required }}\n    {{# fields.location.locked }} readonly {{/ fields.location.locked }}\n  />\n</div>\n{{/ fields.location.enabled }}\n\n{{# fields.comment.enabled }}\n<div class=\"bookingjs-form-field\">\n  <label\n    for=\"input-comment\"\n    class=\"bookingjs-form-label label-comment\">\n    {{ fields.comment.placeholder }}\n  </label>\n  <textarea\n    id=\"input-comment\"\n    class=\"bookingjs-form-input bookingjs-form-input--textarea input-comment\"\n    rows=\"3\"\n    name=\"comment\"\n    placeholder=\"{{ fields.comment.placeholder }}\"\n    {{# fields.comment.required }} required {{/ fields.comment.required }}\n    {{# fields.comment.locked }} readonly {{/ fields.comment.locked }}>{{# fields.comment.prefilled }}{{ fields.comment.prefilled }}{{/ fields.comment.prefilled }}</textarea>\n</div>\n{{/ fields.comment.enabled }}\n", H);return T; }();
+	module.exports = "<svg version=\"1.1\" id=\"loader-1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" viewBox=\"0 0 38 38\" xml:space=\"preserve\"><path fill=\"#fff\" d=\"M38,19 C38,8.50658975 29.4934102,0 19,0 C8.50658975,0 0,8.50658975 0,19 L5,19 C5,11.2680135 11.2680135,5 19,5 C26.7319865,5 33,11.2680135 33,19 L38,19 Z\" id=\"Oval-1\" sketch:type=\"MSShapeGroup\"></path></path></svg>"
 
 /***/ }),
 /* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var H = __webpack_require__(54);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-bookpage\">");t.b("\n" + i);t.b("  <a class=\"bookingjs-bookpage-close\" href=\"#\">");t.b(t.t(t.f("closeIcon",c,p,0)));t.b("</a>");t.b("\n" + i);t.b("  <div class=\"bookingjs-bookpage-header\">");t.b("\n" + i);t.b("    <h2 class=\"bookingjs-bookpage-date\">");t.b(t.v(t.f("chosenDate",c,p,0)));t.b("</h2>");t.b("\n" + i);t.b("    <h3 class=\"bookingjs-bookpage-time\">");t.b(t.v(t.f("chosenTime",c,p,0)));t.b("</h3>");t.b("\n" + i);if(t.s(t.f("allocatedResource",c,p,1),c,p,0,293,465,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("      <span class=\"bookingjs-bookpage-resource-prefix\">");t.b(t.v(t.f("allocatedResourcePrefix",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <h3 class=\"bookingjs-bookpage-resource\">");t.b(t.v(t.f("allocatedResource",c,p,0)));t.b("</h3>");t.b("\n" + i);});c.pop();}t.b("  </div>");t.b("\n" + i);t.b("  <form class=\"bookingjs-form\" action=\"#\">");t.b("\n" + i);t.b("    <div class=\"bookingjs-form-box\">");t.b("\n" + i);t.b("      <div class=\"bookingjs-form-success-message\">");t.b("\n" + i);t.b("        <div class=\"title\">");t.b(t.v(t.f("successMessageTitle",c,p,0)));t.b("</div>");t.b("\n" + i);t.b("        <div class=\"body\">");t.b(t.t(t.f("successMessageBody",c,p,0)));t.b("</div>");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("      <div class=\"bookingjs-form-fields\">");t.b("\n" + i);t.b(t.rp("<formFields0",c,p,"        "));t.b("      </div>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <button class=\"bookingjs-form-button\" type=\"submit\">");t.b("\n" + i);t.b("      <span class=\"inactive-text\">");t.b(t.v(t.f("submitText",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"loading-text\">");t.b(t.t(t.f("loadingIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"error-text\">");t.b(t.t(t.f("errorIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"success-text\">");t.b(t.t(t.f("checkmarkIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("    </button>");t.b("\n" + i);t.b("  </form>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {"<formFields0":{name:"formFields", partials: {}, subs: {  }}}, subs: {  }}, "<div class=\"bookingjs-bookpage\">\n  <a class=\"bookingjs-bookpage-close\" href=\"#\">{{& closeIcon }}</a>\n  <div class=\"bookingjs-bookpage-header\">\n    <h2 class=\"bookingjs-bookpage-date\">{{ chosenDate }}</h2>\n    <h3 class=\"bookingjs-bookpage-time\">{{ chosenTime }}</h3>\n    {{#allocatedResource}}\n      <span class=\"bookingjs-bookpage-resource-prefix\">{{ allocatedResourcePrefix }}</span>\n      <h3 class=\"bookingjs-bookpage-resource\">{{ allocatedResource }}</h3>\n    {{/allocatedResource}}\n  </div>\n  <form class=\"bookingjs-form\" action=\"#\">\n    <div class=\"bookingjs-form-box\">\n      <div class=\"bookingjs-form-success-message\">\n        <div class=\"title\">{{ successMessageTitle }}</div>\n        <div class=\"body\">{{& successMessageBody }}</div>\n      </div>\n      <div class=\"bookingjs-form-fields\">\n        {{> formFields }}\n      </div>\n    </div>\n    <button class=\"bookingjs-form-button\" type=\"submit\">\n      <span class=\"inactive-text\">{{ submitText }}</span>\n      <span class=\"loading-text\">{{& loadingIcon }}</span>\n      <span class=\"error-text\">{{& errorIcon }}</span>\n      <span class=\"success-text\">{{& checkmarkIcon }}</span>\n    </button>\n  </form>\n</div>\n", H);return T; }();
+	var H = __webpack_require__(57);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-error show\">");t.b("\n" + i);t.b("  <div class=\"bookingjs-error-inner\">");t.b("\n" + i);t.b("    <div class=\"bookingjs-error-icon\">");t.b("\n" + i);t.b("      ");t.b(t.t(t.f("errorWarningIcon",c,p,0)));t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <div class=\"bookingjs-error-heading\">");t.b("\n" + i);t.b("      Ouch, we've encountered a problem");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <div class=\"bookingjs-error-text\">");t.b("\n" + i);t.b("      <span class=\"bookingjs-error-text-message\">");t.b(t.t(t.f("message",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"bookingjs-error-text-context\">");t.b(t.t(t.f("context",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-error show\">\n  <div class=\"bookingjs-error-inner\">\n    <div class=\"bookingjs-error-icon\">\n      {{& errorWarningIcon }}\n    </div>\n    <div class=\"bookingjs-error-heading\">\n      Ouch, we've encountered a problem\n    </div>\n    <div class=\"bookingjs-error-text\">\n      <span class=\"bookingjs-error-text-message\">{{& message }}</span>\n      <span class=\"bookingjs-error-text-context\">{{& context }}</span>\n    </div>\n  </div>\n</div>\n", H);return T; }();
 
 /***/ }),
 /* 66 */
 /***/ (function(module, exports) {
 
-	module.exports = "<svg class=\"bookingjs-closeicon\" viewBox=\"0 0 90 90\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>close-icon</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"close-icon\" sketch:type=\"MSLayerGroup\" fill=\"#000000\"><path d=\"M58,45 L87.2,15.8 C90.9,12.1 90.9,6.3 87.3,2.7 C83.7,-0.9 77.8,-0.8 74.2,2.8 L45,32 L15.8,2.8 C12.1,-0.9 6.3,-0.9 2.7,2.7 C-0.9,6.3 -0.8,12.2 2.8,15.8 L32,45 L2.8,74.2 C-0.9,77.9 -0.9,83.7 2.7,87.3 C6.3,90.9 12.2,90.8 15.8,87.2 L45,58 L74.2,87.2 C77.9,90.9 83.7,90.9 87.3,87.3 C90.9,83.7 90.8,77.8 87.2,74.2 L58,45 L58,45 Z\" id=\"Shape\" sketch:type=\"MSShapeGroup\"></path></g></g></svg>"
+	module.exports = "<svg viewBox=\"0 0 62 55\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><title>error-warning-icon</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\"><g id=\"error-warning-icon\" fill-rule=\"nonzero\" fill=\"#D83B46\"><path d=\"M60.2,41.5 L38.7,5.3 C37.1,2.5 34.2,0.9 31,0.9 C27.8,0.9 24.9,2.5 23.3,5.3 L1.8,41.5 C0.1,44.3 0.1,47.7 1.7,50.5 C3.3,53.3 6.2,55 9.5,55 L52.4,55 C55.7,55 58.6,53.3 60.2,50.5 C61.9,47.7 61.9,44.3 60.2,41.5 Z M55.1,47.6 C54.8,48.1 54.1,49.1 52.5,49.1 L9.5,49.1 C7.9,49.1 7.2,48 6.9,47.6 C6.6,47.1 6.1,45.9 6.9,44.6 L28.4,8.4 C29.2,7.1 30.5,6.9 31,6.9 C31.5,6.9 32.8,7 33.6,8.4 L55.1,44.6 C55.9,45.9 55.3,47.1 55.1,47.6 Z\" id=\"Shape\"></path><path d=\"M31,15.2 C29.3,15.2 28,16.5 28,18.2 L28,34.2 C28,35.9 29.3,37.2 31,37.2 C32.7,37.2 34,35.9 34,34.2 L34,18.2 C34,16.6 32.7,15.2 31,15.2 Z\" id=\"Shape\"></path><path d=\"M31,38.8 C29.3,38.8 28,40.1 28,41.8 L28,42.8 C28,44.5 29.3,45.8 31,45.8 C32.7,45.8 34,44.5 34,42.8 L34,41.8 C34,40.1 32.7,38.8 31,38.8 Z\" id=\"Shape\"></path></g></g></svg>"
 
 /***/ }),
 /* 67 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	var H = __webpack_require__(57);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-name\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-name\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.d("fields.name.placeholder",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-name\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-name\"");t.b("\n" + i);t.b("    type=\"text\"");t.b("\n" + i);t.b("    name=\"name\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.name.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.name.prefilled",c,p,1),c,p,0,340,377,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.name.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.name.locked",c,p,1),c,p,0,435,445,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("    required");t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"bookingjs-form-field\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-email\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-email\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.d("fields.email.placeholder",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-email\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-email\"");t.b("\n" + i);t.b("    type=\"email\"");t.b("\n" + i);t.b("    name=\"email\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.email.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.email.prefilled",c,p,1),c,p,0,846,884,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.email.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.email.locked",c,p,1),c,p,0,944,954,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("    required");t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);if(t.s(t.d("fields.phone.enabled",c,p,1),c,p,0,1034,1600,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("<div class=\"bookingjs-form-field\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-phone\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-phone\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.d("fields.phone.placeholder",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-phone\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-phone\"");t.b("\n" + i);t.b("    type=\"tel\"");t.b("\n" + i);t.b("    name=\"phone\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.phone.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.phone.prefilled",c,p,1),c,p,0,1382,1420,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.phone.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.phone.required",c,p,1),c,p,0,1482,1492,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.phone.locked",c,p,1),c,p,0,1551,1561,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n" + i);});c.pop();}t.b("\n" + i);if(t.s(t.d("fields.voip.enabled",c,p,1),c,p,0,1655,2208,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("<div class=\"bookingjs-form-field\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-voip\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-voip\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.d("fields.voip.placeholder",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-voip\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-voip\"");t.b("\n" + i);t.b("    type=\"text\"");t.b("\n" + i);t.b("    name=\"voip\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.voip.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.voip.prefilled",c,p,1),c,p,0,1996,2033,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.voip.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.voip.required",c,p,1),c,p,0,2093,2103,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.voip.locked",c,p,1),c,p,0,2160,2170,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n" + i);});c.pop();}t.b("\n" + i);if(t.s(t.d("fields.location.enabled",c,p,1),c,p,0,2266,2875,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("<div class=\"bookingjs-form-field\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-location\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-location\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.d("fields.location.placeholder",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-location\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-location\"");t.b("\n" + i);t.b("    type=\"text\"");t.b("\n" + i);t.b("    name=\"location\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.location.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.location.prefilled",c,p,1),c,p,0,2639,2680,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.d("fields.location.prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.location.required",c,p,1),c,p,0,2748,2758,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.location.locked",c,p,1),c,p,0,2823,2833,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n" + i);});c.pop();}t.b("\n" + i);if(t.s(t.d("fields.comment.enabled",c,p,1),c,p,0,2936,3554,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("<div class=\"bookingjs-form-field\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-comment\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-comment\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.d("fields.comment.placeholder",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <textarea");t.b("\n" + i);t.b("    id=\"input-comment\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input bookingjs-form-input--textarea input-comment\"");t.b("\n" + i);t.b("    rows=\"3\"");t.b("\n" + i);t.b("    name=\"comment\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.d("fields.comment.placeholder",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.comment.required",c,p,1),c,p,0,3331,3341,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.d("fields.comment.locked",c,p,1),c,p,0,3404,3414,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b(">");if(t.s(t.d("fields.comment.prefilled",c,p,1),c,p,0,3474,3504,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(t.v(t.d("fields.comment.prefilled",c,p,0)));});c.pop();}t.b("</textarea>");t.b("\n" + i);t.b("</div>");t.b("\n" + i);});c.pop();}return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field\">\n  <label\n    for=\"input-name\"\n    class=\"bookingjs-form-label label-name\">\n    {{ fields.name.placeholder }}\n  </label>\n  <input\n    id=\"input-name\"\n    class=\"bookingjs-form-input input-name\"\n    type=\"text\"\n    name=\"name\"\n    placeholder=\"{{ fields.name.placeholder }}\"\n    {{# fields.name.prefilled }} value=\"{{ fields.name.prefilled }}\" {{/ fields.name.prefilled }}\n    {{# fields.name.locked }} readonly {{/ fields.name.locked }}\n    required\n  />\n</div>\n\n<div class=\"bookingjs-form-field\">\n  <label\n    for=\"input-email\"\n    class=\"bookingjs-form-label label-email\">\n    {{ fields.email.placeholder }}\n  </label>\n  <input\n    id=\"input-email\"\n    class=\"bookingjs-form-input input-email\"\n    type=\"email\"\n    name=\"email\"\n    placeholder=\"{{ fields.email.placeholder }}\"\n    {{# fields.email.prefilled }} value=\"{{ fields.email.prefilled }}\" {{/ fields.email.prefilled }}\n    {{# fields.email.locked }} readonly {{/ fields.email.locked }}\n    required\n  />\n</div>\n\n{{# fields.phone.enabled }}\n<div class=\"bookingjs-form-field\">\n  <label\n    for=\"input-phone\"\n    class=\"bookingjs-form-label label-phone\">\n    {{ fields.phone.placeholder }}\n  </label>\n  <input\n    id=\"input-phone\"\n    class=\"bookingjs-form-input input-phone\"\n    type=\"tel\"\n    name=\"phone\"\n    placeholder=\"{{ fields.phone.placeholder }}\"\n    {{# fields.phone.prefilled }} value=\"{{ fields.phone.prefilled }}\" {{/ fields.phone.prefilled }}\n    {{# fields.phone.required }} required {{/ fields.phone.required }}\n    {{# fields.phone.locked }} readonly {{/ fields.phone.locked }}\n  />\n</div>\n{{/ fields.phone.enabled }}\n\n{{# fields.voip.enabled }}\n<div class=\"bookingjs-form-field\">\n  <label\n    for=\"input-voip\"\n    class=\"bookingjs-form-label label-voip\">\n    {{ fields.voip.placeholder }}\n  </label>\n  <input\n    id=\"input-voip\"\n    class=\"bookingjs-form-input input-voip\"\n    type=\"text\"\n    name=\"voip\"\n    placeholder=\"{{ fields.voip.placeholder }}\"\n    {{# fields.voip.prefilled }} value=\"{{ fields.voip.prefilled }}\" {{/ fields.voip.prefilled }}\n    {{# fields.voip.required }} required {{/ fields.voip.required }}\n    {{# fields.voip.locked }} readonly {{/ fields.voip.locked }}\n  />\n</div>\n{{/ fields.voip.enabled }}\n\n{{# fields.location.enabled }}\n<div class=\"bookingjs-form-field\">\n  <label\n    for=\"input-location\"\n    class=\"bookingjs-form-label label-location\">\n    {{ fields.location.placeholder }}\n  </label>\n  <input\n    id=\"input-location\"\n    class=\"bookingjs-form-input input-location\"\n    type=\"text\"\n    name=\"location\"\n    placeholder=\"{{ fields.location.placeholder }}\"\n    {{# fields.location.prefilled }} value=\"{{ fields.location.prefilled }}\" {{/ fields.location.prefilled }}\n    {{# fields.location.required }} required {{/ fields.location.required }}\n    {{# fields.location.locked }} readonly {{/ fields.location.locked }}\n  />\n</div>\n{{/ fields.location.enabled }}\n\n{{# fields.comment.enabled }}\n<div class=\"bookingjs-form-field\">\n  <label\n    for=\"input-comment\"\n    class=\"bookingjs-form-label label-comment\">\n    {{ fields.comment.placeholder }}\n  </label>\n  <textarea\n    id=\"input-comment\"\n    class=\"bookingjs-form-input bookingjs-form-input--textarea input-comment\"\n    rows=\"3\"\n    name=\"comment\"\n    placeholder=\"{{ fields.comment.placeholder }}\"\n    {{# fields.comment.required }} required {{/ fields.comment.required }}\n    {{# fields.comment.locked }} readonly {{/ fields.comment.locked }}>{{# fields.comment.prefilled }}{{ fields.comment.prefilled }}{{/ fields.comment.prefilled }}</textarea>\n</div>\n{{/ fields.comment.enabled }}\n", H);return T; }();
+
+/***/ }),
+/* 68 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	var H = __webpack_require__(57);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-bookpage\">");t.b("\n" + i);t.b("  <a class=\"bookingjs-bookpage-close\" href=\"#\">");t.b(t.t(t.f("closeIcon",c,p,0)));t.b("</a>");t.b("\n" + i);t.b("  <div class=\"bookingjs-bookpage-header\">");t.b("\n" + i);t.b("    <h2 class=\"bookingjs-bookpage-date\">");t.b(t.v(t.f("chosenDate",c,p,0)));t.b("</h2>");t.b("\n" + i);t.b("    <h3 class=\"bookingjs-bookpage-time\">");t.b(t.v(t.f("chosenTime",c,p,0)));t.b("</h3>");t.b("\n" + i);if(t.s(t.f("allocatedResource",c,p,1),c,p,0,293,465,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("      <span class=\"bookingjs-bookpage-resource-prefix\">");t.b(t.v(t.f("allocatedResourcePrefix",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <h3 class=\"bookingjs-bookpage-resource\">");t.b(t.v(t.f("allocatedResource",c,p,0)));t.b("</h3>");t.b("\n" + i);});c.pop();}t.b("  </div>");t.b("\n" + i);t.b("  <form class=\"bookingjs-form\" action=\"#\">");t.b("\n" + i);t.b("    <div class=\"bookingjs-form-box\">");t.b("\n" + i);t.b("      <div class=\"bookingjs-form-success-message\">");t.b("\n" + i);t.b("        <div class=\"title\">");t.b(t.v(t.f("successMessageTitle",c,p,0)));t.b("</div>");t.b("\n" + i);t.b("        <div class=\"body\">");t.b(t.t(t.f("successMessageBody",c,p,0)));t.b("</div>");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("      <div class=\"bookingjs-form-fields\">");t.b("\n" + i);t.b(t.rp("<formFields0",c,p,"        "));t.b("      </div>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <button class=\"bookingjs-form-button\" type=\"submit\">");t.b("\n" + i);t.b("      <span class=\"inactive-text\">");t.b(t.v(t.f("submitText",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"loading-text\">");t.b(t.t(t.f("loadingIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"error-text\">");t.b(t.t(t.f("errorIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"success-text\">");t.b(t.t(t.f("checkmarkIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("    </button>");t.b("\n" + i);t.b("  </form>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {"<formFields0":{name:"formFields", partials: {}, subs: {  }}}, subs: {  }}, "<div class=\"bookingjs-bookpage\">\n  <a class=\"bookingjs-bookpage-close\" href=\"#\">{{& closeIcon }}</a>\n  <div class=\"bookingjs-bookpage-header\">\n    <h2 class=\"bookingjs-bookpage-date\">{{ chosenDate }}</h2>\n    <h3 class=\"bookingjs-bookpage-time\">{{ chosenTime }}</h3>\n    {{#allocatedResource}}\n      <span class=\"bookingjs-bookpage-resource-prefix\">{{ allocatedResourcePrefix }}</span>\n      <h3 class=\"bookingjs-bookpage-resource\">{{ allocatedResource }}</h3>\n    {{/allocatedResource}}\n  </div>\n  <form class=\"bookingjs-form\" action=\"#\">\n    <div class=\"bookingjs-form-box\">\n      <div class=\"bookingjs-form-success-message\">\n        <div class=\"title\">{{ successMessageTitle }}</div>\n        <div class=\"body\">{{& successMessageBody }}</div>\n      </div>\n      <div class=\"bookingjs-form-fields\">\n        {{> formFields }}\n      </div>\n    </div>\n    <button class=\"bookingjs-form-button\" type=\"submit\">\n      <span class=\"inactive-text\">{{ submitText }}</span>\n      <span class=\"loading-text\">{{& loadingIcon }}</span>\n      <span class=\"error-text\">{{& errorIcon }}</span>\n      <span class=\"success-text\">{{& checkmarkIcon }}</span>\n    </button>\n  </form>\n</div>\n", H);return T; }();
+
+/***/ }),
+/* 69 */
+/***/ (function(module, exports) {
+
+	module.exports = "<svg class=\"bookingjs-closeicon\" viewBox=\"0 0 90 90\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>close-icon</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"close-icon\" sketch:type=\"MSLayerGroup\" fill=\"#000000\"><path d=\"M58,45 L87.2,15.8 C90.9,12.1 90.9,6.3 87.3,2.7 C83.7,-0.9 77.8,-0.8 74.2,2.8 L45,32 L15.8,2.8 C12.1,-0.9 6.3,-0.9 2.7,2.7 C-0.9,6.3 -0.8,12.2 2.8,15.8 L32,45 L2.8,74.2 C-0.9,77.9 -0.9,83.7 2.7,87.3 C6.3,90.9 12.2,90.8 15.8,87.2 L45,58 L74.2,87.2 C77.9,90.9 83.7,90.9 87.3,87.3 C90.9,83.7 90.8,77.8 87.2,74.2 L58,45 L58,45 Z\" id=\"Shape\" sketch:type=\"MSShapeGroup\"></path></g></g></svg>"
+
+/***/ }),
+/* 70 */
 /***/ (function(module, exports) {
 
 	module.exports = "<svg viewBox=\"0 0 38 26\" x=\"0px\" y=\"0px\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><path fill=\"#fff\" d=\"M4.59255916,9.14153015 L4.59255916,9.14153015 L4.59255917,9.14153016 C3.61060488,8.15335155 2.0152224,8.15314806 1.03260582,9.1419932 L0.737322592,9.43914816 C-0.245558943,10.4282599 -0.245836003,12.0327396 0.736862454,13.0216671 L12.8967481,25.2586313 C13.4826504,25.8482474 14.3060779,26.1023412 15.1093609,25.9623831 L15.1946218,25.9520176 C15.7962843,25.9101633 16.3621851,25.6553951 16.7974015,25.21742 L37.2642739,4.6208133 C38.2456495,3.63321696 38.2453889,2.02851586 37.2626092,1.03950653 L36.967326,0.742351578 C35.9843771,-0.246827998 34.390543,-0.247513927 33.4085772,0.740676315 L15.4197831,18.8434968 L14.826599,19.4404409 L14.2334149,18.8434968 L4.59255916,9.14153015 Z\" id=\"Path\"></path></svg>"
 
 /***/ }),
-/* 68 */
+/* 71 */
 /***/ (function(module, exports) {
 
 	module.exports = "<svg class=\"bookingjs-closeicon\" viewBox=\"0 0 90 90\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>error-icon</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"error-icon\" sketch:type=\"MSLayerGroup\" fill=\"#FFFFFF\"><path d=\"M58,45 L87.2,15.8 C90.9,12.1 90.9,6.3 87.3,2.7 C83.7,-0.9 77.8,-0.8 74.2,2.8 L45,32 L15.8,2.8 C12.1,-0.9 6.3,-0.9 2.7,2.7 C-0.9,6.3 -0.8,12.2 2.8,15.8 L32,45 L2.8,74.2 C-0.9,77.9 -0.9,83.7 2.7,87.3 C6.3,90.9 12.2,90.8 15.8,87.2 L45,58 L74.2,87.2 C77.9,90.9 83.7,90.9 87.3,87.3 C90.9,83.7 90.8,77.8 87.2,74.2 L58,45 L58,45 Z\" id=\"Shape\" sketch:type=\"MSShapeGroup\"></path></g></g></svg>"
 
 /***/ }),
-/* 69 */
+/* 72 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var H = __webpack_require__(54);
+	var H = __webpack_require__(57);
 	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-poweredby\">");t.b("\n" + i);t.b("  <a href=\"http://timekit.io?utm_medium=link&utm_source=");t.b(t.v(t.f("campaignSource",c,p,0)));t.b("&utm_campaign=");t.b(t.v(t.f("campaignName",c,p,0)));t.b("&utm_content=powered-by\" target=\"_blank\">");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("timekitLogo",c,p,0)));t.b("\n" + i);t.b("    <span>Powered by Timekit</span>");t.b("\n" + i);t.b("  </a>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-poweredby\">\n  <a href=\"http://timekit.io?utm_medium=link&utm_source={{ campaignSource }}&utm_campaign={{ campaignName }}&utm_content=powered-by\" target=\"_blank\">\n    {{& timekitLogo }}\n    <span>Powered by Timekit</span>\n  </a>\n</div>\n", H);return T; }();
 
 /***/ }),
-/* 70 */
+/* 73 */
 /***/ (function(module, exports) {
 
 	module.exports = "<svg class=\"bookingjs-timekitlogo\" viewBox=\"0 0 513 548\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><title>timekit-logo</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\"><g id=\"timekit-logo\" transform=\"translate(9.000000, 9.000000)\" fill=\"#AEAEAE\"><path d=\"M55.2163313,275.621588 L198.50357,163.134257 C227.693194,140.219007 274.527519,140.836287 303.106573,164.516436 L439.222777,277.300154 L294.687237,386.088734 C265.004826,408.430003 217.635083,407.547293 188.834846,384.15411 L55.2163313,275.621588 Z M29.1450782,296.088768 L22.5453033,301.269906 C-6.64628574,324.186699 -6.96035256,361.73094 21.8567615,385.137832 L188.814783,520.750588 C217.626101,544.152772 265.020127,545.031261 294.666324,522.71725 L471.933566,389.292269 C501.58244,366.976243 502.456142,329.694313 473.870647,306.008826 L465.168534,298.798395 L304.79022,419.511467 C268.948833,446.488455 213.042282,445.460488 178.242802,417.194379 L29.1450782,296.088768 Z\" id=\"Base-layer\"></path><path d=\"M303.106573,18.9036609 L473.870647,160.396052 C502.470886,184.093754 501.573077,221.370515 471.912654,243.695235 L294.687237,377.088734 C265.004826,399.430003 217.635083,398.547293 188.834846,375.15411 L21.8366979,239.50876 C-6.94564818,216.130109 -6.64628574,178.573924 22.5453033,155.657132 L198.50357,17.5214821 C227.708304,-5.40562963 274.527519,-4.77648801 303.106573,18.9036609 Z M292.387775,31.8399435 C269.89295,13.2010897 231.857075,12.6958644 208.877526,30.7359084 L32.9192595,168.871558 C12.2117199,185.127966 12.006219,209.880161 32.4287426,226.468491 L199.426891,362.113841 C222.242635,380.64608 261.076006,381.360119 284.584254,363.666001 L461.809671,230.272501 C482.810002,214.466035 483.387128,190.098964 463.151849,173.332334 L292.387775,31.8399435 Z\" id=\"Middle-layer\" stroke=\"#AEAEAE\" stroke-width=\"18\"></path></g></g></svg>"

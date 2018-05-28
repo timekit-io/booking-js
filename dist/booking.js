@@ -494,8 +494,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * @type {Function}
 	   * @return {Object}
 	   */
-	  TK.include = function() {
-	    includes = Array.prototype.slice.call(arguments);
+	  TK.include = function(arg) {
+	    if (Array.isArray(arg)) includes = arg
+	    else includes = Array.prototype.slice.call(arguments);
 	    return this;
 	  };
 	
@@ -544,6 +545,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	
 	    var baseUrl = utils.buildUrl('/accounts/google/signup', config);
+	    var finalUrl = baseUrl + '?Timekit-App=' + app + (data && data.callback ? '&callback=' + data.callback : '')
+	
+	    if(shouldAutoRedirect && window) {
+	      window.location.href = finalUrl;
+	    } else {
+	      return finalUrl;
+	    }
+	
+	  };
+	
+	  /**
+	   * Redirect to the Microsoft signup/login page
+	   * Kept this in this file (not endpoints.js) because of internal dependencies to headers, config etc.
+	   * @type {Function}
+	   * @return {String}
+	   */
+	  TK.accountMicrosoftSignup = function(data, shouldAutoRedirect) {
+	
+	    var app = config.app;
+	
+	    // If app header exists (using .asApp() function), use that
+	    if (headers['Timekit-App']) {
+	      app = headers['Timekit-App'];
+	    }
+	
+	    var baseUrl = utils.buildUrl('/accounts/microsoft/signup', config);
 	    var finalUrl = baseUrl + '?Timekit-App=' + app + (data && data.callback ? '&callback=' + data.callback : '')
 	
 	    if(shouldAutoRedirect && window) {
@@ -3663,16 +3690,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 	
 	  /**
-	   * Initiate an account sync
+	   * Initiate a Google account sync
 	   * @type {Function}
 	   * @return {Promise}
 	   */
-	  TK.accountSync = function(data) {
+	  TK.accountGoogleSync = function() {
 	
 	    return TK.makeRequest({
 	      url: '/accounts/sync',
-	      method: 'get',
-	      params: data
+	      method: 'post'
+	    });
+	
+	  };
+	
+	  /**
+	   * Initiate a Microsoft account sync
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.accountMicrosoftSync = function() {
+	
+	    return TK.makeRequest({
+	      url: '/accounts/microsoft/sync',
+	      method: 'post'
 	    });
 	
 	  };
@@ -4066,6 +4106,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 	
 	  /**
+	   * Fetch availability on the new availability endpoint (successor to findtime)
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.fetchAvailability = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/availability',
+	      method: 'post',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
 	   * Get all user auth credentials
 	   * @type {Function}
 	   * @return {Promise}
@@ -4231,6 +4286,185 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 	
 	  /**
+	   * Get all projects
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getProjects = function() {
+	
+	    return TK.makeRequest({
+	      url: '/projects',
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Get a project
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getProject = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/projects/' + data.id,
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Get a project for public use on hosted page
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getHostedProject = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/projects/hosted/' + data.slug,
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Get a project for embedding on website
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.getEmbedProject = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/projects/embed/' + data.id,
+	      method: 'get'
+	    });
+	
+	  };
+	
+	  /**
+	   * Create a new project
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.createProject = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/projects',
+	      method: 'post',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Update an existing project
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.updateProject = function(data) {
+	
+	    var id = data.id;
+	    delete data.id;
+	
+	    return TK.makeRequest({
+	      url: '/projects/' + id,
+	      method: 'put',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Delete a project
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.deleteProject = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/projects/' + data.id,
+	      method: 'delete'
+	    });
+	
+	  };
+	
+	  /**
+	   * Add a resource to a project
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.addProjectResource = function(data) {
+	
+	    var id = data.id;
+	    delete data.id;
+	
+	    return TK.makeRequest({
+	      url: '/projects/' + id + '/resources',
+	      method: 'post',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
+	   * Set resources for a project
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.setProjectResources = function(data) {
+	
+	    var id = data.id;
+	    delete data.id;
+	
+	    return TK.makeRequest({
+	      url: '/projects/' + id + '/resources',
+	      method: 'put',
+	      data: data.resources
+	    });
+	
+	  };
+	
+	  /**
+	   * Remove a resource from a project
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.removeProjectResource = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/projects/' + data.id + '/resources/' + data.resourceId,
+	      method: 'delete'
+	    });
+	
+	  };
+	
+	  return TK;
+	
+	}
+
+
+/***/ }),
+/* 33 */
+/***/ (function(module, exports) {
+
+	module.exports = function (TK) {
+	
+	  /**
+	   * Initiate an account sync
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.accountSync = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/accounts/sync',
+	      method: 'get',
+	      params: data
+	    });
+	
+	  };
+	
+	  /**
 	   * Get widgets
 	   * @type {Function}
 	   * @return {Promise}
@@ -4273,7 +4507,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 	
 	  /**
-	   * Get public widget by slug
+	   * Get public widget by id
 	   * @type {Function}
 	   * @return {Promise}
 	   */
@@ -4332,17 +4566,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    });
 	
 	  };
-	
-	  return TK;
-	
-	}
-
-
-/***/ }),
-/* 33 */
-/***/ (function(module, exports) {
-
-	module.exports = function (TK) {
 	
 	  /**
 	   * Create a new user with the given properties
@@ -4563,9 +4786,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  el: '#bookingjs',
 	  name: '',
 	  autoload: true,
+	  debug: false,
 	  disable_remote_load: false,
 	  disable_confirm_page: false,
-	  debug: false,
+	  create_booking_response_include: ['attributes', 'event', 'user'],
 	  ui: {},
 	  availability: {},
 	  booking: {},
@@ -5423,7 +5647,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	
 	    var request = sdk
-	    .include('attributes', 'event', 'user')
+	    .include(getConfig().create_booking_response_include)
 	    .headers(requestHeaders)
 	    .createBooking(args);
 	

@@ -4195,9 +4195,9 @@ time-stamp@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/time-stamp/-/time-stamp-2.0.0.tgz#95c6a44530e15ba8d6f4a3ecb8c3a3fac46da357"
 
-timekit-sdk@^1.12.0:
-  version "1.12.0"
-  resolved "https://registry.yarnpkg.com/timekit-sdk/-/timekit-sdk-1.12.0.tgz#581749307eac6695fe5b98b404268b9d033ecae7"
+timekit-sdk@^1.16.0:
+  version "1.16.0"
+  resolved "https://registry.yarnpkg.com/timekit-sdk/-/timekit-sdk-1.16.0.tgz#e3511d4edc52b78fbd284485bed47cb9ef4105af"
   dependencies:
     axios "^0.12.0"
     base-64 "^0.1.0"

@@ -133,4 +133,35 @@ describe('Advanced configuration', function() {
 
   });
 
+  it('should be able to set which dynamic includes that CreateBooking request returns in response', function(done) {
+
+    mockAjax.createBookingWithCustomIncludes();
+
+    var config = {
+      createBookingResponseInclude: ['provider_event', 'attributes', 'event', 'user']
+    }
+    createWidget(config);
+
+    setTimeout(function() {
+
+      interact.clickEvent();
+
+      setTimeout(function() {
+
+        interact.fillSubmit();
+
+        setTimeout(function() {
+
+          var request = jasmine.Ajax.requests.mostRecent();
+          var requestData = JSON.parse(request.params);
+
+          expect(request.url).toBe('https://api.timekit.io/v2/bookings?include=provider_event,attributes,event,user');
+          done();
+
+        }, 200);
+      }, 500);
+    }, 500);
+
+  });
+
 });

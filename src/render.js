@@ -592,7 +592,7 @@ function InitRender(deps) {
       args.resource_id = eventData.resources[0].id
     }
 
-    if (getConfig().reminders) args.reminders = getConfig().reminders
+    if (getConfig().reminders) args.event_notifications = getConfig().reminders
 
     $.extend(true, args, getConfig().booking);
 

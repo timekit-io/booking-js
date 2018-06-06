@@ -71,7 +71,7 @@ describe('Error handling', function() {
 
   });
 
-  it('should show error if an invalid FindTime parameter is sent', function(done) {
+  it('should show error if an invalid Fetch Availability parameter is sent', function(done) {
 
     mockAjax.findTimeWithError()
 
@@ -87,7 +87,7 @@ describe('Error handling', function() {
     setTimeout(function() {
 
       expect($('.bookingjs-error')).toBeInDOM();
-      expect($('.bookingjs-error-text-message')).toContainText('An error with Timekit FindTime occured');
+      expect($('.bookingjs-error-text-message')).toContainText('An error with Timekit Fetch Availability occured');
 
       done()
 
@@ -122,7 +122,7 @@ describe('Error handling', function() {
         setTimeout(function() {
 
           expect($('.bookingjs-error')).toBeInDOM();
-          expect($('.bookingjs-error-text-message')).toContainText('An error with Timekit CreateBooking occured');
+          expect($('.bookingjs-error-text-message')).toContainText('An error with Timekit Create Booking occured');
 
           done();
 

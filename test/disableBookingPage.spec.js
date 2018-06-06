@@ -24,7 +24,7 @@ describe('Disable booking page', function() {
     var clickedTimeslot;
 
     var config = {
-      disableConfirmPage: true,
+      disable_confirm_page: true,
       callbacks: {
         clickTimeslot: function (response) {
           clickedTimeslot = response;

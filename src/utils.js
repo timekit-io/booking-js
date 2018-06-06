@@ -2,38 +2,71 @@
 
 require('console-polyfill');
 
-/*
- * Utily functions
- */
+function InitUtils(deps) {
 
-module.exports = {
+  var getConfig = deps.config.retrieve;
 
-  isFunction: function(object) {
+  var isFunction = function(object) {
    return !!(object && object.constructor && object.call && object.apply);
-  },
+  }
 
-  isArray: function(object) {
+  var isArray = function(object) {
    return object && object.constructor === Array;
-  },
+  }
 
-  doCallback: function(hook, config, arg, deprecated) {
-    if(config.callbacks && this.isFunction(config.callbacks[hook])) {
-      if (deprecated) { this.logDeprecated(hook + ' callback has been replaced, please see docs'); }
-      config.callbacks[hook](arg);
+  var doCallback = function(hook, arg, deprecated) {
+    if(getConfig().callbacks && this.isFunction(getConfig().callbacks[hook])) {
+      if (deprecated) {
+        this.logDeprecated(hook + ' callback has been replaced, please see docs');
+      }
+      getConfig().callbacks[hook](arg);
     }
-    this.logDebug(['Trigger callback "' + hook + '" with arguments:', arg], config);
-  },
+    this.logDebug(['Trigger callback "' + hook + '" with arguments:', arg]);
+  }
 
-  logDebug: function(message, config) {
-    if (config && config.debug) console.log('TimekitBooking Debug: ', message);
-  },
+  var logDebug = function(message) {
+    if (getConfig().debug) console.log('TimekitBooking Debug: ', message);
+  }
 
-  logError: function(message) {
+  var logError = function(message) {
     console.warn('TimekitBooking Error: ', message);
-  },
+  }
 
-  logDeprecated: function(message) {
+  var logDeprecated = function(message) {
     console.warn('TimekitBooking Deprecated: ', message);
   }
 
-};
+  // Helper to decide if it's an embedded remote project
+  var isEmbeddedProject = function(suppliedConfig) {
+    return typeof suppliedConfig.project_id !== 'undefined'
+  };
+
+  // Helper to decide if it's an hosted remote project
+  var isHostedProject = function(suppliedConfig) {
+    return typeof suppliedConfig.project_slug !== 'undefined'
+  };
+
+  // Helper to decide if it's an embedded or hosted remote project
+  var isRemoteProject = function(suppliedConfig) {
+    return (isEmbeddedProject(suppliedConfig) || isHostedProject(suppliedConfig))
+  };
+
+  var doesConfigExist = function (suppliedConfig) {
+    return (suppliedConfig !== undefined && typeof suppliedConfig === 'object' && !$.isEmptyObject(suppliedConfig))
+  }
+
+  return {
+    isFunction: isFunction,
+    isArray: isArray,
+    doCallback: doCallback,
+    logDebug: logDebug,
+    logError: logError,
+    logDeprecated: logDeprecated,
+    isEmbeddedProject: isEmbeddedProject,
+    isHostedProject: isHostedProject,
+    isRemoteProject: isRemoteProject,
+    doesConfigExist: doesConfigExist
+  }
+}
+
+module.exports = InitUtils

@@ -21,7 +21,9 @@ describe('Availability view', function() {
   it('should be able to render list view', function(done) {
 
     createWidget({
-      availabilityView: 'listing'
+      ui: {
+        availability_view: 'listing'
+      }
     });
 
     expect($('.fc-listing-view')).toBeInDOM();

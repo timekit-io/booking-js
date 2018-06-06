@@ -21,14 +21,16 @@ describe('Basic configuration', function() {
   it('should be able to set the name', function(done) {
 
     var config = {
-      name: 'Demo Name'
+      ui: {
+        display_name: 'Demo Name'
+      }
     }
     createWidget(config);
 
     expect($('.bookingjs-displayname')).toBeInDOM();
     expect($('.bookingjs-displayname')).toBeVisible();
     expect($('.bookingjs-displayname')).toContainElement('span');
-    expect($('.bookingjs-displayname span')).toContainText(config.name);
+    expect($('.bookingjs-displayname span')).toContainText(config.ui.display_name);
 
     done()
 
@@ -37,7 +39,9 @@ describe('Basic configuration', function() {
   it('should be able to set an avatar image', function(done) {
 
     var config = {
-      avatar: '/base/misc/avatar-doc.jpg'
+      ui: {
+        avatar: '/base/misc/avatar-doc.jpg'
+      }
     }
     createWidget(config);
 
@@ -46,42 +50,26 @@ describe('Basic configuration', function() {
     expect($('.bookingjs-avatar')).toContainElement('img');
 
     var source = $('.bookingjs-avatar img').prop('src');
-    var contains = source.indexOf(config.avatar) > -1;
+    var contains = source.indexOf(config.ui.avatar) > -1;
     expect(contains).toBe(true);
 
     done()
 
   });
 
-  it('should be able to set app slug in the root-level config key', function(done) {
+  it('should be able to set app key in the root-level config key', function(done) {
 
-    var appName = 'my-test-app';
+    var appKey = '123';
 
     var config = {
-      app: appName
+      app_key: appKey
     }
     var widget = createWidget(config);
 
-    expect(widget.getConfig().app).toBe(appName)
-    expect(widget.timekitSdk.getConfig().app).toBe(appName)
+    expect(widget.getConfig().app_key).toBe(appKey)
+    expect(widget.timekitSdk.getConfig().appKey).toBe(appKey)
 
-    setTimeout(function() {
-
-      interact.clickEvent();
-
-      setTimeout(function() {
-
-        interact.fillSubmit();
-
-        setTimeout(function() {
-
-          var request = jasmine.Ajax.requests.mostRecent();
-          expect(request.requestHeaders['Timekit-App']).toBe(appName);
-          done();
-
-        }, 200);
-      }, 500);
-    }, 500);
+    done()
 
   });
 
@@ -109,7 +97,7 @@ describe('Basic configuration', function() {
   });
 
   it('should have test mode ribbon when set', function(done) {
-    
+
     mockAjax.findTimeOnTestModeApp();
 
     createWidget();

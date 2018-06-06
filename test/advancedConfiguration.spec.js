@@ -19,14 +19,11 @@ describe('Advanced configuration', function() {
     jasmine.Ajax.uninstall();
   });
 
-  it('should go to the first upcoming event when goToFirstEvent is set', function(done) {
+  it('should go to the first upcoming event automatically', function(done) {
 
     mockAjax.findTimeWithDateInFuture();
 
-    var config = {
-      goToFirstEvent: true
-    }
-    var widget = createWidget(config);
+    var widget = createWidget();
 
     setTimeout(function() {
 
@@ -40,35 +37,6 @@ describe('Advanced configuration', function() {
         var scrollable = $('.bookingjs-calendar').find('.fc-scroller');
         var scrollTop = scrollable.scrollTop();
         expect(scrollTop).not.toBe(321);
-
-        done();
-
-      }, 300);
-    }, 100);
-
-  });
-
-  it('should go to current date when goToFirstEvent is disabled', function(done) {
-
-    mockAjax.findTimeWithDateInFuture();
-
-    var config = {
-      goToFirstEvent: false
-    }
-    var widget = createWidget(config);
-
-    setTimeout(function() {
-
-      var today = moment();
-
-      var calendarDate = widget.fullCalendar('getDate');
-      expect(calendarDate.format('YYYY-MM-DD')).toBe(today.format('YYYY-MM-DD'));
-
-      setTimeout(function() {
-
-        var scrollable = $('.bookingjs-calendar').find('.fc-scroller');
-        var scrollTop = scrollable.scrollTop();
-        expect(scrollTop).toBe(321);
 
         done();
 
@@ -107,7 +75,8 @@ describe('Advanced configuration', function() {
 
     var widget = new TimekitBooking();
     var config = {
-      widgetId: '12345',
+      app_key: '12345',
+      project_id: '12345',
       callbacks: {
         renderStarted: updateConfig
       }
@@ -122,7 +91,7 @@ describe('Advanced configuration', function() {
       expect(config.callbacks.renderStarted).toHaveBeenCalled();
 
       var request = jasmine.Ajax.requests.first();
-      expect(request.url).toBe('https://api.timekit.io/v2/widgets/embed/12345');
+      expect(request.url).toBe('https://api.timekit.io/v2/projects/embed/12345');
 
       var widgetConfig = widget.getConfig()
 
@@ -134,12 +103,46 @@ describe('Advanced configuration', function() {
 
   });
 
+  it('should be able to inject custom fullcalendar settings and register callbacks', function(done) {
+
+    mockAjax.all();
+
+    function fcCallback () {}
+
+    var config = {
+      fullcalendar: {
+        buttonText: {
+          today: 'idag'
+        }
+      },
+      callbacks: {
+        fullCalendarInitialized: function () {}
+      }
+    }
+
+    spyOn(config.callbacks, 'fullCalendarInitialized').and.callThrough();
+
+    createWidget(config);
+
+    setTimeout(function() {
+
+      expect(config.callbacks.fullCalendarInitialized).toHaveBeenCalled();
+
+      var todayButton = $('.fc-today-button')
+      expect(todayButton.text()).toBe('idag')
+
+      done();
+
+    }, 600);
+
+  });
+
   it('should be able to set which dynamic includes that CreateBooking request returns in response', function(done) {
 
     mockAjax.createBookingWithCustomIncludes();
 
     var config = {
-      createBookingResponseInclude: ['provider_event', 'attributes', 'event', 'user']
+      create_booking_response_include: ['provider_event', 'attributes', 'event', 'user']
     }
     createWidget(config);
 

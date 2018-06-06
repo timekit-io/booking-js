@@ -9,21 +9,18 @@
  </head>
  <body>
 
+  <div id="bookingjs"></div>
   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script type="text/javascript" src="../dist/booking.js"></script>
-  <div id="bookingjs">
-    <script type="text/javascript">
-      TimekitBooking().init({
-        name:     'Doc Brown',
-        email:    'marty.mcfly@timekit.io',
-        apiToken: 'XT1JO879JF1qUXXzmETD5ucgxaDwsFsd',
-        calendar: '31078529-08db-4778-a21e-2bc8ddff806e',
-        avatar:   '../misc/avatar-doc.jpg',
-        bookingGraph: 'group_customer',
-        app:      'back-to-the-future'
-      });
-    </script>
-  </div>
+  <script type="text/javascript">
+    TimekitBooking().init({
+      app_key: 'live_widget_key_yYXHsUurvCUctNYflzGDMqEJo6mol0Yo',
+      project_id: 'ce04b164-49c5-4ae3-976e-daf698c67fbf',
+      booking: {
+        graph: 'group_customer'
+      }
+    });
+  </script>
 
 </body>
 </html>

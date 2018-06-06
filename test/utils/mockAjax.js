@@ -11,16 +11,16 @@ module.exports = {
     var tomorrow = moment().add(1, 'day');
 
     jasmine.Ajax.stubRequest(
-      'https://api.timekit.io/v2/findtime'
+      'https://api.timekit.io/v2/availability'
     ).andReturn({
       status: 200,
       statusText: 'HTTP/1.1 200 OK',
       contentType: 'application/json',
       responseText: '{"data":[' +
-        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '"},' +
-        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '"},' +
-        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '"},' +
-        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '"}' +
+        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]},' +
+        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]},' +
+        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]},' +
+        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]}' +
       ']}'
     });
 
@@ -33,7 +33,7 @@ module.exports = {
     var tomorrow = moment().add(1, 'day');
 
     jasmine.Ajax.stubRequest(
-      'https://api.timekit.io/v2/findtime'
+      'https://api.timekit.io/v2/availability'
     ).andReturn({
       status: 200,
       statusText: 'HTTP/1.1 200 OK',
@@ -42,10 +42,10 @@ module.exports = {
         "Timekit-TestMode": 'true'
       },
       responseText: '{"data":[' +
-        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '"},' +
-        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '"},' +
-        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '"},' +
-        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '"}' +
+        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]},' +
+        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]},' +
+        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]},' +
+        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]}' +
       ']}'
     });
 
@@ -57,13 +57,13 @@ module.exports = {
     var future = moment().add(1, 'month').startOf('day');
 
     jasmine.Ajax.stubRequest(
-      'https://api.timekit.io/v2/findtime'
+      'https://api.timekit.io/v2/availability'
     ).andReturn({
       status: 200,
       statusText: 'HTTP/1.1 200 OK',
       contentType: 'application/json',
       responseText: '{"data":[' +
-        '{"start":"' + future.format() + '","end":"' + future.add(1, 'hour').format() + '"}' +
+        '{"start":"' + future.format() + '","end":"' + future.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]}' +
       ']}'
     });
 
@@ -73,7 +73,7 @@ module.exports = {
   findTimeWithNoTimeslots: function() {
 
     jasmine.Ajax.stubRequest(
-      'https://api.timekit.io/v2/findtime'
+      'https://api.timekit.io/v2/availability'
     ).andReturn({
       status: 200,
       statusText: 'HTTP/1.1 200 OK',
@@ -87,7 +87,7 @@ module.exports = {
   findTimeWithError: function() {
 
     jasmine.Ajax.stubRequest(
-      'https://api.timekit.io/v2/findtime'
+      'https://api.timekit.io/v2/availability'
     ).andReturn({
       status: 422,
       statusText: 'HTTP/1.1 422 Unprocessable Entity',
@@ -104,30 +104,17 @@ module.exports = {
     var tomorrow = moment().add(1, 'day');
 
     jasmine.Ajax.stubRequest(
-      'https://api.timekit.io/v2/findtime/team'
+      'https://api.timekit.io/v2/availability'
     ).andReturn({
       status: 200,
       statusText: 'HTTP/1.1 200 OK',
       contentType: 'application/json',
       responseText: '{"data":[' +
-        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '","users": [ { "name": "Marty McFly", "email": "marty.mcfly@timekit.io", "user_id": "bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2", "calendar_ids": [ "22f86f0c-ee80-470c-95e8-dadd9d05edd2" ], "token": "nvHfRSlhvsnlg4rS7Wt28Ty47qdgegwSu3YK7hPW" }, { "name": "Doc Brown", "email": "doc.brown@timekit.io", "user_id": "gxa0b9fa-36aa-4ae6-8096-f3b20fbed1d2", "calendar_ids": [ "11d86f0c-ee80-470c-95e8-dadd9d05edd2" ], "token": "dwHfRSlhvsnlg4rS7Wt28Ty47qdgegwSu3YK7hPW" } ]},' +
-        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '","users": [ { "name": "Marty McFly", "email": "marty.mcfly@timekit.io", "user_id": "bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2", "calendar_ids": [ "22f86f0c-ee80-470c-95e8-dadd9d05edd2" ], "token": "nvHfRSlhvsnlg4rS7Wt28Ty47qdgegwSu3YK7hPW" } ]},' +
-        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '","users": [ { "name": "Doc Brown", "email": "doc.brown@timekit.io", "user_id": "gxa0b9fa-36aa-4ae6-8096-f3b20fbed1d2", "calendar_ids": [ "11d86f0c-ee80-470c-95e8-dadd9d05edd2" ], "token": "dwHfRSlhvsnlg4rS7Wt28Ty47qdgegwSu3YK7hPW" } ]}' +
+        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2","gxa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]},' +
+        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2","gxa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]},' +
+        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2","gxa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]},' +
+        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2","gxa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]}' +
       ']}'
-    });
-
-  },
-
-  // Get user timezone endpoint
-  userTimezone: function() {
-
-    jasmine.Ajax.stubRequest(
-      'https://api.timekit.io/v2/users/timezone/marty.mcfly@timekit.io'
-    ).andReturn({
-      status: 200,
-      statusText: 'HTTP/1.1 200 OK',
-      contentType: 'application/json',
-      responseText: '{"data":{"timezone":"America\/Los_Angeles","utc_offset":-8}}'
     });
 
   },
@@ -184,12 +171,12 @@ module.exports = {
   getHostedWidget: function() {
 
     jasmine.Ajax.stubRequest(
-      'https://api.timekit.io/v2/widgets/hosted/my-widget-slug'
+      'https://api.timekit.io/v2/projects/hosted/my-widget-slug'
     ).andReturn({
       status: 200,
       statusText: 'HTTP/1.1 200 OK',
       contentType: 'application/json',
-      responseText: '{ "data": { "id": "886c0efc-b76b-47c8-945d-bc4e43924c79", "slug": "my-widget-slug", "config": { "email": "marty.mcfly@timekit.io", "apiToken": "XT1JO879JF1qUXXzmETD5ucgxaDwsFsd", "calendar": "22f86f0c-ee80-470c-95e8-dadd9d05edd2", "email": "marty.mcfly@timekit.io", "timekitConfig": { "app": "bookingjs-demo" } } } }'
+      responseText: '{ "data": { "id": "12345", "slug": "my-widget-slug", "name": "Marty McFly", "app_key": "XT1JO879JF1qUXXzmETD5ucgxaDwsFsd", "ui": { "display_name": "", "show_credits": true, "availability_view": "agendaWeek", "avatar": "", "time_date_format": "12h-mdy-sun", "localization": { "allocated_resource_prefix": "with", "submit_button": "Book it", "success_message": "We have received your booking and sent a confirmation to %s" } }, "booking": { "graph": "instant" }, "customer_fields": { "name": { "type": "string", "title": "Name", "required": true }, "email": { "type": "string", "title": "E-mail", "format": "email", "required": true } } } }'
     });
 
   },
@@ -198,12 +185,12 @@ module.exports = {
   getEmbedWidget: function() {
 
     jasmine.Ajax.stubRequest(
-      'https://api.timekit.io/v2/widgets/embed/12345'
+      'https://api.timekit.io/v2/projects/embed/12345'
     ).andReturn({
       status: 200,
       statusText: 'HTTP/1.1 200 OK',
       contentType: 'application/json',
-      responseText: '{ "data": { "id": "12345", "slug": "my-widget-slug", "config": { "email": "marty.mcfly@timekit.io", "apiToken": "XT1JO879JF1qUXXzmETD5ucgxaDwsFsd", "calendar": "22f86f0c-ee80-470c-95e8-dadd9d05edd2", "name": "Marty McFly", "timekitConfig": { "app": "bookingjs-demo" } } } }'
+      responseText: '{ "data": { "id": "12345", "slug": "my-widget-slug", "name": "Marty McFly", "app_key": "XT1JO879JF1qUXXzmETD5ucgxaDwsFsd", "ui": { "display_name": "", "show_credits": true, "availability_view": "agendaWeek", "avatar": "", "time_date_format": "12h-mdy-sun", "localization": { "allocated_resource_prefix": "with", "submit_button": "Book it", "success_message": "We have received your booking and sent a confirmation to %s" } }, "booking": { "graph": "instant" }, "customer_fields": { "name": { "type": "string", "title": "Name", "required": true }, "email": { "type": "string", "title": "E-mail", "format": "email", "required": true } } } }'
     });
 
   },
@@ -212,12 +199,12 @@ module.exports = {
   getEmbedWidgetExtended: function() {
 
     jasmine.Ajax.stubRequest(
-      'https://api.timekit.io/v2/widgets/embed/12345'
+      'https://api.timekit.io/v2/projects/embed/12345'
     ).andReturn({
       status: 200,
       statusText: 'HTTP/1.1 200 OK',
       contentType: 'application/json',
-      responseText: '{ "data": { "id": "12345", "slug": "my-widget-slug", "config": { "email": "marty.mcfly@timekit.io", "apiToken": "XT1JO879JF1qUXXzmETD5ucgxaDwsFsd", "calendar": "22f86f0c-ee80-470c-95e8-dadd9d05edd2", "name": "Marty McFly", "bookingGraph":"instant", "timekitCreateBooking": { "event": { "where": "Somewhere", "what": "Something" }, "timekitConfig": { "app": "bookingjs-demo" } } } }'
+      responseText: '{ "data": { "id": "12345", "slug": "my-widget-slug", "name": "Marty McFly", "app_key": "XT1JO879JF1qUXXzmETD5ucgxaDwsFsd", "ui": { "display_name": "McFlys Widget", "show_credits": true, "availability_view": "agendaWeek", "avatar": "", "time_date_format": "12h-mdy-sun", "localization": { "allocated_resource_prefix": "with", "submit_button": "Book McFly", "success_message": "We have received your booking and sent a confirmation to %s" } }, "booking": { "graph": "confirm_decline" }, "customer_fields": { "name": { "type": "string", "title": "Name", "required": true }, "email": { "type": "string", "title": "E-mail", "format": "email", "required": true }, "phone": { "title": "Phone Number" } } } }'
     });
 
   },
@@ -226,7 +213,7 @@ module.exports = {
   getNonExistingEmbedWidget: function() {
 
     jasmine.Ajax.stubRequest(
-      'https://api.timekit.io/v2/widgets/embed/54321'
+      'https://api.timekit.io/v2/projects/embed/54321'
     ).andReturn({
       status: 404,
       statusText: 'HTTP/1.1 404 Not Found',
@@ -249,9 +236,9 @@ module.exports = {
       statusText: 'HTTP/1.1 200 OK',
       contentType: 'application/json',
       responseText: '{"data":[' +
-        '{ "id": "87623db3-cb5f-41e8-b85b-23b5efd04e07", "state": "tentative", "graph": "group_owner", "completed": false, "created_at": "2017-02-16T12:40:25+0100", "updated_at": "2017-02-16T12:40:26+0100", "attributes": { "group_booking": { "max_seats": 3, "current_seats": 0 }, "event_info": { "what": "Event 1 what", "where": "Event 1 where", "calendar_id": "da5c5fec-01bb-4686-af20-d7dfb4afa63b", "description": "", "participants": [], "start": "' + today.format() + '", "end": "' + today.add(2, 'hour').format() + '" } }, "available_actions": ["complete", "cancel"] },' +
-        '{ "id": "87623db3-cb5f-41e8-b85b-23b5efd04e07", "state": "tentative", "graph": "group_owner", "completed": false, "created_at": "2017-02-16T12:40:25+0100", "updated_at": "2017-02-16T12:40:26+0100", "attributes": { "group_booking": { "max_seats": 3, "current_seats": 0 }, "event_info": { "what": "Event 2 what", "where": "Event 2 where", "calendar_id": "da5c5fec-01bb-4686-af20-d7dfb4afa63b", "description": "", "participants": [], "start": "' + today.format() + '", "end": "' + today.add(2, 'hour').format() + '" } }, "available_actions": ["complete", "cancel"] },' +
-        '{ "id": "87623db3-cb5f-41e8-b85b-23b5efd04e07", "state": "tentative", "graph": "group_owner", "completed": false, "created_at": "2017-02-16T12:40:25+0100", "updated_at": "2017-02-16T12:40:26+0100", "attributes": { "group_booking": { "max_seats": 3, "current_seats": 0 }, "event_info": { "what": "Event 3 what", "where": "Event 3 where", "calendar_id": "da5c5fec-01bb-4686-af20-d7dfb4afa63b", "description": "", "participants": [], "start": "' + tomorrow.format() + '", "end": "' + tomorrow.add(2, 'hour').format() + '" } }, "available_actions": ["complete", "cancel"] }' +
+        '{ "id": "87623db3-cb5f-41e8-b85b-23b5efd04e07", "state": "tentative", "graph": "group_owner", "completed": false, "created_at": "2017-02-16T12:40:25+0100", "updated_at": "2017-02-16T12:40:26+0100", "attributes": { "group_booking": { "max_seats": 3, "current_seats": 0 }, "event_info": { "what": "Event 1 what", "where": "Event 1 where", "calendar_id": "da5c5fec-01bb-4686-af20-d7dfb4afa63b", "description": "", "participants": [], "start": "' + today.format() + '", "end": "' + today.add(2, 'hour').format() + '" } }, "available_actions": ["complete", "cancel"], "resource": { "id": "67623db3-cb5f-41e8-b85b-23b5efd04e07", "name": "Marty" } },' +
+        '{ "id": "87623db3-cb5f-41e8-b85b-23b5efd04e07", "state": "tentative", "graph": "group_owner", "completed": false, "created_at": "2017-02-16T12:40:25+0100", "updated_at": "2017-02-16T12:40:26+0100", "attributes": { "group_booking": { "max_seats": 3, "current_seats": 0 }, "event_info": { "what": "Event 2 what", "where": "Event 2 where", "calendar_id": "da5c5fec-01bb-4686-af20-d7dfb4afa63b", "description": "", "participants": [], "start": "' + today.format() + '", "end": "' + today.add(2, 'hour').format() + '" } }, "available_actions": ["complete", "cancel"], "resource": { "id": "67623db3-cb5f-41e8-b85b-23b5efd04e07", "name": "Marty" } },' +
+        '{ "id": "87623db3-cb5f-41e8-b85b-23b5efd04e07", "state": "tentative", "graph": "group_owner", "completed": false, "created_at": "2017-02-16T12:40:25+0100", "updated_at": "2017-02-16T12:40:26+0100", "attributes": { "group_booking": { "max_seats": 3, "current_seats": 0 }, "event_info": { "what": "Event 3 what", "where": "Event 3 where", "calendar_id": "da5c5fec-01bb-4686-af20-d7dfb4afa63b", "description": "", "participants": [], "start": "' + tomorrow.format() + '", "end": "' + tomorrow.add(2, 'hour').format() + '" } }, "available_actions": ["complete", "cancel"], "resource": { "id": "67623db3-cb5f-41e8-b85b-23b5efd04e07", "name": "Marty" } }' +
       ']}'
     });
 
@@ -262,7 +249,6 @@ module.exports = {
 
     this.findTime();
     this.findTimeTeam();
-    this.userTimezone();
     this.createBooking();
     this.getHostedWidget();
     this.getEmbedWidget();

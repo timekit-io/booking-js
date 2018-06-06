@@ -9,36 +9,30 @@
  </head>
  <body>
 
+  <div id="bookingjs"></div>
   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script type="text/javascript" src="../dist/booking.js"></script>
-  <div id="bookingjs">
-    <script type="text/javascript">
-      TimekitBooking().init({
-        name:     'Doc Brown',
-        email:    'marty.mcfly@timekit.io',
-        apiToken: 'XT1JO879JF1qUXXzmETD5ucgxaDwsFsd',
-        calendar: '22f86f0c-ee80-470c-95e8-dadd9d05edd2',
-        avatar:   '../misc/avatar-doc.jpg',
-        app:      'back-to-the-future',
-        callbacks: {
-          findTimeStarted:          function(args)      { console.log('findTimeStarted', args); },
-          findTimeSuccessful:       function(response)  { console.log('findTimeSuccessful', response); },
-          findTimeFailed:           function(response)  { console.log('findTimeFailed', response); },
-          createBookingStarted:     function(args)      { console.log('createBookingStarted', args); },
-          createBookingSuccessful:  function(response)  { console.log('createBookingSuccessful', response); },
-          createBookingFailed:      function(response)  { console.log('createBookingFailed', response); },
-          getUserTimezoneStarted:   function(args)      { console.log('getUserTimezoneStarted', args); },
-          getUserTimezoneSuccesful: function(response)  { console.log('getUserTimezoneSuccesful', response); },
-          getUserTimezoneFailed:    function(response)  { console.log('getUserTimezoneFailed', response); },
-          fullCalendarInitialized:  function()          { console.log('fullCalendarInitialized'); },
-          renderCompleted:          function()          { console.log('renderCompleted'); },
-          showBookingPage:          function(slot)      { console.log('showBookingPage', slot); },
-          closeBookingPage:         function()          { console.log('closeBookingPage'); },
-          submitBookingForm:        function(values)    { console.log('submitBookingForm', values); }
-        }
-      });
-    </script>
-  </div>
+  <script type="text/javascript">
+    TimekitBooking().init({
+      app_key: 'live_widget_key_yYXHsUurvCUctNYflzGDMqEJo6mol0Yo',
+      resources: [
+        '42b956f0-be11-4af3-9221-19e899fcd1fb'
+      ],
+      callbacks: {
+        fetchAvailabilityStarted:     function(args)      { console.log('fetchAvailabilityStarted', args); },
+        fetchAvailabilitySuccessful:  function(response)  { console.log('fetchAvailabilitySuccessful', response); },
+        fetchAvailabilityFailed:      function(response)  { console.log('fetchAvailabilityFailed', response); },
+        createBookingStarted:         function(args)      { console.log('createBookingStarted', args); },
+        createBookingSuccessful:      function(response)  { console.log('createBookingSuccessful', response); },
+        createBookingFailed:          function(response)  { console.log('createBookingFailed', response); },
+        fullCalendarInitialized:      function()          { console.log('fullCalendarInitialized'); },
+        renderCompleted:              function()          { console.log('renderCompleted'); },
+        showBookingPage:              function(slot)      { console.log('showBookingPage', slot); },
+        closeBookingPage:             function()          { console.log('closeBookingPage'); },
+        submitBookingForm:            function(values)    { console.log('submitBookingForm', values); }
+      }
+    });
+  </script>
 
 </body>
 </html>

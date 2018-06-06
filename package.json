@@ -24,6 +24,7 @@
     "console-polyfill": "^0.2.2",
     "es6-promise-promise": "^1.0.0",
     "fullcalendar": "^3.4.0",
+    "json-stringify-safe": "^5.0.1",
     "moment": "^2.10.6",
     "moment-timezone": "^0.5.13",
     "sprintf-js": "^1.0.3",

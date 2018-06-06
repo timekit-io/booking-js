@@ -20,51 +20,32 @@ describe('Error handling', function() {
     jasmine.Ajax.uninstall();
   });
 
-  it('should show error if no email is provided', function() {
+  it('should show error if no config is supplied at all', function(done) {
 
     var widget = new TimekitBooking();
-    widget.init({
-      apiToken: 'XT1JO879JF1qUXXzmETD5ucgxaDwsFsd',
-      calendar: '22f86f0c-ee80-470c-95e8-dadd9d05edd2',
-      app:      'my-demo-app'
-    });
+    widget.init();
 
     expect($('.bookingjs-error')).toBeInDOM();
-    expect($('.bookingjs-error-text-message')).toContainText('A required config setting ("email") was missing');
+    expect($('.bookingjs-error-text-message')).toContainText('No configuration was supplied. Please supply a config object upon library initialization');
+
+    done()
 
   });
 
-  it('should show error if no app is provided', function() {
-
-    var widget = new TimekitBooking();
-    widget.init({
-      email:    'marty.mcfly@timekit.io',
-      apiToken: 'XT1JO879JF1qUXXzmETD5ucgxaDwsFsd',
-      calendar: '22f86f0c-ee80-470c-95e8-dadd9d05edd2',
-      app:      '',
-      timekitConfig: {
-        app:    ''
-      }
-    });
-
-    expect($('.bookingjs-error')).toBeInDOM();
-    expect($('.bookingjs-error-text-message')).toContainText('A required config setting ("app") was missing');
-
-  });
-
-  it('should show error if remote widget ID is not found', function(done) {
+  it('should show error if remote project ID is not found', function(done) {
 
     mockAjax.getNonExistingEmbedWidget();
 
     var widget = new TimekitBooking();
     widget.init({
-      widgetId: '54321'
+      app_key: '12345',
+      project_id: '54321'
     });
 
     setTimeout(function() {
 
       expect($('.bookingjs-error')).toBeInDOM();
-      expect($('.bookingjs-error-text-message')).toContainText('The widget could not be found, please double-check your widgetId/widgetSlug');
+      expect($('.bookingjs-error-text-message')).toContainText('The project could not be found, please double-check your "project_id" and "app_key"');
 
       done()
 
@@ -72,26 +53,33 @@ describe('Error handling', function() {
 
   });
 
-  it('should show error if no config is supplied at all', function(done) {
+  it('should show error if project ID is supplied but no app key', function(done) {
 
     var widget = new TimekitBooking();
-    widget.init();
+    widget.init({
+      project_id: '54321'
+    });
 
-    expect($('.bookingjs-error')).toBeInDOM();
-    expect($('.bookingjs-error-text-message')).toContainText('No configuration was supplied or found. Please supply a config object upon library initialization');
+    setTimeout(function() {
 
-    done()
+      expect($('.bookingjs-error')).toBeInDOM();
+      expect($('.bookingjs-error-text-message')).toContainText('Missing "app_key" in conjunction with "project_id", please provide your "app_key" for authentication');
+
+      done()
+
+    }, 100);
 
   });
 
-  it('should show error if an invalid FindTime parameter is sent', function(done) {
+  it('should show error if an invalid Fetch Availability parameter is sent', function(done) {
 
     mockAjax.findTimeWithError()
 
     var widget = new TimekitBooking();
     widget.init({
-      widgetId: '12345',
-      timekitFindTime: {
+      app_key: '12345',
+      project_id: '12345',
+      availability: {
         future: 'wrong'
       }
     });
@@ -99,7 +87,7 @@ describe('Error handling', function() {
     setTimeout(function() {
 
       expect($('.bookingjs-error')).toBeInDOM();
-      expect($('.bookingjs-error-text-message')).toContainText('An error with Timekit FindTime occured');
+      expect($('.bookingjs-error-text-message')).toContainText('An error with Timekit Fetch Availability occured');
 
       done()
 
@@ -113,11 +101,8 @@ describe('Error handling', function() {
 
     var widget = new TimekitBooking();
     widget.init({
-      app:      'my-demo-app',
-      email:    'marty.mcfly@timekit.io',
-      apiToken: 'XT1JO879JF1qUXXzmETD5ucgxaDwsFsd',
-      calendar: '22f86f0c-ee80-470c-95e8-dadd9d05edd2',
-      timekitCreateBooking: {
+      app_key: '12345',
+      booking: {
         event: {
           calendar_id: 'doesnt exist'
         }
@@ -137,7 +122,7 @@ describe('Error handling', function() {
         setTimeout(function() {
 
           expect($('.bookingjs-error')).toBeInDOM();
-          expect($('.bookingjs-error-text-message')).toContainText('An error with Timekit CreateBooking occured');
+          expect($('.bookingjs-error-text-message')).toContainText('An error with Timekit Create Booking occured');
 
           done();
 

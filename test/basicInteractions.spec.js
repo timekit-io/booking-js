@@ -106,7 +106,7 @@ describe('Basic interaction', function() {
   it('should be able to book an event and pass widget ID', function(done) {
 
     createWidget({
-      widgetSlug: 'my-widget-slug'
+      project_slug: 'my-widget-slug'
     });
 
     setTimeout(function() {
@@ -125,7 +125,7 @@ describe('Basic interaction', function() {
 
           var request = jasmine.Ajax.requests.mostRecent();
 
-          expect(JSON.parse(request.params).widget_id).toBeDefined()
+          expect(JSON.parse(request.params).project_id).toBeDefined()
           done();
 
         }, 200);
@@ -158,7 +158,7 @@ describe('Basic interaction', function() {
 
             expect($('.bookingjs-bookpage').length).toBe(0);
             var request = jasmine.Ajax.requests.mostRecent();
-            expect(request.url).toBe('https://api.timekit.io/v2/findtime');
+            expect(request.url).toBe('https://api.timekit.io/v2/availability');
 
             done();
           }, 200);
@@ -192,7 +192,7 @@ describe('Basic interaction', function() {
 
             expect($('.bookingjs-bookpage').length).toBe(0);
             var request = jasmine.Ajax.requests.mostRecent();
-            expect(request.url).toBe('https://api.timekit.io/v2/findtime');
+            expect(request.url).toBe('https://api.timekit.io/v2/availability');
 
             done();
           }, 200);

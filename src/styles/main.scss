@@ -150,7 +150,7 @@
     }
 
     &-header {
-      min-height: 110px; // so we have margin even without resource name
+      margin-bottom: 30px;
     }
 
     &-date,
@@ -262,8 +262,11 @@
         margin-bottom: 25px;
       }
 
-      .body {
+      &-body {
         display: block;
+        position: relative;
+        transform: translateY(-50%);
+        top: 50%;
 
         .booked-email {
           color: $textLightColor;

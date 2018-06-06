@@ -5,71 +5,24 @@
  */
 
 var primary = {
-
-  targetEl: '#bookingjs',
+  el: '#bookingjs',
   name: '',
-  avatar: '',
   autoload: true,
-  disableRemoteLoad: false,
-  disableConfirmPage: false,
-  showCredits: true,
-  goToFirstEvent: true,
-  bookingGraph: 'instant',
   debug: false,
-  availabilityView: 'agendaWeek',
-  createBookingResponseInclude: ['attributes', 'event', 'user'],
-  bookingFields: {
-    name: {
-      placeholder: 'Full name',
-      prefilled: false,
-      locked: false
-    },
-    email: {
-      placeholder: 'E-mail',
-      prefilled: false,
-      locked: false
-    },
-    comment: {
-      enabled: true,
-      placeholder: 'Comment',
-      prefilled: false,
-      required: false,
-      locked: false
-    },
-    phone: {
-      enabled: false,
-      placeholder: 'Phone number',
-      prefilled: false,
-      required: false,
-      locked: false
-    },
-    voip: {
-      enabled: false,
-      placeholder: 'Skype username',
-      prefilled: false,
-      required: false,
-      locked: false
-    },
-    location: {
-      enabled: false,
-      placeholder: 'Location',
-      prefilled: false,
-      required: false,
-      locked: false
-    }
-  },
-  timekitFindTime: {
-    future: '4 weeks',
-    length: '1 hour'
-  },
-  timekitConfig: {
+  disable_remote_load: false,
+  disable_confirm_page: false,
+  create_booking_response_include: ['attributes', 'event', 'user'],
+  ui: {},
+  availability: {},
+  booking: {},
+  customer_fields: {},
+  callbacks: {},
+  sdk: {
     headers: {
       'Timekit-Context': 'widget'
     }
   },
-  timekitCreateBooking: { },
-  timekitUpdateBooking: { },
-  fullCalendar: {
+  fullcalendar: {
     views: {
       agenda: {
         displayEventEnd: false
@@ -85,117 +38,51 @@ var primary = {
     scrollTime: '08:00:00',
     timezone: 'local',
     nowIndicator: true
-  },
-  localization: {
-    showTimezoneHelper: true,
-    timeDateFormat: '12h-mdy-sun',
-    strings: {
-      allocatedResourcePrefix: 'with',
-      submitText: 'Book it',
-      successMessageTitle: 'Thanks!',
-      timezoneHelperLoading: 'Loading..',
-      timezoneHelperDifferent: 'Your timezone is %s hours %s %s (calendar shown in your local time)',
-      timezoneHelperSame: 'You are in the same timezone as %s'
-    }
-  },
-  callbacks: {}
-
+  }
 };
 
-// Preset: bookingGraph = 'instant'
-var bookingInstant = {
-
-  timekitCreateBooking: {
-    graph: 'instant',
-    action: 'confirm',
-    event: {
-      invite: true,
-      my_rsvp: 'accepted',
-      sync_provider: true
+var primaryWithoutProject = {
+  ui: {
+    display_name: '',
+    show_credits: true,
+    availability_view: 'agendaWeek',
+    avatar: '',
+    time_date_format: '12h-mdy-sun',
+    localization: {
+      allocated_resource_prefix: 'with',
+      submit_button: 'Book it',
+      success_message: 'We have received your booking and sent a confirmation to %s'
     }
   },
-  localization: {
-    strings: {
-      successMessageBody: 'An invitation has been sent to: <br /> %s <br /><br /> Please accept the invitation to confirm the booking.'
+  availability: {
+    mode: 'roundrobin_random'
+  },
+  booking: {
+    graph: 'instant'
+  },
+  customer_fields: {
+    name: {
+      type: 'string',
+      title: 'Name',
+      required: true
+    },
+    email: {
+      type: 'string',
+      title: 'E-mail',
+      format: 'email',
+      required: true
     }
   }
-
-};
-
-// Preset: bookingGraph = 'instant_payment'
-var bookingInstantPayment = {
-
-  timekitCreateBooking: {
-    graph: 'instant_payment',
-    action: 'create',
-    event: {
-      invite: true,
-      my_rsvp: 'accepted',
-      sync_provider: true
-    }
-  },
-  localization: {
-    strings: {
-      successMessageBody: "We have received your payment and reserved your timeslot.<br /><br />Have a great day!"
-    }
-  }
-
-};
-
-// Preset: bookingGraph = 'confirm_decline'
-var bookingConfirmDecline = {
-
-  timekitCreateBooking: {
-    graph: 'confirm_decline',
-    action: 'create',
-    event: {
-      invite: true,
-      my_rsvp: 'accepted',
-      sync_provider: true
-    }
-  },
-  localization: {
-    strings: {
-      successMessageBody: "We have received your request and we'll be in touch when we have reviewed it. <br /><br />Have a great day!"
-    }
-  }
-
-};
-
-// Preset: bookingGraph = 'group_customer'
-var bookingGroupCustomer = {
-
-  timekitCreateBooking: {
-    graph: 'group_customer',
-    action: 'create',
-  },
-  localization: {
-    strings: {
-      successMessageBody: "Your seat has been reserved and we've sent you a confirmation by email. <br /><br />Have a great day!"
-    }
-  }
-
-};
-
-// Preset: bookingGraph = 'group_customer_payment'
-var bookingGroupCustomerPayment = {
-
-  timekitCreateBooking: {
-    graph: 'group_customer_payment',
-    action: 'create',
-  },
-  localization: {
-    strings: {
-      successMessageBody: "We have received your payment and reserved a seat for you.<br /><br />Have a great day!"
-    }
-  }
-
-};
+}
 
 // Preset: timeDateFormat = '24h-dmy-mon'
 var timeDateFormat24hdmymon = {
-
-  fullCalendar: {
+  ui: {
+    booking_date_format: 'D. MMMM YYYY',
+    booking_time_format: 'HH:mm',
+    email_time_format: 'H:i'
+  },
+  fullcalendar: {
     timeFormat: 'HH:mm',
     firstDay: 1,
     views: {
@@ -207,19 +94,17 @@ var timeDateFormat24hdmymon = {
         slotLabelFormat: 'HH:mm'
       }
     }
-  },
-  localization: {
-    bookingDateFormat: 'D. MMMM YYYY',
-    bookingTimeFormat: 'HH:mm',
-    emailTimeFormat: 'H:i'
   }
-
 };
 
 // Preset: timeDateFormat = '12h-mdy-sun'
 var timeDateFormat12hmdysun = {
-
-  fullCalendar: {
+  ui: {
+    booking_date_format: 'MMMM D, YYYY',
+    booking_time_format: 'h:mma',
+    email_time_format: 'h:ia'
+  },
+  fullcalendar: {
     timeFormat: 'h:mma',
     firstDay: 0,
     views: {
@@ -230,20 +115,13 @@ var timeDateFormat12hmdysun = {
         columnFormat: 'ddd M/D',
         slotLabelFormat: 'h:mma'
       }
-    },
-  },
-  localization: {
-    bookingDateFormat: 'MMMM D, YYYY',
-    bookingTimeFormat: 'h:mma',
-    emailTimeFormat: 'h:ia'
+    }
   }
-
 };
 
 // Preset: availabilityView = 'agendaWeek'
 var availabilityViewAgendaWeek = {
-
-  fullCalendar: {
+  fullcalendar: {
     header: {
       left: '',
       center: '',
@@ -251,13 +129,11 @@ var availabilityViewAgendaWeek = {
     },
     defaultView: 'agendaWeek'
   }
-
 }
 
 // Preset: availabilityView = 'listing'
 var availabilityViewListing = {
-
-  fullCalendar: {
+  fullcalendar: {
     header: {
       left: '',
       center: '',
@@ -265,23 +141,16 @@ var availabilityViewListing = {
     },
     defaultView: 'listing'
   }
-
 }
 
 // Export objects
 module.exports = {
   primary: primary,
+  primaryWithoutProject: primaryWithoutProject,
   presets: {
     timeDateFormat: {
       '24h-dmy-mon': timeDateFormat24hdmymon,
       '12h-mdy-sun': timeDateFormat12hmdysun
-    },
-    bookingGraph: {
-      'instant': bookingInstant,
-      'instant_payment': bookingInstantPayment,
-      'confirm_decline': bookingConfirmDecline,
-      'group_customer': bookingGroupCustomer,
-      'group_customer_payment': bookingGroupCustomerPayment
     },
     availabilityView: {
       'agendaWeek': availabilityViewAgendaWeek,

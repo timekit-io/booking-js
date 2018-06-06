@@ -10,18 +10,9 @@
 
 ⚠️ This is **version 2** of booking.js (currently in beta), the next iteration that supports the new projects model and uses App Widget Key for authentication. [Version 1 is still supported](https://github.com/timekit-io/booking-js/tree/master-v1).
 
-## Use cases
-
-You can use the widget in two different ways:  
-
-1. For **non-developers** where the widget is coupled with a project configued in our UI admin panel.
-2. For **developers** where you can configure the widget on-the-fly in JavaScript for more control and flexibility.
-
-Create an account at [Timekit](https://admin.timekit.io) to get started!  
-
 ## Documentation
 
-All documentation, guides and examples can be found on [our developer portal](https://developers.timekit.io/v2/docs/booking-js).
+All documentation, guides and examples can be found on [our developer portal](https://developers.timekit.io/v2/docs/booking-widget-v2).
 
 *This repo is mainly for community contributions, and the curious soul that would like to customize the widget.*
 

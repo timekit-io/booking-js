@@ -252,7 +252,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  // Get library version
 	  var getVersion = function() {
-	    return ("1.24.3");
+	    return ("1.25.0");
 	  };
 	
 	  var destroy = function() {
@@ -5089,7 +5089,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 	
 	  // Fetch availabile time through Timekit SDK
-	  var timekitFindTime = function() {
+	  var timekitFetchAvailability = function() {
 	
 	    var args = {};
 	
@@ -5121,7 +5121,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }).catch(function(response){
 	      utils.doCallback('fetchAvailabilityFailed', response);
 	      hideLoadingScreen();
-	      triggerError(['An error with Timekit FindTime occured', response]);
+	      triggerError(['An error with Timekit Fetch Availability occured', response]);
 	    });
 	
 	  };
@@ -5172,7 +5172,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }).catch(function(response){
 	      utils.doCallback('getBookingSlotsFailed', response);
 	      hideLoadingScreen();
-	      triggerError(['An error with Timekit GetBookings occured', response]);
+	      triggerError(['An error with Timekit Get Booking Slots occured', response]);
 	    });
 	
 	  };
@@ -5189,7 +5189,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      timekitGetBookingSlots();
 	    } else {
 	      // If in normal single-participant mode, call findtime
-	      timekitFindTime();
+	      timekitFetchAvailability();
 	    }
 	
 	  };
@@ -5482,7 +5482,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    });
 	
 	    if (eventData.resources) {
-	      utils.logDebug(['Available users for chosen timeslot:', eventData.resources]);
+	      utils.logDebug(['Available resources for chosen timeslot:', eventData.resources]);
 	    }
 	
 	
@@ -5639,8 +5639,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      args.resource_id = eventData.resources[0].id
 	    }
 	
-	    if (getConfig().reminders) args.event_notifications = getConfig().reminders
-	
 	    $.extend(true, args, getConfig().booking);
 	
 	    utils.doCallback('createBookingStarted', args);
@@ -5659,7 +5657,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      utils.doCallback('createBookingSuccessful', response);
 	    }).catch(function(response){
 	      utils.doCallback('createBookingFailed', response);
-	      triggerError(['An error with Timekit CreateBooking occured', response]);
+	      triggerError(['An error with Timekit Create Booking occured', response]);
 	    });
 	
 	    return request;

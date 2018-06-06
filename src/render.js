@@ -42,7 +42,7 @@ function InitRender(deps) {
   };
 
   // Fetch availabile time through Timekit SDK
-  var timekitFindTime = function() {
+  var timekitFetchAvailability = function() {
 
     var args = {};
 
@@ -74,7 +74,7 @@ function InitRender(deps) {
     }).catch(function(response){
       utils.doCallback('fetchAvailabilityFailed', response);
       hideLoadingScreen();
-      triggerError(['An error with Timekit FindTime occured', response]);
+      triggerError(['An error with Timekit Fetch Availability occured', response]);
     });
 
   };
@@ -125,7 +125,7 @@ function InitRender(deps) {
     }).catch(function(response){
       utils.doCallback('getBookingSlotsFailed', response);
       hideLoadingScreen();
-      triggerError(['An error with Timekit GetBookings occured', response]);
+      triggerError(['An error with Timekit Get Booking Slots occured', response]);
     });
 
   };
@@ -142,7 +142,7 @@ function InitRender(deps) {
       timekitGetBookingSlots();
     } else {
       // If in normal single-participant mode, call findtime
-      timekitFindTime();
+      timekitFetchAvailability();
     }
 
   };
@@ -435,7 +435,7 @@ function InitRender(deps) {
     });
 
     if (eventData.resources) {
-      utils.logDebug(['Available users for chosen timeslot:', eventData.resources]);
+      utils.logDebug(['Available resources for chosen timeslot:', eventData.resources]);
     }
 
 
@@ -592,8 +592,6 @@ function InitRender(deps) {
       args.resource_id = eventData.resources[0].id
     }
 
-    if (getConfig().reminders) args.event_notifications = getConfig().reminders
-
     $.extend(true, args, getConfig().booking);
 
     utils.doCallback('createBookingStarted', args);
@@ -612,7 +610,7 @@ function InitRender(deps) {
       utils.doCallback('createBookingSuccessful', response);
     }).catch(function(response){
       utils.doCallback('createBookingFailed', response);
-      triggerError(['An error with Timekit CreateBooking occured', response]);
+      triggerError(['An error with Timekit Create Booking occured', response]);
     });
 
     return request;

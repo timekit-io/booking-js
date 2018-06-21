@@ -252,7 +252,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  // Get library version
 	  var getVersion = function() {
-	    return ("2.0.0");
+	    return ("2.0.1");
 	  };
 	
 	  var destroy = function() {
@@ -5596,6 +5596,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var args = {
 	      start: eventData.start.format(),
 	      end: eventData.end.format(),
+	      description: '',
 	      customer: {
 	        name: formData.name,
 	        email: formData.email,
@@ -5608,8 +5609,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    } else {
 	      $.extend(true, args, {
 	        what: 'Meeting with ' + formData.name,
-	        where: 'TBD',
-	        description: ''
+	        where: 'TBD'
 	      });
 	    }
 	
@@ -5619,15 +5619,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    if (getConfig().customer_fields.comment) {
 	      args.customer.comment = formData.comment;
-	      args.description += (getConfig().customer_fields.comment.title || 'comment') + ': ' + formData.comment + '\n';
+	      args.description += (getConfig().customer_fields.comment.title || 'Comment') + ': ' + formData.comment + '\n';
 	    }
 	    if (getConfig().customer_fields.phone) {
 	      args.customer.phone = formData.phone;
-	      args.description += (getConfig().customer_fields.phone.title || 'phone') + ': ' + formData.phone + '\n';
+	      args.description += (getConfig().customer_fields.phone.title || 'Phone') + ': ' + formData.phone + '\n';
 	    }
 	    if (getConfig().customer_fields.voip) {
 	      args.customer.voip = formData.voip;
-	      args.description += (getConfig().customer_fields.voip.title || 'voip') + ': ' + formData.voip + '\n';
+	      args.description += (getConfig().customer_fields.voip.title || 'Voip') + ': ' + formData.voip + '\n';
 	    }
 	
 	    if (getConfig().booking.graph === 'group_customer' || getConfig().booking.graph === 'group_customer_payment') {

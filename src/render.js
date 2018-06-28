@@ -365,7 +365,7 @@ function InitRender(deps) {
     // If an error already has been thrown, exit
     if (errorTarget) return message
 
-    utils.doCallback('errorTriggered');
+    utils.doCallback('errorTriggered', message);
     utils.logError(message)
 
     // If no target DOM element exists, only do the logging

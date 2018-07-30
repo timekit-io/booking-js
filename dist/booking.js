@@ -5601,7 +5601,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        name: formData.name,
 	        email: formData.email,
 	        timezone: moment.tz.guess()
-	      }
+	      },
+	      participants: [formData.email]
 	    };
 	
 	    if (getConfig().project_id) {

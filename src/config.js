@@ -32,6 +32,15 @@ function InitConfig() {
     return localConfig
   };
 
+  var applyPrefillFromUrlGetParams = function (9xurlParams) {
+    let customerFields = {};
+    urlParams.forEach(function (val, key) {
+      let keyName = key.split('.');
+      if (keyName[0] === 'customer') customerFields[keyName.pop()] = { prefilled: val };
+    });
+    return $.extend(true, {}, defaultConfig.primary, customerFields);
+  }
+
   // Setup config
   var parseAndUpdate = function(suppliedConfig) {
 
@@ -46,6 +55,9 @@ function InitConfig() {
     if (!newConfig.app_key) {
       throw 'A required config setting ("app_key") was missing';
     }
+
+    let urlParams = new URL(document.location).searchParams;
+    applyPrefillFromUrlGetParams(newConfig, urlParams);
 
     // Set new config to instance config
     update(newConfig);

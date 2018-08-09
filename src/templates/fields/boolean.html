@@ -1,0 +1,17 @@
+<div class="bookingjs-form-field bookingjs-form-field--checkbox">
+  <input
+    id="input-{{ key }}"
+    class="bookingjs-form-input--checkbox input-{{ key }}"
+    type="checkbox"
+    name="{{ key }}"
+    value="Yes"
+    {{# prefilled }} checked {{/ prefilled }}
+    {{# readonly }} readonly {{/ readonly }}
+    {{# required }} required {{/ required }}
+  />
+  <label
+    for="input-{{ key }}"
+    class="bookingjs-form-label--checkbox label-{{ key }}">
+    {{ title }}
+  </label>
+</div>

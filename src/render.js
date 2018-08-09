@@ -260,10 +260,10 @@ function InitRender(deps) {
     currentView = currentView || calendarTarget.fullCalendar('getView').name
 
     var view = getConfig().fullcalendar.defaultView
-    var height = 485;
+    var height = 385;
 
     if (rootTarget.width() < 480) {
-      height = 455;
+      // height = 455;
       rootTarget.addClass('is-small');
       if (getConfig().ui.avatar) height -= 15;
       if (currentView === 'agendaWeek' || currentView === 'basicDay') {
@@ -273,10 +273,12 @@ function InitRender(deps) {
       rootTarget.removeClass('is-small');
     }
 
-    if (getConfig().customer_fields.comment) {    height += 100; }
-    if (getConfig().customer_fields.phone) {      height += 64; }
-    if (getConfig().customer_fields.voip) {       height += 64; }
-    if (getConfig().customer_fields.location) {   height += 64; }
+    $.each(getConfig().customer_fields, function(key, field) {
+      var typeFormat = joinFieldType(field)
+      if (typeFormat === 'string_long') height += 98;
+      else if (typeFormat === 'boolean') height += 51;
+      else height += 66;
+    })
 
     return {
       height: height,
@@ -396,17 +398,45 @@ function InitRender(deps) {
 
   };
 
+  // Make a concatened string with field type + format
+  var joinFieldType = function (field) {
+    if (!field.type) return 'string'
+    return field.type + (field.format ? '_' + field.format : '')
+  }
+
+  // Render customer fields
+  var renderCustomerFields = function () {
+    
+    var fieldString = require('./templates/fields/string.html');
+    var fieldStringLong = require('./templates/fields/string-long.html');
+    var fieldBoolean = require('./templates/fields/boolean.html');
+
+    var fieldsTarget = []
+    $.each(getConfig().customer_fields, function(key, field) {
+      console.log('renderfield', key, field)
+      var tmp = fieldString
+      var typeFormat = joinFieldType(field)
+      if (typeFormat === 'string_long') tmp = fieldStringLong
+      if (typeFormat === 'boolean') tmp = fieldBoolean
+      if (key === 'email') field.format = 'email'
+      if (field.type === 'string' && !field.format) field.format = 'text'
+      var data = $.extend({ key: key }, field)
+      var tmpl = $(tmp.render(data))
+      fieldsTarget.push(tmpl)
+    })
+
+    return fieldsTarget
+  }
+
   // Event handler when a timeslot is clicked in FullCalendar
   var showBookingPage = function(eventData) {
 
     utils.doCallback('showBookingPage', eventData);
 
-    var fieldsTemplate = require('./templates/booking-fields.html');
     var template = require('./templates/booking-page.html');
 
     var dateFormat = getConfig().ui.booking_date_format || moment.localeData().longDateFormat('LL');
     var timeFormat = getConfig().ui.booking_time_format || moment.localeData().longDateFormat('LT');
-
     var allocatedResource = eventData.resources ? eventData.resources[0].name : false;
 
     bookingPageTarget = $(template.render({
@@ -419,12 +449,12 @@ function InitRender(deps) {
       loadingIcon:              require('!svg-inline!./assets/loading-spinner.svg'),
       errorIcon:                require('!svg-inline!./assets/error-icon.svg'),
       submitText:               getConfig().ui.localization.submit_button,
-      successMessage:           interpolate.sprintf(getConfig().ui.localization.success_message, '<span class="booked-email"></span>'),
-      fields:                   getConfig().customer_fields
-    }, {
-      formFields: fieldsTemplate
+      successMessage:           interpolate.sprintf(getConfig().ui.localization.success_message, '<span class="booked-email"></span>')
     }));
 
+    var formFields = bookingPageTarget.find('.bookingjs-form-fields');
+    $(formFields).append(renderCustomerFields());
+    
     var form = bookingPageTarget.children('.bookingjs-form');
 
     bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
@@ -546,6 +576,8 @@ function InitRender(deps) {
   // Create new booking
   var timekitCreateBooking = function(formData, eventData) {
 
+    var nativeFields = ['name', 'email', 'location', 'comment', 'phone', 'voip']
+
     var args = {
       start: eventData.start.format(),
       end: eventData.end.format(),
@@ -554,7 +586,8 @@ function InitRender(deps) {
         name: formData.name,
         email: formData.email,
         timezone: moment.tz.guess()
-      }
+      },
+      meta: {}
     };
 
     if (getConfig().project_id) {
@@ -582,6 +615,14 @@ function InitRender(deps) {
       args.customer.voip = formData.voip;
       args.description += (getConfig().customer_fields.voip.title || 'Voip') + ': ' + formData.voip + '\n';
     }
+
+    // Save custom fields in meta object
+    $.each(getConfig().customer_fields, function(key) {
+      if (nativeFields.includes(key)) return
+      if (!formData[key]) formData[key] = 'No'
+      args.meta[key] = formData[key]
+      args.description += (getConfig().customer_fields[key].title || key) + ': ' + formData[key] + '\n';
+    })
 
     if (getConfig().booking.graph === 'group_customer' || getConfig().booking.graph === 'group_customer_payment') {
       args.related = { owner_booking_id: eventData.booking.id }

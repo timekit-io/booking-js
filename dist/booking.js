@@ -5663,9 +5663,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	
 	    // Save custom fields in meta object
-	    $.each(getConfig().customer_fields, function(key) {
+	    $.each(getConfig().customer_fields, function(key, field) {
 	      if (nativeFields.includes(key)) return
-	      if (!formData[key]) formData[key] = 'No'
+	      if (field.type === 'boolean' && !formData[key]) formData[key] = 'No'
 	      args.meta[key] = formData[key]
 	      args.description += (getConfig().customer_fields[key].title || key) + ': ' + formData[key] + '\n';
 	    })

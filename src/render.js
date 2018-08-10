@@ -413,7 +413,6 @@ function InitRender(deps) {
 
     var fieldsTarget = []
     $.each(getConfig().customer_fields, function(key, field) {
-      console.log('renderfield', key, field)
       var tmp = fieldString
       var typeFormat = joinFieldType(field)
       if (typeFormat === 'string_long') tmp = fieldStringLong

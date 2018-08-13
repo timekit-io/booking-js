@@ -409,6 +409,7 @@ function InitRender(deps) {
     
     var fieldString = require('./templates/fields/string.html');
     var fieldStringLong = require('./templates/fields/string-long.html');
+    var fieldStringSelect = require('./templates/fields/string-select.html');
     var fieldBoolean = require('./templates/fields/boolean.html');
 
     var fieldsTarget = []
@@ -416,10 +417,14 @@ function InitRender(deps) {
       var tmp = fieldString
       var typeFormat = joinFieldType(field)
       if (typeFormat === 'string_long') tmp = fieldStringLong
+      if (typeFormat === 'string_select') tmp = fieldStringSelect
       if (typeFormat === 'boolean') tmp = fieldBoolean
       if (key === 'email') field.format = 'email'
       if (field.type === 'string' && !field.format) field.format = 'text'
-      var data = $.extend({ key: key }, field)
+      var data = $.extend({
+        key: key,
+        arrowDownIcon: require('!svg-inline!./assets/arrow-down-icon.svg')
+      }, field)
       var tmpl = $(tmp.render(data))
       fieldsTarget.push(tmpl)
     })

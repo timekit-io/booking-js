@@ -42,6 +42,16 @@
         location: {
           title: 'Location',
           placeholder: 'Place of meeting'
+        },
+        department: {
+          title: 'Department',
+          type: 'string',
+          format: 'select',
+          enum: [
+            'Development',
+            'Design',
+            'Sales'
+          ]
         }
       }
     });

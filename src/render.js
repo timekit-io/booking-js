@@ -274,9 +274,8 @@ function InitRender(deps) {
     }
 
     $.each(getConfig().customer_fields, function(key, field) {
-      var typeFormat = joinFieldType(field)
-      if (typeFormat === 'string_long') height += 98;
-      else if (typeFormat === 'boolean') height += 51;
+      if (field.format === 'textarea') height += 98;
+      else if (field.format === 'checkbox') height += 51;
       else height += 66;
     })
 
@@ -398,35 +397,28 @@ function InitRender(deps) {
 
   };
 
-  // Make a concatened string with field type + format
-  var joinFieldType = function (field) {
-    if (!field.type) return 'string'
-    return field.type + (field.format ? '_' + field.format : '')
-  }
-
   // Render customer fields
   var renderCustomerFields = function () {
     
-    var fieldString = require('./templates/fields/string.html');
-    var fieldStringLong = require('./templates/fields/string-long.html');
-    var fieldStringSelect = require('./templates/fields/string-select.html');
-    var fieldBoolean = require('./templates/fields/boolean.html');
+    var textTemplate = require('./templates/fields/text.html');
+    var textareaTemplate = require('./templates/fields/textarea.html');
+    var selectTemplate = require('./templates/fields/select.html');
+    var checkboxTemplate = require('./templates/fields/checkbox.html');
 
     var fieldsTarget = []
     $.each(getConfig().customer_fields, function(key, field) {
-      var tmp = fieldString
-      var typeFormat = joinFieldType(field)
-      if (typeFormat === 'string_long') tmp = fieldStringLong
-      if (typeFormat === 'string_select') tmp = fieldStringSelect
-      if (typeFormat === 'boolean') tmp = fieldBoolean
+      var tmpl = textTemplate
+      if (field.format === 'textarea') tmpl = textareaTemplate
+      if (field.format === 'select') tmpl = selectTemplate
+      if (field.format === 'checkbox') tmpl = checkboxTemplate
+      if (!field.format) field.format = 'text'
       if (key === 'email') field.format = 'email'
-      if (field.type === 'string' && !field.format) field.format = 'text'
       var data = $.extend({
         key: key,
         arrowDownIcon: require('!svg-inline!./assets/arrow-down-icon.svg')
       }, field)
-      var tmpl = $(tmp.render(data))
-      fieldsTarget.push(tmpl)
+      var fieldTarget = $(tmpl.render(data))
+      fieldsTarget.push(fieldTarget)
     })
 
     return fieldsTarget
@@ -471,7 +463,6 @@ function InitRender(deps) {
     if (eventData.resources) {
       utils.logDebug(['Available resources for chosen timeslot:', eventData.resources]);
     }
-
 
     form.find('.bookingjs-form-input').on('input', function() {
       var field = $(this).closest('.bookingjs-form-field');
@@ -623,7 +614,7 @@ function InitRender(deps) {
     // Save custom fields in meta object
     $.each(getConfig().customer_fields, function(key, field) {
       if (nativeFields.includes(key)) return
-      if (field.type === 'boolean' && !formData[key]) formData[key] = 'No'
+      if (field.format === 'checkbox' && !formData[key]) formData[key] = 'No'
       args.meta[key] = formData[key]
       args.description += (getConfig().customer_fields[key].title || key) + ': ' + formData[key] + '\n';
     })

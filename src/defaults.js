@@ -62,16 +62,26 @@ var primaryWithoutProject = {
   },
   customer_fields: {
     name: {
-      type: 'string',
       title: 'Name',
       required: true
     },
     email: {
-      type: 'string',
       title: 'E-mail',
       format: 'email',
       required: true
     }
+  }
+}
+
+var customerFieldsNativeFormats = {
+  email: {
+    format: 'email'
+  },
+  comment: {
+    format: 'textarea'
+  },
+  phone: {
+    format: 'tel'
   }
 }
 
@@ -147,6 +157,7 @@ var availabilityViewListing = {
 module.exports = {
   primary: primary,
   primaryWithoutProject: primaryWithoutProject,
+  customerFieldsNativeFormats: customerFieldsNativeFormats,
   presets: {
     timeDateFormat: {
       '24h-dmy-mon': timeDateFormat24hdmymon,

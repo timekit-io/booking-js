@@ -18,26 +18,31 @@ describe('Booking fields', function() {
     jasmine.Ajax.uninstall();
   });
 
-  it('should be able to add the comment, phone, voip and location field', function(done) {
+  it('should be able to add custom fields', function(done) {
 
     var config = {
       customer_fields: {
         comment: {
-          type: 'string',
           title: 'Comment'
         },
         phone: {
-          type: 'string',
-          title: 'Phone'
+          title: 'Phone',
+          required: true
         },
-        voip: {
-          type: 'string',
-          title: 'VoIP'
+        custom_field_1: {
+          title: 'Custom 1',
+          format: 'textarea'
         },
-        location: {
-          type: 'string',
-          title: 'Location'
-        }
+        custom_field_2: {
+          title: 'Custom 2',
+          format: 'checkbox',
+          required: true
+        },
+        custom_field_3: {
+          title: 'Custom 3',
+          format: 'select',
+          enum: ['One', 'Of', 'Many']
+        },
       }
     }
 
@@ -59,22 +64,28 @@ describe('Booking fields', function() {
         expect(phoneInput).toBeInDOM();
         expect(phoneInput).toBeVisible();
         expect(phoneInput.attr('placeholder')).toBe('Phone');
-        expect(phoneInput.attr('required')).toBe(undefined);
+        expect(phoneInput.attr('required')).toBe('required');
         expect(phoneInput.val()).toBe('');
 
-        var voipInput = $('.input-voip');
-        expect(voipInput).toBeInDOM();
-        expect(voipInput).toBeVisible();
-        expect(voipInput.attr('placeholder')).toBe('VoIP');
-        expect(voipInput.attr('required')).toBe(undefined);
-        expect(voipInput.val()).toBe('');
+        var custom1Input = $('.input-custom_field_1');
+        expect(custom1Input).toBeInDOM();
+        expect(custom1Input).toBeVisible();
+        expect(custom1Input.is('textarea')).toBeTruthy();
 
-        var locationInput = $('.input-location');
-        expect(locationInput).toBeInDOM();
-        expect(locationInput).toBeVisible();
-        expect(locationInput.attr('placeholder')).toBe('Location');
-        expect(locationInput.attr('required')).toBe(undefined);
-        expect(locationInput.val()).toBe('');
+        var custom2Input = $('.input-custom_field_2');
+        expect(custom2Input).toBeInDOM();
+        expect(custom2Input).toBeVisible();
+        expect(custom2Input.attr('type')).toBe('checkbox');
+        expect(custom2Input.attr('required')).toBe('required');
+        expect(custom2Input.prop('checked')).toBeFalsy();
+
+        var custom3Input = $('.input-custom_field_3');
+        expect(custom3Input).toBeInDOM();
+        expect(custom3Input).toBeVisible();
+        expect(custom3Input.is('select')).toBeTruthy();
+        expect(custom3Input.children().length).toBe(3);
+        expect(custom3Input.children()[0].is('option')).toBeTruthy();
+        expect(custom3Input.children()[0].val()).toBe('One');
 
         done();
 
@@ -88,7 +99,6 @@ describe('Booking fields', function() {
     var config = {
       customer_fields: {
         phone: {
-          type: 'string',
           title: 'My custom placeholder',
           prefilled: '12345678',
           required: true
@@ -109,6 +119,7 @@ describe('Booking fields', function() {
         expect(phoneInput).toBeVisible();
         expect(phoneInput.attr('placeholder')).toBe(config.customer_fields.phone.title);
         expect(phoneInput.attr('required')).toBe('required');
+        expect(phoneInput.attr('type')).toBe('tel');
         expect(phoneInput.val()).toBe(config.customer_fields.phone.prefilled);
 
         done();

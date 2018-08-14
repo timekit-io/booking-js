@@ -25,6 +25,15 @@ function InitConfig() {
     return $.extend(true, {}, defaultConfig.primaryWithoutProject, suppliedConfig);
   };
 
+  // Set default formats for native fields
+  var setCustomerFieldsNativeFormats = function(config) {
+    $.each(config.customer_fields, function (key, field) {
+      if (!defaultConfig.customerFieldsNativeFormats[key]) return
+      config.customer_fields[key] = $.extend({}, defaultConfig.customerFieldsNativeFormats[key], field);
+    })
+    return config
+  };
+
   // Apply the config presets given a configuration
   var applyConfigPreset = function (localConfig, propertyName, propertyObject) {
     var presetCheck = defaultConfig.presets[propertyName][propertyObject];
@@ -41,6 +50,9 @@ function InitConfig() {
     // Apply presets
     newConfig = applyConfigPreset(newConfig, 'timeDateFormat', newConfig.ui.time_date_format)
     newConfig = applyConfigPreset(newConfig, 'availabilityView', newConfig.ui.availability_view)
+
+    // Set default formats for native fields
+    newConfig = setCustomerFieldsNativeFormats(newConfig)
 
     // Check for required settings
     if (!newConfig.app_key) {

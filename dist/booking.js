@@ -4723,6 +4723,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return $.extend(true, {}, defaultConfig.primaryWithoutProject, suppliedConfig);
 	  };
 	
+	  // Set default formats for native fields
+	  var setCustomerFieldsNativeFormats = function(config) {
+	    $.each(config.customer_fields, function (key, field) {
+	      if (!defaultConfig.customerFieldsNativeFormats[key]) return
+	      config.customer_fields[key] = $.extend({}, defaultConfig.customerFieldsNativeFormats[key], field);
+	    })
+	    return config
+	  };
+	
 	  // Apply the config presets given a configuration
 	  var applyConfigPreset = function (localConfig, propertyName, propertyObject) {
 	    var presetCheck = defaultConfig.presets[propertyName][propertyObject];
@@ -4739,6 +4748,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // Apply presets
 	    newConfig = applyConfigPreset(newConfig, 'timeDateFormat', newConfig.ui.time_date_format)
 	    newConfig = applyConfigPreset(newConfig, 'availabilityView', newConfig.ui.availability_view)
+	
+	    // Set default formats for native fields
+	    newConfig = setCustomerFieldsNativeFormats(newConfig)
 	
 	    // Check for required settings
 	    if (!newConfig.app_key) {
@@ -4840,16 +4852,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	  customer_fields: {
 	    name: {
-	      type: 'string',
 	      title: 'Name',
 	      required: true
 	    },
 	    email: {
-	      type: 'string',
 	      title: 'E-mail',
 	      format: 'email',
 	      required: true
 	    }
+	  }
+	}
+	
+	var customerFieldsNativeFormats = {
+	  email: {
+	    format: 'email'
+	  },
+	  comment: {
+	    format: 'textarea'
+	  },
+	  phone: {
+	    format: 'tel'
 	  }
 	}
 	
@@ -4925,6 +4947,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = {
 	  primary: primary,
 	  primaryWithoutProject: primaryWithoutProject,
+	  customerFieldsNativeFormats: customerFieldsNativeFormats,
 	  presets: {
 	    timeDateFormat: {
 	      '24h-dmy-mon': timeDateFormat24hdmymon,
@@ -5321,9 +5344,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	
 	    $.each(getConfig().customer_fields, function(key, field) {
-	      var typeFormat = joinFieldType(field)
-	      if (typeFormat === 'string_long') height += 98;
-	      else if (typeFormat === 'boolean') height += 51;
+	      if (field.format === 'textarea') height += 98;
+	      else if (field.format === 'checkbox') height += 51;
 	      else height += 66;
 	    })
 	
@@ -5445,35 +5467,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  };
 	
-	  // Make a concatened string with field type + format
-	  var joinFieldType = function (field) {
-	    if (!field.type) return 'string'
-	    return field.type + (field.format ? '_' + field.format : '')
-	  }
-	
 	  // Render customer fields
 	  var renderCustomerFields = function () {
 	    
-	    var fieldString = __webpack_require__(69);
-	    var fieldStringLong = __webpack_require__(70);
-	    var fieldStringSelect = __webpack_require__(79);
-	    var fieldBoolean = __webpack_require__(71);
+	    var textTemplate = __webpack_require__(81);
+	    var textareaTemplate = __webpack_require__(82);
+	    var selectTemplate = __webpack_require__(83);
+	    var checkboxTemplate = __webpack_require__(84);
 	
 	    var fieldsTarget = []
 	    $.each(getConfig().customer_fields, function(key, field) {
-	      var tmp = fieldString
-	      var typeFormat = joinFieldType(field)
-	      if (typeFormat === 'string_long') tmp = fieldStringLong
-	      if (typeFormat === 'string_select') tmp = fieldStringSelect
-	      if (typeFormat === 'boolean') tmp = fieldBoolean
+	      var tmpl = textTemplate
+	      if (field.format === 'textarea') tmpl = textareaTemplate
+	      if (field.format === 'select') tmpl = selectTemplate
+	      if (field.format === 'checkbox') tmpl = checkboxTemplate
+	      if (!field.format) field.format = 'text'
 	      if (key === 'email') field.format = 'email'
-	      if (field.type === 'string' && !field.format) field.format = 'text'
 	      var data = $.extend({
 	        key: key,
 	        arrowDownIcon: __webpack_require__(80)
 	      }, field)
-	      var tmpl = $(tmp.render(data))
-	      fieldsTarget.push(tmpl)
+	      var fieldTarget = $(tmpl.render(data))
+	      fieldsTarget.push(fieldTarget)
 	    })
 	
 	    return fieldsTarget
@@ -5518,7 +5533,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (eventData.resources) {
 	      utils.logDebug(['Available resources for chosen timeslot:', eventData.resources]);
 	    }
-	
 	
 	    form.find('.bookingjs-form-input').on('input', function() {
 	      var field = $(this).closest('.bookingjs-form-field');
@@ -5670,7 +5684,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // Save custom fields in meta object
 	    $.each(getConfig().customer_fields, function(key, field) {
 	      if (nativeFields.includes(key)) return
-	      if (field.type === 'boolean' && !formData[key]) formData[key] = 'No'
+	      if (field.format === 'checkbox' && !formData[key]) formData[key] = 'No'
 	      args.meta[key] = formData[key]
 	      args.description += (getConfig().customer_fields[key].title || key) + ': ' + formData[key] + '\n';
 	    })
@@ -28206,27 +28220,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = "<svg viewBox=\"0 0 62 55\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><title>error-warning-icon</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\"><g id=\"error-warning-icon\" fill-rule=\"nonzero\" fill=\"#D83B46\"><path d=\"M60.2,41.5 L38.7,5.3 C37.1,2.5 34.2,0.9 31,0.9 C27.8,0.9 24.9,2.5 23.3,5.3 L1.8,41.5 C0.1,44.3 0.1,47.7 1.7,50.5 C3.3,53.3 6.2,55 9.5,55 L52.4,55 C55.7,55 58.6,53.3 60.2,50.5 C61.9,47.7 61.9,44.3 60.2,41.5 Z M55.1,47.6 C54.8,48.1 54.1,49.1 52.5,49.1 L9.5,49.1 C7.9,49.1 7.2,48 6.9,47.6 C6.6,47.1 6.1,45.9 6.9,44.6 L28.4,8.4 C29.2,7.1 30.5,6.9 31,6.9 C31.5,6.9 32.8,7 33.6,8.4 L55.1,44.6 C55.9,45.9 55.3,47.1 55.1,47.6 Z\" id=\"Shape\"></path><path d=\"M31,15.2 C29.3,15.2 28,16.5 28,18.2 L28,34.2 C28,35.9 29.3,37.2 31,37.2 C32.7,37.2 34,35.9 34,34.2 L34,18.2 C34,16.6 32.7,15.2 31,15.2 Z\" id=\"Shape\"></path><path d=\"M31,38.8 C29.3,38.8 28,40.1 28,41.8 L28,42.8 C28,44.5 29.3,45.8 31,45.8 C32.7,45.8 34,44.5 34,42.8 L34,41.8 C34,40.1 32.7,38.8 31,38.8 Z\" id=\"Shape\"></path></g></g></svg>"
 
 /***/ }),
-/* 69 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	var H = __webpack_require__(60);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field ");if(t.s(t.f("prefilled",c,p,1),c,p,0,49,76,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("bookingjs-form-field--dirty");});c.pop();}t.b("\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    type=\"");t.b(t.v(t.f("format",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.f("title",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("prefilled",c,p,1),c,p,0,385,410,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.f("prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,446,456,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,491,501,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field {{# prefilled }}bookingjs-form-field--dirty{{/ prefilled }}\">\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label label-{{ key }}\">\n    {{ title }}\n  </label>\n  <input\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input input-{{ key }}\"\n    type=\"{{ format }}\"\n    name=\"{{ key }}\"\n    placeholder=\"{{ title }}\"\n    {{# prefilled }} value=\"{{ prefilled }}\" {{/ prefilled }}\n    {{# readonly }} readonly {{/ readonly }}\n    {{# required }} required {{/ required }}\n  />\n</div>", H);return T; }();
-
-/***/ }),
-/* 70 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	var H = __webpack_require__(60);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field ");if(t.s(t.f("prefilled",c,p,1),c,p,0,49,76,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("bookingjs-form-field--dirty");});c.pop();}t.b("\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <textarea");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input bookingjs-form-input--textarea input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    rows=\"3\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.f("title",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,407,417,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,452,462,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b(">");if(t.s(t.f("prefilled",c,p,1),c,p,0,494,509,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(t.v(t.f("prefilled",c,p,0)));});c.pop();}t.b("</textarea>");t.b("\n" + i);t.b("</div>");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field {{# prefilled }}bookingjs-form-field--dirty{{/ prefilled }}\">\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label label-{{ key }}\">\n    {{ title }}\n  </label>\n  <textarea\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input bookingjs-form-input--textarea input-{{ key }}\"\n    rows=\"3\"\n    name=\"{{ key }}\"\n    placeholder=\"{{ title }}\"\n    {{# readonly }} readonly {{/ readonly }}\n    {{# required }} required {{/ required }}>{{# prefilled }}{{ prefilled }}{{/ prefilled }}</textarea>\n</div>", H);return T; }();
-
-/***/ }),
-/* 71 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	var H = __webpack_require__(60);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field bookingjs-form-field--checkbox\">");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input--checkbox input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    type=\"checkbox\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    value=\"Yes\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("prefilled",c,p,1),c,p,0,236,245,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" checked ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,281,291,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" disabled ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,326,336,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label--checkbox label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("</div>");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field bookingjs-form-field--checkbox\">\n  <input\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input--checkbox input-{{ key }}\"\n    type=\"checkbox\"\n    name=\"{{ key }}\"\n    value=\"Yes\"\n    {{# prefilled }} checked {{/ prefilled }}\n    {{# readonly }} disabled {{/ readonly }}\n    {{# required }} required {{/ required }}\n  />\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label--checkbox label-{{ key }}\">\n    {{ title }}\n  </label>\n</div>", H);return T; }();
-
-/***/ }),
+/* 69 */,
+/* 70 */,
+/* 71 */,
 /* 72 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -28266,17 +28262,39 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ }),
 /* 78 */,
-/* 79 */
+/* 79 */,
+/* 80 */
+/***/ (function(module, exports) {
+
+	module.exports = "<svg viewBox=\"0 0 92 57\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><title>Shape</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\"><g id=\"baseline-keyboard_arrow_down-24px\" fill=\"#000000\" fill-rule=\"nonzero\"><path d=\"M14.1475701,2.57246832 L44.5933923,32.6934216 C45.3726692,33.4643833 46.6273308,33.4643833 47.4066077,32.6934216 L77.8524299,2.57246832 C80.9719545,-0.513769666 85.9953329,-0.511030764 89.1114902,2.57860711 L89.2702623,2.73602808 C92.4077787,5.84684331 92.4294243,10.9121169 89.3186091,14.0496333 C89.3025624,14.0658177 89.2864467,14.0819334 89.2702623,14.09798 L47.4081573,55.6038265 C46.6285143,56.3768345 45.3714857,56.3768345 44.5918427,55.6038265 L2.72973768,14.09798 C-0.407778714,10.9871648 -0.429424284,5.92189121 2.68139094,2.78437482 C2.69743758,2.76819044 2.71355331,2.75207472 2.72973768,2.73602808 L2.88850984,2.57860711 C6.00466711,-0.511030764 11.0280455,-0.513769666 14.1475701,2.57246832 Z\" id=\"Shape\"></path></g></g></svg>"
+
+/***/ }),
+/* 81 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	var H = __webpack_require__(60);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field ");if(t.s(t.f("prefilled",c,p,1),c,p,0,49,76,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("bookingjs-form-field--dirty");});c.pop();}t.b("\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    type=\"");t.b(t.v(t.f("format",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.f("title",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("prefilled",c,p,1),c,p,0,385,410,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.f("prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,446,456,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,491,501,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field {{# prefilled }}bookingjs-form-field--dirty{{/ prefilled }}\">\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label label-{{ key }}\">\n    {{ title }}\n  </label>\n  <input\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input input-{{ key }}\"\n    type=\"{{ format }}\"\n    name=\"{{ key }}\"\n    placeholder=\"{{ title }}\"\n    {{# prefilled }} value=\"{{ prefilled }}\" {{/ prefilled }}\n    {{# readonly }} readonly {{/ readonly }}\n    {{# required }} required {{/ required }}\n  />\n</div>", H);return T; }();
+
+/***/ }),
+/* 82 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	var H = __webpack_require__(60);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field ");if(t.s(t.f("prefilled",c,p,1),c,p,0,49,76,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("bookingjs-form-field--dirty");});c.pop();}t.b("\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <textarea");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input bookingjs-form-input--textarea input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    rows=\"3\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.f("title",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,407,417,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,452,462,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b(">");if(t.s(t.f("prefilled",c,p,1),c,p,0,494,509,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(t.v(t.f("prefilled",c,p,0)));});c.pop();}t.b("</textarea>");t.b("\n" + i);t.b("</div>");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field {{# prefilled }}bookingjs-form-field--dirty{{/ prefilled }}\">\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label label-{{ key }}\">\n    {{ title }}\n  </label>\n  <textarea\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input bookingjs-form-input--textarea input-{{ key }}\"\n    rows=\"3\"\n    name=\"{{ key }}\"\n    placeholder=\"{{ title }}\"\n    {{# readonly }} readonly {{/ readonly }}\n    {{# required }} required {{/ required }}>{{# prefilled }}{{ prefilled }}{{/ prefilled }}</textarea>\n</div>", H);return T; }();
+
+/***/ }),
+/* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var H = __webpack_require__(60);
 	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field bookingjs-form-field--select\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label bookingjs-form-label--select label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <select");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input--select input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,337,346,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" disabed ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,381,391,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("  >");t.b("\n" + i);if(t.s(t.f("enum",c,p,1),c,p,0,426,519,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("    <option value=\"");t.b(t.v(t.d(".",c,p,0)));t.b("\" ");if(t.s(t.f("prefilled",c,p,1),c,p,0,471,481,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" selected ");});c.pop();}t.b(">");t.b(t.v(t.d(".",c,p,0)));t.b("</option>");t.b("\n" + i);});c.pop();}t.b("  </select>");t.b("\n" + i);t.b("  <div class=\"bookingjs-form-input-arrow--select\">");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("arrowDownIcon",c,p,0)));t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field bookingjs-form-field--select\">\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label bookingjs-form-label--select label-{{ key }}\">\n    {{ title }}\n  </label>\n  <select\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input--select input-{{ key }}\"\n    name=\"{{ key }}\"\n    {{# readonly }} disabed {{/ readonly }}\n    {{# required }} required {{/ required }}\n  >\n    {{# enum }}\n    <option value=\"{{ . }}\" {{# prefilled }} selected {{/ prefilled }}>{{ . }}</option>\n    {{/ enum }}\n  </select>\n  <div class=\"bookingjs-form-input-arrow--select\">\n    {{& arrowDownIcon }}\n  </div>\n</div>", H);return T; }();
 
 /***/ }),
-/* 80 */
-/***/ (function(module, exports) {
+/* 84 */
+/***/ (function(module, exports, __webpack_require__) {
 
-	module.exports = "<svg viewBox=\"0 0 92 57\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><title>Shape</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\"><g id=\"baseline-keyboard_arrow_down-24px\" fill=\"#000000\" fill-rule=\"nonzero\"><path d=\"M14.1475701,2.57246832 L44.5933923,32.6934216 C45.3726692,33.4643833 46.6273308,33.4643833 47.4066077,32.6934216 L77.8524299,2.57246832 C80.9719545,-0.513769666 85.9953329,-0.511030764 89.1114902,2.57860711 L89.2702623,2.73602808 C92.4077787,5.84684331 92.4294243,10.9121169 89.3186091,14.0496333 C89.3025624,14.0658177 89.2864467,14.0819334 89.2702623,14.09798 L47.4081573,55.6038265 C46.6285143,56.3768345 45.3714857,56.3768345 44.5918427,55.6038265 L2.72973768,14.09798 C-0.407778714,10.9871648 -0.429424284,5.92189121 2.68139094,2.78437482 C2.69743758,2.76819044 2.71355331,2.75207472 2.72973768,2.73602808 L2.88850984,2.57860711 C6.00466711,-0.511030764 11.0280455,-0.513769666 14.1475701,2.57246832 Z\" id=\"Shape\"></path></g></g></svg>"
+	var H = __webpack_require__(60);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field bookingjs-form-field--checkbox\">");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input--checkbox input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    type=\"checkbox\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    value=\"Yes\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("prefilled",c,p,1),c,p,0,236,245,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" checked ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,281,291,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" disabled ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,326,336,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label--checkbox label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("</div>");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field bookingjs-form-field--checkbox\">\n  <input\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input--checkbox input-{{ key }}\"\n    type=\"checkbox\"\n    name=\"{{ key }}\"\n    value=\"Yes\"\n    {{# prefilled }} checked {{/ prefilled }}\n    {{# readonly }} disabled {{/ readonly }}\n    {{# required }} required {{/ required }}\n  />\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label--checkbox label-{{ key }}\">\n    {{ title }}\n  </label>\n</div>", H);return T; }();
 
 /***/ })
 /******/ ])

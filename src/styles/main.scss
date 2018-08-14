@@ -294,6 +294,10 @@
 
     &-field--dirty &-input {
       padding: 25px 25px 5px;
+
+      &:invalid {
+        box-shadow: inset 0px 0px 1px 1px $errorColor;
+      }
     }
 
     &-field--dirty &-input--textarea {
@@ -310,7 +314,7 @@
       transition: opacity .2s ease, font-size .2s ease, color .2s ease, top .2s ease;
     }
 
-    &-input, &-input:invalid {
+    &-input {
       @include formInput;
   
       &:read-only {

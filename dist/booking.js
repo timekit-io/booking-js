@@ -252,7 +252,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  // Get library version
 	  var getVersion = function() {
-	    return ("2.0.2");
+	    return ("2.1.0");
 	  };
 	
 	  var destroy = function() {
@@ -5652,6 +5652,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        email: formData.email,
 	        timezone: moment.tz.guess()
 	      },
+	      participants: [formData.email],
 	      meta: {}
 	    };
 	

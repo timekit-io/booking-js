@@ -582,6 +582,7 @@ function InitRender(deps) {
         email: formData.email,
         timezone: moment.tz.guess()
       },
+      participants: [formData.email],
       meta: {}
     };
 

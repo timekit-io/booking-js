@@ -84,8 +84,8 @@ describe('Booking fields', function() {
         expect(custom3Input).toBeVisible();
         expect(custom3Input.is('select')).toBeTruthy();
         expect(custom3Input.children().length).toBe(3);
-        expect(custom3Input.children()[0].is('option')).toBeTruthy();
-        expect(custom3Input.children()[0].val()).toBe('One');
+        expect($(custom3Input.children()[0]).is('option')).toBeTruthy();
+        expect($(custom3Input.children()[0]).val()).toBe('One');
 
         done();
 

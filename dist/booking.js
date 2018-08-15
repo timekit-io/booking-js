@@ -5652,8 +5652,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        email: formData.email,
 	        timezone: moment.tz.guess()
 	      },
-	      participants: [formData.email],
-	      meta: {}
+	      participants: [formData.email]
 	    };
 	
 	    if (getConfig().project_id) {
@@ -5685,8 +5684,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // Save custom fields in meta object
 	    $.each(getConfig().customer_fields, function(key, field) {
 	      if (nativeFields.includes(key)) return
-	      if (field.format === 'checkbox' && !formData[key]) formData[key] = 'No'
-	      args.meta[key] = formData[key]
+	      if (field.format === 'checkbox') formData[key] = !!formData[key]
+	      args.customer[key] = formData[key]
 	      args.description += (getConfig().customer_fields[key].title || key) + ': ' + formData[key] + '\n';
 	    })
 	
@@ -28246,7 +28245,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ (function(module, exports, __webpack_require__) {
 
 	var H = __webpack_require__(60);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field bookingjs-form-field--checkbox\">");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input--checkbox input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    type=\"checkbox\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    value=\"Yes\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("prefilled",c,p,1),c,p,0,236,245,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" checked ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,281,291,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" disabled ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,326,336,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label--checkbox label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("</div>");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field bookingjs-form-field--checkbox\">\n  <input\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input--checkbox input-{{ key }}\"\n    type=\"checkbox\"\n    name=\"{{ key }}\"\n    value=\"Yes\"\n    {{# prefilled }} checked {{/ prefilled }}\n    {{# readonly }} disabled {{/ readonly }}\n    {{# required }} required {{/ required }}\n  />\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label--checkbox label-{{ key }}\">\n    {{ title }}\n  </label>\n</div>", H);return T; }();
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field bookingjs-form-field--checkbox\">");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input--checkbox input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    type=\"checkbox\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    value=\"true\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("prefilled",c,p,1),c,p,0,237,246,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" checked ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,282,292,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" disabled ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,327,337,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label--checkbox label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("</div>");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field bookingjs-form-field--checkbox\">\n  <input\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input--checkbox input-{{ key }}\"\n    type=\"checkbox\"\n    name=\"{{ key }}\"\n    value=\"true\"\n    {{# prefilled }} checked {{/ prefilled }}\n    {{# readonly }} disabled {{/ readonly }}\n    {{# required }} required {{/ required }}\n  />\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label--checkbox label-{{ key }}\">\n    {{ title }}\n  </label>\n</div>", H);return T; }();
 
 /***/ }),
 /* 73 */

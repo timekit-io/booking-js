@@ -29,20 +29,6 @@
           title: 'Comment',
           prefilled: 'This is a comment'
         },
-        phone: {
-          title: 'Phone',
-          required: true
-        },
-        voip: {
-          title: 'Skype',
-          prefilled: 'doc.brown',
-          required: true,
-          readonly: true
-        },
-        location: {
-          title: 'Location',
-          placeholder: 'Place of meeting'
-        },
         department: {
           title: 'Department',
           type: 'string',
@@ -52,6 +38,10 @@
             'Design',
             'Sales'
           ]
+        },
+        terms: {
+          title: 'I accept terms & conditions',
+          format: 'checkbox'
         }
       }
     });

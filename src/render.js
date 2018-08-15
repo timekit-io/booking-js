@@ -582,8 +582,7 @@ function InitRender(deps) {
         email: formData.email,
         timezone: moment.tz.guess()
       },
-      participants: [formData.email],
-      meta: {}
+      participants: [formData.email]
     };
 
     if (getConfig().project_id) {
@@ -615,8 +614,8 @@ function InitRender(deps) {
     // Save custom fields in meta object
     $.each(getConfig().customer_fields, function(key, field) {
       if (nativeFields.includes(key)) return
-      if (field.format === 'checkbox' && !formData[key]) formData[key] = 'No'
-      args.meta[key] = formData[key]
+      if (field.format === 'checkbox') formData[key] = !!formData[key]
+      args.customer[key] = formData[key]
       args.description += (getConfig().customer_fields[key].title || key) + ': ' + formData[key] + '\n';
     })
 

@@ -27,6 +27,7 @@
     "json-stringify-safe": "^5.0.1",
     "moment": "^2.10.6",
     "moment-timezone": "^0.5.13",
+    "querystringify": "^2.0.0",
     "sprintf-js": "^1.0.3",
     "timekit-sdk": "^1.16.0"
   },

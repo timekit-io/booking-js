@@ -18,7 +18,12 @@ function Initialize() {
   var getConfig = config.retrieve;
 
   // Initilization method
-  var init = function(suppliedConfig) {
+  var init = function(suppliedConfig, global) {
+
+    // Allows mokcing the window object if passed
+    global = global || window;
+    config.setGlobal(global)
+
     // Make sure that SDK is ready and debug flag is checked early
     var localConfig = config.setDefaults(suppliedConfig || {});
     config.update(localConfig);

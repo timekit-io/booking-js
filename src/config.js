@@ -1,11 +1,13 @@
 'use strict';
 
 var defaultConfig = require('./defaults');
+var qs = require('querystringify');
 
 function InitConfig() {
 
   // Current state
   var config = {};
+  var global = null;
 
   // Setup defaults for the SDK
   var prepareSdkConfig = function(suppliedConfig) {
@@ -32,6 +34,15 @@ function InitConfig() {
     return localConfig
   };
 
+  // Prefill customer fields based on URL query string
+  var applyPrefillFromUrlGetParams = function (suppliedConfig, urlParams) {
+    $.each(suppliedConfig.customer_fields, function (key) {
+      if (!urlParams['customer.' + key]) return
+      suppliedConfig.customer_fields[key].prefilled = urlParams['customer.' + key];
+    });
+    return suppliedConfig
+  }
+
   // Setup config
   var parseAndUpdate = function(suppliedConfig) {
 
@@ -43,9 +54,11 @@ function InitConfig() {
     newConfig = applyConfigPreset(newConfig, 'availabilityView', newConfig.ui.availability_view)
 
     // Check for required settings
-    if (!newConfig.app_key) {
-      throw 'A required config setting ("app_key") was missing';
-    }
+    if (!newConfig.app_key) throw 'A required config setting ("app_key") was missing';
+
+    // Prefill fields based on query string
+    var urlParams = getGlobal().location && getGlobal().location.search;
+    if (urlParams) newConfig = applyPrefillFromUrlGetParams(newConfig, qs.parse(urlParams));
 
     // Set new config to instance config
     update(newConfig);
@@ -62,12 +75,22 @@ function InitConfig() {
     return config
   }
 
+  var setGlobal = function(val) {
+    global = val
+  }
+  
+  var getGlobal = function(val) {
+    return global
+  }
+
   return {
     parseAndUpdate: parseAndUpdate,
     setDefaults: setDefaults,
     setDefaultsWithoutProject: setDefaultsWithoutProject,
     update: update,
-    retrieve: retrieve
+    retrieve: retrieve,
+    setGlobal: setGlobal,
+    getGlobal: getGlobal
   }
 }
 

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="UTF-8">
+  <title>Booking.js single instance example</title>
+  <style type="text/css">
+    body { background-color: #E6E6E6; max-width: 700px; margin: 0 auto; }
+  </style>
+ </head>
+ <body>
+
+  <div id="bookingjs"></div>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script type="text/javascript" src="../dist/booking.js"></script>
+  <script type="text/javascript">
+    TimekitBooking().init({
+      app_key: 'test_widget_key_SwGWUT0jOBXaELi7OKYlgrHcHytTr4h1',
+      project_id: '91cca749-93d0-4645-8061-0a493858a681',
+      sdk: {
+        apiBaseUrl: 'http://api-localhost.timekit.io/'
+      }
+    });
+  </script>
+
+</body>
+</html>

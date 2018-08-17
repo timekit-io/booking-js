@@ -584,6 +584,8 @@ function InitRender(deps) {
       args.description += (getConfig().customer_fields.voip.title || 'Voip') + ': ' + formData.voip + '\n';
     }
 
+    var endpoint = 'createBooking';
+
     if (getConfig().booking.graph === 'group_customer' || getConfig().booking.graph === 'group_customer_payment') {
       args.related = { owner_booking_id: eventData.booking.id }
       args.resource_id = eventData.booking.resource.id
@@ -595,16 +597,37 @@ function InitRender(deps) {
 
     $.extend(true, args, getConfig().booking);
 
+    if (getConfig().availability.mode === 'mutual') {
+      var bulkPayload = {
+        bookings: [],
+        delete_all_on_error: true,
+        relate_bookings: true
+      }
+      $.each(eventData.resources, function(index, resource) {
+        bulkPayload.bookings.push($.extend(true, {}, args, {
+          resource_id: resource.id
+        }))
+      })
+      endpoint = 'createBookingsBulk'
+      args = bulkPayload
+    }
+
     utils.doCallback('createBookingStarted', args);
 
     var requestHeaders = {
       'Timekit-OutputTimestampFormat': 'Y-m-d ' + getConfig().ui.localization.email_time_format + ' (P e)'
     };
 
+    return createBookingRequest(args, requestHeaders, endpoint);
+
+  };
+
+  var createBookingRequest = function(args, headers, endpoint) {
+
     var request = sdk
     .include(getConfig().create_booking_response_include)
-    .headers(requestHeaders)
-    .createBooking(args);
+    .headers(headers)
+    [endpoint](args);
 
     request
     .then(function(response){
@@ -615,8 +638,7 @@ function InitRender(deps) {
     });
 
     return request;
-
-  };
+  }
 
   // Render the powered by Timekit message
   var renderPoweredByMessage = function(pageTarget) {

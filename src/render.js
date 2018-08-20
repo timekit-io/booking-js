@@ -263,7 +263,6 @@ function InitRender(deps) {
     var height = 385;
 
     if (rootTarget.width() < 480) {
-      // height = 455;
       rootTarget.addClass('is-small');
       if (getConfig().ui.avatar) height -= 15;
       if (currentView === 'agendaWeek' || currentView === 'basicDay') {

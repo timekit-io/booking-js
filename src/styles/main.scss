@@ -7,6 +7,7 @@
 // Imports
 
 @import 'variables';
+@import 'utils';
 
 // Classes
 
@@ -52,7 +53,7 @@
   // Timezone Helper
 
   &-timezonehelper {
-    color: $textLightColor;
+    color: $textLighterColor;
     text-align: center;
     padding: 7px 10px;
     background-color: $bgColor;
@@ -269,7 +270,7 @@
         top: 50%;
 
         .booked-email {
-          color: $textLightColor;
+          color: $textLighterColor;
         }
       }
     }
@@ -293,6 +294,10 @@
 
     &-field--dirty &-input {
       padding: 25px 25px 5px;
+
+      &:invalid {
+        box-shadow: inset 0px 0px 1px 1px $errorColor;
+      }
     }
 
     &-field--dirty &-input--textarea {
@@ -309,33 +314,9 @@
       transition: opacity .2s ease, font-size .2s ease, color .2s ease, top .2s ease;
     }
 
-    &-input,
-    input, input:invalid
-    textarea, textarea:invalid {
-      transition: box-shadow 0.2s ease;
-      width: 100%;
-      padding: 15px 25px;
-      margin: 0;
-      border: 0px solid $borderColor;
-      font-size: 1em;
-      box-shadow: inset 0px 0px 1px 1px rgba(255,255,255, 0);
-      text-align: left;
-      box-sizing: border-box;
-      line-height: 1.5em;
-      font-family: $fontFamily;
-      color: $textColor;
-      overflow: auto;
-      border-bottom: 1px solid $borderColor;
-
-      &:focus {
-        outline: 0;
-        box-shadow: inset 0px 0px 1px 1px $primaryColor;
-      }
-
-      &.hidden {
-        display: none;
-      }
-
+    &-input {
+      @include formInput;
+  
       &:read-only {
         cursor: not-allowed;
         font-style: italic;
@@ -346,9 +327,81 @@
       }
     }
 
+    // Checkbox field
+
+    &-field--checkbox {
+      text-align: left;
+      position: relative;
+    }
+
+    &-label--checkbox {
+      padding: 25px 25px 25px 50px;
+      display: block;
+      font-family: $fontFamily;
+      color: $textLightColor;
+      font-size: 1em;
+      border-bottom: 1px solid $borderColor;
+
+      &:disabled {
+        cursor: not-allowed;
+        font-style: italic;
+
+        &:focus {
+          box-shadow: inset 0px 0px 1px 1px #D8D8D8;
+        }
+      }
+    }
+
+    &-input--checkbox[type=checkbox] {
+      position: absolute;
+      top: 19px;
+      left: 25px;
+      width: auto;
+      margin: 0;
+    }
+
+    // Textarea field
+
     &-input--textarea {
       padding: 15px 25px 25px;
       overflow: auto;
+    }
+
+    // Select field
+
+    &-field--select {
+      text-align: left;
+    }
+
+    &-label--select {
+      opacity: 1;
+      top: 20px;
+      font-size: 11px;
+      color: $primaryColor;
+    }
+
+    &-input--select {
+      @include formInput;
+      padding: 25px 25px 5px;
+      appearance: none;
+      border-radius: 0;
+      background: transparent;
+      line-height: 35px;
+    }
+
+    &-input-arrow--select {
+      position: absolute;
+      top: 31px;
+      right: 25px;
+      width: 12px;
+      height: 7.42px;
+      opacity: 0.2;
+      transition: opacity 0.2s ease;
+      pointer-events: none;
+    }
+
+    &-field--select:hover &-input-arrow--select {
+      opacity: 0.5;
     }
 
     &-button {
@@ -463,12 +516,12 @@
 
     a {
       transition: color 0.2s ease;
-      color: $textLightColor;
+      color: $textLighterColor;
       text-decoration: none;
 
       svg path {
         transition: fill 0.2s ease;
-        fill: $textLightColor;
+        fill: $textLighterColor;
       }
 
       &:hover {
@@ -570,7 +623,7 @@
 
     &-text {
       font-size: 12px;
-      color: $textLightColor;
+      color: $textLighterColor;
       word-break: break-word;
       overflow: scroll;
 

@@ -1,0 +1,17 @@
+<div class="bookingjs-form-field {{# prefilled }}bookingjs-form-field--dirty{{/ prefilled }}">
+  <label
+    for="input-{{ key }}"
+    class="bookingjs-form-label label-{{ key }}">
+    {{ title }}
+  </label>
+  <input
+    id="input-{{ key }}"
+    class="bookingjs-form-input input-{{ key }}"
+    type="{{ format }}"
+    name="{{ key }}"
+    placeholder="{{ title }}"
+    {{# prefilled }} value="{{ prefilled }}" {{/ prefilled }}
+    {{# readonly }} readonly {{/ readonly }}
+    {{# required }} required {{/ required }}
+  />
+</div>

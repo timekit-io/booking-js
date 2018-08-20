@@ -260,10 +260,9 @@ function InitRender(deps) {
     currentView = currentView || calendarTarget.fullCalendar('getView').name
 
     var view = getConfig().fullcalendar.defaultView
-    var height = 485;
+    var height = 385;
 
     if (rootTarget.width() < 480) {
-      height = 455;
       rootTarget.addClass('is-small');
       if (getConfig().ui.avatar) height -= 15;
       if (currentView === 'agendaWeek' || currentView === 'basicDay') {
@@ -273,10 +272,11 @@ function InitRender(deps) {
       rootTarget.removeClass('is-small');
     }
 
-    if (getConfig().customer_fields.comment) {    height += 100; }
-    if (getConfig().customer_fields.phone) {      height += 64; }
-    if (getConfig().customer_fields.voip) {       height += 64; }
-    if (getConfig().customer_fields.location) {   height += 64; }
+    $.each(getConfig().customer_fields, function(key, field) {
+      if (field.format === 'textarea') height += 98;
+      else if (field.format === 'checkbox') height += 51;
+      else height += 66;
+    })
 
     return {
       height: height,
@@ -396,17 +396,42 @@ function InitRender(deps) {
 
   };
 
+  // Render customer fields
+  var renderCustomerFields = function () {
+    
+    var textTemplate = require('./templates/fields/text.html');
+    var textareaTemplate = require('./templates/fields/textarea.html');
+    var selectTemplate = require('./templates/fields/select.html');
+    var checkboxTemplate = require('./templates/fields/checkbox.html');
+
+    var fieldsTarget = []
+    $.each(getConfig().customer_fields, function(key, field) {
+      var tmpl = textTemplate
+      if (field.format === 'textarea') tmpl = textareaTemplate
+      if (field.format === 'select') tmpl = selectTemplate
+      if (field.format === 'checkbox') tmpl = checkboxTemplate
+      if (!field.format) field.format = 'text'
+      if (key === 'email') field.format = 'email'
+      var data = $.extend({
+        key: key,
+        arrowDownIcon: require('!svg-inline!./assets/arrow-down-icon.svg')
+      }, field)
+      var fieldTarget = $(tmpl.render(data))
+      fieldsTarget.push(fieldTarget)
+    })
+
+    return fieldsTarget
+  }
+
   // Event handler when a timeslot is clicked in FullCalendar
   var showBookingPage = function(eventData) {
 
     utils.doCallback('showBookingPage', eventData);
 
-    var fieldsTemplate = require('./templates/booking-fields.html');
     var template = require('./templates/booking-page.html');
 
     var dateFormat = getConfig().ui.booking_date_format || moment.localeData().longDateFormat('LL');
     var timeFormat = getConfig().ui.booking_time_format || moment.localeData().longDateFormat('LT');
-
     var allocatedResource = eventData.resources ? eventData.resources[0].name : false;
 
     bookingPageTarget = $(template.render({
@@ -419,12 +444,12 @@ function InitRender(deps) {
       loadingIcon:              require('!svg-inline!./assets/loading-spinner.svg'),
       errorIcon:                require('!svg-inline!./assets/error-icon.svg'),
       submitText:               getConfig().ui.localization.submit_button,
-      successMessage:           interpolate.sprintf(getConfig().ui.localization.success_message, '<span class="booked-email"></span>'),
-      fields:                   getConfig().customer_fields
-    }, {
-      formFields: fieldsTemplate
+      successMessage:           interpolate.sprintf(getConfig().ui.localization.success_message, '<span class="booked-email"></span>')
     }));
 
+    var formFields = bookingPageTarget.find('.bookingjs-form-fields');
+    $(formFields).append(renderCustomerFields());
+    
     var form = bookingPageTarget.children('.bookingjs-form');
 
     bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
@@ -437,7 +462,6 @@ function InitRender(deps) {
     if (eventData.resources) {
       utils.logDebug(['Available resources for chosen timeslot:', eventData.resources]);
     }
-
 
     form.find('.bookingjs-form-input').on('input', function() {
       var field = $(this).closest('.bookingjs-form-field');
@@ -546,6 +570,8 @@ function InitRender(deps) {
   // Create new booking
   var timekitCreateBooking = function(formData, eventData) {
 
+    var nativeFields = ['name', 'email', 'location', 'comment', 'phone', 'voip']
+
     var args = {
       start: eventData.start.format(),
       end: eventData.end.format(),
@@ -583,6 +609,14 @@ function InitRender(deps) {
       args.customer.voip = formData.voip;
       args.description += (getConfig().customer_fields.voip.title || 'Voip') + ': ' + formData.voip + '\n';
     }
+
+    // Save custom fields in meta object
+    $.each(getConfig().customer_fields, function(key, field) {
+      if (nativeFields.includes(key)) return
+      if (field.format === 'checkbox') formData[key] = !!formData[key]
+      args.customer[key] = formData[key]
+      args.description += (getConfig().customer_fields[key].title || key) + ': ' + formData[key] + '\n';
+    })
 
     if (getConfig().booking.graph === 'group_customer' || getConfig().booking.graph === 'group_customer_payment') {
       args.related = { owner_booking_id: eventData.booking.id }

@@ -261,6 +261,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 	
 	  var destroy = function() {
+	    render.destroyFullCalendar();
 	    render.prepareDOM({});
 	    config.update({});
 	    return this;
@@ -5851,6 +5852,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  };
 	
+	  // Destory fullcalendar and cleanup event listeners etc.
+	  var destroyFullCalendar = function() {
+	    if (!calendarTarget || calendarTarget.fullCalendar === undefined) return
+	    calendarTarget.fullCalendar('destroy')
+	  }
+	
 	  // The fullCalendar object for advanced puppeting
 	  var fullCalendar = function() {
 	
@@ -5867,7 +5874,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    renderDisplayName: renderDisplayName,
 	    triggerError: triggerError,
 	    timekitCreateBooking: timekitCreateBooking,
-	    fullCalendar: fullCalendar
+	    fullCalendar: fullCalendar,
+	    destroyFullCalendar: destroyFullCalendar
 	  }
 	}
 	

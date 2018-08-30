@@ -168,6 +168,7 @@ function Initialize() {
   };
 
   var destroy = function() {
+    render.destroyFullCalendar();
     render.prepareDOM({});
     config.update({});
     return this;

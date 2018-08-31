@@ -672,6 +672,12 @@ function InitRender(deps) {
 
   };
 
+  // Destory fullcalendar and cleanup event listeners etc.
+  var destroyFullCalendar = function() {
+    if (!calendarTarget || calendarTarget.fullCalendar === undefined) return
+    calendarTarget.fullCalendar('destroy')
+  }
+
   // The fullCalendar object for advanced puppeting
   var fullCalendar = function() {
 
@@ -688,7 +694,8 @@ function InitRender(deps) {
     renderDisplayName: renderDisplayName,
     triggerError: triggerError,
     timekitCreateBooking: timekitCreateBooking,
-    fullCalendar: fullCalendar
+    fullCalendar: fullCalendar,
+    destroyFullCalendar: destroyFullCalendar
   }
 }
 

@@ -633,7 +633,6 @@ function InitRender(deps) {
 
     var request = sdk
     .include(getConfig().create_booking_response_include)
-    .headers(requestHeaders)
     .createBooking(args);
 
     request

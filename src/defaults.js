@@ -89,8 +89,7 @@ var customerFieldsNativeFormats = {
 var timeDateFormat24hdmymon = {
   ui: {
     booking_date_format: 'D. MMMM YYYY',
-    booking_time_format: 'HH:mm',
-    email_time_format: 'H:i'
+    booking_time_format: 'HH:mm'
   },
   fullcalendar: {
     timeFormat: 'HH:mm',
@@ -111,8 +110,7 @@ var timeDateFormat24hdmymon = {
 var timeDateFormat12hmdysun = {
   ui: {
     booking_date_format: 'MMMM D, YYYY',
-    booking_time_format: 'h:mma',
-    email_time_format: 'h:ia'
+    booking_time_format: 'h:mma'
   },
   fullcalendar: {
     timeFormat: 'h:mma',

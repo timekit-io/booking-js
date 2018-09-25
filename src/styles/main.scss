@@ -37,13 +37,6 @@
         padding-bottom: 24px;
       }
 
-      > .fc-right > button.fc-today-button {
-        .is-small & {
-          position: absolute;
-          left: 15px;
-        }
-      }
-
       .is-small.has-avatar & .fc-right h2 {
         display: none;
       }

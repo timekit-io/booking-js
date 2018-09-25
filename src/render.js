@@ -631,13 +631,8 @@ function InitRender(deps) {
 
     utils.doCallback('createBookingStarted', args);
 
-    var requestHeaders = {
-      'Timekit-OutputTimestampFormat': 'Y-m-d ' + getConfig().ui.localization.email_time_format + ' (P e)'
-    };
-
     var request = sdk
     .include(getConfig().create_booking_response_include)
-    .headers(requestHeaders)
     .createBooking(args);
 
     request

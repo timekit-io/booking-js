@@ -257,7 +257,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  // Get library version
 	  var getVersion = function() {
-	    return ("2.3.1");
+	    return ("2.3.2");
 	  };
 	
 	  var destroy = function() {
@@ -3887,6 +3887,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 	
 	  /**
+	   * Delete a resource with the given properties
+	   * @type {Function}
+	   * @return {Promise}
+	   */
+	  TK.deleteResource = function(data) {
+	
+	    return TK.makeRequest({
+	      url: '/resources/' + data.id,
+	      method: 'delete',
+	      data: data
+	    });
+	
+	  };
+	
+	  /**
 	   * Reset password for a resource
 	   * @type {Function}
 	   * @return {Promise}
@@ -4285,7 +4300,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  TK.getGroupBooking = function(data) {
 	
 	    return TK.makeRequest({
-	      url: '/bookings/' + data.id + '/groups',
+	      url: '/bookings/groups/' + data.id,
 	      method: 'get'
 	    });
 	
@@ -7584,9 +7599,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            mom = createUTC([2000, 1]).day(i);
 	            if (strict && !this._fullWeekdaysParse[i]) {
-	                this._fullWeekdaysParse[i] = new RegExp('^' + this.weekdays(mom, '').replace('.', '\.?') + '$', 'i');
-	                this._shortWeekdaysParse[i] = new RegExp('^' + this.weekdaysShort(mom, '').replace('.', '\.?') + '$', 'i');
-	                this._minWeekdaysParse[i] = new RegExp('^' + this.weekdaysMin(mom, '').replace('.', '\.?') + '$', 'i');
+	                this._fullWeekdaysParse[i] = new RegExp('^' + this.weekdays(mom, '').replace('.', '\\.?') + '$', 'i');
+	                this._shortWeekdaysParse[i] = new RegExp('^' + this.weekdaysShort(mom, '').replace('.', '\\.?') + '$', 'i');
+	                this._minWeekdaysParse[i] = new RegExp('^' + this.weekdaysMin(mom, '').replace('.', '\\.?') + '$', 'i');
 	            }
 	            if (!this._weekdaysParse[i]) {
 	                regex = '^' + this.weekdays(mom, '') + '|^' + this.weekdaysShort(mom, '') + '|^' + this.weekdaysMin(mom, '');
@@ -8389,7 +8404,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    function preprocessRFC2822(s) {
 	        // Remove comments and folding whitespace and replace multiple-spaces with a single space
-	        return s.replace(/\([^)]*\)|[\n\t]/g, ' ').replace(/(\s\s+)/g, ' ').trim();
+	        return s.replace(/\([^)]*\)|[\n\t]/g, ' ').replace(/(\s\s+)/g, ' ').replace(/^\s\s*/, '').replace(/\s\s*$/, '');
 	    }
 	
 	    function checkWeekday(weekdayStr, parsedInput, config) {
@@ -10568,7 +10583,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // Side effect imports
 	
 	
-	    hooks.version = '2.22.1';
+	    hooks.version = '2.22.2';
 	
 	    setHookCallback(createLocal);
 	
@@ -25765,7 +25780,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ (function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;//! moment-timezone.js
-	//! version : 0.5.16
+	//! version : 0.5.21
 	//! Copyright (c) JS Foundation and other contributors
 	//! license : MIT
 	//! github.com/moment/moment-timezone
@@ -25774,10 +25789,10 @@ return /******/ (function(modules) { // webpackBootstrap
 		"use strict";
 	
 		/*global define*/
-		if (true) {
+		if (typeof module === 'object' && module.exports) {
+			module.exports = factory(__webpack_require__(42)); // Node
+		} else if (true) {
 			!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(42)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));                 // AMD
-		} else if (typeof module === 'object' && module.exports) {
-			module.exports = factory(require('moment')); // Node
 		} else {
 			factory(root.moment);                        // Browser
 		}
@@ -25790,14 +25805,18 @@ return /******/ (function(modules) { // webpackBootstrap
 		// 	return moment;
 		// }
 	
-		var VERSION = "0.5.16",
+		var VERSION = "0.5.21",
 			zones = {},
 			links = {},
 			names = {},
 			guesses = {},
-			cachedGuess,
+			cachedGuess;
 	
-			momentVersion = moment.version.split('.'),
+		if (!moment || typeof moment.version !== 'string') {
+			logError('Moment Timezone requires Moment.js. See https://momentjs.com/timezone/docs/#/use-it/browser/');
+		}
+	
+		var momentVersion = moment.version.split('.'),
 			major = +momentVersion[0],
 			minor = +momentVersion[1];
 	
@@ -26159,6 +26178,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		}
 	
 		function getZone (name, caller) {
+			
 			name = normalizeName(name);
 	
 			var zone = zones[name];
@@ -26317,6 +26337,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		fn.tz = function (name, keepTime) {
 			if (name) {
+	            if (typeof name !== 'string') {
+	                throw new Error('Time zone name must be a string, got ' + name + ' [' + typeof name + ']');
+	            }
 				this._z = getZone(name);
 				if (this._z) {
 					moment.updateOffset(this, keepTime);
@@ -26366,7 +26389,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		}
 	
 		loadData({
-			"version": "2018d",
+			"version": "2018e",
 			"zones": [
 				"Africa/Abidjan|GMT|0|0||48e5",
 				"Africa/Nairobi|EAT|-30|0||47e5",
@@ -26380,7 +26403,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				"Africa/Khartoum|EAT CAT|-30 -20|01|1Usl0|51e5",
 				"Africa/Sao_Tome|GMT WAT|0 -10|01|1UQN0",
 				"Africa/Tripoli|EET CET CEST|-20 -10 -20|0120|1IlA0 TA0 1o00|11e5",
-				"Africa/Windhoek|WAST WAT CAT|-20 -10 -20|0101010101012|1GQo0 11B0 1qL0 WN0 1qL0 11B0 1nX0 11B0 1nX0 11B0 1nX0 11B0|32e4",
+				"Africa/Windhoek|CAT WAT|-20 -10|0101010101010|1GQo0 11B0 1qL0 WN0 1qL0 11B0 1nX0 11B0 1nX0 11B0 1nX0 11B0|32e4",
 				"America/Adak|HST HDT|a0 90|01010101010101010101010|1GIc0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0|326",
 				"America/Anchorage|AKST AKDT|90 80|01010101010101010101010|1GIb0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0|30e4",
 				"America/Santo_Domingo|AST|40|0||29e5",
@@ -26461,7 +26484,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				"Europe/Athens|EET EEST|-20 -30|01010101010101010101010|1GNB0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0|35e5",
 				"Asia/Novosibirsk|+07 +06|-70 -60|010|1N7v0 4eN0|15e5",
 				"Asia/Omsk|+07 +06|-70 -60|01|1N7v0|12e5",
-				"Asia/Pyongyang|KST KST|-90 -8u|01|1P4D0|29e5",
+				"Asia/Pyongyang|KST KST|-90 -8u|010|1P4D0 6BAu|29e5",
 				"Asia/Rangoon|+0630|-6u|0||48e5",
 				"Asia/Sakhalin|+11 +10|-b0 -a0|010|1N7r0 3rd0|58e4",
 				"Asia/Seoul|KST|-90|0||23e6",

@@ -119,6 +119,26 @@ module.exports = {
 
   },
 
+  // Find time endpoint with results in near future
+  findTimeWithIncrements: function(lengthInHours, incrementInMinutes) {
+
+    var firstTimeslotStart = moment();
+    var secondTimeslotStart = moment().add(incrementInMinutes, 'minutes');
+
+    jasmine.Ajax.stubRequest(
+      'https://api.timekit.io/v2/availability'
+    ).andReturn({
+      status: 200,
+      statusText: 'HTTP/1.1 200 OK',
+      contentType: 'application/json',
+      responseText: '{"data":[' +
+        '{"start":"' + firstTimeslotStart.format() + '","end":"' + firstTimeslotStart.add(lengthInHours, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]},' +
+        '{"start":"' + secondTimeslotStart.format() + '","end":"' + secondTimeslotStart.add(lengthInHours, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]}' +
+      ']}'
+    });
+
+  },
+
   // Create booking endpoint
   createBooking: function() {
 

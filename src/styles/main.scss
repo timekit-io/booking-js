@@ -572,36 +572,6 @@
     }
   }
 
-  // Powered by message
-
-  &-poweredby {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    text-align: center;
-    padding: 7px 10px;
-
-    a {
-      transition: color 0.2s ease;
-      color: $textLighterColor;
-      text-decoration: none;
-
-      svg path {
-        transition: fill 0.2s ease;
-        fill: $textLighterColor;
-      }
-
-      &:hover {
-        color: $textColor;
-
-        svg path {
-          fill: $textColor;
-        }
-      }
-    }
-  }
-
   &-timekitlogo {
     width: 15px;
     height: 15px;

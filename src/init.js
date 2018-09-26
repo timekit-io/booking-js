@@ -160,7 +160,8 @@ function Initialize() {
       render.renderDisplayName();
     }
 
-    render.renderTimezoneHelper();
+    // Show the footer with timezone helper and TK credits
+    render.renderFooter();
 
     utils.doCallback('renderCompleted');
 

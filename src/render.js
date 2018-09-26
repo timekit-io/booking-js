@@ -66,7 +66,9 @@ function InitRender(deps) {
       hideLoadingScreen();
 
       // Dont overlap timeslots when increments are used
-      if (getConfig().availability.timeslot_increments) response.data = convertTimeslotIncremenets(response.data);
+      if (getConfig().availability.timeslot_increments && calendarTarget.fullCalendar('getView').name === 'agendaWeek') {
+        response.data = convertTimeslotIncremenets(response.data);
+      }
 
       // Render available timeslots in FullCalendar
       if(response.data.length > 0) renderCalendarEvents(response.data);
@@ -451,7 +453,9 @@ function InitRender(deps) {
 
     utils.doCallback('showBookingPage', eventData);
 
-    if (getConfig().availability.timeslot_increments) eventData = resetTimeslotWithoutIncrements(eventData);
+    if (getConfig().availability.timeslot_increments && && calendarTarget.fullCalendar('getView').name === 'agendaWeek') {
+      eventData = resetTimeslotWithoutIncrements(eventData);
+    }
 
     var template = require('./templates/booking-page.html');
 

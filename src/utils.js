@@ -55,6 +55,18 @@ function InitUtils(deps) {
     return (suppliedConfig !== undefined && typeof suppliedConfig === 'object' && !$.isEmptyObject(suppliedConfig))
   }
 
+  // Splits a human-friendly string into values, like:
+  // '15 minutes' => (15, 'minutes)
+  var splitHumanTime = function (time) {
+    if (!time) return false
+    var split = time.split(' ');
+    if (split.length < 2) return false
+    return [
+      parseInt(split[0]),
+      split[1]
+    ];
+  }
+
   return {
     isFunction: isFunction,
     isArray: isArray,
@@ -65,7 +77,8 @@ function InitUtils(deps) {
     isEmbeddedProject: isEmbeddedProject,
     isHostedProject: isHostedProject,
     isRemoteProject: isRemoteProject,
-    doesConfigExist: doesConfigExist
+    doesConfigExist: doesConfigExist,
+    splitHumanTime: splitHumanTime
   }
 }
 

@@ -65,6 +65,9 @@ function InitRender(deps) {
       utils.doCallback('fetchAvailabilitySuccessful', response);
       hideLoadingScreen();
 
+      // Dont overlap timeslots when increments are used
+      if (getConfig().availability.timeslot_increments) response.data = convertTimeslotIncremenets(response.data);
+
       // Render available timeslots in FullCalendar
       if(response.data.length > 0) renderCalendarEvents(response.data);
 
@@ -78,6 +81,17 @@ function InitRender(deps) {
     });
 
   };
+
+  // Convert timeslots into a length of incremental value
+  var convertTimeslotIncremenets = function(data) {
+    if (data.length === 0) return data;
+    var timeslotIncrement = utils.splitHumanTime(getConfig().availability.timeslot_increments);
+    if (!timeslotIncrement) return data;
+    return data.map(function(timeslot) {
+      timeslot.end = moment(timeslot.start).add(timeslotIncrement[0], timeslotIncrement[1]);
+      return timeslot
+    })
+  }
 
   // Fetch availabile time through Timekit SDK
   var timekitGetBookingSlots = function() {
@@ -423,10 +437,21 @@ function InitRender(deps) {
     return fieldsTarget
   }
 
+  // Make sure change the timeslot lenght into original value
+  // when using increments
+  var resetTimeslotWithoutIncrements = function (timeslot) {
+    var timeslotLength = utils.splitHumanTime(getConfig().availability.length);
+    if (!timeslotLength) return timeslot;
+    timeslot.end = moment(timeslot.start).add(timeslotLength[0], timeslotLength[1]);
+    return timeslot;
+  }
+
   // Event handler when a timeslot is clicked in FullCalendar
   var showBookingPage = function(eventData) {
 
     utils.doCallback('showBookingPage', eventData);
+
+    if (getConfig().availability.timeslot_increments) eventData = resetTimeslotWithoutIncrements(eventData);
 
     var template = require('./templates/booking-page.html');
 

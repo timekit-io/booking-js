@@ -36,7 +36,6 @@ var primary = {
     },
     allDaySlot: false,
     scrollTime: '08:00:00',
-    timezone: 'local',
     nowIndicator: true
   }
 };

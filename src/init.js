@@ -141,6 +141,9 @@ function Initialize() {
     // Setup Timekit SDK config
     configureSdk();
 
+    // Start by guessing customer timezone
+    render.guessCustomerTimezone();
+
     // Initialize FullCalendar
     render.initializeCalendar();
 

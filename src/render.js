@@ -25,6 +25,9 @@ function InitRender(deps) {
   var loadingTarget;
   var errorTarget;
 
+  // State
+  var customerTimezone;
+
   // Make sure DOM element is ready and clean it
   var prepareDOM = function(suppliedConfig) {
 
@@ -44,7 +47,9 @@ function InitRender(deps) {
   // Fetch availabile time through Timekit SDK
   var timekitFetchAvailability = function() {
 
-    var args = {};
+    var args = {
+      output_timezone: customerTimezone
+    };
 
     if (getConfig().project_id) args.project_id = getConfig().project_id
     if (getConfig().resources) args.resources = getConfig().resources
@@ -216,7 +221,6 @@ function InitRender(deps) {
 
   // Calculate and display timezone helper
   var renderTimezoneHelper = function() {
-    var tzGuess = moment.tz.guess();
     var tzList = moment.tz.names();
     var timezoneIcon = require('!svg-inline!./assets/timezone-icon.svg');
     var arrowDownIcon = require('!svg-inline!./assets/arrow-down-icon.svg');
@@ -225,13 +229,32 @@ function InitRender(deps) {
     var timezoneHelperTarget = $(template.render({
       timezoneIcon: timezoneIcon,
       arrowDownIcon: arrowDownIcon,
-      localTimezone: tzGuess,
       listTimezones: tzList,
       timekitLogo: timekitLogo
     }));
     rootTarget.addClass('has-timezonehelper');
     rootTarget.append(timezoneHelperTarget);
+
+    // Set initial customer timezone
+    var pickerSelect = $('.bookingjs-footer-tz-picker-select');
+    pickerSelect.val(customerTimezone);
+    
+    pickerSelect.change(function() {
+      setCustomerTimezone(pickerSelect.val());
+    })
   };
+
+  // Guess the timezone and set global variable
+  var guessCustomerTimezone = function () {
+    var tzGuess = moment.tz.guess();
+    customerTimezone = tzGuess;
+  }
+
+  // Set timezone and trigger event
+  var setCustomerTimezone = function (newTz) {
+    customerTimezone = newTz;
+    $(document).trigger('customer-timezone-changed');
+  }
 
   // Setup and render FullCalendar
   var initializeCalendar = function() {
@@ -255,6 +278,12 @@ function InitRender(deps) {
     rootTarget.append(calendarTarget);
 
     calendarTarget.fullCalendar(args);
+
+    $(document).on('customer-timezone-changed', function () {
+      if (!calendarTarget) return
+      getAvailability();
+      calendarTarget.fullCalendar('option', 'now', moment().tz(customerTimezone).format());
+    })
 
     utils.doCallback('fullCalendarInitialized');
 
@@ -454,8 +483,8 @@ function InitRender(deps) {
     var allocatedResource = eventData.resources ? eventData.resources[0].name : false;
 
     bookingPageTarget = $(template.render({
-      chosenDate:               moment(eventData.start).format(dateFormat),
-      chosenTime:               moment(eventData.start).format(timeFormat) + ' - ' + moment(eventData.end).format(timeFormat),
+      chosenDate:               formatTimestamp(eventData.start, dateFormat),
+      chosenTime:               formatTimestamp(eventData.start, timeFormat) + ' - ' + formatTimestamp(eventData.end, timeFormat),
       allocatedResourcePrefix:  getConfig().ui.localization.allocated_resource_prefix,
       allocatedResource:        allocatedResource,
       closeIcon:                require('!svg-inline!./assets/close-icon.svg'),
@@ -497,6 +526,12 @@ function InitRender(deps) {
       renderPoweredByMessage(bookingPageTarget);
     }
 
+    $(document).on('customer-timezone-changed', function () {
+      if (!bookingPageTarget) return
+      $('.bookingjs-bookpage-date').text(formatTimestamp(eventData.start, dateFormat));
+      $('.bookingjs-bookpage-time').text(formatTimestamp(eventData.start, timeFormat) + ' - ' + formatTimestamp(eventData.end, timeFormat));
+    });
+
     $(document).on('keyup', function(e) {
       // escape key maps to keycode `27`
       if (e.keyCode === 27) { hideBookingPage(); }
@@ -509,6 +544,11 @@ function InitRender(deps) {
     }, 100);
 
   };
+
+  // Output timestamp into given format in customers timezone
+  var formatTimestamp = function (start, format) {
+    return moment(start).tz(customerTimezone).format(format);
+  }
 
   // Remove the booking page DOM node
   var hideBookingPage = function() {
@@ -598,7 +638,7 @@ function InitRender(deps) {
       customer: {
         name: formData.name,
         email: formData.email,
-        timezone: moment.tz.guess()
+        timezone: customerTimezone
       },
       participants: [formData.email]
     };
@@ -710,7 +750,8 @@ function InitRender(deps) {
     timekitCreateBooking: timekitCreateBooking,
     fullCalendar: fullCalendar,
     destroyFullCalendar: destroyFullCalendar,
-    renderTimezoneHelper: renderTimezoneHelper
+    renderTimezoneHelper: renderTimezoneHelper,
+    guessCustomerTimezone: guessCustomerTimezone
   }
 }
 

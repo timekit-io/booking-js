@@ -46,6 +46,7 @@
   // Timezone Helper
 
   &-footer {
+    position: relative;
     color: $textLighterColor;
     text-align: left;
     padding: 0px 25px;
@@ -53,7 +54,7 @@
     border-top: 1px solid $borderColor;
     min-height: 30px;
     line-height: 30px;
-    z-index: 20;
+    z-index: 40;
     border-radius: 0 0 4px 4px;
     
     &-tz {

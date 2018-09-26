@@ -49,13 +49,14 @@
     position: relative;
     color: $textLighterColor;
     text-align: left;
-    padding: 0px 25px;
+    padding: 0px 15px;
     background-color: $bgColor;
     border-top: 1px solid $borderColor;
     min-height: 30px;
     line-height: 30px;
     z-index: 40;
     border-radius: 0 0 4px 4px;
+    font-size: 12px;
     
     &-tz {
       float: left;
@@ -114,8 +115,9 @@
       text-decoration: none;
 
       svg {
-        width: 12px;
-        margin-left: 1px;
+        margin-left: 5px;
+        top: 1px;
+        position: relative;
       }
 
       svg path {
@@ -136,6 +138,11 @@
   &-timezoneicon {
     width: 10px;
     margin-right: 5px;
+  }
+
+  &-timekitlogo {
+    width: 12px;
+    height: 12px;
   }
 
   // Image avatar
@@ -572,13 +579,6 @@
         transform: scale(1);
       }
     }
-  }
-
-  &-timekitlogo {
-    width: 15px;
-    height: 15px;
-    margin-right: 5px;
-    vertical-align: sub;
   }
 
   &-loading {

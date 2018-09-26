@@ -214,6 +214,25 @@ function InitRender(deps) {
 
   };
 
+  // Calculate and display timezone helper
+  var renderTimezoneHelper = function() {
+    var tzGuess = moment.tz.guess();
+    var tzList = moment.tz.names();
+    var timezoneIcon = require('!svg-inline!./assets/timezone-icon.svg');
+    var arrowDownIcon = require('!svg-inline!./assets/arrow-down-icon.svg');
+    var timekitLogo = require('!svg-inline!./assets/timekit-logo.svg');
+    var template = require('./templates/timezone-helper.html');
+    var timezoneHelperTarget = $(template.render({
+      timezoneIcon: timezoneIcon,
+      arrowDownIcon: arrowDownIcon,
+      localTimezone: tzGuess,
+      listTimezones: tzList,
+      timekitLogo: timekitLogo
+    }));
+    rootTarget.addClass('has-timezonehelper');
+    rootTarget.append(timezoneHelperTarget);
+  };
+
   // Setup and render FullCalendar
   var initializeCalendar = function() {
 
@@ -690,7 +709,8 @@ function InitRender(deps) {
     triggerError: triggerError,
     timekitCreateBooking: timekitCreateBooking,
     fullCalendar: fullCalendar,
-    destroyFullCalendar: destroyFullCalendar
+    destroyFullCalendar: destroyFullCalendar,
+    renderTimezoneHelper: renderTimezoneHelper
   }
 }
 

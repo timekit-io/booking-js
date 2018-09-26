@@ -157,6 +157,8 @@ function Initialize() {
       render.renderDisplayName();
     }
 
+    render.renderTimezoneHelper();
+
     utils.doCallback('renderCompleted');
 
     return this;

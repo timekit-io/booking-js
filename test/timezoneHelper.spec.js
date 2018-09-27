@@ -36,7 +36,7 @@ describe('Timezone helper', function() {
 
       done()
 
-    }, 500)
+    }, 500);
 
   });
 
@@ -85,9 +85,9 @@ describe('Timezone helper', function() {
 
           done()
 
-        }, 500)
-      }, 500)
-    }, 500)
+        }, 500);
+      }, 500);
+    }, 500);
 
   });
 

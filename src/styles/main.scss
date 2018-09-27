@@ -111,6 +111,7 @@
       transition: color 0.2s ease;
       color: $textLighterColor;
       text-decoration: none;
+      outline: none;
 
       svg {
         margin-left: 5px;
@@ -123,7 +124,8 @@
         fill: $textLighterColor;
       }
 
-      &:hover {
+      &:hover,
+      &:focus {
         color: $textColor;
 
         svg path {

@@ -58,6 +58,12 @@
     border-radius: 0 0 4px 4px;
     font-size: 12px;
     overflow: hidden;
+
+    .is-small & {
+      padding: 3px 15px;
+      min-height: 25px;
+    line-height: 25px;
+    }
     
     &-tz {
       float: left;
@@ -85,9 +91,14 @@
           border: 1px solid $borderColor;
           color: $textLighterColor;
           outline: none;
+          max-width: 220px;
 
           &::-ms-expand { 
             display: none; // hide the default arrow in ie10 and ie11
+          }
+
+          .is-small & {
+            max-width: 180px;
           }
         }
 
@@ -105,6 +116,15 @@
           }
         }
       }
+
+      .bookingjs-timezoneicon {
+        width: 10px;
+        margin-right: 5px;
+
+        .is-small & {
+          display: none;
+        }
+      }
     }
 
     &-by {
@@ -114,40 +134,36 @@
       text-decoration: none;
       outline: none;
 
-      svg {
+      .bookingjs-timekitlogo {
+        width: 12px;
+        height: 12px;
         margin-left: 5px;
         top: 1px;
         position: relative;
-      }
+  
+        path {
+          transition: fill 0.2s ease;
+          fill: $textLighterColor;
+        }
 
-      svg path {
-        transition: fill 0.2s ease;
-        fill: $textLighterColor;
+        .is-small & {
+          display: none;
+        }
       }
 
       &:hover,
       &:focus {
         color: $textColor;
 
-        svg path {
+        .bookingjs-timekitlogo path {
           fill: $textColor;
         }
       }
-    }
 
-    .is-small &-by {
-      float: left;
-    }
-  }
-
-  &-timezoneicon {
-    width: 10px;
-    margin-right: 5px;
-  }
-
-  &-timekitlogo {
-    width: 12px;
-    height: 12px;
+      .is-small & {
+        float: left;
+      }
+    }    
   }
 
   // Image avatar
@@ -162,11 +178,11 @@
     box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.13);
     overflow: hidden;
     z-index: 40;
-    background-color: white;
 
     .is-small & {
       top: -40px;
     }
+    background-color: white;
 
     img {
       max-width: 100%;

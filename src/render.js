@@ -12,6 +12,8 @@ require('./styles/utils.scss');
 require('./styles/main.scss');
 require('./styles/testmoderibbon.scss');
 
+var timezones    = require('./timezones');
+
 function InitRender(deps) {
 
   var utils = deps.utils;
@@ -227,28 +229,27 @@ function InitRender(deps) {
     if (getConfig().project_id) { campaignName = 'embedded-widget'; }
     if (getConfig().project_slug) { campaignName = 'hosted-widget'; }
 
-    var tzList = moment.tz.names();
-
     var timezoneIcon = require('!svg-inline!./assets/timezone-icon.svg');
     var arrowDownIcon = require('!svg-inline!./assets/arrow-down-icon.svg');
     var timekitLogo = require('!svg-inline!./assets/timekit-logo.svg');
     var template = require('./templates/footer.html');
-    var timezoneHelperTarget = $(template.render({
+
+    var footerTarget = $(template.render({
       timezoneIcon: timezoneIcon,
       arrowDownIcon: arrowDownIcon,
-      listTimezones: tzList,
+      listTimezones: timezones,
       timekitLogo: timekitLogo,
       campaignName: campaignName,
       campaignSource: campaignSource,
       showCredits: getConfig().ui.show_credits
     }));
-    rootTarget.addClass('has-timezonehelper');
-    rootTarget.append(timezoneHelperTarget);
+    rootTarget.append(footerTarget);
 
     // Set initial customer timezone
     var pickerSelect = $('.bookingjs-footer-tz-picker-select');
     pickerSelect.val(customerTimezone);
     
+    // Listen to changes by the user
     pickerSelect.change(function() {
       setCustomerTimezone(pickerSelect.val());
     })
@@ -258,6 +259,18 @@ function InitRender(deps) {
   var guessCustomerTimezone = function () {
     var tzGuess = moment.tz.guess();
     customerTimezone = tzGuess;
+
+    // Add the guessed customer timezone to list if its unknwon
+    var knownTimezone = $.grep(timezones, function (tz) {
+      return tz.key === customerTimezone
+    }).length > 0
+    if (!knownTimezone) {
+      var name = '(' + moment().tz(customerTimezone).format('Z') + ') ' + customerTimezone
+      timezones.unshift({
+        key: customerTimezone,
+        name: name
+      });
+    }
   }
 
   // Set timezone and trigger event

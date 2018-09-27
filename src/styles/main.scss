@@ -57,6 +57,7 @@
     z-index: 40;
     border-radius: 0 0 4px 4px;
     font-size: 12px;
+    overflow: hidden;
     
     &-tz {
       float: left;
@@ -132,6 +133,10 @@
           fill: $textColor;
         }
       }
+    }
+
+    .is-small &-by {
+      float: left;
     }
   }
 

@@ -52,7 +52,7 @@ describe('Timezone helper', function() {
       var firstTimezone = 'America/Los_Angeles';
       mockAjax.findTimeWithTimezone(firstTimezone);
       picker.val(firstTimezone);
-      picker.change();
+      picker.trigger('change');
 
       setTimeout(function() {
 
@@ -65,7 +65,7 @@ describe('Timezone helper', function() {
         var secondTimezone = 'Europe/Copenhagen';
         mockAjax.findTimeWithTimezone(secondTimezone);
         picker.val(secondTimezone);
-        picker.change();
+        picker.trigger('change');
 
         setTimeout(function() {
 
@@ -85,9 +85,9 @@ describe('Timezone helper', function() {
 
           done()
 
-        }, 500);
-      }, 500);
-    }, 500);
+        }, 1000);
+      }, 1000);
+    }, 1000);
 
   });
 

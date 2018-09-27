@@ -276,7 +276,7 @@ function InitRender(deps) {
   // Set timezone and trigger event
   var setCustomerTimezone = function (newTz) {
     customerTimezone = newTz;
-    $(document).trigger('customer-timezone-changed');
+    $(rootTarget).trigger('customer-timezone-changed');
   }
 
   // Setup and render FullCalendar
@@ -302,7 +302,7 @@ function InitRender(deps) {
 
     calendarTarget.fullCalendar(args);
 
-    $(document).on('customer-timezone-changed', function () {
+    $(rootTarget).on('customer-timezone-changed', function () {
       if (!calendarTarget) return
       getAvailability();
       calendarTarget.fullCalendar('option', 'now', moment().tz(customerTimezone).format());
@@ -544,7 +544,7 @@ function InitRender(deps) {
       submitBookingForm(this, e, eventData);
     });
 
-    $(document).on('customer-timezone-changed', function () {
+    $(rootTarget).on('customer-timezone-changed', function () {
       if (!bookingPageTarget) return
       $('.bookingjs-bookpage-date').text(formatTimestamp(eventData.start, dateFormat));
       $('.bookingjs-bookpage-time').text(formatTimestamp(eventData.start, timeFormat) + ' - ' + formatTimestamp(eventData.end, timeFormat));

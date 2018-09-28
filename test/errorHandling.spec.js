@@ -132,4 +132,25 @@ describe('Error handling', function() {
 
   });
 
+  it('should show error if passed timezone is invalid', function(done) {
+
+    var widget = new TimekitBooking();
+    widget.init({
+      app_key: '12345',
+      ui: {
+        timezone: 'this-is-invalid'
+      }
+    });
+
+    setTimeout(function() {
+
+      expect($('.bookingjs-error')).toBeInDOM();
+      expect($('.bookingjs-error-text-message')).toContainText('Trying to set invalid or unknown timezone');
+
+      done()
+
+    }, 100);
+
+  });
+
 });

@@ -21,6 +21,27 @@ describe('Timezone helper', function() {
     jasmine.Ajax.uninstall();
   });
 
+  it('should be able set fixed user timezone', function(done) {
+
+    var fixedTimezone = 'America/Los_Angeles';
+
+    createWidget({
+      ui: {
+        timezone: fixedTimezone
+      }
+    });
+
+    setTimeout(function() {
+
+      var picker = $('.bookingjs-footer-tz-picker-select');
+      
+      expect(picker.val()).toBe(fixedTimezone);
+      done()
+
+    }, 5000);
+
+  });
+
   it('should be able guess user timezone', function(done) {
 
     createWidget();

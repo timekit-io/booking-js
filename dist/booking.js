@@ -224,7 +224,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    utils.logDebug(['Final config:', getConfig()]);
 	
-	    return startRender();
+	    try {
+	      return startRender();
+	    } catch (e) {
+	      render.triggerError(e);
+	      return this
+	    }
 	  };
 	
 	  // Render method
@@ -235,7 +240,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    configureSdk();
 	
 	    // Start by guessing customer timezone
-	    render.guessCustomerTimezone();
+	    if (getConfig().ui.timezone) {
+	      render.setCustomerTimezone(getConfig().ui.timezone);
+	    } else {
+	      render.guessCustomerTimezone();
+	    }
 	
 	    // Initialize FullCalendar
 	    render.initializeCalendar();
@@ -5450,13 +5459,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // Listen to changes by the user
 	    pickerSelect.change(function() {
 	      setCustomerTimezone(pickerSelect.val());
+	      $(rootTarget).trigger('customer-timezone-changed');
 	    })
 	  };
 	
 	  // Guess the timezone and set global variable
 	  var guessCustomerTimezone = function () {
-	    var tzGuess = moment.tz.guess();
-	    customerTimezone = tzGuess;
+	    var tzGuess = moment.tz.guess() || 'UTC';
+	    setCustomerTimezone(tzGuess);
 	
 	    // Add the guessed customer timezone to list if its unknwon
 	    var knownTimezone = $.grep(timezones, function (tz) {
@@ -5471,10 +5481,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  }
 	
-	  // Set timezone and trigger event
+	  // Set timezone
 	  var setCustomerTimezone = function (newTz) {
+	    if (!newTz || !moment.tz.zone(newTz)) {
+	      triggerError(['Trying to set invalid or unknown timezone', newTz]);
+	      return
+	    }
 	    customerTimezone = newTz;
-	    $(rootTarget).trigger('customer-timezone-changed');
 	  }
 	
 	  // Setup and render FullCalendar
@@ -5947,7 +5960,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    fullCalendar: fullCalendar,
 	    destroyFullCalendar: destroyFullCalendar,
 	    renderFooter: renderFooter,
-	    guessCustomerTimezone: guessCustomerTimezone
+	    guessCustomerTimezone: guessCustomerTimezone,
+	    setCustomerTimezone: setCustomerTimezone
 	  }
 	}
 	

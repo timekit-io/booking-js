@@ -12,6 +12,8 @@ require('./styles/utils.scss');
 require('./styles/main.scss');
 require('./styles/testmoderibbon.scss');
 
+var timezones    = require('./timezones');
+
 function InitRender(deps) {
 
   var utils = deps.utils;
@@ -24,6 +26,9 @@ function InitRender(deps) {
   var bookingPageTarget;
   var loadingTarget;
   var errorTarget;
+
+  // State
+  var customerTimezone;
 
   // Make sure DOM element is ready and clean it
   var prepareDOM = function(suppliedConfig) {
@@ -44,7 +49,9 @@ function InitRender(deps) {
   // Fetch availabile time through Timekit SDK
   var timekitFetchAvailability = function() {
 
-    var args = {};
+    var args = {
+      output_timezone: customerTimezone
+    };
 
     if (getConfig().project_id) args.project_id = getConfig().project_id
     if (getConfig().resources) args.resources = getConfig().resources
@@ -214,6 +221,64 @@ function InitRender(deps) {
 
   };
 
+  // Calculate and display timezone helper
+  var renderFooter = function() {
+
+    var campaignName = 'widget';
+    var campaignSource = window.location.hostname.replace(/\./g, '-');
+    if (getConfig().project_id) { campaignName = 'embedded-widget'; }
+    if (getConfig().project_slug) { campaignName = 'hosted-widget'; }
+
+    var timezoneIcon = require('!svg-inline!./assets/timezone-icon.svg');
+    var arrowDownIcon = require('!svg-inline!./assets/arrow-down-icon.svg');
+    var timekitLogo = require('!svg-inline!./assets/timekit-logo.svg');
+    var template = require('./templates/footer.html');
+
+    var footerTarget = $(template.render({
+      timezoneIcon: timezoneIcon,
+      arrowDownIcon: arrowDownIcon,
+      listTimezones: timezones,
+      timekitLogo: timekitLogo,
+      campaignName: campaignName,
+      campaignSource: campaignSource,
+      showCredits: getConfig().ui.show_credits
+    }));
+    rootTarget.append(footerTarget);
+
+    // Set initial customer timezone
+    var pickerSelect = $('.bookingjs-footer-tz-picker-select');
+    pickerSelect.val(customerTimezone);
+    
+    // Listen to changes by the user
+    pickerSelect.change(function() {
+      setCustomerTimezone(pickerSelect.val());
+    })
+  };
+
+  // Guess the timezone and set global variable
+  var guessCustomerTimezone = function () {
+    var tzGuess = moment.tz.guess();
+    customerTimezone = tzGuess;
+
+    // Add the guessed customer timezone to list if its unknwon
+    var knownTimezone = $.grep(timezones, function (tz) {
+      return tz.key === customerTimezone
+    }).length > 0
+    if (!knownTimezone) {
+      var name = '(' + moment().tz(customerTimezone).format('Z') + ') ' + customerTimezone
+      timezones.unshift({
+        key: customerTimezone,
+        name: name
+      });
+    }
+  }
+
+  // Set timezone and trigger event
+  var setCustomerTimezone = function (newTz) {
+    customerTimezone = newTz;
+    $(rootTarget).trigger('customer-timezone-changed');
+  }
+
   // Setup and render FullCalendar
   var initializeCalendar = function() {
 
@@ -236,6 +301,12 @@ function InitRender(deps) {
     rootTarget.append(calendarTarget);
 
     calendarTarget.fullCalendar(args);
+
+    $(rootTarget).on('customer-timezone-changed', function () {
+      if (!calendarTarget) return
+      getAvailability();
+      calendarTarget.fullCalendar('option', 'now', moment().tz(customerTimezone).format());
+    })
 
     utils.doCallback('fullCalendarInitialized');
 
@@ -435,8 +506,8 @@ function InitRender(deps) {
     var allocatedResource = eventData.resources ? eventData.resources[0].name : false;
 
     bookingPageTarget = $(template.render({
-      chosenDate:               moment(eventData.start).format(dateFormat),
-      chosenTime:               moment(eventData.start).format(timeFormat) + ' - ' + moment(eventData.end).format(timeFormat),
+      chosenDate:               formatTimestamp(eventData.start, dateFormat),
+      chosenTime:               formatTimestamp(eventData.start, timeFormat) + ' - ' + formatTimestamp(eventData.end, timeFormat),
       allocatedResourcePrefix:  getConfig().ui.localization.allocated_resource_prefix,
       allocatedResource:        allocatedResource,
       closeIcon:                require('!svg-inline!./assets/close-icon.svg'),
@@ -473,10 +544,11 @@ function InitRender(deps) {
       submitBookingForm(this, e, eventData);
     });
 
-    // Show powered by Timekit message
-    if (getConfig().ui.show_credits) {
-      renderPoweredByMessage(bookingPageTarget);
-    }
+    $(rootTarget).on('customer-timezone-changed', function () {
+      if (!bookingPageTarget) return
+      $('.bookingjs-bookpage-date').text(formatTimestamp(eventData.start, dateFormat));
+      $('.bookingjs-bookpage-time').text(formatTimestamp(eventData.start, timeFormat) + ' - ' + formatTimestamp(eventData.end, timeFormat));
+    });
 
     $(document).on('keyup', function(e) {
       // escape key maps to keycode `27`
@@ -490,6 +562,11 @@ function InitRender(deps) {
     }, 100);
 
   };
+
+  // Output timestamp into given format in customers timezone
+  var formatTimestamp = function (start, format) {
+    return moment(start).tz(customerTimezone).format(format);
+  }
 
   // Remove the booking page DOM node
   var hideBookingPage = function() {
@@ -579,7 +656,7 @@ function InitRender(deps) {
       customer: {
         name: formData.name,
         email: formData.email,
-        timezone: moment.tz.guess()
+        timezone: customerTimezone
       },
       participants: [formData.email]
     };
@@ -647,26 +724,6 @@ function InitRender(deps) {
 
   };
 
-  // Render the powered by Timekit message
-  var renderPoweredByMessage = function(pageTarget) {
-
-    var campaignName = 'widget'
-    var campaignSource = window.location.hostname.replace(/\./g, '-')
-    if (getConfig().project_id) { campaignName = 'embedded-widget'; }
-    if (getConfig().project_slug) { campaignName = 'hosted-widget'; }
-
-    var template = require('./templates/poweredby.html');
-    var timekitLogo = require('!svg-inline!./assets/timekit-logo.svg');
-    var poweredTarget = $(template.render({
-      timekitLogo: timekitLogo,
-      campaignName: campaignName,
-      campaignSource: campaignSource
-    }));
-
-    pageTarget.append(poweredTarget);
-
-  };
-
   // Destory fullcalendar and cleanup event listeners etc.
   var destroyFullCalendar = function() {
     if (!calendarTarget || calendarTarget.fullCalendar === undefined) return
@@ -690,7 +747,9 @@ function InitRender(deps) {
     triggerError: triggerError,
     timekitCreateBooking: timekitCreateBooking,
     fullCalendar: fullCalendar,
-    destroyFullCalendar: destroyFullCalendar
+    destroyFullCalendar: destroyFullCalendar,
+    renderFooter: renderFooter,
+    guessCustomerTimezone: guessCustomerTimezone
   }
 }
 

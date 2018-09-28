@@ -234,6 +234,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // Setup Timekit SDK config
 	    configureSdk();
 	
+	    // Start by guessing customer timezone
+	    render.guessCustomerTimezone();
+	
 	    // Initialize FullCalendar
 	    render.initializeCalendar();
 	
@@ -249,6 +252,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (getConfig().ui.display_name) {
 	      render.renderDisplayName();
 	    }
+	
+	    // Show the footer with timezone helper and TK credits
+	    render.renderFooter();
 	
 	    utils.doCallback('renderCompleted');
 	
@@ -4870,7 +4876,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 	    allDaySlot: false,
 	    scrollTime: '08:00:00',
-	    timezone: 'local',
 	    nowIndicator: true
 	  }
 	};
@@ -5205,6 +5210,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	__webpack_require__(56);
 	__webpack_require__(58);
 	
+	var timezones    = __webpack_require__(60);
+	
 	function InitRender(deps) {
 	
 	  var utils = deps.utils;
@@ -5217,6 +5224,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var bookingPageTarget;
 	  var loadingTarget;
 	  var errorTarget;
+	
+	  // State
+	  var customerTimezone;
 	
 	  // Make sure DOM element is ready and clean it
 	  var prepareDOM = function(suppliedConfig) {
@@ -5237,7 +5247,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Fetch availabile time through Timekit SDK
 	  var timekitFetchAvailability = function() {
 	
-	    var args = {};
+	    var args = {
+	      output_timezone: customerTimezone
+	    };
 	
 	    if (getConfig().project_id) args.project_id = getConfig().project_id
 	    if (getConfig().resources) args.resources = getConfig().resources
@@ -5397,7 +5409,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Display ribbon if in testmode
 	  var renderTestModeRibbon = function() {
 	
-	    var template = __webpack_require__(60);
+	    var template = __webpack_require__(61);
 	
 	    var testModeRibbonTarget = $(template.render({
 	      ribbonText: 'Test Mode',
@@ -5406,6 +5418,64 @@ return /******/ (function(modules) { // webpackBootstrap
 	    rootTarget.append(testModeRibbonTarget);
 	
 	  };
+	
+	  // Calculate and display timezone helper
+	  var renderFooter = function() {
+	
+	    var campaignName = 'widget';
+	    var campaignSource = window.location.hostname.replace(/\./g, '-');
+	    if (getConfig().project_id) { campaignName = 'embedded-widget'; }
+	    if (getConfig().project_slug) { campaignName = 'hosted-widget'; }
+	
+	    var timezoneIcon = __webpack_require__(65);
+	    var arrowDownIcon = __webpack_require__(66);
+	    var timekitLogo = __webpack_require__(67);
+	    var template = __webpack_require__(68);
+	
+	    var footerTarget = $(template.render({
+	      timezoneIcon: timezoneIcon,
+	      arrowDownIcon: arrowDownIcon,
+	      listTimezones: timezones,
+	      timekitLogo: timekitLogo,
+	      campaignName: campaignName,
+	      campaignSource: campaignSource,
+	      showCredits: getConfig().ui.show_credits
+	    }));
+	    rootTarget.append(footerTarget);
+	
+	    // Set initial customer timezone
+	    var pickerSelect = $('.bookingjs-footer-tz-picker-select');
+	    pickerSelect.val(customerTimezone);
+	    
+	    // Listen to changes by the user
+	    pickerSelect.change(function() {
+	      setCustomerTimezone(pickerSelect.val());
+	    })
+	  };
+	
+	  // Guess the timezone and set global variable
+	  var guessCustomerTimezone = function () {
+	    var tzGuess = moment.tz.guess();
+	    customerTimezone = tzGuess;
+	
+	    // Add the guessed customer timezone to list if its unknwon
+	    var knownTimezone = $.grep(timezones, function (tz) {
+	      return tz.key === customerTimezone
+	    }).length > 0
+	    if (!knownTimezone) {
+	      var name = '(' + moment().tz(customerTimezone).format('Z') + ') ' + customerTimezone
+	      timezones.unshift({
+	        key: customerTimezone,
+	        name: name
+	      });
+	    }
+	  }
+	
+	  // Set timezone and trigger event
+	  var setCustomerTimezone = function (newTz) {
+	    customerTimezone = newTz;
+	    $(rootTarget).trigger('customer-timezone-changed');
+	  }
 	
 	  // Setup and render FullCalendar
 	  var initializeCalendar = function() {
@@ -5429,6 +5499,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    rootTarget.append(calendarTarget);
 	
 	    calendarTarget.fullCalendar(args);
+	
+	    $(rootTarget).on('customer-timezone-changed', function () {
+	      if (!calendarTarget) return
+	      getAvailability();
+	      calendarTarget.fullCalendar('option', 'now', moment().tz(customerTimezone).format());
+	    })
 	
 	    utils.doCallback('fullCalendarInitialized');
 	
@@ -5503,7 +5579,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Render the avatar image
 	  var renderAvatarImage = function() {
 	
-	    var template = __webpack_require__(64);
+	    var template = __webpack_require__(69);
 	    var avatarTarget = $(template.render({
 	      image: getConfig().ui.avatar
 	    }));
@@ -5516,7 +5592,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Render the avatar image
 	  var renderDisplayName = function() {
 	
-	    var template = __webpack_require__(65);
+	    var template = __webpack_require__(70);
 	    var displayNameTarget = $(template.render({
 	      name: getConfig().ui.display_name
 	    }));
@@ -5531,9 +5607,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    utils.doCallback('showLoadingScreen');
 	
-	    var template = __webpack_require__(66);
+	    var template = __webpack_require__(71);
 	    loadingTarget = $(template.render({
-	      loadingIcon: __webpack_require__(67)
+	      loadingIcon: __webpack_require__(72)
 	    }));
 	
 	    rootTarget.append(loadingTarget);
@@ -5576,9 +5652,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    }
 	
-	    var template = __webpack_require__(68);
+	    var template = __webpack_require__(73);
 	    errorTarget = $(template.render({
-	      errorWarningIcon: __webpack_require__(69),
+	      errorWarningIcon: __webpack_require__(74),
 	      message: messageProcessed,
 	      context: contextProcessed
 	    }));
@@ -5592,10 +5668,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Render customer fields
 	  var renderCustomerFields = function () {
 	    
-	    var textTemplate = __webpack_require__(70);
-	    var textareaTemplate = __webpack_require__(71);
-	    var selectTemplate = __webpack_require__(72);
-	    var checkboxTemplate = __webpack_require__(73);
+	    var textTemplate = __webpack_require__(75);
+	    var textareaTemplate = __webpack_require__(76);
+	    var selectTemplate = __webpack_require__(77);
+	    var checkboxTemplate = __webpack_require__(78);
 	
 	    var fieldsTarget = []
 	    $.each(getConfig().customer_fields, function(key, field) {
@@ -5607,7 +5683,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (key === 'email') field.format = 'email'
 	      var data = $.extend({
 	        key: key,
-	        arrowDownIcon: __webpack_require__(74)
+	        arrowDownIcon: __webpack_require__(66)
 	      }, field)
 	      var fieldTarget = $(tmpl.render(data))
 	      fieldsTarget.push(fieldTarget)
@@ -5621,21 +5697,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    utils.doCallback('showBookingPage', eventData);
 	
-	    var template = __webpack_require__(75);
+	    var template = __webpack_require__(79);
 	
 	    var dateFormat = getConfig().ui.booking_date_format || moment.localeData().longDateFormat('LL');
 	    var timeFormat = getConfig().ui.booking_time_format || moment.localeData().longDateFormat('LT');
 	    var allocatedResource = eventData.resources ? eventData.resources[0].name : false;
 	
 	    bookingPageTarget = $(template.render({
-	      chosenDate:               moment(eventData.start).format(dateFormat),
-	      chosenTime:               moment(eventData.start).format(timeFormat) + ' - ' + moment(eventData.end).format(timeFormat),
+	      chosenDate:               formatTimestamp(eventData.start, dateFormat),
+	      chosenTime:               formatTimestamp(eventData.start, timeFormat) + ' - ' + formatTimestamp(eventData.end, timeFormat),
 	      allocatedResourcePrefix:  getConfig().ui.localization.allocated_resource_prefix,
 	      allocatedResource:        allocatedResource,
-	      closeIcon:                __webpack_require__(76),
-	      checkmarkIcon:            __webpack_require__(77),
-	      loadingIcon:              __webpack_require__(67),
-	      errorIcon:                __webpack_require__(78),
+	      closeIcon:                __webpack_require__(80),
+	      checkmarkIcon:            __webpack_require__(81),
+	      loadingIcon:              __webpack_require__(72),
+	      errorIcon:                __webpack_require__(82),
 	      submitText:               getConfig().ui.localization.submit_button,
 	      successMessage:           interpolate.sprintf(getConfig().ui.localization.success_message, '<span class="booked-email"></span>')
 	    }));
@@ -5666,10 +5742,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	      submitBookingForm(this, e, eventData);
 	    });
 	
-	    // Show powered by Timekit message
-	    if (getConfig().ui.show_credits) {
-	      renderPoweredByMessage(bookingPageTarget);
-	    }
+	    $(rootTarget).on('customer-timezone-changed', function () {
+	      if (!bookingPageTarget) return
+	      $('.bookingjs-bookpage-date').text(formatTimestamp(eventData.start, dateFormat));
+	      $('.bookingjs-bookpage-time').text(formatTimestamp(eventData.start, timeFormat) + ' - ' + formatTimestamp(eventData.end, timeFormat));
+	    });
 	
 	    $(document).on('keyup', function(e) {
 	      // escape key maps to keycode `27`
@@ -5683,6 +5760,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, 100);
 	
 	  };
+	
+	  // Output timestamp into given format in customers timezone
+	  var formatTimestamp = function (start, format) {
+	    return moment(start).tz(customerTimezone).format(format);
+	  }
 	
 	  // Remove the booking page DOM node
 	  var hideBookingPage = function() {
@@ -5772,7 +5854,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      customer: {
 	        name: formData.name,
 	        email: formData.email,
-	        timezone: moment.tz.guess()
+	        timezone: customerTimezone
 	      },
 	      participants: [formData.email]
 	    };
@@ -5840,26 +5922,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  };
 	
-	  // Render the powered by Timekit message
-	  var renderPoweredByMessage = function(pageTarget) {
-	
-	    var campaignName = 'widget'
-	    var campaignSource = window.location.hostname.replace(/\./g, '-')
-	    if (getConfig().project_id) { campaignName = 'embedded-widget'; }
-	    if (getConfig().project_slug) { campaignName = 'hosted-widget'; }
-	
-	    var template = __webpack_require__(79);
-	    var timekitLogo = __webpack_require__(80);
-	    var poweredTarget = $(template.render({
-	      timekitLogo: timekitLogo,
-	      campaignName: campaignName,
-	      campaignSource: campaignSource
-	    }));
-	
-	    pageTarget.append(poweredTarget);
-	
-	  };
-	
 	  // Destory fullcalendar and cleanup event listeners etc.
 	  var destroyFullCalendar = function() {
 	    if (!calendarTarget || calendarTarget.fullCalendar === undefined) return
@@ -5883,7 +5945,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    triggerError: triggerError,
 	    timekitCreateBooking: timekitCreateBooking,
 	    fullCalendar: fullCalendar,
-	    destroyFullCalendar: destroyFullCalendar
+	    destroyFullCalendar: destroyFullCalendar,
+	    renderFooter: renderFooter,
+	    guessCustomerTimezone: guessCustomerTimezone
 	  }
 	}
 	
@@ -27456,7 +27520,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.push([module.id, "@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);", ""]);
 	
 	// module
-	exports.push([module.id, "/*!\n * Booking.js\n * http://timekit.io\n * (c) 2015 Timekit Inc.\n */@keyframes spin{to{transform:rotate(1turn)}}@keyframes shake{0%{transform:translateX(0)}25%{transform:translateX(5px)}50%{transform:translateX(-5px)}75%{transform:translateX(5px)}to{transform:translateX(0)}}.bookingjs{position:relative;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;font-size:13px;border-radius:4px;background-color:#fff;box-shadow:0 3px 40px 0 rgba(0,0,0,.15);margin:20px auto;z-index:10;opacity:1;color:#333;border-top:1px solid #ececec;min-height:200px}.bookingjs.has-avatar{margin-top:60px}.is-small.has-avatar.has-displayname .bookingjs-calendar .fc-toolbar{padding-bottom:24px}.is-small.has-avatar .bookingjs-calendar .fc-toolbar .fc-right h2{display:none}.bookingjs-timezonehelper{color:#aeaeae;text-align:center;padding:7px 10px;background-color:#fbfbfb;border-top:1px solid #ececec;min-height:15px;z-index:20;border-radius:0 0 4px 4px}.bookingjs-timezoneicon{width:10px;margin-right:5px}.bookingjs-avatar{position:absolute;top:-50px;left:50%;transform:translateX(-50%);border-radius:150px;border:3px solid #fff;box-shadow:0 1px 3px 0 rgba(0,0,0,.13);overflow:hidden;z-index:40;background-color:#fff}.is-small .bookingjs-avatar{top:-40px}.bookingjs-avatar img{max-width:100%;vertical-align:middle;display:inline-block;width:80px;height:80px}.is-small .bookingjs-avatar img{width:70px;height:70px}.bookingjs-displayname{position:absolute;top:0;left:0;padding:15px 20px;color:#333;font-weight:600}.is-small.has-avatar .bookingjs-displayname{top:44px;padding:0 20px;text-align:center;left:0;right:0;box-sizing:border-box}.bookingjs-bookpage{position:absolute;height:100%;width:100%;top:0;left:0;background-color:#fbfbfb;z-index:30;opacity:0;transition:opacity .2s ease;border-radius:4px;text-align:center}.bookingjs-bookpage.show{opacity:1}.bookingjs-bookpage-close{position:absolute;top:0;right:0;padding:18px;transition:opacity .2s ease;opacity:.3}.bookingjs-bookpage-close:hover{opacity:1}.bookingjs-bookpage-header{margin-bottom:30px}.bookingjs-bookpage-date,.bookingjs-bookpage h2{text-align:center;font-size:34px;font-weight:400;margin-top:50px;margin-bottom:10px}.is-small .bookingjs-bookpage-date,.is-small .bookingjs-bookpage h2{font-size:27px}.bookingjs-bookpage-resource,.bookingjs-bookpage-time,.bookingjs-bookpage h3{text-align:center;font-size:17px;font-weight:400;margin-bottom:15px;margin-top:10px}.is-small .bookingjs-bookpage-resource,.is-small .bookingjs-bookpage-time,.is-small .bookingjs-bookpage h3{font-size:15px;margin-bottom:15px}.bookingjs-bookpage-resource-prefix{text-align:center;font-size:10px;font-weight:300;display:inline-block;position:relative}.bookingjs-bookpage-resource-prefix:before{left:-45px}.bookingjs-bookpage-resource-prefix:after,.bookingjs-bookpage-resource-prefix:before{content:\"\";display:block;width:40px;height:0;border-top:1px solid #ececec;position:absolute;top:7px}.bookingjs-bookpage-resource-prefix:after{right:-45px}.bookingjs-closeicon{height:15px;width:15px}.bookingjs-form{width:350px;position:relative;margin:0 auto;text-align:center}.is-small .bookingjs-form{width:90%}.bookingjs-form-box{position:relative;box-shadow:0 1px 3px 0 rgba(0,0,0,.1);overflow:hidden;background-color:#fff;line-height:0}.bookingjs-form-success-message{position:absolute;top:-999px;left:0;right:0;padding:30px;z-index:10;background-color:#fff;opacity:0;transition:opacity .3s ease;line-height:normal}.is-small .bookingjs-form-success-message{padding:22px 10px}.bookingjs-form-success-message .title{font-size:20px;display:block;margin-bottom:25px}.bookingjs-form-success-message-body{display:block;position:relative;transform:translateY(-50%);top:50%}.bookingjs-form-success-message-body .booked-email{color:#aeaeae}.bookingjs-form.success .bookingjs-form-success-message{opacity:1;top:0;bottom:0}.bookingjs-form-field{position:relative}.bookingjs-form-field--dirty .bookingjs-form-label{opacity:1;top:20px;font-size:11px;color:#2e5bec}.bookingjs-form-field--dirty .bookingjs-form-input{padding:25px 25px 5px}.bookingjs-form-field--dirty .bookingjs-form-input:invalid{box-shadow:inset 0 0 1px 1px #d83b46}.bookingjs-form-field--dirty .bookingjs-form-input--textarea{padding:30px 25px 10px}.bookingjs-form-label{position:absolute;top:30px;left:25px;color:#333;opacity:0;font-size:12px;transition:opacity .2s ease,font-size .2s ease,color .2s ease,top .2s ease}.bookingjs-form-input{transition:box-shadow .2s ease;width:100%;padding:15px 25px;margin:0;border:0 solid #ececec;font-size:1em;box-shadow:inset 0 0 1px 1px hsla(0,0%,100%,0);text-align:left;box-sizing:border-box;line-height:1.5em;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;color:#333;overflow:auto;border-bottom:1px solid #ececec}.bookingjs-form-input:focus{outline:0;box-shadow:inset 0 0 1px 1px #2e5bec}.bookingjs-form-input.hidden{display:none}.bookingjs-form-input:-moz-read-only{cursor:not-allowed;font-style:italic}.bookingjs-form-input:read-only{cursor:not-allowed;font-style:italic}.bookingjs-form-input:-moz-read-only:focus{box-shadow:inset 0 0 1px 1px #d8d8d8}.bookingjs-form-input:read-only:focus{box-shadow:inset 0 0 1px 1px #d8d8d8}.bookingjs-form-field--checkbox{text-align:left;position:relative}.bookingjs-form-label--checkbox{padding:25px 25px 25px 50px;display:block;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;color:#787878;font-size:1em;border-bottom:1px solid #ececec}.bookingjs-form-label--checkbox:disabled{cursor:not-allowed;font-style:italic}.bookingjs-form-label--checkbox:disabled:focus{box-shadow:inset 0 0 1px 1px #d8d8d8}.bookingjs-form-input--checkbox[type=checkbox]{position:absolute;top:19px;left:25px;width:auto;margin:0}.bookingjs-form-input--textarea{padding:15px 25px 25px;overflow:auto}.bookingjs-form-field--select{text-align:left}.bookingjs-form-label--select{opacity:1;top:20px;font-size:11px;color:#2e5bec}.bookingjs-form-input--select{transition:box-shadow .2s ease;width:100%;padding:15px 25px;margin:0;border:0 solid #ececec;font-size:1em;box-shadow:inset 0 0 1px 1px hsla(0,0%,100%,0);text-align:left;box-sizing:border-box;line-height:1.5em;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;color:#333;overflow:auto;border-bottom:1px solid #ececec;padding:25px 25px 5px;-webkit-appearance:none;-moz-appearance:none;appearance:none;border-radius:0;background:transparent;line-height:35px}.bookingjs-form-input--select:focus{outline:0;box-shadow:inset 0 0 1px 1px #2e5bec}.bookingjs-form-input--select.hidden{display:none}.bookingjs-form-input-arrow--select{position:absolute;top:31px;right:25px;width:12px;height:7.42px;opacity:.2;transition:opacity .2s ease;pointer-events:none}.bookingjs-form-field--select:hover .bookingjs-form-input-arrow--select{opacity:.5}.bookingjs-form-button{position:relative;transition:background-color .2s,max-width .3s;display:inline-block;padding:13px 25px;background-color:#2e5bec;text-transform:uppercase;box-shadow:0 1px 3px 0 rgba(0,0,0,.15);color:#fff;border:0;border-radius:3px;font-size:1.1em;font-weight:600;margin-top:30px;cursor:pointer;height:44px;outline:0;text-align:center;max-width:200px}.bookingjs-form-button .error-text,.bookingjs-form-button .loading-text,.bookingjs-form-button .success-text{transition:opacity .3s ease;position:absolute;top:13px;left:50%;transform:translateX(-50%);opacity:0}.bookingjs-form-button .inactive-text{white-space:nowrap;opacity:1}.bookingjs-form-button .loading-text svg{height:19px;width:19px;animation:spin .6s infinite linear}.bookingjs-form-button .error-text svg{height:15px;width:15px;margin-top:2px}.bookingjs-form-button .success-text svg{height:15px;margin-top:2px;transform:scale(0);transition:transform .6s ease}.bookingjs-form-button:focus,.bookingjs-form-button:hover{background-color:#1341d4}.bookingjs-form-button.button-shake{animation:shake .5s 1 ease}.bookingjs-form.loading .bookingjs-form-button,.bookingjs-form.loading .bookingjs-form-button:hover{max-width:80px;background-color:#b1b1b1;cursor:not-allowed}.bookingjs-form.loading .bookingjs-form-button .inactive-text,.bookingjs-form.loading .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.loading .bookingjs-form-button .loading-text,.bookingjs-form.loading .bookingjs-form-button:hover .loading-text{opacity:1}.bookingjs-form.error .bookingjs-form-button,.bookingjs-form.error .bookingjs-form-button:hover{max-width:80px;background-color:#d83b46;cursor:not-allowed}.bookingjs-form.error .bookingjs-form-button .inactive-text,.bookingjs-form.error .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.error .bookingjs-form-button .error-text,.bookingjs-form.error .bookingjs-form-button:hover .error-text{opacity:1}.bookingjs-form.success .bookingjs-form-button,.bookingjs-form.success .bookingjs-form-button:hover{max-width:80px;background-color:#46ce92;cursor:pointer}.bookingjs-form.success .bookingjs-form-button .inactive-text,.bookingjs-form.success .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.success .bookingjs-form-button .success-text,.bookingjs-form.success .bookingjs-form-button:hover .success-text{opacity:1}.bookingjs-form.success .bookingjs-form-button .success-text svg,.bookingjs-form.success .bookingjs-form-button:hover .success-text svg{transform:scale(1)}.bookingjs-poweredby{position:absolute;bottom:0;left:0;right:0;text-align:center;padding:7px 10px}.bookingjs-poweredby a{transition:color .2s ease;color:#aeaeae;text-decoration:none}.bookingjs-poweredby a svg path{transition:fill .2s ease;fill:#aeaeae}.bookingjs-poweredby a:hover{color:#333}.bookingjs-poweredby a:hover svg path{fill:#333}.bookingjs-timekitlogo{width:15px;height:15px;margin-right:5px;vertical-align:sub}.bookingjs-loading{position:absolute;height:100%;width:100%;top:0;left:0;background-color:#fbfbfb;z-index:30;opacity:0;transition:opacity .5s ease;border-radius:4px}.bookingjs-loading.show{opacity:1}.bookingjs-loading-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}.bookingjs-loading-icon svg{height:30px;width:30px;animation:spin .6s infinite linear}.bookingjs-loading-icon svg path{fill:#2e5bec}.bookingjs-error{position:absolute;height:100%;width:100%;top:0;left:0;background-color:#fbfbfb;z-index:31;opacity:0;transition:opacity .5s ease;border-radius:4px}.bookingjs-error.show{opacity:1}.bookingjs-error-inner{position:absolute;top:50%;transform:translateY(-50%);text-align:center;overflow:scroll;max-height:100%;padding:30px;box-sizing:border-box;width:100%}.bookingjs-error-icon svg{height:30px;width:30px}.bookingjs-error-icon svg g{fill:#d83b46}.bookingjs-error-heading{color:#d83b46;font-size:15px;margin:15px 0}.bookingjs-error-text{font-size:12px;color:#aeaeae;word-break:break-word;overflow:scroll}.bookingjs-error-text-context,.bookingjs-error-text-messag{display:block}", ""]);
+	exports.push([module.id, "/*!\n * Booking.js\n * http://timekit.io\n * (c) 2015 Timekit Inc.\n */@keyframes spin{to{transform:rotate(1turn)}}@keyframes shake{0%{transform:translateX(0)}25%{transform:translateX(5px)}50%{transform:translateX(-5px)}75%{transform:translateX(5px)}to{transform:translateX(0)}}.bookingjs{position:relative;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;font-size:13px;border-radius:4px;background-color:#fff;box-shadow:0 3px 40px 0 rgba(0,0,0,.15);margin:20px auto;z-index:10;opacity:1;color:#333;border-top:1px solid #ececec;min-height:200px}.bookingjs.has-avatar{margin-top:60px}.bookingjs-calendar{border-bottom:1px solid #ececec}.is-small.has-avatar.has-displayname .bookingjs-calendar .fc-toolbar{padding-bottom:24px}.is-small.has-avatar .bookingjs-calendar .fc-toolbar .fc-right h2{display:none}.bookingjs-footer{position:relative;color:#aeaeae;text-align:left;padding:0 15px;background-color:#fbfbfb;min-height:30px;line-height:30px;z-index:40;border-radius:0 0 4px 4px;font-size:12px;overflow:hidden}.is-small .bookingjs-footer{padding:3px 15px;min-height:25px;line-height:25px}.bookingjs-footer-tz{float:left}.bookingjs-footer-tz-picker{display:inline-block}.bookingjs-footer-tz-picker-select:focus,.bookingjs-footer-tz-picker:hover .bookingjs-footer-tz-picker-select{color:#333;border-color:#d3d3d3}.bookingjs-footer-tz-picker:hover .bookingjs-footer-tz-picker-arrowdown{opacity:.6}.bookingjs-footer-tz-picker-select{-webkit-appearance:none;-moz-appearance:none;appearance:none;background:transparent;font-size:inherit;padding:1px 20px 1px 5px;transition:border .2s ease,color .2s ease;border-radius:3px;border:1px solid #ececec;color:#aeaeae;outline:none;max-width:220px}.bookingjs-footer-tz-picker-select::-ms-expand{display:none}.is-small .bookingjs-footer-tz-picker-select{max-width:180px}.bookingjs-footer-tz-picker-arrowdown{position:relative;display:inline-block;pointer-events:none;opacity:.3;left:-19px;top:-2px;transition:opacity .2s ease}.bookingjs-footer-tz-picker-arrowdown svg{width:8px}.bookingjs-footer-tz .bookingjs-timezoneicon{width:10px;margin-right:5px}.is-small .bookingjs-footer-tz .bookingjs-timezoneicon{display:none}.bookingjs-footer-by{float:right;transition:color .2s ease;color:#aeaeae;text-decoration:none;outline:none}.bookingjs-footer-by .bookingjs-timekitlogo{width:12px;height:12px;margin-left:5px;top:1px;position:relative}.bookingjs-footer-by .bookingjs-timekitlogo path{transition:fill .2s ease;fill:#aeaeae}.is-small .bookingjs-footer-by .bookingjs-timekitlogo{display:none}.bookingjs-footer-by:focus,.bookingjs-footer-by:hover{color:#333}.bookingjs-footer-by:focus .bookingjs-timekitlogo path,.bookingjs-footer-by:hover .bookingjs-timekitlogo path{fill:#333}.is-small .bookingjs-footer-by{float:left}.bookingjs-avatar{position:absolute;top:-50px;left:50%;transform:translateX(-50%);border-radius:150px;border:3px solid #fff;box-shadow:0 1px 3px 0 rgba(0,0,0,.13);overflow:hidden;z-index:40;background-color:#fff}.is-small .bookingjs-avatar{top:-40px}.bookingjs-avatar img{max-width:100%;vertical-align:middle;display:inline-block;width:80px;height:80px}.is-small .bookingjs-avatar img{width:70px;height:70px}.bookingjs-displayname{position:absolute;top:0;left:0;padding:15px 20px;color:#333;font-weight:600}.is-small.has-avatar .bookingjs-displayname{top:44px;padding:0 20px;text-align:center;left:0;right:0;box-sizing:border-box}.bookingjs-bookpage{position:absolute;height:100%;width:100%;top:0;left:0;background-color:#fbfbfb;z-index:30;opacity:0;transition:opacity .2s ease;border-radius:4px;text-align:center}.bookingjs-bookpage.show{opacity:1}.bookingjs-bookpage-close{position:absolute;top:0;right:0;padding:18px;transition:opacity .2s ease;opacity:.3}.bookingjs-bookpage-close:hover{opacity:1}.bookingjs-bookpage-header{margin-bottom:30px}.bookingjs-bookpage-date,.bookingjs-bookpage h2{text-align:center;font-size:34px;font-weight:400;margin-top:50px;margin-bottom:10px}.is-small .bookingjs-bookpage-date,.is-small .bookingjs-bookpage h2{font-size:27px}.bookingjs-bookpage-resource,.bookingjs-bookpage-time,.bookingjs-bookpage h3{text-align:center;font-size:17px;font-weight:400;margin-bottom:15px;margin-top:10px}.is-small .bookingjs-bookpage-resource,.is-small .bookingjs-bookpage-time,.is-small .bookingjs-bookpage h3{font-size:15px;margin-bottom:15px}.bookingjs-bookpage-resource-prefix{text-align:center;font-size:10px;font-weight:300;display:inline-block;position:relative}.bookingjs-bookpage-resource-prefix:before{left:-45px}.bookingjs-bookpage-resource-prefix:after,.bookingjs-bookpage-resource-prefix:before{content:\"\";display:block;width:40px;height:0;border-top:1px solid #ececec;position:absolute;top:7px}.bookingjs-bookpage-resource-prefix:after{right:-45px}.bookingjs-closeicon{height:15px;width:15px}.bookingjs-form{width:350px;position:relative;margin:0 auto;text-align:center}.is-small .bookingjs-form{width:90%}.bookingjs-form-box{position:relative;box-shadow:0 1px 3px 0 rgba(0,0,0,.1);overflow:hidden;background-color:#fff;line-height:0}.bookingjs-form-success-message{position:absolute;top:-999px;left:0;right:0;padding:30px;z-index:10;background-color:#fff;opacity:0;transition:opacity .3s ease;line-height:normal}.is-small .bookingjs-form-success-message{padding:22px 10px}.bookingjs-form-success-message .title{font-size:20px;display:block;margin-bottom:25px}.bookingjs-form-success-message-body{display:block;position:relative;transform:translateY(-50%);top:50%}.bookingjs-form-success-message-body .booked-email{color:#aeaeae}.bookingjs-form.success .bookingjs-form-success-message{opacity:1;top:0;bottom:0}.bookingjs-form-field{position:relative}.bookingjs-form-field--dirty .bookingjs-form-label{opacity:1;top:20px;font-size:11px;color:#2e5bec}.bookingjs-form-field--dirty .bookingjs-form-input{padding:25px 25px 5px}.bookingjs-form-field--dirty .bookingjs-form-input:invalid{box-shadow:inset 0 0 1px 1px #d83b46}.bookingjs-form-field--dirty .bookingjs-form-input--textarea{padding:30px 25px 10px}.bookingjs-form-label{position:absolute;top:30px;left:25px;color:#333;opacity:0;font-size:12px;transition:opacity .2s ease,font-size .2s ease,color .2s ease,top .2s ease}.bookingjs-form-input{transition:box-shadow .2s ease;width:100%;padding:15px 25px;margin:0;border:0 solid #ececec;font-size:1em;box-shadow:inset 0 0 1px 1px hsla(0,0%,100%,0);text-align:left;box-sizing:border-box;line-height:1.5em;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;color:#333;overflow:auto;border-bottom:1px solid #ececec}.bookingjs-form-input:focus{outline:0;box-shadow:inset 0 0 1px 1px #2e5bec}.bookingjs-form-input.hidden{display:none}.bookingjs-form-input:-moz-read-only{cursor:not-allowed;font-style:italic}.bookingjs-form-input:read-only{cursor:not-allowed;font-style:italic}.bookingjs-form-input:-moz-read-only:focus{box-shadow:inset 0 0 1px 1px #d8d8d8}.bookingjs-form-input:read-only:focus{box-shadow:inset 0 0 1px 1px #d8d8d8}.bookingjs-form-field--checkbox{text-align:left;position:relative}.bookingjs-form-label--checkbox{padding:25px 25px 25px 50px;display:block;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;color:#787878;font-size:1em;border-bottom:1px solid #ececec}.bookingjs-form-label--checkbox:disabled{cursor:not-allowed;font-style:italic}.bookingjs-form-label--checkbox:disabled:focus{box-shadow:inset 0 0 1px 1px #d8d8d8}.bookingjs-form-input--checkbox[type=checkbox]{position:absolute;top:19px;left:25px;width:auto;margin:0}.bookingjs-form-input--textarea{padding:15px 25px 25px;overflow:auto}.bookingjs-form-field--select{text-align:left}.bookingjs-form-label--select{opacity:1;top:20px;font-size:11px;color:#2e5bec}.bookingjs-form-input--select{transition:box-shadow .2s ease;width:100%;padding:15px 25px;margin:0;border:0 solid #ececec;font-size:1em;box-shadow:inset 0 0 1px 1px hsla(0,0%,100%,0);text-align:left;box-sizing:border-box;line-height:1.5em;font-family:Open Sans,Helvetica,Tahoma,Arial,sans-serif;color:#333;overflow:auto;border-bottom:1px solid #ececec;padding:25px 25px 5px;-webkit-appearance:none;-moz-appearance:none;appearance:none;border-radius:0;background:transparent;line-height:35px}.bookingjs-form-input--select:focus{outline:0;box-shadow:inset 0 0 1px 1px #2e5bec}.bookingjs-form-input--select.hidden{display:none}.bookingjs-form-input-arrow--select{position:absolute;top:31px;right:25px;width:12px;height:7.42px;opacity:.2;transition:opacity .2s ease;pointer-events:none}.bookingjs-form-field--select:hover .bookingjs-form-input-arrow--select{opacity:.5}.bookingjs-form-button{position:relative;transition:background-color .2s,max-width .3s;display:inline-block;padding:13px 25px;background-color:#2e5bec;text-transform:uppercase;box-shadow:0 1px 3px 0 rgba(0,0,0,.15);color:#fff;border:0;border-radius:3px;font-size:1.1em;font-weight:600;margin-top:30px;cursor:pointer;height:44px;outline:0;text-align:center;max-width:200px}.bookingjs-form-button .error-text,.bookingjs-form-button .loading-text,.bookingjs-form-button .success-text{transition:opacity .3s ease;position:absolute;top:13px;left:50%;transform:translateX(-50%);opacity:0}.bookingjs-form-button .inactive-text{white-space:nowrap;opacity:1}.bookingjs-form-button .loading-text svg{height:19px;width:19px;animation:spin .6s infinite linear}.bookingjs-form-button .error-text svg{height:15px;width:15px;margin-top:2px}.bookingjs-form-button .success-text svg{height:15px;margin-top:2px;transform:scale(0);transition:transform .6s ease}.bookingjs-form-button:focus,.bookingjs-form-button:hover{background-color:#1341d4}.bookingjs-form-button.button-shake{animation:shake .5s 1 ease}.bookingjs-form.loading .bookingjs-form-button,.bookingjs-form.loading .bookingjs-form-button:hover{max-width:80px;background-color:#b1b1b1;cursor:not-allowed}.bookingjs-form.loading .bookingjs-form-button .inactive-text,.bookingjs-form.loading .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.loading .bookingjs-form-button .loading-text,.bookingjs-form.loading .bookingjs-form-button:hover .loading-text{opacity:1}.bookingjs-form.error .bookingjs-form-button,.bookingjs-form.error .bookingjs-form-button:hover{max-width:80px;background-color:#d83b46;cursor:not-allowed}.bookingjs-form.error .bookingjs-form-button .inactive-text,.bookingjs-form.error .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.error .bookingjs-form-button .error-text,.bookingjs-form.error .bookingjs-form-button:hover .error-text{opacity:1}.bookingjs-form.success .bookingjs-form-button,.bookingjs-form.success .bookingjs-form-button:hover{max-width:80px;background-color:#46ce92;cursor:pointer}.bookingjs-form.success .bookingjs-form-button .inactive-text,.bookingjs-form.success .bookingjs-form-button:hover .inactive-text{opacity:0}.bookingjs-form.success .bookingjs-form-button .success-text,.bookingjs-form.success .bookingjs-form-button:hover .success-text{opacity:1}.bookingjs-form.success .bookingjs-form-button .success-text svg,.bookingjs-form.success .bookingjs-form-button:hover .success-text svg{transform:scale(1)}.bookingjs-loading{position:absolute;height:100%;width:100%;top:0;left:0;background-color:#fbfbfb;z-index:30;opacity:0;transition:opacity .5s ease;border-radius:4px}.bookingjs-loading.show{opacity:1}.bookingjs-loading-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}.bookingjs-loading-icon svg{height:30px;width:30px;animation:spin .6s infinite linear}.bookingjs-loading-icon svg path{fill:#2e5bec}.bookingjs-error{position:absolute;height:100%;width:100%;top:0;left:0;background-color:#fbfbfb;z-index:31;opacity:0;transition:opacity .5s ease;border-radius:4px}.bookingjs-error.show{opacity:1}.bookingjs-error-inner{position:absolute;top:50%;transform:translateY(-50%);text-align:center;overflow:scroll;max-height:100%;padding:30px;box-sizing:border-box;width:100%}.bookingjs-error-icon svg{height:30px;width:30px}.bookingjs-error-icon svg g{fill:#d83b46}.bookingjs-error-heading{color:#d83b46;font-size:15px;margin:15px 0}.bookingjs-error-text{font-size:12px;color:#aeaeae;word-break:break-word;overflow:scroll}.bookingjs-error-text-context,.bookingjs-error-text-messag{display:block}", ""]);
 	
 	// exports
 
@@ -27503,13 +27567,166 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ }),
 /* 60 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-	var H = __webpack_require__(61);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-ribbon-wrapper\">");t.b("\n" + i);t.b("  <div class=\"bookingjs-ribbon-container\">");t.b("\n" + i);t.b("    <div class=\"bookingjs-ribbon\">");t.b("\n" + i);t.b("      <span>");t.b("\n" + i);t.b("        ");t.b(t.v(t.f("ribbonText",c,p,0)));t.b("\n" + i);t.b("      </span>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-ribbon-wrapper\">\n  <div class=\"bookingjs-ribbon-container\">\n    <div class=\"bookingjs-ribbon\">\n      <span>\n        {{ ribbonText }}\n      </span>\n    </div>\n  </div>\n</div>\n", H);return T; }();
+	'use strict';
+	
+	module.exports = [
+	  { key: 'Pacific/Midway', name: '(-11:00) Midway Island' },
+	  { key: 'Pacific/Samoa', name: '(-11:00) Samoa' },
+	  { key: 'Pacific/Honolulu', name: '(-10:00) Hawaii' },
+	  { key: 'US/Alaska', name: '(-09:00) Alaska' },
+	  { key: 'America/Los_Angeles', name: '(-08:00) Pacific Time (US & Canada)' },
+	  { key: 'America/Tijuana', name: '(-08:00) Tijuana' },
+	  { key: 'US/Arizona', name: '(-07:00) Arizona' },
+	  { key: 'America/Chihuahua', name: '(-07:00) Chihuahua' },
+	  { key: 'America/Chihuahua', name: '(-07:00) La Paz' },
+	  { key: 'America/Mazatlan', name: '(-07:00) Mazatlan' },
+	  { key: 'US/Mountain', name: '(-07:00) Mountain Time (US & Canada)' },
+	  { key: 'America/Managua', name: '(-06:00) Central America' },
+	  { key: 'US/Central', name: '(-06:00) Central Time (US & Canada)' },
+	  { key: 'America/Mexico_City', name: '(-06:00) Guadalajara' },
+	  { key: 'America/Mexico_City', name: '(-06:00) Mexico City' },
+	  { key: 'America/Monterrey', name: '(-06:00) Monterrey' },
+	  { key: 'Canada/Saskatchewan', name: '(-06:00) Saskatchewan' },
+	  { key: 'America/Bogota', name: '(-05:00) Bogota' },
+	  { key: 'US/Eastern', name: '(-05:00) Eastern Time (US & Canada)' },
+	  { key: 'US/East-Indiana', name: '(-05:00) Indiana (East)' },
+	  { key: 'America/Lima', name: '(-05:00) Lima' },
+	  { key: 'America/Bogota', name: '(-05:00) Quito' },
+	  { key: 'Canada/Atlantic', name: '(-04:00) Atlantic Time (Canada)' },
+	  { key: 'America/Caracas', name: '(-04:30) Caracas' },
+	  { key: 'America/La_Paz', name: '(-04:00) La Paz' },
+	  { key: 'America/Santiago', name: '(-04:00) Santiago' },
+	  { key: 'Canada/Newfoundland', name: '(-03:30) Newfoundland' },
+	  { key: 'America/Sao_Paulo', name: '(-03:00) Brasilia' },
+	  { key: 'America/Argentina/Buenos_Aires', name: '(-03:00) Buenos Aires' },
+	  { key: 'America/Argentina/Buenos_Aires', name: '(-03:00) Georgetown' },
+	  { key: 'America/Godthab', name: '(-03:00) Greenland' },
+	  { key: 'America/Noronha', name: '(-02:00) Mid-Atlantic' },
+	  { key: 'Atlantic/Azores', name: '(-01:00) Azores' },
+	  { key: 'Atlantic/Cape_Verde', name: '(-01:00) Cape Verde Is.' },
+	  { key: 'Africa/Casablanca', name: '(+00:00) Casablanca' },
+	  { key: 'Europe/London', name: '(+00:00) Edinburgh' },
+	  { key: 'Etc/Greenwich', name: '(+00:00) Dublin (Greenwich Mean Time)' },
+	  { key: 'Europe/Lisbon', name: '(+00:00) Lisbon' },
+	  { key: 'Europe/London', name: '(+00:00) London' },
+	  { key: 'Africa/Monrovia', name: '(+00:00) Monrovia' },
+	  { key: 'UTC', name: '(+00:00) UTC' },
+	  { key: 'Europe/Amsterdam', name: '(+01:00) Amsterdam' },
+	  { key: 'Europe/Belgrade', name: '(+01:00) Belgrade' },
+	  { key: 'Europe/Berlin', name: '(+01:00) Berlin' },
+	  { key: 'Europe/Berlin', name: '(+01:00) Bern' },
+	  { key: 'Europe/Bratislava', name: '(+01:00) Bratislava' },
+	  { key: 'Europe/Brussels', name: '(+01:00) Brussels' },
+	  { key: 'Europe/Budapest', name: '(+01:00) Budapest' },
+	  { key: 'Europe/Copenhagen', name: '(+01:00) Copenhagen' },
+	  { key: 'Europe/Ljubljana', name: '(+01:00) Ljubljana' },
+	  { key: 'Europe/Madrid', name: '(+01:00) Madrid' },
+	  { key: 'Europe/Paris', name: '(+01:00) Paris' },
+	  { key: 'Europe/Prague', name: '(+01:00) Prague' },
+	  { key: 'Europe/Rome', name: '(+01:00) Rome' },
+	  { key: 'Europe/Sarajevo', name: '(+01:00) Sarajevo' },
+	  { key: 'Europe/Skopje', name: '(+01:00) Skopje' },
+	  { key: 'Europe/Stockholm', name: '(+01:00) Stockholm' },
+	  { key: 'Europe/Vienna', name: '(+01:00) Vienna' },
+	  { key: 'Europe/Warsaw', name: '(+01:00) Warsaw' },
+	  { key: 'Africa/Lagos', name: '(+01:00) West Central Africa' },
+	  { key: 'Europe/Zagreb', name: '(+01:00) Zagreb' },
+	  { key: 'Europe/Athens', name: '(+02:00) Athens' },
+	  { key: 'Europe/Bucharest', name: '(+02:00) Bucharest' },
+	  { key: 'Africa/Cairo', name: '(+02:00) Cairo' },
+	  { key: 'Africa/Harare', name: '(+02:00) Harare' },
+	  { key: 'Europe/Helsinki', name: '(+02:00) Helsinki' },
+	  { key: 'Europe/Istanbul', name: '(+02:00) Istanbul' },
+	  { key: 'Asia/Jerusalem', name: '(+02:00) Jerusalem' },
+	  { key: 'Europe/Helsinki', name: '(+02:00) Kyiv' },
+	  { key: 'Africa/Johannesburg', name: '(+02:00) Pretoria' },
+	  { key: 'Europe/Riga', name: '(+02:00) Riga' },
+	  { key: 'Europe/Sofia', name: '(+02:00) Sofia' },
+	  { key: 'Europe/Tallinn', name: '(+02:00) Tallinn' },
+	  { key: 'Europe/Vilnius', name: '(+02:00) Vilnius' },
+	  { key: 'Asia/Baghdad', name: '(+03:00) Baghdad' },
+	  { key: 'Asia/Kuwait', name: '(+03:00) Kuwait' },
+	  { key: 'Europe/Minsk', name: '(+03:00) Minsk' },
+	  { key: 'Africa/Nairobi', name: '(+03:00) Nairobi' },
+	  { key: 'Asia/Riyadh', name: '(+03:00) Riyadh' },
+	  { key: 'Europe/Volgograd', name: '(+03:00) Volgograd' },
+	  { key: 'Asia/Tehran', name: '(+03:30) Tehran' },
+	  { key: 'Asia/Muscat', name: '(+04:00) Abu Dhabi' },
+	  { key: 'Asia/Baku', name: '(+04:00) Baku' },
+	  { key: 'Europe/Moscow', name: '(+04:00) Moscow' },
+	  { key: 'Asia/Muscat', name: '(+04:00) Muscat' },
+	  { key: 'Europe/Moscow', name: '(+04:00) St. Petersburg' },
+	  { key: 'Asia/Tbilisi', name: '(+04:00) Tbilisi' },
+	  { key: 'Asia/Yerevan', name: '(+04:00) Yerevan' },
+	  { key: 'Asia/Kabul', name: '(+04:30) Kabul' },
+	  { key: 'Asia/Karachi', name: '(+05:00) Islamabad' },
+	  { key: 'Asia/Karachi', name: '(+05:00) Karachi' },
+	  { key: 'Asia/Tashkent', name: '(+05:00) Tashkent' },
+	  { key: 'Asia/Calcutta', name: '(+05:30) Chennai' },
+	  { key: 'Asia/Kolkata', name: '(+05:30) Kolkata' },
+	  { key: 'Asia/Calcutta', name: '(+05:30) Mumbai' },
+	  { key: 'Asia/Calcutta', name: '(+05:30) New Delhi' },
+	  { key: 'Asia/Calcutta', name: '(+05:30) Sri Jayawardenepura' },
+	  { key: 'Asia/Katmandu', name: '(+05:45) Kathmandu' },
+	  { key: 'Asia/Almaty', name: '(+06:00) Almaty' },
+	  { key: 'Asia/Dhaka', name: '(+06:00) Astana' },
+	  { key: 'Asia/Dhaka', name: '(+06:00) Dhaka' },
+	  { key: 'Asia/Yekaterinburg', name: '(+06:00) Ekaterinburg' },
+	  { key: 'Asia/Rangoon', name: '(+06:30) Rangoon' },
+	  { key: 'Asia/Bangkok', name: '(+07:00) Bangkok' },
+	  { key: 'Asia/Bangkok', name: '(+07:00) Hanoi' },
+	  { key: 'Asia/Jakarta', name: '(+07:00) Jakarta' },
+	  { key: 'Asia/Novosibirsk', name: '(+07:00) Novosibirsk' },
+	  { key: 'Asia/Hong_Kong', name: '(+08:00) Beijing' },
+	  { key: 'Asia/Chongqing', name: '(+08:00) Chongqing' },
+	  { key: 'Asia/Hong_Kong', name: '(+08:00) Hong Kong' },
+	  { key: 'Asia/Krasnoyarsk', name: '(+08:00) Krasnoyarsk' },
+	  { key: 'Asia/Kuala_Lumpur', name: '(+08:00) Kuala Lumpur' },
+	  { key: 'Australia/Perth', name: '(+08:00) Perth' },
+	  { key: 'Asia/Singapore', name: '(+08:00) Singapore' },
+	  { key: 'Asia/Taipei', name: '(+08:00) Taipei' },
+	  { key: 'Asia/Ulan_Bator', name: '(+08:00) Ulaan Bataar' },
+	  { key: 'Asia/Urumqi', name: '(+08:00) Urumqi' },
+	  { key: 'Asia/Irkutsk', name: '(+09:00) Irkutsk' },
+	  { key: 'Asia/Tokyo', name: '(+09:00) Osaka' },
+	  { key: 'Asia/Tokyo', name: '(+09:00) Sapporo' },
+	  { key: 'Asia/Seoul', name: '(+09:00) Seoul' },
+	  { key: 'Asia/Tokyo', name: '(+09:00) Tokyo' },
+	  { key: 'Australia/Adelaide', name: '(+09:30) Adelaide' },
+	  { key: 'Australia/Darwin', name: '(+09:30) Darwin' },
+	  { key: 'Australia/Brisbane', name: '(+10:00) Brisbane' },
+	  { key: 'Australia/Canberra', name: '(+10:00) Canberra' },
+	  { key: 'Pacific/Guam', name: '(+10:00) Guam' },
+	  { key: 'Australia/Hobart', name: '(+10:00) Hobart' },
+	  { key: 'Australia/Melbourne', name: '(+10:00) Melbourne' },
+	  { key: 'Pacific/Port_Moresby', name: '(+10:00) Port Moresby' },
+	  { key: 'Australia/Sydney', name: '(+10:00) Sydney' },
+	  { key: 'Asia/Yakutsk', name: '(+10:00) Yakutsk' },
+	  { key: 'Asia/Vladivostok', name: '(+11:00) Vladivostok' },
+	  { key: 'Pacific/Auckland', name: '(+12:00) Auckland' },
+	  { key: 'Pacific/Fiji', name: '(+12:00) Fiji' },
+	  { key: 'Pacific/Kwajalein', name: '(+12:00) International Date Line West' },
+	  { key: 'Asia/Kamchatka', name: '(+12:00) Kamchatka' },
+	  { key: 'Asia/Magadan', name: '(+12:00) Magadan' },
+	  { key: 'Pacific/Fiji', name: '(+12:00) Marshall Is.' },
+	  { key: 'Asia/Magadan', name: '(+12:00) New Caledonia' },
+	  { key: 'Asia/Magadan', name: '(+12:00) Solomon Is.' },
+	  { key: 'Pacific/Auckland', name: '(+12:00) Wellington' },
+	  { key: 'Pacific/Tongatapu', name: '(+13:00) Nuku\'alofa' }
+	];
+
 
 /***/ }),
 /* 61 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	var H = __webpack_require__(62);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-ribbon-wrapper\">");t.b("\n" + i);t.b("  <div class=\"bookingjs-ribbon-container\">");t.b("\n" + i);t.b("    <div class=\"bookingjs-ribbon\">");t.b("\n" + i);t.b("      <span>");t.b("\n" + i);t.b("        ");t.b(t.v(t.f("ribbonText",c,p,0)));t.b("\n" + i);t.b("      </span>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-ribbon-wrapper\">\n  <div class=\"bookingjs-ribbon-container\">\n    <div class=\"bookingjs-ribbon\">\n      <span>\n        {{ ribbonText }}\n      </span>\n    </div>\n  </div>\n</div>\n", H);return T; }();
+
+/***/ }),
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/*
@@ -27529,14 +27746,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	// This file is for use with Node.js. See dist/ for browser files.
 	
-	var Hogan = __webpack_require__(62);
-	Hogan.Template = __webpack_require__(63).Template;
+	var Hogan = __webpack_require__(63);
+	Hogan.Template = __webpack_require__(64).Template;
 	Hogan.template = Hogan.Template;
 	module.exports = Hogan;
 
 
 /***/ }),
-/* 62 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/*
@@ -27965,7 +28182,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 63 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/*
@@ -28312,116 +28529,122 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 64 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	var H = __webpack_require__(61);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-avatar\">");t.b("\n" + i);t.b("  <img src=\"");t.b(t.t(t.f("image",c,p,0)));t.b("\" />");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-avatar\">\n  <img src=\"{{& image }}\" />\n</div>\n", H);return T; }();
-
-/***/ }),
 /* 65 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-	var H = __webpack_require__(61);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-displayname\">");t.b("\n" + i);t.b("  <span>");t.b(t.v(t.f("name",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-displayname\">\n  <span>{{ name }}</span>\n</div>\n", H);return T; }();
+	module.exports = "<svg class=\"bookingjs-timezoneicon\" viewBox=\"0 0 98 98\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>Shape</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"timezone-icon\" sketch:type=\"MSLayerGroup\" fill=\"#AEAEAE\"><path d=\"M37.656,1.387 L39.381,2.516 L46.176,3.475 L49.313,2.778 L55.186,3.495 L56.364,5.065 L52.274,4.52 L48.092,6.262 L49.293,9.385 L53.613,11.348 L54.189,7.395 L58.285,7.133 L64.121,12.707 L65.775,14.887 L66.56,16.28 L62.029,18.067 L55.185,21.169 L54.624,24.206 L50.095,28.476 L50.271,32.572 L48.9,32.559 L48.353,29.086 L45.757,28.238 L38.294,28.631 L35.286,34.137 L37.901,37.274 L42.221,34.917 L42.516,38.755 L44.172,40.062 L47.131,43.46 L46.985,47.751 L52.448,49.034 L56.454,46.159 L58.284,46.768 L65.003,49.45 L74.433,52.985 L76.396,57.698 L83.111,60.968 L84.644,66.732 L80.062,71.857 L74.66,77.519 L68.933,80.482 L63.04,84.408 L55.185,89.515 L50.835,93.941 L49.292,92.263 L52.782,83.419 L53.663,73.167 L46.15,66.34 L46.199,60.596 L48.164,58.239 L50.471,51.415 L45.809,48.811 L42.664,43.706 L37.75,41.817 L30.047,37.667 L26.904,29.024 L25.334,33.344 L22.977,26.276 L23.762,15.671 L27.69,12.136 L26.512,9.779 L29.26,5.459 L23.905,6.99 C9.611,15.545 0.01,31.135 0.01,49.006 C0.01,76.062 21.945,98 49.006,98 C76.062,98 98,76.062 98,49.006 C98,21.947 76.062,0.012 49.006,0.012 C45.092,0.012 41.305,0.52 37.656,1.387 Z\" id=\"Shape\" sketch:type=\"MSShapeGroup\"></path></g></g></svg>"
 
 /***/ }),
 /* 66 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	var H = __webpack_require__(61);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-loading show\">");t.b("\n" + i);t.b("  <div class=\"bookingjs-loading-icon\">");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("loadingIcon",c,p,0)));t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-loading show\">\n  <div class=\"bookingjs-loading-icon\">\n    {{& loadingIcon }}\n  </div>\n</div>\n", H);return T; }();
-
-/***/ }),
-/* 67 */
-/***/ (function(module, exports) {
-
-	module.exports = "<svg version=\"1.1\" id=\"loader-1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" viewBox=\"0 0 38 38\" xml:space=\"preserve\"><path fill=\"#fff\" d=\"M38,19 C38,8.50658975 29.4934102,0 19,0 C8.50658975,0 0,8.50658975 0,19 L5,19 C5,11.2680135 11.2680135,5 19,5 C26.7319865,5 33,11.2680135 33,19 L38,19 Z\" id=\"Oval-1\" sketch:type=\"MSShapeGroup\"></path></path></svg>"
-
-/***/ }),
-/* 68 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	var H = __webpack_require__(61);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-error show\">");t.b("\n" + i);t.b("  <div class=\"bookingjs-error-inner\">");t.b("\n" + i);t.b("    <div class=\"bookingjs-error-icon\">");t.b("\n" + i);t.b("      ");t.b(t.t(t.f("errorWarningIcon",c,p,0)));t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <div class=\"bookingjs-error-heading\">");t.b("\n" + i);t.b("      Ouch, we've encountered a problem");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <div class=\"bookingjs-error-text\">");t.b("\n" + i);t.b("      <span class=\"bookingjs-error-text-message\">");t.b(t.t(t.f("message",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"bookingjs-error-text-context\">");t.b(t.t(t.f("context",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-error show\">\n  <div class=\"bookingjs-error-inner\">\n    <div class=\"bookingjs-error-icon\">\n      {{& errorWarningIcon }}\n    </div>\n    <div class=\"bookingjs-error-heading\">\n      Ouch, we've encountered a problem\n    </div>\n    <div class=\"bookingjs-error-text\">\n      <span class=\"bookingjs-error-text-message\">{{& message }}</span>\n      <span class=\"bookingjs-error-text-context\">{{& context }}</span>\n    </div>\n  </div>\n</div>\n", H);return T; }();
-
-/***/ }),
-/* 69 */
-/***/ (function(module, exports) {
-
-	module.exports = "<svg viewBox=\"0 0 62 55\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><title>error-warning-icon</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\"><g id=\"error-warning-icon\" fill-rule=\"nonzero\" fill=\"#D83B46\"><path d=\"M60.2,41.5 L38.7,5.3 C37.1,2.5 34.2,0.9 31,0.9 C27.8,0.9 24.9,2.5 23.3,5.3 L1.8,41.5 C0.1,44.3 0.1,47.7 1.7,50.5 C3.3,53.3 6.2,55 9.5,55 L52.4,55 C55.7,55 58.6,53.3 60.2,50.5 C61.9,47.7 61.9,44.3 60.2,41.5 Z M55.1,47.6 C54.8,48.1 54.1,49.1 52.5,49.1 L9.5,49.1 C7.9,49.1 7.2,48 6.9,47.6 C6.6,47.1 6.1,45.9 6.9,44.6 L28.4,8.4 C29.2,7.1 30.5,6.9 31,6.9 C31.5,6.9 32.8,7 33.6,8.4 L55.1,44.6 C55.9,45.9 55.3,47.1 55.1,47.6 Z\" id=\"Shape\"></path><path d=\"M31,15.2 C29.3,15.2 28,16.5 28,18.2 L28,34.2 C28,35.9 29.3,37.2 31,37.2 C32.7,37.2 34,35.9 34,34.2 L34,18.2 C34,16.6 32.7,15.2 31,15.2 Z\" id=\"Shape\"></path><path d=\"M31,38.8 C29.3,38.8 28,40.1 28,41.8 L28,42.8 C28,44.5 29.3,45.8 31,45.8 C32.7,45.8 34,44.5 34,42.8 L34,41.8 C34,40.1 32.7,38.8 31,38.8 Z\" id=\"Shape\"></path></g></g></svg>"
-
-/***/ }),
-/* 70 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	var H = __webpack_require__(61);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field ");if(t.s(t.f("prefilled",c,p,1),c,p,0,49,76,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("bookingjs-form-field--dirty");});c.pop();}t.b("\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    type=\"");t.b(t.v(t.f("format",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.f("title",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("prefilled",c,p,1),c,p,0,385,410,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.f("prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,446,456,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,491,501,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field {{# prefilled }}bookingjs-form-field--dirty{{/ prefilled }}\">\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label label-{{ key }}\">\n    {{ title }}\n  </label>\n  <input\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input input-{{ key }}\"\n    type=\"{{ format }}\"\n    name=\"{{ key }}\"\n    placeholder=\"{{ title }}\"\n    {{# prefilled }} value=\"{{ prefilled }}\" {{/ prefilled }}\n    {{# readonly }} readonly {{/ readonly }}\n    {{# required }} required {{/ required }}\n  />\n</div>\n", H);return T; }();
-
-/***/ }),
-/* 71 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	var H = __webpack_require__(61);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field ");if(t.s(t.f("prefilled",c,p,1),c,p,0,49,76,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("bookingjs-form-field--dirty");});c.pop();}t.b("\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <textarea");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input bookingjs-form-input--textarea input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    rows=\"3\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.f("title",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,407,417,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,452,462,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b(">");if(t.s(t.f("prefilled",c,p,1),c,p,0,494,509,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(t.v(t.f("prefilled",c,p,0)));});c.pop();}t.b("</textarea>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field {{# prefilled }}bookingjs-form-field--dirty{{/ prefilled }}\">\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label label-{{ key }}\">\n    {{ title }}\n  </label>\n  <textarea\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input bookingjs-form-input--textarea input-{{ key }}\"\n    rows=\"3\"\n    name=\"{{ key }}\"\n    placeholder=\"{{ title }}\"\n    {{# readonly }} readonly {{/ readonly }}\n    {{# required }} required {{/ required }}>{{# prefilled }}{{ prefilled }}{{/ prefilled }}</textarea>\n</div>\n", H);return T; }();
-
-/***/ }),
-/* 72 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	var H = __webpack_require__(61);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field bookingjs-form-field--select\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label bookingjs-form-label--select label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <select");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input--select input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,337,346,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" disabed ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,381,391,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("  >");t.b("\n" + i);if(t.s(t.f("enum",c,p,1),c,p,0,426,519,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("    <option value=\"");t.b(t.v(t.d(".",c,p,0)));t.b("\" ");if(t.s(t.f("prefilled",c,p,1),c,p,0,471,481,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" selected ");});c.pop();}t.b(">");t.b(t.v(t.d(".",c,p,0)));t.b("</option>");t.b("\n" + i);});c.pop();}t.b("  </select>");t.b("\n" + i);t.b("  <div class=\"bookingjs-form-input-arrow--select\">");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("arrowDownIcon",c,p,0)));t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field bookingjs-form-field--select\">\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label bookingjs-form-label--select label-{{ key }}\">\n    {{ title }}\n  </label>\n  <select\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input--select input-{{ key }}\"\n    name=\"{{ key }}\"\n    {{# readonly }} disabed {{/ readonly }}\n    {{# required }} required {{/ required }}\n  >\n    {{# enum }}\n    <option value=\"{{ . }}\" {{# prefilled }} selected {{/ prefilled }}>{{ . }}</option>\n    {{/ enum }}\n  </select>\n  <div class=\"bookingjs-form-input-arrow--select\">\n    {{& arrowDownIcon }}\n  </div>\n</div>\n", H);return T; }();
-
-/***/ }),
-/* 73 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	var H = __webpack_require__(61);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field bookingjs-form-field--checkbox\">");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input--checkbox input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    type=\"checkbox\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    value=\"true\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("prefilled",c,p,1),c,p,0,237,246,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" checked ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,282,292,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" disabled ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,327,337,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label--checkbox label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field bookingjs-form-field--checkbox\">\n  <input\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input--checkbox input-{{ key }}\"\n    type=\"checkbox\"\n    name=\"{{ key }}\"\n    value=\"true\"\n    {{# prefilled }} checked {{/ prefilled }}\n    {{# readonly }} disabled {{/ readonly }}\n    {{# required }} required {{/ required }}\n  />\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label--checkbox label-{{ key }}\">\n    {{ title }}\n  </label>\n</div>\n", H);return T; }();
-
-/***/ }),
-/* 74 */
 /***/ (function(module, exports) {
 
 	module.exports = "<svg viewBox=\"0 0 92 57\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><title>Shape</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\"><g id=\"baseline-keyboard_arrow_down-24px\" fill=\"#000000\" fill-rule=\"nonzero\"><path d=\"M14.1475701,2.57246832 L44.5933923,32.6934216 C45.3726692,33.4643833 46.6273308,33.4643833 47.4066077,32.6934216 L77.8524299,2.57246832 C80.9719545,-0.513769666 85.9953329,-0.511030764 89.1114902,2.57860711 L89.2702623,2.73602808 C92.4077787,5.84684331 92.4294243,10.9121169 89.3186091,14.0496333 C89.3025624,14.0658177 89.2864467,14.0819334 89.2702623,14.09798 L47.4081573,55.6038265 C46.6285143,56.3768345 45.3714857,56.3768345 44.5918427,55.6038265 L2.72973768,14.09798 C-0.407778714,10.9871648 -0.429424284,5.92189121 2.68139094,2.78437482 C2.69743758,2.76819044 2.71355331,2.75207472 2.72973768,2.73602808 L2.88850984,2.57860711 C6.00466711,-0.511030764 11.0280455,-0.513769666 14.1475701,2.57246832 Z\" id=\"Shape\"></path></g></g></svg>"
 
 /***/ }),
+/* 67 */
+/***/ (function(module, exports) {
+
+	module.exports = "<svg class=\"bookingjs-timekitlogo\" viewBox=\"0 0 513 548\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><title>timekit-logo</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\"><g id=\"timekit-logo\" transform=\"translate(9.000000, 9.000000)\" fill=\"#AEAEAE\"><path d=\"M55.2163313,275.621588 L198.50357,163.134257 C227.693194,140.219007 274.527519,140.836287 303.106573,164.516436 L439.222777,277.300154 L294.687237,386.088734 C265.004826,408.430003 217.635083,407.547293 188.834846,384.15411 L55.2163313,275.621588 Z M29.1450782,296.088768 L22.5453033,301.269906 C-6.64628574,324.186699 -6.96035256,361.73094 21.8567615,385.137832 L188.814783,520.750588 C217.626101,544.152772 265.020127,545.031261 294.666324,522.71725 L471.933566,389.292269 C501.58244,366.976243 502.456142,329.694313 473.870647,306.008826 L465.168534,298.798395 L304.79022,419.511467 C268.948833,446.488455 213.042282,445.460488 178.242802,417.194379 L29.1450782,296.088768 Z\" id=\"Base-layer\"></path><path d=\"M303.106573,18.9036609 L473.870647,160.396052 C502.470886,184.093754 501.573077,221.370515 471.912654,243.695235 L294.687237,377.088734 C265.004826,399.430003 217.635083,398.547293 188.834846,375.15411 L21.8366979,239.50876 C-6.94564818,216.130109 -6.64628574,178.573924 22.5453033,155.657132 L198.50357,17.5214821 C227.708304,-5.40562963 274.527519,-4.77648801 303.106573,18.9036609 Z M292.387775,31.8399435 C269.89295,13.2010897 231.857075,12.6958644 208.877526,30.7359084 L32.9192595,168.871558 C12.2117199,185.127966 12.006219,209.880161 32.4287426,226.468491 L199.426891,362.113841 C222.242635,380.64608 261.076006,381.360119 284.584254,363.666001 L461.809671,230.272501 C482.810002,214.466035 483.387128,190.098964 463.151849,173.332334 L292.387775,31.8399435 Z\" id=\"Middle-layer\" stroke=\"#AEAEAE\" stroke-width=\"18\"></path></g></g></svg>"
+
+/***/ }),
+/* 68 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	var H = __webpack_require__(62);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-footer\">");t.b("\n" + i);t.b("  <div class=\"bookingjs-footer-tz\">");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("timezoneIcon",c,p,0)));t.b("\n" + i);t.b("    <span>Your timezone</span>");t.b("\n" + i);t.b("    <div class=\"bookingjs-footer-tz-picker\">");t.b("\n" + i);t.b("      <select class=\"bookingjs-footer-tz-picker-select\">");t.b("\n" + i);if(t.s(t.f("listTimezones",c,p,1),c,p,0,252,315,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("        <option value=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b(t.v(t.f("name",c,p,0)));t.b("</option>");t.b("\n" + i);});c.pop();}t.b("      </select>");t.b("\n" + i);t.b("      <div class=\"bookingjs-footer-tz-picker-arrowdown\">");t.b("\n" + i);t.b("        ");t.b(t.t(t.f("arrowDownIcon",c,p,0)));t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);if(t.s(t.f("showCredits",c,p,1),c,p,0,491,738,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("  <a class=\"bookingjs-footer-by\" href=\"http://timekit.io?utm_medium=link&utm_source=");t.b(t.v(t.f("campaignSource",c,p,0)));t.b("&utm_campaign=");t.b(t.v(t.f("campaignName",c,p,0)));t.b("&utm_content=powered-by\" target=\"_blank\">");t.b("\n" + i);t.b("    <span>Powered by Timekit</span>");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("timekitLogo",c,p,0)));t.b("\n" + i);t.b("  </a>");t.b("\n" + i);});c.pop();}t.b("</div>");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-footer\">\n  <div class=\"bookingjs-footer-tz\">\n    {{& timezoneIcon }}\n    <span>Your timezone</span>\n    <div class=\"bookingjs-footer-tz-picker\">\n      <select class=\"bookingjs-footer-tz-picker-select\">\n        {{# listTimezones }}\n        <option value=\"{{ key }}\">{{ name }}</option>\n        {{/ listTimezones }}\n      </select>\n      <div class=\"bookingjs-footer-tz-picker-arrowdown\">\n        {{& arrowDownIcon }}\n      </div>\n    </div>\n  </div>\n  {{# showCredits }}\n  <a class=\"bookingjs-footer-by\" href=\"http://timekit.io?utm_medium=link&utm_source={{ campaignSource }}&utm_campaign={{ campaignName }}&utm_content=powered-by\" target=\"_blank\">\n    <span>Powered by Timekit</span>\n    {{& timekitLogo }}\n  </a>\n  {{/ showCredits }}\n</div>", H);return T; }();
+
+/***/ }),
+/* 69 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	var H = __webpack_require__(62);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-avatar\">");t.b("\n" + i);t.b("  <img src=\"");t.b(t.t(t.f("image",c,p,0)));t.b("\" />");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-avatar\">\n  <img src=\"{{& image }}\" />\n</div>\n", H);return T; }();
+
+/***/ }),
+/* 70 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	var H = __webpack_require__(62);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-displayname\">");t.b("\n" + i);t.b("  <span>");t.b(t.v(t.f("name",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-displayname\">\n  <span>{{ name }}</span>\n</div>\n", H);return T; }();
+
+/***/ }),
+/* 71 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	var H = __webpack_require__(62);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-loading show\">");t.b("\n" + i);t.b("  <div class=\"bookingjs-loading-icon\">");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("loadingIcon",c,p,0)));t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-loading show\">\n  <div class=\"bookingjs-loading-icon\">\n    {{& loadingIcon }}\n  </div>\n</div>\n", H);return T; }();
+
+/***/ }),
+/* 72 */
+/***/ (function(module, exports) {
+
+	module.exports = "<svg version=\"1.1\" id=\"loader-1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" viewBox=\"0 0 38 38\" xml:space=\"preserve\"><path fill=\"#fff\" d=\"M38,19 C38,8.50658975 29.4934102,0 19,0 C8.50658975,0 0,8.50658975 0,19 L5,19 C5,11.2680135 11.2680135,5 19,5 C26.7319865,5 33,11.2680135 33,19 L38,19 Z\" id=\"Oval-1\" sketch:type=\"MSShapeGroup\"></path></path></svg>"
+
+/***/ }),
+/* 73 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	var H = __webpack_require__(62);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-error show\">");t.b("\n" + i);t.b("  <div class=\"bookingjs-error-inner\">");t.b("\n" + i);t.b("    <div class=\"bookingjs-error-icon\">");t.b("\n" + i);t.b("      ");t.b(t.t(t.f("errorWarningIcon",c,p,0)));t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <div class=\"bookingjs-error-heading\">");t.b("\n" + i);t.b("      Ouch, we've encountered a problem");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <div class=\"bookingjs-error-text\">");t.b("\n" + i);t.b("      <span class=\"bookingjs-error-text-message\">");t.b(t.t(t.f("message",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"bookingjs-error-text-context\">");t.b(t.t(t.f("context",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-error show\">\n  <div class=\"bookingjs-error-inner\">\n    <div class=\"bookingjs-error-icon\">\n      {{& errorWarningIcon }}\n    </div>\n    <div class=\"bookingjs-error-heading\">\n      Ouch, we've encountered a problem\n    </div>\n    <div class=\"bookingjs-error-text\">\n      <span class=\"bookingjs-error-text-message\">{{& message }}</span>\n      <span class=\"bookingjs-error-text-context\">{{& context }}</span>\n    </div>\n  </div>\n</div>\n", H);return T; }();
+
+/***/ }),
+/* 74 */
+/***/ (function(module, exports) {
+
+	module.exports = "<svg viewBox=\"0 0 62 55\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><title>error-warning-icon</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\"><g id=\"error-warning-icon\" fill-rule=\"nonzero\" fill=\"#D83B46\"><path d=\"M60.2,41.5 L38.7,5.3 C37.1,2.5 34.2,0.9 31,0.9 C27.8,0.9 24.9,2.5 23.3,5.3 L1.8,41.5 C0.1,44.3 0.1,47.7 1.7,50.5 C3.3,53.3 6.2,55 9.5,55 L52.4,55 C55.7,55 58.6,53.3 60.2,50.5 C61.9,47.7 61.9,44.3 60.2,41.5 Z M55.1,47.6 C54.8,48.1 54.1,49.1 52.5,49.1 L9.5,49.1 C7.9,49.1 7.2,48 6.9,47.6 C6.6,47.1 6.1,45.9 6.9,44.6 L28.4,8.4 C29.2,7.1 30.5,6.9 31,6.9 C31.5,6.9 32.8,7 33.6,8.4 L55.1,44.6 C55.9,45.9 55.3,47.1 55.1,47.6 Z\" id=\"Shape\"></path><path d=\"M31,15.2 C29.3,15.2 28,16.5 28,18.2 L28,34.2 C28,35.9 29.3,37.2 31,37.2 C32.7,37.2 34,35.9 34,34.2 L34,18.2 C34,16.6 32.7,15.2 31,15.2 Z\" id=\"Shape\"></path><path d=\"M31,38.8 C29.3,38.8 28,40.1 28,41.8 L28,42.8 C28,44.5 29.3,45.8 31,45.8 C32.7,45.8 34,44.5 34,42.8 L34,41.8 C34,40.1 32.7,38.8 31,38.8 Z\" id=\"Shape\"></path></g></g></svg>"
+
+/***/ }),
 /* 75 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var H = __webpack_require__(61);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-bookpage\">");t.b("\n" + i);t.b("  <a class=\"bookingjs-bookpage-close\" href=\"#\">");t.b(t.t(t.f("closeIcon",c,p,0)));t.b("</a>");t.b("\n" + i);t.b("  <div class=\"bookingjs-bookpage-header\">");t.b("\n" + i);t.b("    <h2 class=\"bookingjs-bookpage-date\">");t.b(t.v(t.f("chosenDate",c,p,0)));t.b("</h2>");t.b("\n" + i);t.b("    <h3 class=\"bookingjs-bookpage-time\">");t.b(t.v(t.f("chosenTime",c,p,0)));t.b("</h3>");t.b("\n" + i);if(t.s(t.f("allocatedResource",c,p,1),c,p,0,293,465,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("      <span class=\"bookingjs-bookpage-resource-prefix\">");t.b(t.v(t.f("allocatedResourcePrefix",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <h3 class=\"bookingjs-bookpage-resource\">");t.b(t.v(t.f("allocatedResource",c,p,0)));t.b("</h3>");t.b("\n" + i);});c.pop();}t.b("  </div>");t.b("\n" + i);t.b("  <form class=\"bookingjs-form\" action=\"#\">");t.b("\n" + i);t.b("    <div class=\"bookingjs-form-box\">");t.b("\n" + i);t.b("      <div class=\"bookingjs-form-success-message\">");t.b("\n" + i);t.b("        <div class=\"bookingjs-form-success-message-body\">");t.b(t.t(t.f("successMessage",c,p,0)));t.b("</div>");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("      <div class=\"bookingjs-form-fields\">");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <button class=\"bookingjs-form-button\" type=\"submit\">");t.b("\n" + i);t.b("      <span class=\"inactive-text\">");t.b(t.v(t.f("submitText",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"loading-text\">");t.b(t.t(t.f("loadingIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"error-text\">");t.b(t.t(t.f("errorIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"success-text\">");t.b(t.t(t.f("checkmarkIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("    </button>");t.b("\n" + i);t.b("  </form>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-bookpage\">\n  <a class=\"bookingjs-bookpage-close\" href=\"#\">{{& closeIcon }}</a>\n  <div class=\"bookingjs-bookpage-header\">\n    <h2 class=\"bookingjs-bookpage-date\">{{ chosenDate }}</h2>\n    <h3 class=\"bookingjs-bookpage-time\">{{ chosenTime }}</h3>\n    {{#allocatedResource}}\n      <span class=\"bookingjs-bookpage-resource-prefix\">{{ allocatedResourcePrefix }}</span>\n      <h3 class=\"bookingjs-bookpage-resource\">{{ allocatedResource }}</h3>\n    {{/allocatedResource}}\n  </div>\n  <form class=\"bookingjs-form\" action=\"#\">\n    <div class=\"bookingjs-form-box\">\n      <div class=\"bookingjs-form-success-message\">\n        <div class=\"bookingjs-form-success-message-body\">{{& successMessage }}</div>\n      </div>\n      <div class=\"bookingjs-form-fields\">\n      </div>\n    </div>\n    <button class=\"bookingjs-form-button\" type=\"submit\">\n      <span class=\"inactive-text\">{{ submitText }}</span>\n      <span class=\"loading-text\">{{& loadingIcon }}</span>\n      <span class=\"error-text\">{{& errorIcon }}</span>\n      <span class=\"success-text\">{{& checkmarkIcon }}</span>\n    </button>\n  </form>\n</div>\n", H);return T; }();
+	var H = __webpack_require__(62);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field ");if(t.s(t.f("prefilled",c,p,1),c,p,0,49,76,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("bookingjs-form-field--dirty");});c.pop();}t.b("\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    type=\"");t.b(t.v(t.f("format",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.f("title",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("prefilled",c,p,1),c,p,0,385,410,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.f("prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,446,456,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,491,501,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field {{# prefilled }}bookingjs-form-field--dirty{{/ prefilled }}\">\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label label-{{ key }}\">\n    {{ title }}\n  </label>\n  <input\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input input-{{ key }}\"\n    type=\"{{ format }}\"\n    name=\"{{ key }}\"\n    placeholder=\"{{ title }}\"\n    {{# prefilled }} value=\"{{ prefilled }}\" {{/ prefilled }}\n    {{# readonly }} readonly {{/ readonly }}\n    {{# required }} required {{/ required }}\n  />\n</div>\n", H);return T; }();
 
 /***/ }),
 /* 76 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-	module.exports = "<svg class=\"bookingjs-closeicon\" viewBox=\"0 0 90 90\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>close-icon</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"close-icon\" sketch:type=\"MSLayerGroup\" fill=\"#000000\"><path d=\"M58,45 L87.2,15.8 C90.9,12.1 90.9,6.3 87.3,2.7 C83.7,-0.9 77.8,-0.8 74.2,2.8 L45,32 L15.8,2.8 C12.1,-0.9 6.3,-0.9 2.7,2.7 C-0.9,6.3 -0.8,12.2 2.8,15.8 L32,45 L2.8,74.2 C-0.9,77.9 -0.9,83.7 2.7,87.3 C6.3,90.9 12.2,90.8 15.8,87.2 L45,58 L74.2,87.2 C77.9,90.9 83.7,90.9 87.3,87.3 C90.9,83.7 90.8,77.8 87.2,74.2 L58,45 L58,45 Z\" id=\"Shape\" sketch:type=\"MSShapeGroup\"></path></g></g></svg>"
+	var H = __webpack_require__(62);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field ");if(t.s(t.f("prefilled",c,p,1),c,p,0,49,76,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("bookingjs-form-field--dirty");});c.pop();}t.b("\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <textarea");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input bookingjs-form-input--textarea input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    rows=\"3\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.f("title",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,407,417,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,452,462,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b(">");if(t.s(t.f("prefilled",c,p,1),c,p,0,494,509,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(t.v(t.f("prefilled",c,p,0)));});c.pop();}t.b("</textarea>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field {{# prefilled }}bookingjs-form-field--dirty{{/ prefilled }}\">\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label label-{{ key }}\">\n    {{ title }}\n  </label>\n  <textarea\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input bookingjs-form-input--textarea input-{{ key }}\"\n    rows=\"3\"\n    name=\"{{ key }}\"\n    placeholder=\"{{ title }}\"\n    {{# readonly }} readonly {{/ readonly }}\n    {{# required }} required {{/ required }}>{{# prefilled }}{{ prefilled }}{{/ prefilled }}</textarea>\n</div>\n", H);return T; }();
 
 /***/ }),
 /* 77 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-	module.exports = "<svg viewBox=\"0 0 38 26\" x=\"0px\" y=\"0px\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><path fill=\"#fff\" d=\"M4.59255916,9.14153015 L4.59255916,9.14153015 L4.59255917,9.14153016 C3.61060488,8.15335155 2.0152224,8.15314806 1.03260582,9.1419932 L0.737322592,9.43914816 C-0.245558943,10.4282599 -0.245836003,12.0327396 0.736862454,13.0216671 L12.8967481,25.2586313 C13.4826504,25.8482474 14.3060779,26.1023412 15.1093609,25.9623831 L15.1946218,25.9520176 C15.7962843,25.9101633 16.3621851,25.6553951 16.7974015,25.21742 L37.2642739,4.6208133 C38.2456495,3.63321696 38.2453889,2.02851586 37.2626092,1.03950653 L36.967326,0.742351578 C35.9843771,-0.246827998 34.390543,-0.247513927 33.4085772,0.740676315 L15.4197831,18.8434968 L14.826599,19.4404409 L14.2334149,18.8434968 L4.59255916,9.14153015 Z\" id=\"Path\"></path></svg>"
+	var H = __webpack_require__(62);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field bookingjs-form-field--select\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label bookingjs-form-label--select label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <select");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input--select input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,337,346,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" disabed ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,381,391,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("  >");t.b("\n" + i);if(t.s(t.f("enum",c,p,1),c,p,0,426,519,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("    <option value=\"");t.b(t.v(t.d(".",c,p,0)));t.b("\" ");if(t.s(t.f("prefilled",c,p,1),c,p,0,471,481,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" selected ");});c.pop();}t.b(">");t.b(t.v(t.d(".",c,p,0)));t.b("</option>");t.b("\n" + i);});c.pop();}t.b("  </select>");t.b("\n" + i);t.b("  <div class=\"bookingjs-form-input-arrow--select\">");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("arrowDownIcon",c,p,0)));t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field bookingjs-form-field--select\">\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label bookingjs-form-label--select label-{{ key }}\">\n    {{ title }}\n  </label>\n  <select\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input--select input-{{ key }}\"\n    name=\"{{ key }}\"\n    {{# readonly }} disabed {{/ readonly }}\n    {{# required }} required {{/ required }}\n  >\n    {{# enum }}\n    <option value=\"{{ . }}\" {{# prefilled }} selected {{/ prefilled }}>{{ . }}</option>\n    {{/ enum }}\n  </select>\n  <div class=\"bookingjs-form-input-arrow--select\">\n    {{& arrowDownIcon }}\n  </div>\n</div>\n", H);return T; }();
 
 /***/ }),
 /* 78 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-	module.exports = "<svg class=\"bookingjs-closeicon\" viewBox=\"0 0 90 90\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>error-icon</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"error-icon\" sketch:type=\"MSLayerGroup\" fill=\"#FFFFFF\"><path d=\"M58,45 L87.2,15.8 C90.9,12.1 90.9,6.3 87.3,2.7 C83.7,-0.9 77.8,-0.8 74.2,2.8 L45,32 L15.8,2.8 C12.1,-0.9 6.3,-0.9 2.7,2.7 C-0.9,6.3 -0.8,12.2 2.8,15.8 L32,45 L2.8,74.2 C-0.9,77.9 -0.9,83.7 2.7,87.3 C6.3,90.9 12.2,90.8 15.8,87.2 L45,58 L74.2,87.2 C77.9,90.9 83.7,90.9 87.3,87.3 C90.9,83.7 90.8,77.8 87.2,74.2 L58,45 L58,45 Z\" id=\"Shape\" sketch:type=\"MSShapeGroup\"></path></g></g></svg>"
+	var H = __webpack_require__(62);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field bookingjs-form-field--checkbox\">");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input--checkbox input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    type=\"checkbox\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    value=\"true\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("prefilled",c,p,1),c,p,0,237,246,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" checked ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,282,292,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" disabled ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,327,337,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label--checkbox label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field bookingjs-form-field--checkbox\">\n  <input\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input--checkbox input-{{ key }}\"\n    type=\"checkbox\"\n    name=\"{{ key }}\"\n    value=\"true\"\n    {{# prefilled }} checked {{/ prefilled }}\n    {{# readonly }} disabled {{/ readonly }}\n    {{# required }} required {{/ required }}\n  />\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label--checkbox label-{{ key }}\">\n    {{ title }}\n  </label>\n</div>\n", H);return T; }();
 
 /***/ }),
 /* 79 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var H = __webpack_require__(61);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-poweredby\">");t.b("\n" + i);t.b("  <a href=\"http://timekit.io?utm_medium=link&utm_source=");t.b(t.v(t.f("campaignSource",c,p,0)));t.b("&utm_campaign=");t.b(t.v(t.f("campaignName",c,p,0)));t.b("&utm_content=powered-by\" target=\"_blank\">");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("timekitLogo",c,p,0)));t.b("\n" + i);t.b("    <span>Powered by Timekit</span>");t.b("\n" + i);t.b("  </a>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-poweredby\">\n  <a href=\"http://timekit.io?utm_medium=link&utm_source={{ campaignSource }}&utm_campaign={{ campaignName }}&utm_content=powered-by\" target=\"_blank\">\n    {{& timekitLogo }}\n    <span>Powered by Timekit</span>\n  </a>\n</div>\n", H);return T; }();
+	var H = __webpack_require__(62);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-bookpage\">");t.b("\n" + i);t.b("  <a class=\"bookingjs-bookpage-close\" href=\"#\">");t.b(t.t(t.f("closeIcon",c,p,0)));t.b("</a>");t.b("\n" + i);t.b("  <div class=\"bookingjs-bookpage-header\">");t.b("\n" + i);t.b("    <h2 class=\"bookingjs-bookpage-date\">");t.b(t.v(t.f("chosenDate",c,p,0)));t.b("</h2>");t.b("\n" + i);t.b("    <h3 class=\"bookingjs-bookpage-time\">");t.b(t.v(t.f("chosenTime",c,p,0)));t.b("</h3>");t.b("\n" + i);if(t.s(t.f("allocatedResource",c,p,1),c,p,0,293,465,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("      <span class=\"bookingjs-bookpage-resource-prefix\">");t.b(t.v(t.f("allocatedResourcePrefix",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <h3 class=\"bookingjs-bookpage-resource\">");t.b(t.v(t.f("allocatedResource",c,p,0)));t.b("</h3>");t.b("\n" + i);});c.pop();}t.b("  </div>");t.b("\n" + i);t.b("  <form class=\"bookingjs-form\" action=\"#\">");t.b("\n" + i);t.b("    <div class=\"bookingjs-form-box\">");t.b("\n" + i);t.b("      <div class=\"bookingjs-form-success-message\">");t.b("\n" + i);t.b("        <div class=\"bookingjs-form-success-message-body\">");t.b(t.t(t.f("successMessage",c,p,0)));t.b("</div>");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("      <div class=\"bookingjs-form-fields\">");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <button class=\"bookingjs-form-button\" type=\"submit\">");t.b("\n" + i);t.b("      <span class=\"inactive-text\">");t.b(t.v(t.f("submitText",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"loading-text\">");t.b(t.t(t.f("loadingIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"error-text\">");t.b(t.t(t.f("errorIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"success-text\">");t.b(t.t(t.f("checkmarkIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("    </button>");t.b("\n" + i);t.b("  </form>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-bookpage\">\n  <a class=\"bookingjs-bookpage-close\" href=\"#\">{{& closeIcon }}</a>\n  <div class=\"bookingjs-bookpage-header\">\n    <h2 class=\"bookingjs-bookpage-date\">{{ chosenDate }}</h2>\n    <h3 class=\"bookingjs-bookpage-time\">{{ chosenTime }}</h3>\n    {{#allocatedResource}}\n      <span class=\"bookingjs-bookpage-resource-prefix\">{{ allocatedResourcePrefix }}</span>\n      <h3 class=\"bookingjs-bookpage-resource\">{{ allocatedResource }}</h3>\n    {{/allocatedResource}}\n  </div>\n  <form class=\"bookingjs-form\" action=\"#\">\n    <div class=\"bookingjs-form-box\">\n      <div class=\"bookingjs-form-success-message\">\n        <div class=\"bookingjs-form-success-message-body\">{{& successMessage }}</div>\n      </div>\n      <div class=\"bookingjs-form-fields\">\n      </div>\n    </div>\n    <button class=\"bookingjs-form-button\" type=\"submit\">\n      <span class=\"inactive-text\">{{ submitText }}</span>\n      <span class=\"loading-text\">{{& loadingIcon }}</span>\n      <span class=\"error-text\">{{& errorIcon }}</span>\n      <span class=\"success-text\">{{& checkmarkIcon }}</span>\n    </button>\n  </form>\n</div>\n", H);return T; }();
 
 /***/ }),
 /* 80 */
 /***/ (function(module, exports) {
 
-	module.exports = "<svg class=\"bookingjs-timekitlogo\" viewBox=\"0 0 513 548\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><title>timekit-logo</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\"><g id=\"timekit-logo\" transform=\"translate(9.000000, 9.000000)\" fill=\"#AEAEAE\"><path d=\"M55.2163313,275.621588 L198.50357,163.134257 C227.693194,140.219007 274.527519,140.836287 303.106573,164.516436 L439.222777,277.300154 L294.687237,386.088734 C265.004826,408.430003 217.635083,407.547293 188.834846,384.15411 L55.2163313,275.621588 Z M29.1450782,296.088768 L22.5453033,301.269906 C-6.64628574,324.186699 -6.96035256,361.73094 21.8567615,385.137832 L188.814783,520.750588 C217.626101,544.152772 265.020127,545.031261 294.666324,522.71725 L471.933566,389.292269 C501.58244,366.976243 502.456142,329.694313 473.870647,306.008826 L465.168534,298.798395 L304.79022,419.511467 C268.948833,446.488455 213.042282,445.460488 178.242802,417.194379 L29.1450782,296.088768 Z\" id=\"Base-layer\"></path><path d=\"M303.106573,18.9036609 L473.870647,160.396052 C502.470886,184.093754 501.573077,221.370515 471.912654,243.695235 L294.687237,377.088734 C265.004826,399.430003 217.635083,398.547293 188.834846,375.15411 L21.8366979,239.50876 C-6.94564818,216.130109 -6.64628574,178.573924 22.5453033,155.657132 L198.50357,17.5214821 C227.708304,-5.40562963 274.527519,-4.77648801 303.106573,18.9036609 Z M292.387775,31.8399435 C269.89295,13.2010897 231.857075,12.6958644 208.877526,30.7359084 L32.9192595,168.871558 C12.2117199,185.127966 12.006219,209.880161 32.4287426,226.468491 L199.426891,362.113841 C222.242635,380.64608 261.076006,381.360119 284.584254,363.666001 L461.809671,230.272501 C482.810002,214.466035 483.387128,190.098964 463.151849,173.332334 L292.387775,31.8399435 Z\" id=\"Middle-layer\" stroke=\"#AEAEAE\" stroke-width=\"18\"></path></g></g></svg>"
+	module.exports = "<svg class=\"bookingjs-closeicon\" viewBox=\"0 0 90 90\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>close-icon</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"close-icon\" sketch:type=\"MSLayerGroup\" fill=\"#000000\"><path d=\"M58,45 L87.2,15.8 C90.9,12.1 90.9,6.3 87.3,2.7 C83.7,-0.9 77.8,-0.8 74.2,2.8 L45,32 L15.8,2.8 C12.1,-0.9 6.3,-0.9 2.7,2.7 C-0.9,6.3 -0.8,12.2 2.8,15.8 L32,45 L2.8,74.2 C-0.9,77.9 -0.9,83.7 2.7,87.3 C6.3,90.9 12.2,90.8 15.8,87.2 L45,58 L74.2,87.2 C77.9,90.9 83.7,90.9 87.3,87.3 C90.9,83.7 90.8,77.8 87.2,74.2 L58,45 L58,45 Z\" id=\"Shape\" sketch:type=\"MSShapeGroup\"></path></g></g></svg>"
+
+/***/ }),
+/* 81 */
+/***/ (function(module, exports) {
+
+	module.exports = "<svg viewBox=\"0 0 38 26\" x=\"0px\" y=\"0px\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><path fill=\"#fff\" d=\"M4.59255916,9.14153015 L4.59255916,9.14153015 L4.59255917,9.14153016 C3.61060488,8.15335155 2.0152224,8.15314806 1.03260582,9.1419932 L0.737322592,9.43914816 C-0.245558943,10.4282599 -0.245836003,12.0327396 0.736862454,13.0216671 L12.8967481,25.2586313 C13.4826504,25.8482474 14.3060779,26.1023412 15.1093609,25.9623831 L15.1946218,25.9520176 C15.7962843,25.9101633 16.3621851,25.6553951 16.7974015,25.21742 L37.2642739,4.6208133 C38.2456495,3.63321696 38.2453889,2.02851586 37.2626092,1.03950653 L36.967326,0.742351578 C35.9843771,-0.246827998 34.390543,-0.247513927 33.4085772,0.740676315 L15.4197831,18.8434968 L14.826599,19.4404409 L14.2334149,18.8434968 L4.59255916,9.14153015 Z\" id=\"Path\"></path></svg>"
+
+/***/ }),
+/* 82 */
+/***/ (function(module, exports) {
+
+	module.exports = "<svg class=\"bookingjs-closeicon\" viewBox=\"0 0 90 90\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>error-icon</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"error-icon\" sketch:type=\"MSLayerGroup\" fill=\"#FFFFFF\"><path d=\"M58,45 L87.2,15.8 C90.9,12.1 90.9,6.3 87.3,2.7 C83.7,-0.9 77.8,-0.8 74.2,2.8 L45,32 L15.8,2.8 C12.1,-0.9 6.3,-0.9 2.7,2.7 C-0.9,6.3 -0.8,12.2 2.8,15.8 L32,45 L2.8,74.2 C-0.9,77.9 -0.9,83.7 2.7,87.3 C6.3,90.9 12.2,90.8 15.8,87.2 L45,58 L74.2,87.2 C77.9,90.9 83.7,90.9 87.3,87.3 C90.9,83.7 90.8,77.8 87.2,74.2 L58,45 L58,45 Z\" id=\"Shape\" sketch:type=\"MSShapeGroup\"></path></g></g></svg>"
 
 /***/ })
 /******/ ])

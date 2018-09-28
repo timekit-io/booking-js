@@ -97,6 +97,28 @@ module.exports = {
 
   },
 
+  // Find time endpoint with results in near future
+  findTimeWithTimezone: function(timezone) {
+
+    var today = moment().tz(timezone);
+    var tomorrow = moment().tz(timezone).add(1, 'day');
+
+    jasmine.Ajax.stubRequest(
+      'https://api.timekit.io/v2/availability'
+    ).andReturn({
+      status: 200,
+      statusText: 'HTTP/1.1 200 OK',
+      contentType: 'application/json',
+      responseText: '{"data":[' +
+        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]},' +
+        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]},' +
+        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]},' +
+        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]}' +
+      ']}'
+    });
+
+  },
+
   // Find time team endpoint with results in near future
   findTimeTeam: function() {
 

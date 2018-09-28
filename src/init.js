@@ -141,6 +141,9 @@ function Initialize() {
     // Setup Timekit SDK config
     configureSdk();
 
+    // Start by guessing customer timezone
+    render.guessCustomerTimezone();
+
     // Initialize FullCalendar
     render.initializeCalendar();
 
@@ -156,6 +159,9 @@ function Initialize() {
     if (getConfig().ui.display_name) {
       render.renderDisplayName();
     }
+
+    // Show the footer with timezone helper and TK credits
+    render.renderFooter();
 
     utils.doCallback('renderCompleted');
 

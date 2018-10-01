@@ -4861,7 +4861,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  disable_remote_load: false,
 	  disable_confirm_page: false,
 	  create_booking_response_include: ['attributes', 'event', 'user'],
-	  ui: {},
+	  ui: {
+	    show_timezone_helper: true
+	  },
 	  availability: {},
 	  booking: {},
 	  customer_fields: {},
@@ -4893,6 +4895,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  ui: {
 	    display_name: '',
 	    show_credits: true,
+	    show_timezone_helper: true,
 	    availability_view: 'agendaWeek',
 	    avatar: '',
 	    time_date_format: '12h-mdy-sun',
@@ -5431,6 +5434,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Calculate and display timezone helper
 	  var renderFooter = function() {
 	
+	    var showTimezoneHelper = getConfig().ui.show_timezone_helper;
+	    var showCredits = getConfig().ui.show_credits;
+	
+	    // If neither TZ helper or credits is shown, dont render the footer
+	    if (!showTimezoneHelper && !showCredits) return
+	
 	    var campaignName = 'widget';
 	    var campaignSource = window.location.hostname.replace(/\./g, '-');
 	    if (getConfig().project_id) { campaignName = 'embedded-widget'; }
@@ -5448,7 +5457,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      timekitLogo: timekitLogo,
 	      campaignName: campaignName,
 	      campaignSource: campaignSource,
-	      showCredits: getConfig().ui.show_credits
+	      showCredits: showCredits,
+	      showTimezoneHelper: showTimezoneHelper
 	    }));
 	    rootTarget.append(footerTarget);
 	
@@ -5484,8 +5494,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Set timezone
 	  var setCustomerTimezone = function (newTz) {
 	    if (!newTz || !moment.tz.zone(newTz)) {
-	      triggerError(['Trying to set invalid or unknown timezone', newTz]);
-	      return
+	      throw triggerError(['Trying to set invalid or unknown timezone', newTz]);
 	    }
 	    customerTimezone = newTz;
 	  }
@@ -28565,7 +28574,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ (function(module, exports, __webpack_require__) {
 
 	var H = __webpack_require__(62);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-footer\">");t.b("\n" + i);t.b("  <div class=\"bookingjs-footer-tz\">");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("timezoneIcon",c,p,0)));t.b("\n" + i);t.b("    <span>Your timezone</span>");t.b("\n" + i);t.b("    <div class=\"bookingjs-footer-tz-picker\">");t.b("\n" + i);t.b("      <select class=\"bookingjs-footer-tz-picker-select\">");t.b("\n" + i);if(t.s(t.f("listTimezones",c,p,1),c,p,0,252,315,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("        <option value=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b(t.v(t.f("name",c,p,0)));t.b("</option>");t.b("\n" + i);});c.pop();}t.b("      </select>");t.b("\n" + i);t.b("      <div class=\"bookingjs-footer-tz-picker-arrowdown\">");t.b("\n" + i);t.b("        ");t.b(t.t(t.f("arrowDownIcon",c,p,0)));t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);if(t.s(t.f("showCredits",c,p,1),c,p,0,491,738,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("  <a class=\"bookingjs-footer-by\" href=\"http://timekit.io?utm_medium=link&utm_source=");t.b(t.v(t.f("campaignSource",c,p,0)));t.b("&utm_campaign=");t.b(t.v(t.f("campaignName",c,p,0)));t.b("&utm_content=powered-by\" target=\"_blank\">");t.b("\n" + i);t.b("    <span>Powered by Timekit</span>");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("timekitLogo",c,p,0)));t.b("\n" + i);t.b("  </a>");t.b("\n" + i);});c.pop();}t.b("</div>");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-footer\">\n  <div class=\"bookingjs-footer-tz\">\n    {{& timezoneIcon }}\n    <span>Your timezone</span>\n    <div class=\"bookingjs-footer-tz-picker\">\n      <select class=\"bookingjs-footer-tz-picker-select\">\n        {{# listTimezones }}\n        <option value=\"{{ key }}\">{{ name }}</option>\n        {{/ listTimezones }}\n      </select>\n      <div class=\"bookingjs-footer-tz-picker-arrowdown\">\n        {{& arrowDownIcon }}\n      </div>\n    </div>\n  </div>\n  {{# showCredits }}\n  <a class=\"bookingjs-footer-by\" href=\"http://timekit.io?utm_medium=link&utm_source={{ campaignSource }}&utm_campaign={{ campaignName }}&utm_content=powered-by\" target=\"_blank\">\n    <span>Powered by Timekit</span>\n    {{& timekitLogo }}\n  </a>\n  {{/ showCredits }}\n</div>", H);return T; }();
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-footer\">");t.b("\n" + i);if(t.s(t.f("showTimezoneHelper",c,p,1),c,p,0,58,501,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("  <div class=\"bookingjs-footer-tz\">");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("timezoneIcon",c,p,0)));t.b("\n" + i);t.b("    <span>Your timezone</span>");t.b("\n" + i);t.b("    <div class=\"bookingjs-footer-tz-picker\">");t.b("\n" + i);t.b("      <select class=\"bookingjs-footer-tz-picker-select\">");t.b("\n" + i);if(t.s(t.f("listTimezones",c,p,1),c,p,0,280,343,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("        <option value=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b(t.v(t.f("name",c,p,0)));t.b("</option>");t.b("\n" + i);});c.pop();}t.b("      </select>");t.b("\n" + i);t.b("      <div class=\"bookingjs-footer-tz-picker-arrowdown\">");t.b("\n" + i);t.b("        ");t.b(t.t(t.f("arrowDownIcon",c,p,0)));t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);});c.pop();}if(t.s(t.f("showCredits",c,p,1),c,p,0,547,794,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("  <a class=\"bookingjs-footer-by\" href=\"http://timekit.io?utm_medium=link&utm_source=");t.b(t.v(t.f("campaignSource",c,p,0)));t.b("&utm_campaign=");t.b(t.v(t.f("campaignName",c,p,0)));t.b("&utm_content=powered-by\" target=\"_blank\">");t.b("\n" + i);t.b("    <span>Powered by Timekit</span>");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("timekitLogo",c,p,0)));t.b("\n" + i);t.b("  </a>");t.b("\n" + i);});c.pop();}t.b("</div>");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-footer\">\n  {{# showTimezoneHelper }}\n  <div class=\"bookingjs-footer-tz\">\n    {{& timezoneIcon }}\n    <span>Your timezone</span>\n    <div class=\"bookingjs-footer-tz-picker\">\n      <select class=\"bookingjs-footer-tz-picker-select\">\n        {{# listTimezones }}\n        <option value=\"{{ key }}\">{{ name }}</option>\n        {{/ listTimezones }}\n      </select>\n      <div class=\"bookingjs-footer-tz-picker-arrowdown\">\n        {{& arrowDownIcon }}\n      </div>\n    </div>\n  </div>\n  {{/ showTimezoneHelper }}\n  {{# showCredits }}\n  <a class=\"bookingjs-footer-by\" href=\"http://timekit.io?utm_medium=link&utm_source={{ campaignSource }}&utm_campaign={{ campaignName }}&utm_content=powered-by\" target=\"_blank\">\n    <span>Powered by Timekit</span>\n    {{& timekitLogo }}\n  </a>\n  {{/ showCredits }}\n</div>", H);return T; }();
 
 /***/ }),
 /* 69 */

@@ -224,6 +224,12 @@ function InitRender(deps) {
   // Calculate and display timezone helper
   var renderFooter = function() {
 
+    var showTimezoneHelper = getConfig().ui.show_timezone_helper;
+    var showCredits = getConfig().ui.show_credits;
+
+    // If neither TZ helper or credits is shown, dont render the footer
+    if (!showTimezoneHelper && !showCredits) return
+
     var campaignName = 'widget';
     var campaignSource = window.location.hostname.replace(/\./g, '-');
     if (getConfig().project_id) { campaignName = 'embedded-widget'; }
@@ -241,7 +247,8 @@ function InitRender(deps) {
       timekitLogo: timekitLogo,
       campaignName: campaignName,
       campaignSource: campaignSource,
-      showCredits: getConfig().ui.show_credits
+      showCredits: showCredits,
+      showTimezoneHelper: showTimezoneHelper
     }));
     rootTarget.append(footerTarget);
 
@@ -277,8 +284,7 @@ function InitRender(deps) {
   // Set timezone
   var setCustomerTimezone = function (newTz) {
     if (!newTz || !moment.tz.zone(newTz)) {
-      triggerError(['Trying to set invalid or unknown timezone', newTz]);
-      return
+      throw triggerError(['Trying to set invalid or unknown timezone', newTz]);
     }
     customerTimezone = newTz;
   }

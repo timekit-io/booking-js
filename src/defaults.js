@@ -12,7 +12,9 @@ var primary = {
   disable_remote_load: false,
   disable_confirm_page: false,
   create_booking_response_include: ['attributes', 'event', 'user'],
-  ui: {},
+  ui: {
+    show_timezone_helper: true
+  },
   availability: {},
   booking: {},
   customer_fields: {},
@@ -44,6 +46,7 @@ var primaryWithoutProject = {
   ui: {
     display_name: '',
     show_credits: true,
+    show_timezone_helper: true,
     availability_view: 'agendaWeek',
     avatar: '',
     time_date_format: '12h-mdy-sun',

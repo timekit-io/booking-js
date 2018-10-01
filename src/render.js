@@ -224,6 +224,12 @@ function InitRender(deps) {
   // Calculate and display timezone helper
   var renderFooter = function() {
 
+    var showTimezoneHelper = getConfig().ui.show_timezone_helper;
+    var showCredits = getConfig().ui.show_credits;
+
+    // If neither TZ helper or credits is shown, dont render the footer
+    if (!showTimezoneHelper && !showCredits) return
+
     var campaignName = 'widget';
     var campaignSource = window.location.hostname.replace(/\./g, '-');
     if (getConfig().project_id) { campaignName = 'embedded-widget'; }
@@ -241,7 +247,8 @@ function InitRender(deps) {
       timekitLogo: timekitLogo,
       campaignName: campaignName,
       campaignSource: campaignSource,
-      showCredits: getConfig().ui.show_credits
+      showCredits: showCredits,
+      showTimezoneHelper: showTimezoneHelper
     }));
     rootTarget.append(footerTarget);
 
@@ -252,13 +259,14 @@ function InitRender(deps) {
     // Listen to changes by the user
     pickerSelect.change(function() {
       setCustomerTimezone(pickerSelect.val());
+      $(rootTarget).trigger('customer-timezone-changed');
     })
   };
 
   // Guess the timezone and set global variable
   var guessCustomerTimezone = function () {
-    var tzGuess = moment.tz.guess();
-    customerTimezone = tzGuess;
+    var tzGuess = moment.tz.guess() || 'UTC';
+    setCustomerTimezone(tzGuess);
 
     // Add the guessed customer timezone to list if its unknwon
     var knownTimezone = $.grep(timezones, function (tz) {
@@ -273,10 +281,12 @@ function InitRender(deps) {
     }
   }
 
-  // Set timezone and trigger event
+  // Set timezone
   var setCustomerTimezone = function (newTz) {
+    if (!newTz || !moment.tz.zone(newTz)) {
+      throw triggerError(['Trying to set invalid or unknown timezone', newTz]);
+    }
     customerTimezone = newTz;
-    $(rootTarget).trigger('customer-timezone-changed');
   }
 
   // Setup and render FullCalendar
@@ -749,7 +759,8 @@ function InitRender(deps) {
     fullCalendar: fullCalendar,
     destroyFullCalendar: destroyFullCalendar,
     renderFooter: renderFooter,
-    guessCustomerTimezone: guessCustomerTimezone
+    guessCustomerTimezone: guessCustomerTimezone,
+    setCustomerTimezone: setCustomerTimezone
   }
 }
 

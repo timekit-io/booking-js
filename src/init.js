@@ -131,7 +131,12 @@ function Initialize() {
 
     utils.logDebug(['Final config:', getConfig()]);
 
-    return startRender();
+    try {
+      return startRender();
+    } catch (e) {
+      render.triggerError(e);
+      return this
+    }
   };
 
   // Render method
@@ -142,7 +147,11 @@ function Initialize() {
     configureSdk();
 
     // Start by guessing customer timezone
-    render.guessCustomerTimezone();
+    if (getConfig().ui.timezone) {
+      render.setCustomerTimezone(getConfig().ui.timezone);
+    } else {
+      render.guessCustomerTimezone();
+    }
 
     // Initialize FullCalendar
     render.initializeCalendar();

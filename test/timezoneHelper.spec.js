@@ -38,7 +38,7 @@ describe('Timezone helper', function() {
       expect(picker.val()).toBe(fixedTimezone);
       done()
 
-    }, 5000);
+    }, 500);
 
   });
 

@@ -5909,7 +5909,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    // Save custom fields in meta object
 	    $.each(getConfig().customer_fields, function(key, field) {
-	      if (nativeFields.includes(key)) return
+	      if ($.inArray(key, nativeFields)) return
 	      if (field.format === 'checkbox') formData[key] = !!formData[key]
 	      args.customer[key] = formData[key]
 	      args.description += (getConfig().customer_fields[key].title || key) + ': ' + formData[key] + '\n';

@@ -272,7 +272,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  // Get library version
 	  var getVersion = function() {
-	    return ("2.5.1");
+	    return ("2.5.2");
 	  };
 	
 	  var destroy = function() {
@@ -27583,7 +27583,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.push([module.id, "@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);", ""]);
 	
 	// module
-	exports.push([module.id, ".bookingjs-ribbon-wrapper{height:140px;width:35px;bottom:-34px;right:19px;z-index:32;-webkit-backface-visibility:hidden}.bookingjs-ribbon-wrapper,.bookingjs-ribbon-wrapper .bookingjs-ribbon-container{background:transparent;position:absolute;transform:rotate(45deg);overflow:hidden}.bookingjs-ribbon-wrapper .bookingjs-ribbon-container{height:110px;width:110px;left:-54px;top:15px}.bookingjs-ribbon-wrapper .bookingjs-ribbon-container:before{content:\"\";display:block;position:absolute;right:94px;top:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:6px solid #ff8c22}.bookingjs-ribbon-wrapper .bookingjs-ribbon-container:after{content:\"\";display:block;position:absolute;right:0;top:92px;width:0;height:0;border-top:6px solid transparent;border-bottom:6px solid transparent;border-left:6px solid #ff8c22}.bookingjs-ribbon-wrapper .bookingjs-ribbon-container .bookingjs-ribbon{width:140px;height:21px;position:relative;top:32px;right:3px;z-index:1;overflow:hidden;transform:rotate(45deg);background:#ffb46e}.bookingjs-ribbon-wrapper .bookingjs-ribbon-container .bookingjs-ribbon>span{text-align:center;display:block;position:relative;bottom:-6px;transform:rotate(180deg);font-size:10px;color:#fbfbfb;text-transform:uppercase;font-weight:400;letter-spacing:1px;line-height:1}", ""]);
+	exports.push([module.id, ".bookingjs-ribbon-wrapper{height:140px;width:35px;bottom:-34px;right:19px;z-index:42;-webkit-backface-visibility:hidden}.bookingjs-ribbon-wrapper,.bookingjs-ribbon-wrapper .bookingjs-ribbon-container{background:transparent;position:absolute;transform:rotate(45deg);overflow:hidden}.bookingjs-ribbon-wrapper .bookingjs-ribbon-container{height:110px;width:110px;left:-54px;top:15px}.bookingjs-ribbon-wrapper .bookingjs-ribbon-container:before{content:\"\";display:block;position:absolute;right:94px;top:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:6px solid #ff8c22}.bookingjs-ribbon-wrapper .bookingjs-ribbon-container:after{content:\"\";display:block;position:absolute;right:0;top:92px;width:0;height:0;border-top:6px solid transparent;border-bottom:6px solid transparent;border-left:6px solid #ff8c22}.bookingjs-ribbon-wrapper .bookingjs-ribbon-container .bookingjs-ribbon{width:140px;height:21px;position:relative;top:32px;right:3px;z-index:1;overflow:hidden;transform:rotate(45deg);background:#ffb46e}.bookingjs-ribbon-wrapper .bookingjs-ribbon-container .bookingjs-ribbon>span{text-align:center;display:block;position:relative;bottom:-6px;transform:rotate(180deg);font-size:10px;color:#fbfbfb;text-transform:uppercase;font-weight:700;letter-spacing:1px;line-height:1}", ""]);
 	
 	// exports
 

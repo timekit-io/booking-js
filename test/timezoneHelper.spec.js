@@ -214,4 +214,62 @@ describe('Timezone helper', function() {
 
   });
 
+  it('should be able to handle timezone for group booking slots', function(done) {
+
+    createWidget({
+      booking: {
+        graph: 'group_customer'
+      }
+    });
+
+    setTimeout(function() {
+
+      var request = jasmine.Ajax.requests.mostRecent();
+      expect(request.url).toBe('https://api.timekit.io/v2/bookings/groups');
+
+      var picker = $('.bookingjs-footer-tz-picker-select');
+
+      // Change timezone to LA
+      var firstTimezone = 'America/Los_Angeles';
+      mockAjax.groupSlotsWithTimezone(firstTimezone);
+      picker.val(firstTimezone);
+      picker.trigger('change');
+
+      setTimeout(function() {
+
+        expect(picker.val()).toBe(firstTimezone);
+
+        var laTimeslot = $('.fc-event').eq(0).find('.fc-time').data('start');
+        var laStart = moment(laTimeslot, 'h:mma')
+        
+        // Change timezone to CPH
+        var secondTimezone = 'Europe/Copenhagen';
+        mockAjax.groupSlotsWithTimezone(secondTimezone);
+        picker.val(secondTimezone);
+        picker.trigger('change');
+
+        setTimeout(function() {
+
+          expect(picker.val()).toBe(secondTimezone);
+
+          // Make sure that the two rendered timeslots timestamps are not the same
+          var cphTimeslot = $('.fc-event').eq(0).find('.fc-time').data('start');
+          var cphStart = moment(cphTimeslot, 'h:mma');
+          var diffInMins = moment(laStart, 'h:mma').diff(moment(cphStart, 'h:mma'), 'minutes')
+          expect(diffInMins).not.toBe(0);
+
+          // Make sure that the rendered timeslot timestamps are correctly skewed by the timezone offset
+          var controlLaTime = moment().tz(firstTimezone).format('h:mma')
+          var controlCphTime = moment().tz(secondTimezone).format('h:mma')
+          var controlDiffInMins = moment(controlLaTime, 'h:mma').diff(moment(controlCphTime, 'h:mma'), 'minutes')
+          expect(diffInMins).toBe(controlDiffInMins);
+
+          done()
+
+        }, 1000);
+      }, 1000);
+    }, 1000);
+
+  });
+
 });

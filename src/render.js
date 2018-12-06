@@ -93,7 +93,10 @@ function InitRender(deps) {
 
     var requestData = {
       url: '/bookings/groups',
-      method: 'get'
+      method: 'get',
+      headers: {
+        'Timekit-Timezone': customerTimezone
+      }
     }
 
     // scope group booking slots by widget ID if possible

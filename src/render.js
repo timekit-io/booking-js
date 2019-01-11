@@ -670,8 +670,7 @@ function InitRender(deps) {
         name: formData.name,
         email: formData.email,
         timezone: customerTimezone
-      },
-      participants: [formData.email]
+      }
     };
 
     if (getConfig().project_id) {

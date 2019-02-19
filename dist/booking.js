@@ -5880,8 +5880,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        name: formData.name,
 	        email: formData.email,
 	        timezone: customerTimezone
-	      },
-	      participants: [formData.email]
+	      } 
 	    };
 	
 	    if (getConfig().project_id) {
@@ -5892,6 +5891,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        where: 'TBD'
 	      });
 	    }
+	
+	    args.description += (getConfig().customer_fields.name.title || 'Name') + ': ' + formData.name + '\n';
+	    args.description += (getConfig().customer_fields.name.email || 'Email') + ': ' + formData.email + '\n';
 	
 	    if (getConfig().customer_fields.location) {
 	      args.customer.where = formData.location;

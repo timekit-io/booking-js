@@ -205,8 +205,10 @@ describe('Booking fields', function() {
 
           var request = jasmine.Ajax.requests.mostRecent();
 
+          let expectedDescription = 'Name: ' + config.customer_fields.name.prefilled + '\nEmail: someemail@timekit.io\nComment: ' + config.customer_fields.comment.prefilled + '\n';
+
           var requestDescription = JSON.parse(request.params).description
-          expect(requestDescription).toBe('Comment: ' + config.customer_fields.comment.prefilled + '\n');
+          expect(requestDescription).toBe(expectedDescription);
 
           done();
 

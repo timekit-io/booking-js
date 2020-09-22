@@ -112,4 +112,22 @@ describe('Basic configuration', function() {
 
   });
 
+  it('should not render footer if TZ helper and credits are disabled', function(done) {
+
+    createWidget({
+      ui: {
+        show_timezone_helper: false,
+        show_credits: false
+      }
+    });
+
+    setTimeout(function() {
+
+      expect($('.bookingjs-footer')).not.toBeInDOM();
+      done();
+
+    }, 200);
+
+  });
+
 });

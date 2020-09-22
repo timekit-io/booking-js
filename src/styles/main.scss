@@ -7,6 +7,7 @@
 // Imports
 
 @import 'variables';
+@import 'utils';
 
 // Classes
 
@@ -29,18 +30,12 @@
   }
 
   &-calendar {
+    border-bottom: 1px solid #ececec;
 
     .fc-toolbar {
 
       .is-small.has-avatar.has-displayname & {
         padding-bottom: 24px;
-      }
-
-      > .fc-right > button.fc-today-button {
-        .is-small & {
-          position: absolute;
-          left: 15px;
-        }
       }
 
       .is-small.has-avatar & .fc-right h2 {
@@ -51,20 +46,126 @@
 
   // Timezone Helper
 
-  &-timezonehelper {
-    color: $textLightColor;
-    text-align: center;
-    padding: 7px 10px;
+  &-footer {
+    position: relative;
+    color: $textLighterColor;
+    text-align: left;
+    padding: 0px 15px;
     background-color: $bgColor;
-    border-top: 1px solid $borderColor;
-    min-height: 15px;
-    z-index: 20;
+    min-height: 30px;
+    line-height: 30px;
+    z-index: 40;
     border-radius: 0 0 4px 4px;
-  }
+    font-size: 12px;
+    overflow: hidden;
 
-  &-timezoneicon {
-    width: 10px;
-    margin-right: 5px;
+    .is-small & {
+      padding: 3px 15px;
+      min-height: 25px;
+    line-height: 25px;
+    }
+    
+    &-tz {
+      float: left;
+      
+      &-picker {
+        display: inline-block;
+
+        &:hover &-select,
+        &-select:focus {
+          color: $textColor;
+          border-color: darken($borderColor, 10%);
+        }
+
+        &:hover &-arrowdown {
+          opacity: 0.6;
+        }
+
+        &-select {
+          appearance: none;
+          background: transparent;
+          font-size: inherit;
+          padding: 1px 20px 1px 5px;
+          transition: border 0.2s ease, color 0.2s ease;
+          border-radius: 3px;
+          border: 1px solid $borderColor;
+          color: $textLighterColor;
+          outline: none;
+          max-width: 220px;
+
+          &::-ms-expand { 
+            display: none; // hide the default arrow in ie10 and ie11
+          }
+
+          .is-small & {
+            max-width: 180px;
+          }
+        }
+
+        &-arrowdown {
+          position: relative;
+          display: inline-block;
+          pointer-events: none;
+          opacity: 0.3;
+          left: -19px;
+          top: -2px;
+          transition: opacity 0.2s ease;
+
+          svg {
+            width: 8px;
+            height: 5px;
+          }
+        }
+      }
+
+      .bookingjs-timezoneicon {
+        height: 10px;
+        width: 10px;
+        margin-right: 5px;
+
+        .is-small & {
+          display: none;
+        }
+      }
+    }
+
+    &-by {
+      float: right;
+      transition: color 0.2s ease;
+      color: $textLighterColor;
+      text-decoration: none;
+      outline: none;
+
+      .bookingjs-timekitlogo {
+        width: 12px;
+        height: 12px;
+        margin-left: 5px;
+        top: 1px;
+        position: relative;
+  
+        path {
+          transition: fill 0.2s ease;
+          fill: $textLighterColor;
+        }
+
+        .is-small & {
+          display: none;
+        }
+      }
+
+      &:hover,
+      &:focus {
+        color: $textColor;
+
+        .bookingjs-timekitlogo path {
+          fill: $textColor;
+        }
+      }
+
+      .is-small & {
+        float: left;
+      }
+    }    
   }
 
   // Image avatar
@@ -79,11 +180,11 @@
     box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.13);
     overflow: hidden;
     z-index: 40;
-    background-color: white;
 
     .is-small & {
       top: -40px;
     }
+    background-color: white;
 
     img {
       max-width: 100%;
@@ -269,7 +370,7 @@
         top: 50%;
 
         .booked-email {
-          color: $textLightColor;
+          color: $textLighterColor;
         }
       }
     }
@@ -293,6 +394,10 @@
 
     &-field--dirty &-input {
       padding: 25px 25px 5px;
+
+      &:invalid {
+        box-shadow: inset 0px 0px 1px 1px $errorColor;
+      }
     }
 
     &-field--dirty &-input--textarea {
@@ -309,33 +414,9 @@
       transition: opacity .2s ease, font-size .2s ease, color .2s ease, top .2s ease;
     }
 
-    &-input,
-    input, input:invalid
-    textarea, textarea:invalid {
-      transition: box-shadow 0.2s ease;
-      width: 100%;
-      padding: 15px 25px;
-      margin: 0;
-      border: 0px solid $borderColor;
-      font-size: 1em;
-      box-shadow: inset 0px 0px 1px 1px rgba(255,255,255, 0);
-      text-align: left;
-      box-sizing: border-box;
-      line-height: 1.5em;
-      font-family: $fontFamily;
-      color: $textColor;
-      overflow: auto;
-      border-bottom: 1px solid $borderColor;
-
-      &:focus {
-        outline: 0;
-        box-shadow: inset 0px 0px 1px 1px $primaryColor;
-      }
-
-      &.hidden {
-        display: none;
-      }
-
+    &-input {
+      @include formInput;
+  
       &:read-only {
         cursor: not-allowed;
         font-style: italic;
@@ -346,9 +427,81 @@
       }
     }
 
+    // Checkbox field
+
+    &-field--checkbox {
+      text-align: left;
+      position: relative;
+    }
+
+    &-label--checkbox {
+      padding: 25px 25px 25px 50px;
+      display: block;
+      font-family: $fontFamily;
+      color: $textLightColor;
+      font-size: 1em;
+      border-bottom: 1px solid $borderColor;
+
+      &:disabled {
+        cursor: not-allowed;
+        font-style: italic;
+
+        &:focus {
+          box-shadow: inset 0px 0px 1px 1px #D8D8D8;
+        }
+      }
+    }
+
+    &-input--checkbox[type=checkbox] {
+      position: absolute;
+      top: 19px;
+      left: 25px;
+      width: auto;
+      margin: 0;
+    }
+
+    // Textarea field
+
     &-input--textarea {
       padding: 15px 25px 25px;
       overflow: auto;
+    }
+
+    // Select field
+
+    &-field--select {
+      text-align: left;
+    }
+
+    &-label--select {
+      opacity: 1;
+      top: 20px;
+      font-size: 11px;
+      color: $primaryColor;
+    }
+
+    &-input--select {
+      @include formInput;
+      padding: 25px 25px 5px;
+      appearance: none;
+      border-radius: 0;
+      background: transparent;
+      line-height: 35px;
+    }
+
+    &-input-arrow--select {
+      position: absolute;
+      top: 31px;
+      right: 25px;
+      width: 12px;
+      height: 7.42px;
+      opacity: 0.2;
+      transition: opacity 0.2s ease;
+      pointer-events: none;
+    }
+
+    &-field--select:hover &-input-arrow--select {
+      opacity: 0.5;
     }
 
     &-button {
@@ -451,43 +604,6 @@
     }
   }
 
-  // Powered by message
-
-  &-poweredby {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    text-align: center;
-    padding: 7px 10px;
-
-    a {
-      transition: color 0.2s ease;
-      color: $textLightColor;
-      text-decoration: none;
-
-      svg path {
-        transition: fill 0.2s ease;
-        fill: $textLightColor;
-      }
-
-      &:hover {
-        color: $textColor;
-
-        svg path {
-          fill: $textColor;
-        }
-      }
-    }
-  }
-
-  &-timekitlogo {
-    width: 15px;
-    height: 15px;
-    margin-right: 5px;
-    vertical-align: sub;
-  }
-
   &-loading {
     position: absolute;
     height: 100%;
@@ -570,7 +686,7 @@
 
     &-text {
       font-size: 12px;
-      color: $textLightColor;
+      color: $textLighterColor;
       word-break: break-word;
       overflow: scroll;
 

@@ -29,19 +29,19 @@
           title: 'Comment',
           prefilled: 'This is a comment'
         },
-        phone: {
-          title: 'Phone',
-          required: true
+        department: {
+          title: 'Department',
+          type: 'string',
+          format: 'select',
+          enum: [
+            'Development',
+            'Design',
+            'Sales'
+          ]
         },
-        voip: {
-          title: 'Skype',
-          prefilled: 'doc.brown',
-          required: true,
-          readonly: true
-        },
-        location: {
-          title: 'Location',
-          placeholder: 'Place of meeting'
+        terms: {
+          title: 'I accept terms & conditions',
+          format: 'checkbox'
         }
       }
     });

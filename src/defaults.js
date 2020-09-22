@@ -12,7 +12,9 @@ var primary = {
   disable_remote_load: false,
   disable_confirm_page: false,
   create_booking_response_include: ['attributes', 'event', 'user'],
-  ui: {},
+  ui: {
+    show_timezone_helper: true
+  },
   availability: {},
   booking: {},
   customer_fields: {},
@@ -36,7 +38,6 @@ var primary = {
     },
     allDaySlot: false,
     scrollTime: '08:00:00',
-    timezone: 'local',
     nowIndicator: true
   }
 };
@@ -45,6 +46,7 @@ var primaryWithoutProject = {
   ui: {
     display_name: '',
     show_credits: true,
+    show_timezone_helper: true,
     availability_view: 'agendaWeek',
     avatar: '',
     time_date_format: '12h-mdy-sun',
@@ -62,12 +64,10 @@ var primaryWithoutProject = {
   },
   customer_fields: {
     name: {
-      type: 'string',
       title: 'Name',
       required: true
     },
     email: {
-      type: 'string',
       title: 'E-mail',
       format: 'email',
       required: true
@@ -75,12 +75,23 @@ var primaryWithoutProject = {
   }
 }
 
+var customerFieldsNativeFormats = {
+  email: {
+    format: 'email'
+  },
+  comment: {
+    format: 'textarea'
+  },
+  phone: {
+    format: 'tel'
+  }
+}
+
 // Preset: timeDateFormat = '24h-dmy-mon'
 var timeDateFormat24hdmymon = {
   ui: {
     booking_date_format: 'D. MMMM YYYY',
-    booking_time_format: 'HH:mm',
-    email_time_format: 'H:i'
+    booking_time_format: 'HH:mm'
   },
   fullcalendar: {
     timeFormat: 'HH:mm',
@@ -101,8 +112,7 @@ var timeDateFormat24hdmymon = {
 var timeDateFormat12hmdysun = {
   ui: {
     booking_date_format: 'MMMM D, YYYY',
-    booking_time_format: 'h:mma',
-    email_time_format: 'h:ia'
+    booking_time_format: 'h:mma'
   },
   fullcalendar: {
     timeFormat: 'h:mma',
@@ -147,6 +157,7 @@ var availabilityViewListing = {
 module.exports = {
   primary: primary,
   primaryWithoutProject: primaryWithoutProject,
+  customerFieldsNativeFormats: customerFieldsNativeFormats,
   presets: {
     timeDateFormat: {
       '24h-dmy-mon': timeDateFormat24hdmymon,

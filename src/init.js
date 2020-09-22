@@ -131,7 +131,12 @@ function Initialize() {
 
     utils.logDebug(['Final config:', getConfig()]);
 
-    return startRender();
+    try {
+      return startRender();
+    } catch (e) {
+      render.triggerError(e);
+      return this
+    }
   };
 
   // Render method
@@ -140,6 +145,13 @@ function Initialize() {
 
     // Setup Timekit SDK config
     configureSdk();
+
+    // Start by guessing customer timezone
+    if (getConfig().ui.timezone) {
+      render.setCustomerTimezone(getConfig().ui.timezone);
+    } else {
+      render.guessCustomerTimezone();
+    }
 
     // Initialize FullCalendar
     render.initializeCalendar();
@@ -157,6 +169,9 @@ function Initialize() {
       render.renderDisplayName();
     }
 
+    // Show the footer with timezone helper and TK credits
+    render.renderFooter();
+
     utils.doCallback('renderCompleted');
 
     return this;
@@ -168,6 +183,7 @@ function Initialize() {
   };
 
   var destroy = function() {
+    render.destroyFullCalendar();
     render.prepareDOM({});
     config.update({});
     return this;

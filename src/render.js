@@ -12,6 +12,8 @@ require('./styles/utils.scss');
 require('./styles/main.scss');
 require('./styles/testmoderibbon.scss');
 
+var timezones    = require('./timezones');
+
 function InitRender(deps) {
 
   var utils = deps.utils;
@@ -24,6 +26,9 @@ function InitRender(deps) {
   var bookingPageTarget;
   var loadingTarget;
   var errorTarget;
+
+  // State
+  var customerTimezone;
 
   // Make sure DOM element is ready and clean it
   var prepareDOM = function(suppliedConfig) {
@@ -44,7 +49,9 @@ function InitRender(deps) {
   // Fetch availabile time through Timekit SDK
   var timekitFetchAvailability = function() {
 
-    var args = {};
+    var args = {
+      output_timezone: customerTimezone
+    };
 
     if (getConfig().project_id) args.project_id = getConfig().project_id
     if (getConfig().resources) args.resources = getConfig().resources
@@ -86,7 +93,10 @@ function InitRender(deps) {
 
     var requestData = {
       url: '/bookings/groups',
-      method: 'get'
+      method: 'get',
+      headers: {
+        'Timekit-Timezone': customerTimezone
+      }
     }
 
     // scope group booking slots by widget ID if possible
@@ -214,6 +224,74 @@ function InitRender(deps) {
 
   };
 
+  // Calculate and display timezone helper
+  var renderFooter = function() {
+
+    var showTimezoneHelper = getConfig().ui.show_timezone_helper;
+    var showCredits = getConfig().ui.show_credits;
+
+    // If neither TZ helper or credits is shown, dont render the footer
+    if (!showTimezoneHelper && !showCredits) return
+
+    var campaignName = 'widget';
+    var campaignSource = window.location.hostname.replace(/\./g, '-');
+    if (getConfig().project_id) { campaignName = 'embedded-widget'; }
+    if (getConfig().project_slug) { campaignName = 'hosted-widget'; }
+
+    var timezoneIcon = require('!svg-inline!./assets/timezone-icon.svg');
+    var arrowDownIcon = require('!svg-inline!./assets/arrow-down-icon.svg');
+    var timekitLogo = require('!svg-inline!./assets/timekit-logo.svg');
+    var template = require('./templates/footer.html');
+
+    var footerTarget = $(template.render({
+      timezoneIcon: timezoneIcon,
+      arrowDownIcon: arrowDownIcon,
+      listTimezones: timezones,
+      timekitLogo: timekitLogo,
+      campaignName: campaignName,
+      campaignSource: campaignSource,
+      showCredits: showCredits,
+      showTimezoneHelper: showTimezoneHelper
+    }));
+    rootTarget.append(footerTarget);
+
+    // Set initial customer timezone
+    var pickerSelect = $('.bookingjs-footer-tz-picker-select');
+    pickerSelect.val(customerTimezone);
+    
+    // Listen to changes by the user
+    pickerSelect.change(function() {
+      setCustomerTimezone(pickerSelect.val());
+      $(rootTarget).trigger('customer-timezone-changed');
+    })
+  };
+
+  // Guess the timezone and set global variable
+  var guessCustomerTimezone = function () {
+    var tzGuess = moment.tz.guess() || 'UTC';
+    setCustomerTimezone(tzGuess);
+
+    // Add the guessed customer timezone to list if its unknwon
+    var knownTimezone = $.grep(timezones, function (tz) {
+      return tz.key === customerTimezone
+    }).length > 0
+    if (!knownTimezone) {
+      var name = '(' + moment().tz(customerTimezone).format('Z') + ') ' + customerTimezone
+      timezones.unshift({
+        key: customerTimezone,
+        name: name
+      });
+    }
+  }
+
+  // Set timezone
+  var setCustomerTimezone = function (newTz) {
+    if (!newTz || !moment.tz.zone(newTz)) {
+      throw triggerError(['Trying to set invalid or unknown timezone', newTz]);
+    }
+    customerTimezone = newTz;
+  }
+
   // Setup and render FullCalendar
   var initializeCalendar = function() {
 
@@ -236,6 +314,12 @@ function InitRender(deps) {
     rootTarget.append(calendarTarget);
 
     calendarTarget.fullCalendar(args);
+
+    $(rootTarget).on('customer-timezone-changed', function () {
+      if (!calendarTarget) return
+      getAvailability();
+      calendarTarget.fullCalendar('option', 'now', moment().tz(customerTimezone).format());
+    })
 
     utils.doCallback('fullCalendarInitialized');
 
@@ -260,10 +344,9 @@ function InitRender(deps) {
     currentView = currentView || calendarTarget.fullCalendar('getView').name
 
     var view = getConfig().fullcalendar.defaultView
-    var height = 485;
+    var height = 385;
 
     if (rootTarget.width() < 480) {
-      height = 455;
       rootTarget.addClass('is-small');
       if (getConfig().ui.avatar) height -= 15;
       if (currentView === 'agendaWeek' || currentView === 'basicDay') {
@@ -273,10 +356,11 @@ function InitRender(deps) {
       rootTarget.removeClass('is-small');
     }
 
-    if (getConfig().customer_fields.comment) {    height += 100; }
-    if (getConfig().customer_fields.phone) {      height += 64; }
-    if (getConfig().customer_fields.voip) {       height += 64; }
-    if (getConfig().customer_fields.location) {   height += 64; }
+    $.each(getConfig().customer_fields, function(key, field) {
+      if (field.format === 'textarea') height += 98;
+      else if (field.format === 'checkbox') height += 51;
+      else height += 66;
+    })
 
     return {
       height: height,
@@ -396,22 +480,47 @@ function InitRender(deps) {
 
   };
 
+  // Render customer fields
+  var renderCustomerFields = function () {
+    
+    var textTemplate = require('./templates/fields/text.html');
+    var textareaTemplate = require('./templates/fields/textarea.html');
+    var selectTemplate = require('./templates/fields/select.html');
+    var checkboxTemplate = require('./templates/fields/checkbox.html');
+
+    var fieldsTarget = []
+    $.each(getConfig().customer_fields, function(key, field) {
+      var tmpl = textTemplate
+      if (field.format === 'textarea') tmpl = textareaTemplate
+      if (field.format === 'select') tmpl = selectTemplate
+      if (field.format === 'checkbox') tmpl = checkboxTemplate
+      if (!field.format) field.format = 'text'
+      if (key === 'email') field.format = 'email'
+      var data = $.extend({
+        key: key,
+        arrowDownIcon: require('!svg-inline!./assets/arrow-down-icon.svg')
+      }, field)
+      var fieldTarget = $(tmpl.render(data))
+      fieldsTarget.push(fieldTarget)
+    })
+
+    return fieldsTarget
+  }
+
   // Event handler when a timeslot is clicked in FullCalendar
   var showBookingPage = function(eventData) {
 
     utils.doCallback('showBookingPage', eventData);
 
-    var fieldsTemplate = require('./templates/booking-fields.html');
     var template = require('./templates/booking-page.html');
 
     var dateFormat = getConfig().ui.booking_date_format || moment.localeData().longDateFormat('LL');
     var timeFormat = getConfig().ui.booking_time_format || moment.localeData().longDateFormat('LT');
-
     var allocatedResource = eventData.resources ? eventData.resources[0].name : false;
 
     bookingPageTarget = $(template.render({
-      chosenDate:               moment(eventData.start).format(dateFormat),
-      chosenTime:               moment(eventData.start).format(timeFormat) + ' - ' + moment(eventData.end).format(timeFormat),
+      chosenDate:               formatTimestamp(eventData.start, dateFormat),
+      chosenTime:               formatTimestamp(eventData.start, timeFormat) + ' - ' + formatTimestamp(eventData.end, timeFormat),
       allocatedResourcePrefix:  getConfig().ui.localization.allocated_resource_prefix,
       allocatedResource:        allocatedResource,
       closeIcon:                require('!svg-inline!./assets/close-icon.svg'),
@@ -419,12 +528,12 @@ function InitRender(deps) {
       loadingIcon:              require('!svg-inline!./assets/loading-spinner.svg'),
       errorIcon:                require('!svg-inline!./assets/error-icon.svg'),
       submitText:               getConfig().ui.localization.submit_button,
-      successMessage:           interpolate.sprintf(getConfig().ui.localization.success_message, '<span class="booked-email"></span>'),
-      fields:                   getConfig().customer_fields
-    }, {
-      formFields: fieldsTemplate
+      successMessage:           interpolate.sprintf(getConfig().ui.localization.success_message, '<span class="booked-email"></span>')
     }));
 
+    var formFields = bookingPageTarget.find('.bookingjs-form-fields');
+    $(formFields).append(renderCustomerFields());
+    
     var form = bookingPageTarget.children('.bookingjs-form');
 
     bookingPageTarget.children('.bookingjs-bookpage-close').click(function(e) {
@@ -438,7 +547,6 @@ function InitRender(deps) {
       utils.logDebug(['Available resources for chosen timeslot:', eventData.resources]);
     }
 
-
     form.find('.bookingjs-form-input').on('input', function() {
       var field = $(this).closest('.bookingjs-form-field');
       if (this.value) field.addClass('bookingjs-form-field--dirty');
@@ -449,10 +557,11 @@ function InitRender(deps) {
       submitBookingForm(this, e, eventData);
     });
 
-    // Show powered by Timekit message
-    if (getConfig().ui.show_credits) {
-      renderPoweredByMessage(bookingPageTarget);
-    }
+    $(rootTarget).on('customer-timezone-changed', function () {
+      if (!bookingPageTarget) return
+      $('.bookingjs-bookpage-date').text(formatTimestamp(eventData.start, dateFormat));
+      $('.bookingjs-bookpage-time').text(formatTimestamp(eventData.start, timeFormat) + ' - ' + formatTimestamp(eventData.end, timeFormat));
+    });
 
     $(document).on('keyup', function(e) {
       // escape key maps to keycode `27`
@@ -466,6 +575,11 @@ function InitRender(deps) {
     }, 100);
 
   };
+
+  // Output timestamp into given format in customers timezone
+  var formatTimestamp = function (start, format) {
+    return moment(start).tz(customerTimezone).format(format);
+  }
 
   // Remove the booking page DOM node
   var hideBookingPage = function() {
@@ -546,6 +660,8 @@ function InitRender(deps) {
   // Create new booking
   var timekitCreateBooking = function(formData, eventData) {
 
+    var nativeFields = ['name', 'email', 'location', 'comment', 'phone', 'voip']
+
     var args = {
       start: eventData.start.format(),
       end: eventData.end.format(),
@@ -553,9 +669,8 @@ function InitRender(deps) {
       customer: {
         name: formData.name,
         email: formData.email,
-        timezone: moment.tz.guess()
-      },
-      participants: [formData.email]
+        timezone: customerTimezone
+      } 
     };
 
     if (getConfig().project_id) {
@@ -566,6 +681,9 @@ function InitRender(deps) {
         where: 'TBD'
       });
     }
+
+    args.description += (getConfig().customer_fields.name.title || 'Name') + ': ' + formData.name + '\n';
+    args.description += (getConfig().customer_fields.name.email || 'Email') + ': ' + formData.email + '\n';
 
     if (getConfig().customer_fields.location) {
       args.customer.where = formData.location;
@@ -584,6 +702,14 @@ function InitRender(deps) {
       args.description += (getConfig().customer_fields.voip.title || 'Voip') + ': ' + formData.voip + '\n';
     }
 
+    // Save custom fields in meta object
+    $.each(getConfig().customer_fields, function(key, field) {
+      if ($.inArray(key, nativeFields) >= 0) return
+      if (field.format === 'checkbox') formData[key] = !!formData[key]
+      args.customer[key] = formData[key]
+      args.description += (getConfig().customer_fields[key].title || key) + ': ' + formData[key] + '\n';
+    })
+
     if (getConfig().booking.graph === 'group_customer' || getConfig().booking.graph === 'group_customer_payment') {
       args.related = { owner_booking_id: eventData.booking.id }
       args.resource_id = eventData.booking.resource.id
@@ -597,13 +723,8 @@ function InitRender(deps) {
 
     utils.doCallback('createBookingStarted', args);
 
-    var requestHeaders = {
-      'Timekit-OutputTimestampFormat': 'Y-m-d ' + getConfig().ui.localization.email_time_format + ' (P e)'
-    };
-
     var request = sdk
     .include(getConfig().create_booking_response_include)
-    .headers(requestHeaders)
     .createBooking(args);
 
     request
@@ -618,25 +739,11 @@ function InitRender(deps) {
 
   };
 
-  // Render the powered by Timekit message
-  var renderPoweredByMessage = function(pageTarget) {
-
-    var campaignName = 'widget'
-    var campaignSource = window.location.hostname.replace(/\./g, '-')
-    if (getConfig().project_id) { campaignName = 'embedded-widget'; }
-    if (getConfig().project_slug) { campaignName = 'hosted-widget'; }
-
-    var template = require('./templates/poweredby.html');
-    var timekitLogo = require('!svg-inline!./assets/timekit-logo.svg');
-    var poweredTarget = $(template.render({
-      timekitLogo: timekitLogo,
-      campaignName: campaignName,
-      campaignSource: campaignSource
-    }));
-
-    pageTarget.append(poweredTarget);
-
-  };
+  // Destory fullcalendar and cleanup event listeners etc.
+  var destroyFullCalendar = function() {
+    if (!calendarTarget || calendarTarget.fullCalendar === undefined) return
+    calendarTarget.fullCalendar('destroy')
+  }
 
   // The fullCalendar object for advanced puppeting
   var fullCalendar = function() {
@@ -654,7 +761,11 @@ function InitRender(deps) {
     renderDisplayName: renderDisplayName,
     triggerError: triggerError,
     timekitCreateBooking: timekitCreateBooking,
-    fullCalendar: fullCalendar
+    fullCalendar: fullCalendar,
+    destroyFullCalendar: destroyFullCalendar,
+    renderFooter: renderFooter,
+    guessCustomerTimezone: guessCustomerTimezone,
+    setCustomerTimezone: setCustomerTimezone
   }
 }
 

@@ -79,4 +79,20 @@ describe('Initialization minified', function() {
 
   });
 
+  it('should be destroy and cleanup itself', function() {
+
+    var widget = new TimekitBooking();
+    widget.init(baseConfig);
+
+    expect(widget).toBeDefined();
+    expect(widget.getConfig()).toBeDefined();
+
+    expect($('.bookingjs-calendar')).toBeInDOM();
+
+    widget.destroy();
+
+    expect($('.bookingjs-calendar')).not.toBeInDOM();
+
+  });
+
 });

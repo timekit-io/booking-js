@@ -97,6 +97,28 @@ module.exports = {
 
   },
 
+  // Find time endpoint with results in near future
+  findTimeWithTimezone: function(timezone) {
+
+    var today = moment().tz(timezone);
+    var tomorrow = moment().tz(timezone).add(1, 'day');
+
+    jasmine.Ajax.stubRequest(
+      'https://api.timekit.io/v2/availability'
+    ).andReturn({
+      status: 200,
+      statusText: 'HTTP/1.1 200 OK',
+      contentType: 'application/json',
+      responseText: '{"data":[' +
+        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]},' +
+        '{"start":"' + today.format() + '","end":"' + today.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]},' +
+        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]},' +
+        '{"start":"' + tomorrow.format() + '","end":"' + tomorrow.add(1, 'hour').format() + '","resources":["bfa0b9fa-36aa-4ae6-8096-f3b20fbed1d2"]}' +
+      ']}'
+    });
+
+  },
+
   // Find time team endpoint with results in near future
   findTimeTeam: function() {
 
@@ -228,6 +250,27 @@ module.exports = {
 
     var today = moment();
     var tomorrow = moment().add(1, 'day');
+
+    jasmine.Ajax.stubRequest(
+      'https://api.timekit.io/v2/bookings/groups'
+    ).andReturn({
+      status: 200,
+      statusText: 'HTTP/1.1 200 OK',
+      contentType: 'application/json',
+      responseText: '{"data":[' +
+        '{ "id": "87623db3-cb5f-41e8-b85b-23b5efd04e07", "state": "tentative", "graph": "group_owner", "completed": false, "created_at": "2017-02-16T12:40:25+0100", "updated_at": "2017-02-16T12:40:26+0100", "attributes": { "group_booking": { "max_seats": 3, "current_seats": 0 }, "event_info": { "what": "Event 1 what", "where": "Event 1 where", "calendar_id": "da5c5fec-01bb-4686-af20-d7dfb4afa63b", "description": "", "participants": [], "start": "' + today.format() + '", "end": "' + today.add(2, 'hour').format() + '" } }, "available_actions": ["complete", "cancel"], "resource": { "id": "67623db3-cb5f-41e8-b85b-23b5efd04e07", "name": "Marty" } },' +
+        '{ "id": "87623db3-cb5f-41e8-b85b-23b5efd04e07", "state": "tentative", "graph": "group_owner", "completed": false, "created_at": "2017-02-16T12:40:25+0100", "updated_at": "2017-02-16T12:40:26+0100", "attributes": { "group_booking": { "max_seats": 3, "current_seats": 0 }, "event_info": { "what": "Event 2 what", "where": "Event 2 where", "calendar_id": "da5c5fec-01bb-4686-af20-d7dfb4afa63b", "description": "", "participants": [], "start": "' + today.format() + '", "end": "' + today.add(2, 'hour').format() + '" } }, "available_actions": ["complete", "cancel"], "resource": { "id": "67623db3-cb5f-41e8-b85b-23b5efd04e07", "name": "Marty" } },' +
+        '{ "id": "87623db3-cb5f-41e8-b85b-23b5efd04e07", "state": "tentative", "graph": "group_owner", "completed": false, "created_at": "2017-02-16T12:40:25+0100", "updated_at": "2017-02-16T12:40:26+0100", "attributes": { "group_booking": { "max_seats": 3, "current_seats": 0 }, "event_info": { "what": "Event 3 what", "where": "Event 3 where", "calendar_id": "da5c5fec-01bb-4686-af20-d7dfb4afa63b", "description": "", "participants": [], "start": "' + tomorrow.format() + '", "end": "' + tomorrow.add(2, 'hour').format() + '" } }, "available_actions": ["complete", "cancel"], "resource": { "id": "67623db3-cb5f-41e8-b85b-23b5efd04e07", "name": "Marty" } }' +
+      ']}'
+    });
+
+  },
+
+  // Find time endpoint with results in near future
+  groupSlotsWithTimezone: function(timezone) {
+
+    var today = moment().tz(timezone);
+    var tomorrow = moment().tz(timezone).add(1, 'day');
 
     jasmine.Ajax.stubRequest(
       'https://api.timekit.io/v2/bookings/groups'

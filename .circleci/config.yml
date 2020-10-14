@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/timekit-io/booking-js
     docker:
-    - image: circleci/node:lts
+    - image: circleci/node:lts-browsers
     steps:
     - checkout
     # Restore the dependency cache

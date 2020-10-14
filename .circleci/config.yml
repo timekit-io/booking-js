@@ -1,0 +1,34 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/timekit-io/booking-js
+    docker:
+    - image: circleci/node:lts
+    steps:
+    - checkout
+    # Restore the dependency cache
+    - restore_cache:
+        keys:
+        # This branch if available
+        - v1-dep-{{ .Branch }}-{{ .Revision }}
+        # Default branch if not
+        - v1-dep-master-
+    - run:
+        name: Setup frontend
+        command: |
+            node -v
+            npm -v
+            yarn -v
+            yarn install --pure-lockfile
+            npm rebuild node-sass
+    # Save dependency cache
+    - save_cache:
+        key: v1-dep-{{ .Branch }}-{{ .Revision }}
+        paths:
+        - ~/.cache/yarn
+        - ./node_modules
+    # Run frontend tests
+    - run:
+        name: Test unit suite and build prod
+        command: |
+            yarn run test:unit

@@ -47,7 +47,7 @@
     "karma-spec-reporter": "0.0.19",
     "karma-webpack": "^1.7.0",
     "mustache-loader": "https://github.com/laander/mustache-loader#loader-utils-as-dependency",
-    "node-sass": "^3.4.1",
+    "node-sass": "^4.13.1",
     "sass-loader": "^3.1.1",
     "style-loader": "^0.13.0",
     "svg-inline-loader": "^0.3.0",

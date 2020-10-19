@@ -1,6 +1,6 @@
 # Booking.js by Timekit
 
-[![Circle CI](https://img.shields.io/circleci/project/timekit-io/booking-js.svg)](https://circleci.com/gh/timekit-io/booking-js)
+[![Circle CI](https://img.shields.io/circleci/build/github/timekit-io/booking-js)](https://circleci.com/gh/timekit-io/booking-js)
 
 [**Releases & changelog**](https://github.com/timekit-io/booking-js/releases)
 

@@ -19,3 +19,7 @@ All documentation, guides and examples can be found on [our developer portal](ht
 ## Roadmap/todos
 
 See [Issues](https://github.com/timekit-io/booking-js/issues) for feature requests, bugs etc.
+
+## License attributions
+
+The `json-schema` v0.2.3 package is used pursuant to the BSD-3-Clause license

@@ -21,6 +21,7 @@
   "author": "Timekit Inc.",
   "license": "MIT",
   "dependencies": {
+    "axios": "0.18.1",
     "console-polyfill": "^0.2.2",
     "es6-promise-promise": "^1.0.0",
     "fullcalendar": "^3.4.0",

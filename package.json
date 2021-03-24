@@ -36,7 +36,7 @@
     "css-loader": "^0.21.0",
     "jasmine": "^2.3.2",
     "jasmine-jquery": "^2.1.1",
-    "jquery": "^3.2.1",
+    "jquery": "3.6.0",
     "json-loader": "^0.5.4",
     "karma": "^0.13.0",
     "karma-chrome-launcher": "^0.1.12",

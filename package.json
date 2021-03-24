@@ -21,12 +21,12 @@
   "author": "Timekit Inc.",
   "license": "MIT",
   "dependencies": {
-    "console-polyfill": "^0.2.2",
+    "console-polyfill": "0.3.0",
     "es6-promise-promise": "^1.0.0",
     "fullcalendar": "^3.4.0",
     "json-stringify-safe": "^5.0.1",
     "moment": "^2.10.6",
-    "moment-timezone": "^0.5.13",
+    "moment-timezone": "0.5.33",
     "querystringify": "^2.0.0",
     "sprintf-js": "^1.0.3",
     "timekit-sdk": "^1.16.0"
@@ -48,9 +48,9 @@
     "karma-webpack": "^1.7.0",
     "mustache-loader": "https://github.com/laander/mustache-loader#loader-utils-as-dependency",
     "node-sass": "^4.13.1",
-    "sass-loader": "^3.1.1",
-    "style-loader": "^0.13.0",
-    "svg-inline-loader": "^0.3.0",
+    "sass-loader": "3.2.3",
+    "style-loader": "0.13.2",
+    "svg-inline-loader": "0.8.2",
     "webpack": "^1.12.2"
   }
 }

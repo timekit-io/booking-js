@@ -96,9 +96,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	var $             = __webpack_require__(1);
 	var timekitSdk    = __webpack_require__(3);
 	
-	var ConfigDep     = __webpack_require__(34);
-	var UtilsDep      = __webpack_require__(37);
-	var RenderDep     = __webpack_require__(39);
+	var ConfigDep     = __webpack_require__(42);
+	var UtilsDep      = __webpack_require__(45);
+	var RenderDep     = __webpack_require__(47);
 	
 	// Main library
 	function Initialize() {
@@ -315,11 +315,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *
 	 */
 	var axios = __webpack_require__(8);
-	var humps = __webpack_require__(27);
-	var merge = __webpack_require__(28);
-	var utils = __webpack_require__(29);
-	var endpoints = __webpack_require__(32);
-	var deprecatedEndpoints = __webpack_require__(33);
+	var humps = __webpack_require__(35);
+	var merge = __webpack_require__(36);
+	var utils = __webpack_require__(37);
+	var endpoints = __webpack_require__(40);
+	var deprecatedEndpoints = __webpack_require__(41);
 	
 	function Timekit() {
 	
@@ -1995,127 +1995,60 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/* WEBPACK VAR INJECTION */(function(Promise) {'use strict';
 	
-	var defaults = __webpack_require__(10);
-	var utils = __webpack_require__(11);
-	var dispatchRequest = __webpack_require__(13);
-	var InterceptorManager = __webpack_require__(22);
-	var isAbsoluteURL = __webpack_require__(23);
-	var combineURLs = __webpack_require__(24);
-	var bind = __webpack_require__(25);
-	var transformData = __webpack_require__(17);
+	var utils = __webpack_require__(10);
+	var bind = __webpack_require__(11);
+	var Axios = __webpack_require__(12);
+	var mergeConfig = __webpack_require__(30);
+	var defaults = __webpack_require__(18);
 	
-	function Axios(defaultConfig) {
-	  this.defaults = utils.merge({}, defaultConfig);
-	  this.interceptors = {
-	    request: new InterceptorManager(),
-	    response: new InterceptorManager()
-	  };
+	/**
+	 * Create an instance of Axios
+	 *
+	 * @param {Object} defaultConfig The default config for the instance
+	 * @return {Axios} A new instance of Axios
+	 */
+	function createInstance(defaultConfig) {
+	  var context = new Axios(defaultConfig);
+	  var instance = bind(Axios.prototype.request, context);
+	
+	  // Copy axios.prototype to instance
+	  utils.extend(instance, Axios.prototype, context);
+	
+	  // Copy context to instance
+	  utils.extend(instance, context);
+	
+	  return instance;
 	}
 	
-	Axios.prototype.request = function request(config) {
-	  /*eslint no-param-reassign:0*/
-	  // Allow for axios('example/url'[, config]) a la fetch API
-	  if (typeof config === 'string') {
-	    config = utils.merge({
-	      url: arguments[0]
-	    }, arguments[1]);
-	  }
-	
-	  config = utils.merge(defaults, this.defaults, { method: 'get' }, config);
-	
-	  // Support baseURL config
-	  if (config.baseURL && !isAbsoluteURL(config.url)) {
-	    config.url = combineURLs(config.baseURL, config.url);
-	  }
-	
-	  // Don't allow overriding defaults.withCredentials
-	  config.withCredentials = config.withCredentials || this.defaults.withCredentials;
-	
-	  // Transform request data
-	  config.data = transformData(
-	    config.data,
-	    config.headers,
-	    config.transformRequest
-	  );
-	
-	  // Flatten headers
-	  config.headers = utils.merge(
-	    config.headers.common || {},
-	    config.headers[config.method] || {},
-	    config.headers || {}
-	  );
-	
-	  utils.forEach(
-	    ['delete', 'get', 'head', 'post', 'put', 'patch', 'common'],
-	    function cleanHeaderConfig(method) {
-	      delete config.headers[method];
-	    }
-	  );
-	
-	  // Hook up interceptors middleware
-	  var chain = [dispatchRequest, undefined];
-	  var promise = Promise.resolve(config);
-	
-	  this.interceptors.request.forEach(function unshiftRequestInterceptors(interceptor) {
-	    chain.unshift(interceptor.fulfilled, interceptor.rejected);
-	  });
-	
-	  this.interceptors.response.forEach(function pushResponseInterceptors(interceptor) {
-	    chain.push(interceptor.fulfilled, interceptor.rejected);
-	  });
-	
-	  while (chain.length) {
-	    promise = promise.then(chain.shift(), chain.shift());
-	  }
-	
-	  return promise;
-	};
-	
-	var defaultInstance = new Axios(defaults);
-	var axios = module.exports = bind(Axios.prototype.request, defaultInstance);
-	axios.request = bind(Axios.prototype.request, defaultInstance);
+	// Create the default instance to be exported
+	var axios = createInstance(defaults);
 	
 	// Expose Axios class to allow class inheritance
 	axios.Axios = Axios;
 	
-	// Expose properties from defaultInstance
-	axios.defaults = defaultInstance.defaults;
-	axios.interceptors = defaultInstance.interceptors;
-	
 	// Factory for creating new instances
-	axios.create = function create(defaultConfig) {
-	  return new Axios(defaultConfig);
+	axios.create = function create(instanceConfig) {
+	  return createInstance(mergeConfig(axios.defaults, instanceConfig));
 	};
+	
+	// Expose Cancel & CancelToken
+	axios.Cancel = __webpack_require__(31);
+	axios.CancelToken = __webpack_require__(32);
+	axios.isCancel = __webpack_require__(17);
 	
 	// Expose all/spread
 	axios.all = function all(promises) {
 	  return Promise.all(promises);
 	};
-	axios.spread = __webpack_require__(26);
+	axios.spread = __webpack_require__(33);
 	
-	// Provide aliases for supported request methods
-	utils.forEach(['delete', 'get', 'head'], function forEachMethodNoData(method) {
-	  /*eslint func-names:0*/
-	  Axios.prototype[method] = function(url, config) {
-	    return this.request(utils.merge(config || {}, {
-	      method: method,
-	      url: url
-	    }));
-	  };
-	  axios[method] = bind(Axios.prototype[method], defaultInstance);
-	});
+	// Expose isAxiosError
+	axios.isAxiosError = __webpack_require__(34);
 	
-	utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
-	  /*eslint func-names:0*/
-	  Axios.prototype[method] = function(url, data, config) {
-	    return this.request(utils.merge(config || {}, {
-	      method: method,
-	      url: url,
-	      data: data
-	    }));
-	  };
-	  axios[method] = bind(Axios.prototype[method], defaultInstance);
-	});
+	module.exports = axios;
+	
+	// Allow use of default import syntax in TypeScript
+	module.exports.default = axios;
 	
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
@@ -2125,83 +2058,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 	
-	var utils = __webpack_require__(11);
-	var normalizeHeaderName = __webpack_require__(12);
-	
-	var PROTECTION_PREFIX = /^\)\]\}',?\n/;
-	var DEFAULT_CONTENT_TYPE = {
-	  'Content-Type': 'application/x-www-form-urlencoded'
-	};
-	
-	function setContentTypeIfUnset(headers, value) {
-	  if (!utils.isUndefined(headers) && utils.isUndefined(headers['Content-Type'])) {
-	    headers['Content-Type'] = value;
-	  }
-	}
-	
-	module.exports = {
-	  transformRequest: [function transformRequest(data, headers) {
-	    normalizeHeaderName(headers, 'Content-Type');
-	    if (utils.isFormData(data) ||
-	      utils.isArrayBuffer(data) ||
-	      utils.isStream(data) ||
-	      utils.isFile(data) ||
-	      utils.isBlob(data)
-	    ) {
-	      return data;
-	    }
-	    if (utils.isArrayBufferView(data)) {
-	      return data.buffer;
-	    }
-	    if (utils.isURLSearchParams(data)) {
-	      setContentTypeIfUnset(headers, 'application/x-www-form-urlencoded;charset=utf-8');
-	      return data.toString();
-	    }
-	    if (utils.isObject(data)) {
-	      setContentTypeIfUnset(headers, 'application/json;charset=utf-8');
-	      return JSON.stringify(data);
-	    }
-	    return data;
-	  }],
-	
-	  transformResponse: [function transformResponse(data) {
-	    /*eslint no-param-reassign:0*/
-	    if (typeof data === 'string') {
-	      data = data.replace(PROTECTION_PREFIX, '');
-	      try {
-	        data = JSON.parse(data);
-	      } catch (e) { /* Ignore */ }
-	    }
-	    return data;
-	  }],
-	
-	  headers: {
-	    common: {
-	      'Accept': 'application/json, text/plain, */*'
-	    },
-	    patch: utils.merge(DEFAULT_CONTENT_TYPE),
-	    post: utils.merge(DEFAULT_CONTENT_TYPE),
-	    put: utils.merge(DEFAULT_CONTENT_TYPE)
-	  },
-	
-	  timeout: 0,
-	
-	  xsrfCookieName: 'XSRF-TOKEN',
-	  xsrfHeaderName: 'X-XSRF-TOKEN',
-	
-	  maxContentLength: -1,
-	
-	  validateStatus: function validateStatus(status) {
-	    return status >= 200 && status < 300;
-	  }
-	};
-
-
-/***/ }),
-/* 11 */
-/***/ (function(module, exports) {
-
-	'use strict';
+	var bind = __webpack_require__(11);
 	
 	/*global toString:true*/
 	
@@ -2217,6 +2074,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	function isArray(val) {
 	  return toString.call(val) === '[object Array]';
+	}
+	
+	/**
+	 * Determine if a value is undefined
+	 *
+	 * @param {Object} val The value to test
+	 * @returns {boolean} True if the value is undefined, otherwise false
+	 */
+	function isUndefined(val) {
+	  return typeof val === 'undefined';
+	}
+	
+	/**
+	 * Determine if a value is a Buffer
+	 *
+	 * @param {Object} val The value to test
+	 * @returns {boolean} True if value is a Buffer, otherwise false
+	 */
+	function isBuffer(val) {
+	  return val !== null && !isUndefined(val) && val.constructor !== null && !isUndefined(val.constructor)
+	    && typeof val.constructor.isBuffer === 'function' && val.constructor.isBuffer(val);
 	}
 	
 	/**
@@ -2276,16 +2154,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	
 	/**
-	 * Determine if a value is undefined
-	 *
-	 * @param {Object} val The value to test
-	 * @returns {boolean} True if the value is undefined, otherwise false
-	 */
-	function isUndefined(val) {
-	  return typeof val === 'undefined';
-	}
-	
-	/**
 	 * Determine if a value is an Object
 	 *
 	 * @param {Object} val The value to test
@@ -2293,6 +2161,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	function isObject(val) {
 	  return val !== null && typeof val === 'object';
+	}
+	
+	/**
+	 * Determine if a value is a plain Object
+	 *
+	 * @param {Object} val The value to test
+	 * @return {boolean} True if value is a plain Object, otherwise false
+	 */
+	function isPlainObject(val) {
+	  if (toString.call(val) !== '[object Object]') {
+	    return false;
+	  }
+	
+	  var prototype = Object.getPrototypeOf(val);
+	  return prototype === null || prototype === Object.prototype;
 	}
 	
 	/**
@@ -2376,13 +2259,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *  typeof document -> undefined
 	 *
 	 * react-native:
-	 *  typeof document.createElement -> undefined
+	 *  navigator.product -> 'ReactNative'
+	 * nativescript
+	 *  navigator.product -> 'NativeScript' or 'NS'
 	 */
 	function isStandardBrowserEnv() {
+	  if (typeof navigator !== 'undefined' && (navigator.product === 'ReactNative' ||
+	                                           navigator.product === 'NativeScript' ||
+	                                           navigator.product === 'NS')) {
+	    return false;
+	  }
 	  return (
 	    typeof window !== 'undefined' &&
-	    typeof document !== 'undefined' &&
-	    typeof document.createElement === 'function'
+	    typeof document !== 'undefined'
 	  );
 	}
 	
@@ -2405,7 +2294,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	
 	  // Force an array if not already something iterable
-	  if (typeof obj !== 'object' && !isArray(obj)) {
+	  if (typeof obj !== 'object') {
 	    /*eslint no-param-reassign:0*/
 	    obj = [obj];
 	  }
@@ -2418,7 +2307,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  } else {
 	    // Iterate over object keys
 	    for (var key in obj) {
-	      if (obj.hasOwnProperty(key)) {
+	      if (Object.prototype.hasOwnProperty.call(obj, key)) {
 	        fn.call(null, obj[key], key, obj);
 	      }
 	    }
@@ -2445,8 +2334,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	function merge(/* obj1, obj2, obj3, ... */) {
 	  var result = {};
 	  function assignValue(val, key) {
-	    if (typeof result[key] === 'object' && typeof val === 'object') {
+	    if (isPlainObject(result[key]) && isPlainObject(val)) {
 	      result[key] = merge(result[key], val);
+	    } else if (isPlainObject(val)) {
+	      result[key] = merge({}, val);
+	    } else if (isArray(val)) {
+	      result[key] = val.slice();
 	    } else {
 	      result[key] = val;
 	    }
@@ -2458,14 +2351,48 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return result;
 	}
 	
+	/**
+	 * Extends object a by mutably adding to it the properties of object b.
+	 *
+	 * @param {Object} a The object to be extended
+	 * @param {Object} b The object to copy properties from
+	 * @param {Object} thisArg The object to bind function to
+	 * @return {Object} The resulting value of object a
+	 */
+	function extend(a, b, thisArg) {
+	  forEach(b, function assignValue(val, key) {
+	    if (thisArg && typeof val === 'function') {
+	      a[key] = bind(val, thisArg);
+	    } else {
+	      a[key] = val;
+	    }
+	  });
+	  return a;
+	}
+	
+	/**
+	 * Remove byte order marker. This catches EF BB BF (the UTF-8 BOM)
+	 *
+	 * @param {string} content with BOM
+	 * @return {string} content value without BOM
+	 */
+	function stripBOM(content) {
+	  if (content.charCodeAt(0) === 0xFEFF) {
+	    content = content.slice(1);
+	  }
+	  return content;
+	}
+	
 	module.exports = {
 	  isArray: isArray,
 	  isArrayBuffer: isArrayBuffer,
+	  isBuffer: isBuffer,
 	  isFormData: isFormData,
 	  isArrayBufferView: isArrayBufferView,
 	  isString: isString,
 	  isNumber: isNumber,
 	  isObject: isObject,
+	  isPlainObject: isPlainObject,
 	  isUndefined: isUndefined,
 	  isDate: isDate,
 	  isFile: isFile,
@@ -2476,7 +2403,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	  isStandardBrowserEnv: isStandardBrowserEnv,
 	  forEach: forEach,
 	  merge: merge,
-	  trim: trim
+	  extend: extend,
+	  trim: trim,
+	  stripBOM: stripBOM
+	};
+
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	module.exports = function bind(fn, thisArg) {
+	  return function wrap() {
+	    var args = new Array(arguments.length);
+	    for (var i = 0; i < args.length; i++) {
+	      args[i] = arguments[i];
+	    }
+	    return fn.apply(thisArg, args);
+	  };
 	};
 
 
@@ -2484,241 +2430,114 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	'use strict';
+	/* WEBPACK VAR INJECTION */(function(Promise) {'use strict';
 	
-	var utils = __webpack_require__(11);
+	var utils = __webpack_require__(10);
+	var buildURL = __webpack_require__(13);
+	var InterceptorManager = __webpack_require__(14);
+	var dispatchRequest = __webpack_require__(15);
+	var mergeConfig = __webpack_require__(30);
 	
-	module.exports = function normalizeHeaderName(headers, normalizedName) {
-	  utils.forEach(headers, function processHeader(value, name) {
-	    if (name !== normalizedName && name.toUpperCase() === normalizedName.toUpperCase()) {
-	      headers[normalizedName] = value;
-	      delete headers[name];
-	    }
+	/**
+	 * Create a new instance of Axios
+	 *
+	 * @param {Object} instanceConfig The default config for the instance
+	 */
+	function Axios(instanceConfig) {
+	  this.defaults = instanceConfig;
+	  this.interceptors = {
+	    request: new InterceptorManager(),
+	    response: new InterceptorManager()
+	  };
+	}
+	
+	/**
+	 * Dispatch a request
+	 *
+	 * @param {Object} config The config specific for this request (merged with this.defaults)
+	 */
+	Axios.prototype.request = function request(config) {
+	  /*eslint no-param-reassign:0*/
+	  // Allow for axios('example/url'[, config]) a la fetch API
+	  if (typeof config === 'string') {
+	    config = arguments[1] || {};
+	    config.url = arguments[0];
+	  } else {
+	    config = config || {};
+	  }
+	
+	  config = mergeConfig(this.defaults, config);
+	
+	  // Set config.method
+	  if (config.method) {
+	    config.method = config.method.toLowerCase();
+	  } else if (this.defaults.method) {
+	    config.method = this.defaults.method.toLowerCase();
+	  } else {
+	    config.method = 'get';
+	  }
+	
+	  // Hook up interceptors middleware
+	  var chain = [dispatchRequest, undefined];
+	  var promise = Promise.resolve(config);
+	
+	  this.interceptors.request.forEach(function unshiftRequestInterceptors(interceptor) {
+	    chain.unshift(interceptor.fulfilled, interceptor.rejected);
 	  });
+	
+	  this.interceptors.response.forEach(function pushResponseInterceptors(interceptor) {
+	    chain.push(interceptor.fulfilled, interceptor.rejected);
+	  });
+	
+	  while (chain.length) {
+	    promise = promise.then(chain.shift(), chain.shift());
+	  }
+	
+	  return promise;
 	};
-
+	
+	Axios.prototype.getUri = function getUri(config) {
+	  config = mergeConfig(this.defaults, config);
+	  return buildURL(config.url, config.params, config.paramsSerializer).replace(/^\?/, '');
+	};
+	
+	// Provide aliases for supported request methods
+	utils.forEach(['delete', 'get', 'head', 'options'], function forEachMethodNoData(method) {
+	  /*eslint func-names:0*/
+	  Axios.prototype[method] = function(url, config) {
+	    return this.request(mergeConfig(config || {}, {
+	      method: method,
+	      url: url,
+	      data: (config || {}).data
+	    }));
+	  };
+	});
+	
+	utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
+	  /*eslint func-names:0*/
+	  Axios.prototype[method] = function(url, data, config) {
+	    return this.request(mergeConfig(config || {}, {
+	      method: method,
+	      url: url,
+	      data: data
+	    }));
+	  };
+	});
+	
+	module.exports = Axios;
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ }),
 /* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(Promise, process) {'use strict';
-	
-	/**
-	 * Dispatch a request to the server using whichever adapter
-	 * is supported by the current environment.
-	 *
-	 * @param {object} config The config that is to be used for the request
-	 * @returns {Promise} The Promise to be fulfilled
-	 */
-	module.exports = function dispatchRequest(config) {
-	  return new Promise(function executor(resolve, reject) {
-	    try {
-	      var adapter;
-	
-	      if (typeof config.adapter === 'function') {
-	        // For custom adapter support
-	        adapter = config.adapter;
-	      } else if (typeof XMLHttpRequest !== 'undefined') {
-	        // For browsers use XHR adapter
-	        adapter = __webpack_require__(14);
-	      } else if (typeof process !== 'undefined') {
-	        // For node use HTTP adapter
-	        adapter = __webpack_require__(14);
-	      }
-	
-	      if (typeof adapter === 'function') {
-	        adapter(resolve, reject, config);
-	      }
-	    } catch (e) {
-	      reject(e);
-	    }
-	  });
-	};
-	
-	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4), __webpack_require__(6)))
-
-/***/ }),
-/* 14 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
-	
-	var utils = __webpack_require__(11);
-	var buildURL = __webpack_require__(15);
-	var parseHeaders = __webpack_require__(16);
-	var transformData = __webpack_require__(17);
-	var isURLSameOrigin = __webpack_require__(18);
-	var btoa = (typeof window !== 'undefined' && window.btoa) || __webpack_require__(19);
-	var settle = __webpack_require__(20);
-	
-	module.exports = function xhrAdapter(resolve, reject, config) {
-	  var requestData = config.data;
-	  var requestHeaders = config.headers;
-	
-	  if (utils.isFormData(requestData)) {
-	    delete requestHeaders['Content-Type']; // Let the browser set it
-	  }
-	
-	  var request = new XMLHttpRequest();
-	  var loadEvent = 'onreadystatechange';
-	  var xDomain = false;
-	
-	  // For IE 8/9 CORS support
-	  // Only supports POST and GET calls and doesn't returns the response headers.
-	  // DON'T do this for testing b/c XMLHttpRequest is mocked, not XDomainRequest.
-	  if (process.env.NODE_ENV !== 'test' && typeof window !== 'undefined' && window.XDomainRequest && !('withCredentials' in request) && !isURLSameOrigin(config.url)) {
-	    request = new window.XDomainRequest();
-	    loadEvent = 'onload';
-	    xDomain = true;
-	    request.onprogress = function handleProgress() {};
-	    request.ontimeout = function handleTimeout() {};
-	  }
-	
-	  // HTTP basic authentication
-	  if (config.auth) {
-	    var username = config.auth.username || '';
-	    var password = config.auth.password || '';
-	    requestHeaders.Authorization = 'Basic ' + btoa(username + ':' + password);
-	  }
-	
-	  request.open(config.method.toUpperCase(), buildURL(config.url, config.params, config.paramsSerializer), true);
-	
-	  // Set the request timeout in MS
-	  request.timeout = config.timeout;
-	
-	  // Listen for ready state
-	  request[loadEvent] = function handleLoad() {
-	    if (!request || (request.readyState !== 4 && !xDomain)) {
-	      return;
-	    }
-	
-	    // The request errored out and we didn't get a response, this will be
-	    // handled by onerror instead
-	    if (request.status === 0) {
-	      return;
-	    }
-	
-	    // Prepare the response
-	    var responseHeaders = 'getAllResponseHeaders' in request ? parseHeaders(request.getAllResponseHeaders()) : null;
-	    var responseData = !config.responseType || config.responseType === 'text' ? request.responseText : request.response;
-	    var response = {
-	      data: transformData(
-	        responseData,
-	        responseHeaders,
-	        config.transformResponse
-	      ),
-	      // IE sends 1223 instead of 204 (https://github.com/mzabriskie/axios/issues/201)
-	      status: request.status === 1223 ? 204 : request.status,
-	      statusText: request.status === 1223 ? 'No Content' : request.statusText,
-	      headers: responseHeaders,
-	      config: config,
-	      request: request
-	    };
-	
-	    settle(resolve, reject, response);
-	
-	    // Clean up request
-	    request = null;
-	  };
-	
-	  // Handle low level network errors
-	  request.onerror = function handleError() {
-	    // Real errors are hidden from us by the browser
-	    // onerror should only fire if it's a network error
-	    reject(new Error('Network Error'));
-	
-	    // Clean up request
-	    request = null;
-	  };
-	
-	  // Handle timeout
-	  request.ontimeout = function handleTimeout() {
-	    var err = new Error('timeout of ' + config.timeout + 'ms exceeded');
-	    err.timeout = config.timeout;
-	    err.code = 'ECONNABORTED';
-	    reject(err);
-	
-	    // Clean up request
-	    request = null;
-	  };
-	
-	  // Add xsrf header
-	  // This is only done if running in a standard browser environment.
-	  // Specifically not if we're in a web worker, or react-native.
-	  if (utils.isStandardBrowserEnv()) {
-	    var cookies = __webpack_require__(21);
-	
-	    // Add xsrf header
-	    var xsrfValue = config.withCredentials || isURLSameOrigin(config.url) ?
-	        cookies.read(config.xsrfCookieName) :
-	        undefined;
-	
-	    if (xsrfValue) {
-	      requestHeaders[config.xsrfHeaderName] = xsrfValue;
-	    }
-	  }
-	
-	  // Add headers to the request
-	  if ('setRequestHeader' in request) {
-	    utils.forEach(requestHeaders, function setRequestHeader(val, key) {
-	      if (typeof requestData === 'undefined' && key.toLowerCase() === 'content-type') {
-	        // Remove Content-Type if data is undefined
-	        delete requestHeaders[key];
-	      } else {
-	        // Otherwise add header to the request
-	        request.setRequestHeader(key, val);
-	      }
-	    });
-	  }
-	
-	  // Add withCredentials to request if needed
-	  if (config.withCredentials) {
-	    request.withCredentials = true;
-	  }
-	
-	  // Add responseType to request if needed
-	  if (config.responseType) {
-	    try {
-	      request.responseType = config.responseType;
-	    } catch (e) {
-	      if (request.responseType !== 'json') {
-	        throw e;
-	      }
-	    }
-	  }
-	
-	  // Handle progress if needed
-	  if (config.progress) {
-	    if (config.method === 'post' || config.method === 'put') {
-	      request.upload.addEventListener('progress', config.progress);
-	    } else if (config.method === 'get') {
-	      request.addEventListener('progress', config.progress);
-	    }
-	  }
-	
-	  if (requestData === undefined) {
-	    requestData = null;
-	  }
-	
-	  // Send the request
-	  request.send(requestData);
-	};
-	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
-
-/***/ }),
-/* 15 */
-/***/ (function(module, exports, __webpack_require__) {
-
 	'use strict';
 	
-	var utils = __webpack_require__(11);
+	var utils = __webpack_require__(10);
 	
 	function encode(val) {
 	  return encodeURIComponent(val).
-	    replace(/%40/gi, '@').
 	    replace(/%3A/gi, ':').
 	    replace(/%24/g, '$').
 	    replace(/%2C/gi, ',').
@@ -2755,9 +2574,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	      if (utils.isArray(val)) {
 	        key = key + '[]';
-	      }
-	
-	      if (!utils.isArray(val)) {
+	      } else {
 	        val = [val];
 	      }
 	
@@ -2775,6 +2592,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	
 	  if (serializedParams) {
+	    var hashmarkIndex = url.indexOf('#');
+	    if (hashmarkIndex !== -1) {
+	      url = url.slice(0, hashmarkIndex);
+	    }
+	
 	    url += (url.indexOf('?') === -1 ? '?' : '&') + serializedParams;
 	  }
 	
@@ -2783,280 +2605,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 16 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var utils = __webpack_require__(11);
-	
-	/**
-	 * Parse headers into an object
-	 *
-	 * ```
-	 * Date: Wed, 27 Aug 2014 08:58:49 GMT
-	 * Content-Type: application/json
-	 * Connection: keep-alive
-	 * Transfer-Encoding: chunked
-	 * ```
-	 *
-	 * @param {String} headers Headers needing to be parsed
-	 * @returns {Object} Headers parsed into an object
-	 */
-	module.exports = function parseHeaders(headers) {
-	  var parsed = {};
-	  var key;
-	  var val;
-	  var i;
-	
-	  if (!headers) { return parsed; }
-	
-	  utils.forEach(headers.split('\n'), function parser(line) {
-	    i = line.indexOf(':');
-	    key = utils.trim(line.substr(0, i)).toLowerCase();
-	    val = utils.trim(line.substr(i + 1));
-	
-	    if (key) {
-	      parsed[key] = parsed[key] ? parsed[key] + ', ' + val : val;
-	    }
-	  });
-	
-	  return parsed;
-	};
-
-
-/***/ }),
-/* 17 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var utils = __webpack_require__(11);
-	
-	/**
-	 * Transform the data for a request or a response
-	 *
-	 * @param {Object|String} data The data to be transformed
-	 * @param {Array} headers The headers for the request or response
-	 * @param {Array|Function} fns A single function or Array of functions
-	 * @returns {*} The resulting transformed data
-	 */
-	module.exports = function transformData(data, headers, fns) {
-	  /*eslint no-param-reassign:0*/
-	  utils.forEach(fns, function transform(fn) {
-	    data = fn(data, headers);
-	  });
-	
-	  return data;
-	};
-
-
-/***/ }),
-/* 18 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var utils = __webpack_require__(11);
-	
-	module.exports = (
-	  utils.isStandardBrowserEnv() ?
-	
-	  // Standard browser envs have full support of the APIs needed to test
-	  // whether the request URL is of the same origin as current location.
-	  (function standardBrowserEnv() {
-	    var msie = /(msie|trident)/i.test(navigator.userAgent);
-	    var urlParsingNode = document.createElement('a');
-	    var originURL;
-	
-	    /**
-	    * Parse a URL to discover it's components
-	    *
-	    * @param {String} url The URL to be parsed
-	    * @returns {Object}
-	    */
-	    function resolveURL(url) {
-	      var href = url;
-	
-	      if (msie) {
-	        // IE needs attribute set twice to normalize properties
-	        urlParsingNode.setAttribute('href', href);
-	        href = urlParsingNode.href;
-	      }
-	
-	      urlParsingNode.setAttribute('href', href);
-	
-	      // urlParsingNode provides the UrlUtils interface - http://url.spec.whatwg.org/#urlutils
-	      return {
-	        href: urlParsingNode.href,
-	        protocol: urlParsingNode.protocol ? urlParsingNode.protocol.replace(/:$/, '') : '',
-	        host: urlParsingNode.host,
-	        search: urlParsingNode.search ? urlParsingNode.search.replace(/^\?/, '') : '',
-	        hash: urlParsingNode.hash ? urlParsingNode.hash.replace(/^#/, '') : '',
-	        hostname: urlParsingNode.hostname,
-	        port: urlParsingNode.port,
-	        pathname: (urlParsingNode.pathname.charAt(0) === '/') ?
-	                  urlParsingNode.pathname :
-	                  '/' + urlParsingNode.pathname
-	      };
-	    }
-	
-	    originURL = resolveURL(window.location.href);
-	
-	    /**
-	    * Determine if a URL shares the same origin as the current location
-	    *
-	    * @param {String} requestURL The URL to test
-	    * @returns {boolean} True if URL shares the same origin, otherwise false
-	    */
-	    return function isURLSameOrigin(requestURL) {
-	      var parsed = (utils.isString(requestURL)) ? resolveURL(requestURL) : requestURL;
-	      return (parsed.protocol === originURL.protocol &&
-	            parsed.host === originURL.host);
-	    };
-	  })() :
-	
-	  // Non standard browser envs (web workers, react-native) lack needed support.
-	  (function nonStandardBrowserEnv() {
-	    return function isURLSameOrigin() {
-	      return true;
-	    };
-	  })()
-	);
-
-
-/***/ }),
-/* 19 */
-/***/ (function(module, exports) {
-
-	'use strict';
-	
-	// btoa polyfill for IE<10 courtesy https://github.com/davidchambers/Base64.js
-	
-	var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
-	
-	function E() {
-	  this.message = 'String contains an invalid character';
-	}
-	E.prototype = new Error;
-	E.prototype.code = 5;
-	E.prototype.name = 'InvalidCharacterError';
-	
-	function btoa(input) {
-	  var str = String(input);
-	  var output = '';
-	  for (
-	    // initialize result and counter
-	    var block, charCode, idx = 0, map = chars;
-	    // if the next str index does not exist:
-	    //   change the mapping table to "="
-	    //   check if d has no fractional digits
-	    str.charAt(idx | 0) || (map = '=', idx % 1);
-	    // "8 - idx % 1 * 8" generates the sequence 2, 4, 6, 8
-	    output += map.charAt(63 & block >> 8 - idx % 1 * 8)
-	  ) {
-	    charCode = str.charCodeAt(idx += 3 / 4);
-	    if (charCode > 0xFF) {
-	      throw new E();
-	    }
-	    block = block << 8 | charCode;
-	  }
-	  return output;
-	}
-	
-	module.exports = btoa;
-
-
-/***/ }),
-/* 20 */
-/***/ (function(module, exports) {
-
-	'use strict';
-	
-	/**
-	 * Resolve or reject a Promise based on response status.
-	 *
-	 * @param {Function} resolve A function that resolves the promise.
-	 * @param {Function} reject A function that rejects the promise.
-	 * @param {object} response The response.
-	 */
-	module.exports = function settle(resolve, reject, response) {
-	  var validateStatus = response.config.validateStatus;
-	  // Note: status is not exposed by XDomainRequest
-	  if (!response.status || !validateStatus || validateStatus(response.status)) {
-	    resolve(response);
-	  } else {
-	    reject(response);
-	  }
-	};
-
-
-/***/ }),
-/* 21 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var utils = __webpack_require__(11);
-	
-	module.exports = (
-	  utils.isStandardBrowserEnv() ?
-	
-	  // Standard browser envs support document.cookie
-	  (function standardBrowserEnv() {
-	    return {
-	      write: function write(name, value, expires, path, domain, secure) {
-	        var cookie = [];
-	        cookie.push(name + '=' + encodeURIComponent(value));
-	
-	        if (utils.isNumber(expires)) {
-	          cookie.push('expires=' + new Date(expires).toGMTString());
-	        }
-	
-	        if (utils.isString(path)) {
-	          cookie.push('path=' + path);
-	        }
-	
-	        if (utils.isString(domain)) {
-	          cookie.push('domain=' + domain);
-	        }
-	
-	        if (secure === true) {
-	          cookie.push('secure');
-	        }
-	
-	        document.cookie = cookie.join('; ');
-	      },
-	
-	      read: function read(name) {
-	        var match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
-	        return (match ? decodeURIComponent(match[3]) : null);
-	      },
-	
-	      remove: function remove(name) {
-	        this.write(name, '', Date.now() - 86400000);
-	      }
-	    };
-	  })() :
-	
-	  // Non standard browser env (web workers, react-native) lack needed support.
-	  (function nonStandardBrowserEnv() {
-	    return {
-	      write: function write() {},
-	      read: function read() { return null; },
-	      remove: function remove() {}
-	    };
-	  })()
-	);
-
-
-/***/ }),
-/* 22 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var utils = __webpack_require__(11);
+	var utils = __webpack_require__(10);
 	
 	function InterceptorManager() {
 	  this.handlers = [];
@@ -3109,7 +2663,627 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
+/* 15 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(Promise) {'use strict';
+	
+	var utils = __webpack_require__(10);
+	var transformData = __webpack_require__(16);
+	var isCancel = __webpack_require__(17);
+	var defaults = __webpack_require__(18);
+	
+	/**
+	 * Throws a `Cancel` if cancellation has been requested.
+	 */
+	function throwIfCancellationRequested(config) {
+	  if (config.cancelToken) {
+	    config.cancelToken.throwIfRequested();
+	  }
+	}
+	
+	/**
+	 * Dispatch a request to the server using the configured adapter.
+	 *
+	 * @param {object} config The config that is to be used for the request
+	 * @returns {Promise} The Promise to be fulfilled
+	 */
+	module.exports = function dispatchRequest(config) {
+	  throwIfCancellationRequested(config);
+	
+	  // Ensure headers exist
+	  config.headers = config.headers || {};
+	
+	  // Transform request data
+	  config.data = transformData(
+	    config.data,
+	    config.headers,
+	    config.transformRequest
+	  );
+	
+	  // Flatten headers
+	  config.headers = utils.merge(
+	    config.headers.common || {},
+	    config.headers[config.method] || {},
+	    config.headers
+	  );
+	
+	  utils.forEach(
+	    ['delete', 'get', 'head', 'post', 'put', 'patch', 'common'],
+	    function cleanHeaderConfig(method) {
+	      delete config.headers[method];
+	    }
+	  );
+	
+	  var adapter = config.adapter || defaults.adapter;
+	
+	  return adapter(config).then(function onAdapterResolution(response) {
+	    throwIfCancellationRequested(config);
+	
+	    // Transform response data
+	    response.data = transformData(
+	      response.data,
+	      response.headers,
+	      config.transformResponse
+	    );
+	
+	    return response;
+	  }, function onAdapterRejection(reason) {
+	    if (!isCancel(reason)) {
+	      throwIfCancellationRequested(config);
+	
+	      // Transform response data
+	      if (reason && reason.response) {
+	        reason.response.data = transformData(
+	          reason.response.data,
+	          reason.response.headers,
+	          config.transformResponse
+	        );
+	      }
+	    }
+	
+	    return Promise.reject(reason);
+	  });
+	};
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
+
+/***/ }),
+/* 16 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var utils = __webpack_require__(10);
+	
+	/**
+	 * Transform the data for a request or a response
+	 *
+	 * @param {Object|String} data The data to be transformed
+	 * @param {Array} headers The headers for the request or response
+	 * @param {Array|Function} fns A single function or Array of functions
+	 * @returns {*} The resulting transformed data
+	 */
+	module.exports = function transformData(data, headers, fns) {
+	  /*eslint no-param-reassign:0*/
+	  utils.forEach(fns, function transform(fn) {
+	    data = fn(data, headers);
+	  });
+	
+	  return data;
+	};
+
+
+/***/ }),
+/* 17 */
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	module.exports = function isCancel(value) {
+	  return !!(value && value.__CANCEL__);
+	};
+
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
+	
+	var utils = __webpack_require__(10);
+	var normalizeHeaderName = __webpack_require__(19);
+	
+	var DEFAULT_CONTENT_TYPE = {
+	  'Content-Type': 'application/x-www-form-urlencoded'
+	};
+	
+	function setContentTypeIfUnset(headers, value) {
+	  if (!utils.isUndefined(headers) && utils.isUndefined(headers['Content-Type'])) {
+	    headers['Content-Type'] = value;
+	  }
+	}
+	
+	function getDefaultAdapter() {
+	  var adapter;
+	  if (typeof XMLHttpRequest !== 'undefined') {
+	    // For browsers use XHR adapter
+	    adapter = __webpack_require__(20);
+	  } else if (typeof process !== 'undefined' && Object.prototype.toString.call(process) === '[object process]') {
+	    // For node use HTTP adapter
+	    adapter = __webpack_require__(20);
+	  }
+	  return adapter;
+	}
+	
+	var defaults = {
+	  adapter: getDefaultAdapter(),
+	
+	  transformRequest: [function transformRequest(data, headers) {
+	    normalizeHeaderName(headers, 'Accept');
+	    normalizeHeaderName(headers, 'Content-Type');
+	    if (utils.isFormData(data) ||
+	      utils.isArrayBuffer(data) ||
+	      utils.isBuffer(data) ||
+	      utils.isStream(data) ||
+	      utils.isFile(data) ||
+	      utils.isBlob(data)
+	    ) {
+	      return data;
+	    }
+	    if (utils.isArrayBufferView(data)) {
+	      return data.buffer;
+	    }
+	    if (utils.isURLSearchParams(data)) {
+	      setContentTypeIfUnset(headers, 'application/x-www-form-urlencoded;charset=utf-8');
+	      return data.toString();
+	    }
+	    if (utils.isObject(data)) {
+	      setContentTypeIfUnset(headers, 'application/json;charset=utf-8');
+	      return JSON.stringify(data);
+	    }
+	    return data;
+	  }],
+	
+	  transformResponse: [function transformResponse(data) {
+	    /*eslint no-param-reassign:0*/
+	    if (typeof data === 'string') {
+	      try {
+	        data = JSON.parse(data);
+	      } catch (e) { /* Ignore */ }
+	    }
+	    return data;
+	  }],
+	
+	  /**
+	   * A timeout in milliseconds to abort a request. If set to 0 (default) a
+	   * timeout is not created.
+	   */
+	  timeout: 0,
+	
+	  xsrfCookieName: 'XSRF-TOKEN',
+	  xsrfHeaderName: 'X-XSRF-TOKEN',
+	
+	  maxContentLength: -1,
+	  maxBodyLength: -1,
+	
+	  validateStatus: function validateStatus(status) {
+	    return status >= 200 && status < 300;
+	  }
+	};
+	
+	defaults.headers = {
+	  common: {
+	    'Accept': 'application/json, text/plain, */*'
+	  }
+	};
+	
+	utils.forEach(['delete', 'get', 'head'], function forEachMethodNoData(method) {
+	  defaults.headers[method] = {};
+	});
+	
+	utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
+	  defaults.headers[method] = utils.merge(DEFAULT_CONTENT_TYPE);
+	});
+	
+	module.exports = defaults;
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var utils = __webpack_require__(10);
+	
+	module.exports = function normalizeHeaderName(headers, normalizedName) {
+	  utils.forEach(headers, function processHeader(value, name) {
+	    if (name !== normalizedName && name.toUpperCase() === normalizedName.toUpperCase()) {
+	      headers[normalizedName] = value;
+	      delete headers[name];
+	    }
+	  });
+	};
+
+
+/***/ }),
+/* 20 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(Promise) {'use strict';
+	
+	var utils = __webpack_require__(10);
+	var settle = __webpack_require__(21);
+	var cookies = __webpack_require__(24);
+	var buildURL = __webpack_require__(13);
+	var buildFullPath = __webpack_require__(25);
+	var parseHeaders = __webpack_require__(28);
+	var isURLSameOrigin = __webpack_require__(29);
+	var createError = __webpack_require__(22);
+	
+	module.exports = function xhrAdapter(config) {
+	  return new Promise(function dispatchXhrRequest(resolve, reject) {
+	    var requestData = config.data;
+	    var requestHeaders = config.headers;
+	
+	    if (utils.isFormData(requestData)) {
+	      delete requestHeaders['Content-Type']; // Let the browser set it
+	    }
+	
+	    var request = new XMLHttpRequest();
+	
+	    // HTTP basic authentication
+	    if (config.auth) {
+	      var username = config.auth.username || '';
+	      var password = config.auth.password ? unescape(encodeURIComponent(config.auth.password)) : '';
+	      requestHeaders.Authorization = 'Basic ' + btoa(username + ':' + password);
+	    }
+	
+	    var fullPath = buildFullPath(config.baseURL, config.url);
+	    request.open(config.method.toUpperCase(), buildURL(fullPath, config.params, config.paramsSerializer), true);
+	
+	    // Set the request timeout in MS
+	    request.timeout = config.timeout;
+	
+	    // Listen for ready state
+	    request.onreadystatechange = function handleLoad() {
+	      if (!request || request.readyState !== 4) {
+	        return;
+	      }
+	
+	      // The request errored out and we didn't get a response, this will be
+	      // handled by onerror instead
+	      // With one exception: request that using file: protocol, most browsers
+	      // will return status as 0 even though it's a successful request
+	      if (request.status === 0 && !(request.responseURL && request.responseURL.indexOf('file:') === 0)) {
+	        return;
+	      }
+	
+	      // Prepare the response
+	      var responseHeaders = 'getAllResponseHeaders' in request ? parseHeaders(request.getAllResponseHeaders()) : null;
+	      var responseData = !config.responseType || config.responseType === 'text' ? request.responseText : request.response;
+	      var response = {
+	        data: responseData,
+	        status: request.status,
+	        statusText: request.statusText,
+	        headers: responseHeaders,
+	        config: config,
+	        request: request
+	      };
+	
+	      settle(resolve, reject, response);
+	
+	      // Clean up request
+	      request = null;
+	    };
+	
+	    // Handle browser request cancellation (as opposed to a manual cancellation)
+	    request.onabort = function handleAbort() {
+	      if (!request) {
+	        return;
+	      }
+	
+	      reject(createError('Request aborted', config, 'ECONNABORTED', request));
+	
+	      // Clean up request
+	      request = null;
+	    };
+	
+	    // Handle low level network errors
+	    request.onerror = function handleError() {
+	      // Real errors are hidden from us by the browser
+	      // onerror should only fire if it's a network error
+	      reject(createError('Network Error', config, null, request));
+	
+	      // Clean up request
+	      request = null;
+	    };
+	
+	    // Handle timeout
+	    request.ontimeout = function handleTimeout() {
+	      var timeoutErrorMessage = 'timeout of ' + config.timeout + 'ms exceeded';
+	      if (config.timeoutErrorMessage) {
+	        timeoutErrorMessage = config.timeoutErrorMessage;
+	      }
+	      reject(createError(timeoutErrorMessage, config, 'ECONNABORTED',
+	        request));
+	
+	      // Clean up request
+	      request = null;
+	    };
+	
+	    // Add xsrf header
+	    // This is only done if running in a standard browser environment.
+	    // Specifically not if we're in a web worker, or react-native.
+	    if (utils.isStandardBrowserEnv()) {
+	      // Add xsrf header
+	      var xsrfValue = (config.withCredentials || isURLSameOrigin(fullPath)) && config.xsrfCookieName ?
+	        cookies.read(config.xsrfCookieName) :
+	        undefined;
+	
+	      if (xsrfValue) {
+	        requestHeaders[config.xsrfHeaderName] = xsrfValue;
+	      }
+	    }
+	
+	    // Add headers to the request
+	    if ('setRequestHeader' in request) {
+	      utils.forEach(requestHeaders, function setRequestHeader(val, key) {
+	        if (typeof requestData === 'undefined' && key.toLowerCase() === 'content-type') {
+	          // Remove Content-Type if data is undefined
+	          delete requestHeaders[key];
+	        } else {
+	          // Otherwise add header to the request
+	          request.setRequestHeader(key, val);
+	        }
+	      });
+	    }
+	
+	    // Add withCredentials to request if needed
+	    if (!utils.isUndefined(config.withCredentials)) {
+	      request.withCredentials = !!config.withCredentials;
+	    }
+	
+	    // Add responseType to request if needed
+	    if (config.responseType) {
+	      try {
+	        request.responseType = config.responseType;
+	      } catch (e) {
+	        // Expected DOMException thrown by browsers not compatible XMLHttpRequest Level 2.
+	        // But, this can be suppressed for 'json' type as it can be parsed by default 'transformResponse' function.
+	        if (config.responseType !== 'json') {
+	          throw e;
+	        }
+	      }
+	    }
+	
+	    // Handle progress if needed
+	    if (typeof config.onDownloadProgress === 'function') {
+	      request.addEventListener('progress', config.onDownloadProgress);
+	    }
+	
+	    // Not all browsers support upload events
+	    if (typeof config.onUploadProgress === 'function' && request.upload) {
+	      request.upload.addEventListener('progress', config.onUploadProgress);
+	    }
+	
+	    if (config.cancelToken) {
+	      // Handle cancellation
+	      config.cancelToken.promise.then(function onCanceled(cancel) {
+	        if (!request) {
+	          return;
+	        }
+	
+	        request.abort();
+	        reject(cancel);
+	        // Clean up request
+	        request = null;
+	      });
+	    }
+	
+	    if (!requestData) {
+	      requestData = null;
+	    }
+	
+	    // Send the request
+	    request.send(requestData);
+	  });
+	};
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
+
+/***/ }),
+/* 21 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var createError = __webpack_require__(22);
+	
+	/**
+	 * Resolve or reject a Promise based on response status.
+	 *
+	 * @param {Function} resolve A function that resolves the promise.
+	 * @param {Function} reject A function that rejects the promise.
+	 * @param {object} response The response.
+	 */
+	module.exports = function settle(resolve, reject, response) {
+	  var validateStatus = response.config.validateStatus;
+	  if (!response.status || !validateStatus || validateStatus(response.status)) {
+	    resolve(response);
+	  } else {
+	    reject(createError(
+	      'Request failed with status code ' + response.status,
+	      response.config,
+	      null,
+	      response.request,
+	      response
+	    ));
+	  }
+	};
+
+
+/***/ }),
+/* 22 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var enhanceError = __webpack_require__(23);
+	
+	/**
+	 * Create an Error with the specified message, config, error code, request and response.
+	 *
+	 * @param {string} message The error message.
+	 * @param {Object} config The config.
+	 * @param {string} [code] The error code (for example, 'ECONNABORTED').
+	 * @param {Object} [request] The request.
+	 * @param {Object} [response] The response.
+	 * @returns {Error} The created error.
+	 */
+	module.exports = function createError(message, config, code, request, response) {
+	  var error = new Error(message);
+	  return enhanceError(error, config, code, request, response);
+	};
+
+
+/***/ }),
 /* 23 */
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	/**
+	 * Update an Error with the specified config, error code, and response.
+	 *
+	 * @param {Error} error The error to update.
+	 * @param {Object} config The config.
+	 * @param {string} [code] The error code (for example, 'ECONNABORTED').
+	 * @param {Object} [request] The request.
+	 * @param {Object} [response] The response.
+	 * @returns {Error} The error.
+	 */
+	module.exports = function enhanceError(error, config, code, request, response) {
+	  error.config = config;
+	  if (code) {
+	    error.code = code;
+	  }
+	
+	  error.request = request;
+	  error.response = response;
+	  error.isAxiosError = true;
+	
+	  error.toJSON = function toJSON() {
+	    return {
+	      // Standard
+	      message: this.message,
+	      name: this.name,
+	      // Microsoft
+	      description: this.description,
+	      number: this.number,
+	      // Mozilla
+	      fileName: this.fileName,
+	      lineNumber: this.lineNumber,
+	      columnNumber: this.columnNumber,
+	      stack: this.stack,
+	      // Axios
+	      config: this.config,
+	      code: this.code
+	    };
+	  };
+	  return error;
+	};
+
+
+/***/ }),
+/* 24 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var utils = __webpack_require__(10);
+	
+	module.exports = (
+	  utils.isStandardBrowserEnv() ?
+	
+	  // Standard browser envs support document.cookie
+	    (function standardBrowserEnv() {
+	      return {
+	        write: function write(name, value, expires, path, domain, secure) {
+	          var cookie = [];
+	          cookie.push(name + '=' + encodeURIComponent(value));
+	
+	          if (utils.isNumber(expires)) {
+	            cookie.push('expires=' + new Date(expires).toGMTString());
+	          }
+	
+	          if (utils.isString(path)) {
+	            cookie.push('path=' + path);
+	          }
+	
+	          if (utils.isString(domain)) {
+	            cookie.push('domain=' + domain);
+	          }
+	
+	          if (secure === true) {
+	            cookie.push('secure');
+	          }
+	
+	          document.cookie = cookie.join('; ');
+	        },
+	
+	        read: function read(name) {
+	          var match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
+	          return (match ? decodeURIComponent(match[3]) : null);
+	        },
+	
+	        remove: function remove(name) {
+	          this.write(name, '', Date.now() - 86400000);
+	        }
+	      };
+	    })() :
+	
+	  // Non standard browser env (web workers, react-native) lack needed support.
+	    (function nonStandardBrowserEnv() {
+	      return {
+	        write: function write() {},
+	        read: function read() { return null; },
+	        remove: function remove() {}
+	      };
+	    })()
+	);
+
+
+/***/ }),
+/* 25 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var isAbsoluteURL = __webpack_require__(26);
+	var combineURLs = __webpack_require__(27);
+	
+	/**
+	 * Creates a new URL by combining the baseURL with the requestedURL,
+	 * only when the requestedURL is not already an absolute URL.
+	 * If the requestURL is absolute, this function returns the requestedURL untouched.
+	 *
+	 * @param {string} baseURL The base URL
+	 * @param {string} requestedURL Absolute or relative URL to combine
+	 * @returns {string} The combined full path
+	 */
+	module.exports = function buildFullPath(baseURL, requestedURL) {
+	  if (baseURL && !isAbsoluteURL(requestedURL)) {
+	    return combineURLs(baseURL, requestedURL);
+	  }
+	  return requestedURL;
+	};
+
+
+/***/ }),
+/* 26 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -3129,7 +3303,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 24 */
+/* 27 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -3142,29 +3316,329 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @returns {string} The combined URL
 	 */
 	module.exports = function combineURLs(baseURL, relativeURL) {
-	  return baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\/+/, '');
+	  return relativeURL
+	    ? baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\/+/, '')
+	    : baseURL;
 	};
 
 
 /***/ }),
-/* 25 */
+/* 28 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var utils = __webpack_require__(10);
+	
+	// Headers whose duplicates are ignored by node
+	// c.f. https://nodejs.org/api/http.html#http_message_headers
+	var ignoreDuplicateOf = [
+	  'age', 'authorization', 'content-length', 'content-type', 'etag',
+	  'expires', 'from', 'host', 'if-modified-since', 'if-unmodified-since',
+	  'last-modified', 'location', 'max-forwards', 'proxy-authorization',
+	  'referer', 'retry-after', 'user-agent'
+	];
+	
+	/**
+	 * Parse headers into an object
+	 *
+	 * ```
+	 * Date: Wed, 27 Aug 2014 08:58:49 GMT
+	 * Content-Type: application/json
+	 * Connection: keep-alive
+	 * Transfer-Encoding: chunked
+	 * ```
+	 *
+	 * @param {String} headers Headers needing to be parsed
+	 * @returns {Object} Headers parsed into an object
+	 */
+	module.exports = function parseHeaders(headers) {
+	  var parsed = {};
+	  var key;
+	  var val;
+	  var i;
+	
+	  if (!headers) { return parsed; }
+	
+	  utils.forEach(headers.split('\n'), function parser(line) {
+	    i = line.indexOf(':');
+	    key = utils.trim(line.substr(0, i)).toLowerCase();
+	    val = utils.trim(line.substr(i + 1));
+	
+	    if (key) {
+	      if (parsed[key] && ignoreDuplicateOf.indexOf(key) >= 0) {
+	        return;
+	      }
+	      if (key === 'set-cookie') {
+	        parsed[key] = (parsed[key] ? parsed[key] : []).concat([val]);
+	      } else {
+	        parsed[key] = parsed[key] ? parsed[key] + ', ' + val : val;
+	      }
+	    }
+	  });
+	
+	  return parsed;
+	};
+
+
+/***/ }),
+/* 29 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var utils = __webpack_require__(10);
+	
+	module.exports = (
+	  utils.isStandardBrowserEnv() ?
+	
+	  // Standard browser envs have full support of the APIs needed to test
+	  // whether the request URL is of the same origin as current location.
+	    (function standardBrowserEnv() {
+	      var msie = /(msie|trident)/i.test(navigator.userAgent);
+	      var urlParsingNode = document.createElement('a');
+	      var originURL;
+	
+	      /**
+	    * Parse a URL to discover it's components
+	    *
+	    * @param {String} url The URL to be parsed
+	    * @returns {Object}
+	    */
+	      function resolveURL(url) {
+	        var href = url;
+	
+	        if (msie) {
+	        // IE needs attribute set twice to normalize properties
+	          urlParsingNode.setAttribute('href', href);
+	          href = urlParsingNode.href;
+	        }
+	
+	        urlParsingNode.setAttribute('href', href);
+	
+	        // urlParsingNode provides the UrlUtils interface - http://url.spec.whatwg.org/#urlutils
+	        return {
+	          href: urlParsingNode.href,
+	          protocol: urlParsingNode.protocol ? urlParsingNode.protocol.replace(/:$/, '') : '',
+	          host: urlParsingNode.host,
+	          search: urlParsingNode.search ? urlParsingNode.search.replace(/^\?/, '') : '',
+	          hash: urlParsingNode.hash ? urlParsingNode.hash.replace(/^#/, '') : '',
+	          hostname: urlParsingNode.hostname,
+	          port: urlParsingNode.port,
+	          pathname: (urlParsingNode.pathname.charAt(0) === '/') ?
+	            urlParsingNode.pathname :
+	            '/' + urlParsingNode.pathname
+	        };
+	      }
+	
+	      originURL = resolveURL(window.location.href);
+	
+	      /**
+	    * Determine if a URL shares the same origin as the current location
+	    *
+	    * @param {String} requestURL The URL to test
+	    * @returns {boolean} True if URL shares the same origin, otherwise false
+	    */
+	      return function isURLSameOrigin(requestURL) {
+	        var parsed = (utils.isString(requestURL)) ? resolveURL(requestURL) : requestURL;
+	        return (parsed.protocol === originURL.protocol &&
+	            parsed.host === originURL.host);
+	      };
+	    })() :
+	
+	  // Non standard browser envs (web workers, react-native) lack needed support.
+	    (function nonStandardBrowserEnv() {
+	      return function isURLSameOrigin() {
+	        return true;
+	      };
+	    })()
+	);
+
+
+/***/ }),
+/* 30 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var utils = __webpack_require__(10);
+	
+	/**
+	 * Config-specific merge-function which creates a new config-object
+	 * by merging two configuration objects together.
+	 *
+	 * @param {Object} config1
+	 * @param {Object} config2
+	 * @returns {Object} New object resulting from merging config2 to config1
+	 */
+	module.exports = function mergeConfig(config1, config2) {
+	  // eslint-disable-next-line no-param-reassign
+	  config2 = config2 || {};
+	  var config = {};
+	
+	  var valueFromConfig2Keys = ['url', 'method', 'data'];
+	  var mergeDeepPropertiesKeys = ['headers', 'auth', 'proxy', 'params'];
+	  var defaultToConfig2Keys = [
+	    'baseURL', 'transformRequest', 'transformResponse', 'paramsSerializer',
+	    'timeout', 'timeoutMessage', 'withCredentials', 'adapter', 'responseType', 'xsrfCookieName',
+	    'xsrfHeaderName', 'onUploadProgress', 'onDownloadProgress', 'decompress',
+	    'maxContentLength', 'maxBodyLength', 'maxRedirects', 'transport', 'httpAgent',
+	    'httpsAgent', 'cancelToken', 'socketPath', 'responseEncoding'
+	  ];
+	  var directMergeKeys = ['validateStatus'];
+	
+	  function getMergedValue(target, source) {
+	    if (utils.isPlainObject(target) && utils.isPlainObject(source)) {
+	      return utils.merge(target, source);
+	    } else if (utils.isPlainObject(source)) {
+	      return utils.merge({}, source);
+	    } else if (utils.isArray(source)) {
+	      return source.slice();
+	    }
+	    return source;
+	  }
+	
+	  function mergeDeepProperties(prop) {
+	    if (!utils.isUndefined(config2[prop])) {
+	      config[prop] = getMergedValue(config1[prop], config2[prop]);
+	    } else if (!utils.isUndefined(config1[prop])) {
+	      config[prop] = getMergedValue(undefined, config1[prop]);
+	    }
+	  }
+	
+	  utils.forEach(valueFromConfig2Keys, function valueFromConfig2(prop) {
+	    if (!utils.isUndefined(config2[prop])) {
+	      config[prop] = getMergedValue(undefined, config2[prop]);
+	    }
+	  });
+	
+	  utils.forEach(mergeDeepPropertiesKeys, mergeDeepProperties);
+	
+	  utils.forEach(defaultToConfig2Keys, function defaultToConfig2(prop) {
+	    if (!utils.isUndefined(config2[prop])) {
+	      config[prop] = getMergedValue(undefined, config2[prop]);
+	    } else if (!utils.isUndefined(config1[prop])) {
+	      config[prop] = getMergedValue(undefined, config1[prop]);
+	    }
+	  });
+	
+	  utils.forEach(directMergeKeys, function merge(prop) {
+	    if (prop in config2) {
+	      config[prop] = getMergedValue(config1[prop], config2[prop]);
+	    } else if (prop in config1) {
+	      config[prop] = getMergedValue(undefined, config1[prop]);
+	    }
+	  });
+	
+	  var axiosKeys = valueFromConfig2Keys
+	    .concat(mergeDeepPropertiesKeys)
+	    .concat(defaultToConfig2Keys)
+	    .concat(directMergeKeys);
+	
+	  var otherKeys = Object
+	    .keys(config1)
+	    .concat(Object.keys(config2))
+	    .filter(function filterAxiosKeys(key) {
+	      return axiosKeys.indexOf(key) === -1;
+	    });
+	
+	  utils.forEach(otherKeys, mergeDeepProperties);
+	
+	  return config;
+	};
+
+
+/***/ }),
+/* 31 */
 /***/ (function(module, exports) {
 
 	'use strict';
 	
-	module.exports = function bind(fn, thisArg) {
-	  return function wrap() {
-	    var args = new Array(arguments.length);
-	    for (var i = 0; i < args.length; i++) {
-	      args[i] = arguments[i];
-	    }
-	    return fn.apply(thisArg, args);
-	  };
+	/**
+	 * A `Cancel` is an object that is thrown when an operation is canceled.
+	 *
+	 * @class
+	 * @param {string=} message The message.
+	 */
+	function Cancel(message) {
+	  this.message = message;
+	}
+	
+	Cancel.prototype.toString = function toString() {
+	  return 'Cancel' + (this.message ? ': ' + this.message : '');
 	};
+	
+	Cancel.prototype.__CANCEL__ = true;
+	
+	module.exports = Cancel;
 
 
 /***/ }),
-/* 26 */
+/* 32 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(Promise) {'use strict';
+	
+	var Cancel = __webpack_require__(31);
+	
+	/**
+	 * A `CancelToken` is an object that can be used to request cancellation of an operation.
+	 *
+	 * @class
+	 * @param {Function} executor The executor function.
+	 */
+	function CancelToken(executor) {
+	  if (typeof executor !== 'function') {
+	    throw new TypeError('executor must be a function.');
+	  }
+	
+	  var resolvePromise;
+	  this.promise = new Promise(function promiseExecutor(resolve) {
+	    resolvePromise = resolve;
+	  });
+	
+	  var token = this;
+	  executor(function cancel(message) {
+	    if (token.reason) {
+	      // Cancellation has already been requested
+	      return;
+	    }
+	
+	    token.reason = new Cancel(message);
+	    resolvePromise(token.reason);
+	  });
+	}
+	
+	/**
+	 * Throws a `Cancel` if cancellation has been requested.
+	 */
+	CancelToken.prototype.throwIfRequested = function throwIfRequested() {
+	  if (this.reason) {
+	    throw this.reason;
+	  }
+	};
+	
+	/**
+	 * Returns an object that contains a new `CancelToken` and a function that, when called,
+	 * cancels the `CancelToken`.
+	 */
+	CancelToken.source = function source() {
+	  var cancel;
+	  var token = new CancelToken(function executor(c) {
+	    cancel = c;
+	  });
+	  return {
+	    token: token,
+	    cancel: cancel
+	  };
+	};
+	
+	module.exports = CancelToken;
+	
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
+
+/***/ }),
+/* 33 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -3197,7 +3671,24 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 27 */
+/* 34 */
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	/**
+	 * Determines whether the payload is an error thrown by Axios
+	 *
+	 * @param {*} payload The value to test
+	 * @returns {boolean} True if the payload is an error thrown by Axios, otherwise false
+	 */
+	module.exports = function isAxiosError(payload) {
+	  return (typeof payload === 'object') && (payload.isAxiosError === true);
+	};
+
+
+/***/ }),
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;// =========
@@ -3334,7 +3825,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 28 */
+/* 36 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -3437,11 +3928,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 29 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var base64 = __webpack_require__(30);
-	var merge = __webpack_require__(28);
+	var base64 = __webpack_require__(38);
+	var merge = __webpack_require__(36);
 	
 	module.exports = {
 	
@@ -3503,7 +3994,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 30 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(module, global) {/*! http://mths.be/base64 v0.1.0 by @mathias | MIT license */
@@ -3670,10 +4161,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	}(this));
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(31)(module), (function() { return this; }())))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(39)(module), (function() { return this; }())))
 
 /***/ }),
-/* 31 */
+/* 39 */
 /***/ (function(module, exports) {
 
 	module.exports = function(module) {
@@ -3689,10 +4180,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 32 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var utils = __webpack_require__(29)
+	var utils = __webpack_require__(37)
 	
 	module.exports = function (TK) {
 	
@@ -4513,7 +5004,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 33 */
+/* 41 */
 /***/ (function(module, exports) {
 
 	module.exports = function (TK) {
@@ -4762,13 +5253,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 34 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var defaultConfig = __webpack_require__(35);
-	var qs = __webpack_require__(36);
+	var defaultConfig = __webpack_require__(43);
+	var qs = __webpack_require__(44);
 	
 	function InitConfig() {
 	
@@ -4877,7 +5368,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 35 */
+/* 43 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -5054,7 +5545,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 36 */
+/* 44 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -5178,12 +5669,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 37 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	__webpack_require__(38);
+	__webpack_require__(46);
 	
 	function InitUtils(deps) {
 	
@@ -5256,7 +5747,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 38 */
+/* 46 */
 /***/ (function(module, exports) {
 
 	// Console-polyfill. MIT license.
@@ -5281,24 +5772,24 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 39 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var interpolate     = __webpack_require__(40);
+	var interpolate     = __webpack_require__(48);
 	var $               = __webpack_require__(1);
-	var moment          = window.moment = __webpack_require__(42);
-	var stringify       = __webpack_require__(45);
-	window.fullcalendar = __webpack_require__(46);
-	__webpack_require__(47);
-	__webpack_require__(48);
-	__webpack_require__(52);
-	__webpack_require__(54);
+	var moment          = window.moment = __webpack_require__(50);
+	var stringify       = __webpack_require__(53);
+	window.fullcalendar = __webpack_require__(54);
+	__webpack_require__(55);
 	__webpack_require__(56);
-	__webpack_require__(58);
+	__webpack_require__(60);
+	__webpack_require__(62);
+	__webpack_require__(64);
+	__webpack_require__(66);
 	
-	var timezones    = __webpack_require__(60);
+	var timezones    = __webpack_require__(68);
 	
 	function InitRender(deps) {
 	
@@ -5500,7 +5991,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Display ribbon if in testmode
 	  var renderTestModeRibbon = function() {
 	
-	    var template = __webpack_require__(61);
+	    var template = __webpack_require__(69);
 	
 	    var testModeRibbonTarget = $(template.render({
 	      ribbonText: 'Test Mode',
@@ -5524,10 +6015,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (getConfig().project_id) { campaignName = 'embedded-widget'; }
 	    if (getConfig().project_slug) { campaignName = 'hosted-widget'; }
 	
-	    var timezoneIcon = __webpack_require__(65);
-	    var arrowDownIcon = __webpack_require__(66);
-	    var timekitLogo = __webpack_require__(67);
-	    var template = __webpack_require__(68);
+	    var timezoneIcon = __webpack_require__(73);
+	    var arrowDownIcon = __webpack_require__(74);
+	    var timekitLogo = __webpack_require__(75);
+	    var template = __webpack_require__(76);
 	
 	    var footerTarget = $(template.render({
 	      timezoneIcon: timezoneIcon,
@@ -5680,7 +6171,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Render the avatar image
 	  var renderAvatarImage = function() {
 	
-	    var template = __webpack_require__(69);
+	    var template = __webpack_require__(77);
 	    var avatarTarget = $(template.render({
 	      image: getConfig().ui.avatar
 	    }));
@@ -5693,7 +6184,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Render the avatar image
 	  var renderDisplayName = function() {
 	
-	    var template = __webpack_require__(70);
+	    var template = __webpack_require__(78);
 	    var displayNameTarget = $(template.render({
 	      name: getConfig().ui.display_name
 	    }));
@@ -5708,9 +6199,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    utils.doCallback('showLoadingScreen');
 	
-	    var template = __webpack_require__(71);
+	    var template = __webpack_require__(79);
 	    loadingTarget = $(template.render({
-	      loadingIcon: __webpack_require__(72)
+	      loadingIcon: __webpack_require__(80)
 	    }));
 	
 	    rootTarget.append(loadingTarget);
@@ -5753,9 +6244,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    }
 	
-	    var template = __webpack_require__(73);
+	    var template = __webpack_require__(81);
 	    errorTarget = $(template.render({
-	      errorWarningIcon: __webpack_require__(74),
+	      errorWarningIcon: __webpack_require__(82),
 	      message: messageProcessed,
 	      context: contextProcessed
 	    }));
@@ -5769,10 +6260,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Render customer fields
 	  var renderCustomerFields = function () {
 	    
-	    var textTemplate = __webpack_require__(75);
-	    var textareaTemplate = __webpack_require__(76);
-	    var selectTemplate = __webpack_require__(77);
-	    var checkboxTemplate = __webpack_require__(78);
+	    var textTemplate = __webpack_require__(83);
+	    var textareaTemplate = __webpack_require__(84);
+	    var selectTemplate = __webpack_require__(85);
+	    var checkboxTemplate = __webpack_require__(86);
 	
 	    var fieldsTarget = []
 	    $.each(getConfig().customer_fields, function(key, field) {
@@ -5784,7 +6275,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (key === 'email') field.format = 'email'
 	      var data = $.extend({
 	        key: key,
-	        arrowDownIcon: __webpack_require__(66)
+	        arrowDownIcon: __webpack_require__(74)
 	      }, field)
 	      var fieldTarget = $(tmpl.render(data))
 	      fieldsTarget.push(fieldTarget)
@@ -5798,7 +6289,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    utils.doCallback('showBookingPage', eventData);
 	
-	    var template = __webpack_require__(79);
+	    var template = __webpack_require__(87);
 	
 	    var dateFormat = getConfig().ui.booking_date_format || moment.localeData().longDateFormat('LL');
 	    var timeFormat = getConfig().ui.booking_time_format || moment.localeData().longDateFormat('LT');
@@ -5809,10 +6300,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      chosenTime:               formatTimestamp(eventData.start, timeFormat) + ' - ' + formatTimestamp(eventData.end, timeFormat),
 	      allocatedResourcePrefix:  getConfig().ui.localization.allocated_resource_prefix,
 	      allocatedResource:        allocatedResource,
-	      closeIcon:                __webpack_require__(80),
-	      checkmarkIcon:            __webpack_require__(81),
-	      loadingIcon:              __webpack_require__(72),
-	      errorIcon:                __webpack_require__(82),
+	      closeIcon:                __webpack_require__(88),
+	      checkmarkIcon:            __webpack_require__(89),
+	      loadingIcon:              __webpack_require__(80),
+	      errorIcon:                __webpack_require__(90),
 	      submitText:               getConfig().ui.localization.submit_button,
 	      successMessage:           interpolate.sprintf(getConfig().ui.localization.success_message, '<span class="booked-email"></span>')
 	    }));
@@ -6059,7 +6550,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 40 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/* global window, exports, define */
@@ -6282,7 +6773,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        window['sprintf'] = sprintf
 	        window['vsprintf'] = vsprintf
 	
-	        if ("function" === 'function' && __webpack_require__(41)['amd']) {
+	        if ("function" === 'function' && __webpack_require__(49)['amd']) {
 	            !(__WEBPACK_AMD_DEFINE_RESULT__ = function() {
 	                return {
 	                    'sprintf': sprintf,
@@ -6296,14 +6787,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 41 */
+/* 49 */
 /***/ (function(module, exports) {
 
 	module.exports = function() { throw new Error("define cannot be used indirect"); };
 
 
 /***/ }),
-/* 42 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var require;/* WEBPACK VAR INJECTION */(function(module) {//! moment.js
@@ -8397,7 +8888,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            try {
 	                oldLocale = globalLocale._abbr;
 	                aliasedRequire = require;
-	                __webpack_require__(43)("./" + name);
+	                __webpack_require__(51)("./" + name);
 	                getSetGlobalLocale(oldLocale);
 	            } catch (e) {
 	                // mark as not found to avoid repeating expensive file require call causing high CPU
@@ -11977,15 +12468,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	})));
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(31)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(39)(module)))
 
 /***/ }),
-/* 43 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var map = {
-		"./en-gb": 44,
-		"./en-gb.js": 44
+		"./en-gb": 52,
+		"./en-gb.js": 52
 	};
 	function webpackContext(req) {
 		return __webpack_require__(webpackContextResolve(req));
@@ -11998,11 +12489,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	webpackContext.resolve = webpackContextResolve;
 	module.exports = webpackContext;
-	webpackContext.id = 43;
+	webpackContext.id = 51;
 
 
 /***/ }),
-/* 44 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
@@ -12010,7 +12501,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	//! author : Chris Gedrim : https://github.com/chrisgedrim
 	
 	;(function (global, factory) {
-	    true ? factory(__webpack_require__(42)) :
+	    true ? factory(__webpack_require__(50)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
@@ -12086,7 +12577,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 45 */
+/* 53 */
 /***/ (function(module, exports) {
 
 	exports = module.exports = stringify
@@ -12119,7 +12610,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 46 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/*!
@@ -12129,7 +12620,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	(function webpackUniversalModuleDefinition(root, factory) {
 		if(true)
-			module.exports = factory(__webpack_require__(42), __webpack_require__(1));
+			module.exports = factory(__webpack_require__(50), __webpack_require__(1));
 		else if(typeof define === 'function' && define.amd)
 			define(["moment", "jquery"], factory);
 		else if(typeof exports === 'object')
@@ -27272,7 +27763,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 
 /***/ }),
-/* 47 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;//! moment-timezone.js
@@ -27286,9 +27777,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		/*global define*/
 		if (typeof module === 'object' && module.exports) {
-			module.exports = factory(__webpack_require__(42)); // Node
+			module.exports = factory(__webpack_require__(50)); // Node
 		} else if (true) {
-			!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(42)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));                 // AMD
+			!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(50)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));                 // AMD
 		} else {
 			factory(root.moment);                        // Browser
 		}
@@ -28823,16 +29314,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 48 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(49);
+	var content = __webpack_require__(57);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(51)(content, {"singleton":true});
+	var update = __webpack_require__(59)(content, {"singleton":true});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -28849,10 +29340,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ }),
-/* 49 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(50)();
+	exports = module.exports = __webpack_require__(58)();
 	// imports
 	
 	
@@ -28863,7 +29354,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 50 */
+/* 58 */
 /***/ (function(module, exports) {
 
 	/*
@@ -28919,7 +29410,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 51 */
+/* 59 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/*
@@ -29171,16 +29662,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 52 */
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(53);
+	var content = __webpack_require__(61);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(51)(content, {"singleton":true});
+	var update = __webpack_require__(59)(content, {"singleton":true});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -29197,10 +29688,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ }),
-/* 53 */
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(50)();
+	exports = module.exports = __webpack_require__(58)();
 	// imports
 	exports.push([module.id, "@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);", ""]);
 	
@@ -29211,16 +29702,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 54 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(55);
+	var content = __webpack_require__(63);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(51)(content, {"singleton":true});
+	var update = __webpack_require__(59)(content, {"singleton":true});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -29237,10 +29728,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ }),
-/* 55 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(50)();
+	exports = module.exports = __webpack_require__(58)();
 	// imports
 	
 	
@@ -29251,16 +29742,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 56 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(57);
+	var content = __webpack_require__(65);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(51)(content, {"singleton":true});
+	var update = __webpack_require__(59)(content, {"singleton":true});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -29277,10 +29768,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ }),
-/* 57 */
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(50)();
+	exports = module.exports = __webpack_require__(58)();
 	// imports
 	exports.push([module.id, "@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);", ""]);
 	
@@ -29291,16 +29782,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 58 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 	
 	// load the styles
-	var content = __webpack_require__(59);
+	var content = __webpack_require__(67);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(51)(content, {"singleton":true});
+	var update = __webpack_require__(59)(content, {"singleton":true});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -29317,10 +29808,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ }),
-/* 59 */
+/* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(50)();
+	exports = module.exports = __webpack_require__(58)();
 	// imports
 	exports.push([module.id, "@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);", ""]);
 	
@@ -29331,7 +29822,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 60 */
+/* 68 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -29484,14 +29975,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 61 */
+/* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var H = __webpack_require__(62);
+	var H = __webpack_require__(70);
 	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-ribbon-wrapper\">");t.b("\n" + i);t.b("  <div class=\"bookingjs-ribbon-container\">");t.b("\n" + i);t.b("    <div class=\"bookingjs-ribbon\">");t.b("\n" + i);t.b("      <span>");t.b("\n" + i);t.b("        ");t.b(t.v(t.f("ribbonText",c,p,0)));t.b("\n" + i);t.b("      </span>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-ribbon-wrapper\">\n  <div class=\"bookingjs-ribbon-container\">\n    <div class=\"bookingjs-ribbon\">\n      <span>\n        {{ ribbonText }}\n      </span>\n    </div>\n  </div>\n</div>\n", H);return T; }();
 
 /***/ }),
-/* 62 */
+/* 70 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/*
@@ -29511,14 +30002,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	// This file is for use with Node.js. See dist/ for browser files.
 	
-	var Hogan = __webpack_require__(63);
-	Hogan.Template = __webpack_require__(64).Template;
+	var Hogan = __webpack_require__(71);
+	Hogan.Template = __webpack_require__(72).Template;
 	Hogan.template = Hogan.Template;
 	module.exports = Hogan;
 
 
 /***/ }),
-/* 63 */
+/* 71 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/*
@@ -29947,7 +30438,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 64 */
+/* 72 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/*
@@ -30294,119 +30785,119 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 65 */
+/* 73 */
 /***/ (function(module, exports) {
 
 	module.exports = "<svg class=\"bookingjs-timezoneicon\" viewBox=\"0 0 98 98\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>Shape</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"timezone-icon\" sketch:type=\"MSLayerGroup\" fill=\"#AEAEAE\"><path d=\"M37.656,1.387 L39.381,2.516 L46.176,3.475 L49.313,2.778 L55.186,3.495 L56.364,5.065 L52.274,4.52 L48.092,6.262 L49.293,9.385 L53.613,11.348 L54.189,7.395 L58.285,7.133 L64.121,12.707 L65.775,14.887 L66.56,16.28 L62.029,18.067 L55.185,21.169 L54.624,24.206 L50.095,28.476 L50.271,32.572 L48.9,32.559 L48.353,29.086 L45.757,28.238 L38.294,28.631 L35.286,34.137 L37.901,37.274 L42.221,34.917 L42.516,38.755 L44.172,40.062 L47.131,43.46 L46.985,47.751 L52.448,49.034 L56.454,46.159 L58.284,46.768 L65.003,49.45 L74.433,52.985 L76.396,57.698 L83.111,60.968 L84.644,66.732 L80.062,71.857 L74.66,77.519 L68.933,80.482 L63.04,84.408 L55.185,89.515 L50.835,93.941 L49.292,92.263 L52.782,83.419 L53.663,73.167 L46.15,66.34 L46.199,60.596 L48.164,58.239 L50.471,51.415 L45.809,48.811 L42.664,43.706 L37.75,41.817 L30.047,37.667 L26.904,29.024 L25.334,33.344 L22.977,26.276 L23.762,15.671 L27.69,12.136 L26.512,9.779 L29.26,5.459 L23.905,6.99 C9.611,15.545 0.01,31.135 0.01,49.006 C0.01,76.062 21.945,98 49.006,98 C76.062,98 98,76.062 98,49.006 C98,21.947 76.062,0.012 49.006,0.012 C45.092,0.012 41.305,0.52 37.656,1.387 Z\" id=\"Shape\" sketch:type=\"MSShapeGroup\"></path></g></g></svg>"
 
 /***/ }),
-/* 66 */
+/* 74 */
 /***/ (function(module, exports) {
 
 	module.exports = "<svg viewBox=\"0 0 92 57\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><title>Shape</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\"><g id=\"baseline-keyboard_arrow_down-24px\" fill=\"#000000\" fill-rule=\"nonzero\"><path d=\"M14.1475701,2.57246832 L44.5933923,32.6934216 C45.3726692,33.4643833 46.6273308,33.4643833 47.4066077,32.6934216 L77.8524299,2.57246832 C80.9719545,-0.513769666 85.9953329,-0.511030764 89.1114902,2.57860711 L89.2702623,2.73602808 C92.4077787,5.84684331 92.4294243,10.9121169 89.3186091,14.0496333 C89.3025624,14.0658177 89.2864467,14.0819334 89.2702623,14.09798 L47.4081573,55.6038265 C46.6285143,56.3768345 45.3714857,56.3768345 44.5918427,55.6038265 L2.72973768,14.09798 C-0.407778714,10.9871648 -0.429424284,5.92189121 2.68139094,2.78437482 C2.69743758,2.76819044 2.71355331,2.75207472 2.72973768,2.73602808 L2.88850984,2.57860711 C6.00466711,-0.511030764 11.0280455,-0.513769666 14.1475701,2.57246832 Z\" id=\"Shape\"></path></g></g></svg>"
 
 /***/ }),
-/* 67 */
+/* 75 */
 /***/ (function(module, exports) {
 
 	module.exports = "<svg class=\"bookingjs-timekitlogo\" viewBox=\"0 0 513 548\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><title>timekit-logo</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\"><g id=\"timekit-logo\" transform=\"translate(9.000000, 9.000000)\" fill=\"#AEAEAE\"><path d=\"M55.2163313,275.621588 L198.50357,163.134257 C227.693194,140.219007 274.527519,140.836287 303.106573,164.516436 L439.222777,277.300154 L294.687237,386.088734 C265.004826,408.430003 217.635083,407.547293 188.834846,384.15411 L55.2163313,275.621588 Z M29.1450782,296.088768 L22.5453033,301.269906 C-6.64628574,324.186699 -6.96035256,361.73094 21.8567615,385.137832 L188.814783,520.750588 C217.626101,544.152772 265.020127,545.031261 294.666324,522.71725 L471.933566,389.292269 C501.58244,366.976243 502.456142,329.694313 473.870647,306.008826 L465.168534,298.798395 L304.79022,419.511467 C268.948833,446.488455 213.042282,445.460488 178.242802,417.194379 L29.1450782,296.088768 Z\" id=\"Base-layer\"></path><path d=\"M303.106573,18.9036609 L473.870647,160.396052 C502.470886,184.093754 501.573077,221.370515 471.912654,243.695235 L294.687237,377.088734 C265.004826,399.430003 217.635083,398.547293 188.834846,375.15411 L21.8366979,239.50876 C-6.94564818,216.130109 -6.64628574,178.573924 22.5453033,155.657132 L198.50357,17.5214821 C227.708304,-5.40562963 274.527519,-4.77648801 303.106573,18.9036609 Z M292.387775,31.8399435 C269.89295,13.2010897 231.857075,12.6958644 208.877526,30.7359084 L32.9192595,168.871558 C12.2117199,185.127966 12.006219,209.880161 32.4287426,226.468491 L199.426891,362.113841 C222.242635,380.64608 261.076006,381.360119 284.584254,363.666001 L461.809671,230.272501 C482.810002,214.466035 483.387128,190.098964 463.151849,173.332334 L292.387775,31.8399435 Z\" id=\"Middle-layer\" stroke=\"#AEAEAE\" stroke-width=\"18\"></path></g></g></svg>"
 
 /***/ }),
-/* 68 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	var H = __webpack_require__(62);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-footer\">");t.b("\n" + i);if(t.s(t.f("showTimezoneHelper",c,p,1),c,p,0,58,501,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("  <div class=\"bookingjs-footer-tz\">");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("timezoneIcon",c,p,0)));t.b("\n" + i);t.b("    <span>Your timezone</span>");t.b("\n" + i);t.b("    <div class=\"bookingjs-footer-tz-picker\">");t.b("\n" + i);t.b("      <select class=\"bookingjs-footer-tz-picker-select\">");t.b("\n" + i);if(t.s(t.f("listTimezones",c,p,1),c,p,0,280,343,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("        <option value=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b(t.v(t.f("name",c,p,0)));t.b("</option>");t.b("\n" + i);});c.pop();}t.b("      </select>");t.b("\n" + i);t.b("      <div class=\"bookingjs-footer-tz-picker-arrowdown\">");t.b("\n" + i);t.b("        ");t.b(t.t(t.f("arrowDownIcon",c,p,0)));t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);});c.pop();}if(t.s(t.f("showCredits",c,p,1),c,p,0,547,794,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("  <a class=\"bookingjs-footer-by\" href=\"http://timekit.io?utm_medium=link&utm_source=");t.b(t.v(t.f("campaignSource",c,p,0)));t.b("&utm_campaign=");t.b(t.v(t.f("campaignName",c,p,0)));t.b("&utm_content=powered-by\" target=\"_blank\">");t.b("\n" + i);t.b("    <span>Powered by Timekit</span>");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("timekitLogo",c,p,0)));t.b("\n" + i);t.b("  </a>");t.b("\n" + i);});c.pop();}t.b("</div>");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-footer\">\n  {{# showTimezoneHelper }}\n  <div class=\"bookingjs-footer-tz\">\n    {{& timezoneIcon }}\n    <span>Your timezone</span>\n    <div class=\"bookingjs-footer-tz-picker\">\n      <select class=\"bookingjs-footer-tz-picker-select\">\n        {{# listTimezones }}\n        <option value=\"{{ key }}\">{{ name }}</option>\n        {{/ listTimezones }}\n      </select>\n      <div class=\"bookingjs-footer-tz-picker-arrowdown\">\n        {{& arrowDownIcon }}\n      </div>\n    </div>\n  </div>\n  {{/ showTimezoneHelper }}\n  {{# showCredits }}\n  <a class=\"bookingjs-footer-by\" href=\"http://timekit.io?utm_medium=link&utm_source={{ campaignSource }}&utm_campaign={{ campaignName }}&utm_content=powered-by\" target=\"_blank\">\n    <span>Powered by Timekit</span>\n    {{& timekitLogo }}\n  </a>\n  {{/ showCredits }}\n</div>", H);return T; }();
-
-/***/ }),
-/* 69 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	var H = __webpack_require__(62);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-avatar\">");t.b("\n" + i);t.b("  <img src=\"");t.b(t.t(t.f("image",c,p,0)));t.b("\" />");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-avatar\">\n  <img src=\"{{& image }}\" />\n</div>\n", H);return T; }();
-
-/***/ }),
-/* 70 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	var H = __webpack_require__(62);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-displayname\">");t.b("\n" + i);t.b("  <span>");t.b(t.v(t.f("name",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-displayname\">\n  <span>{{ name }}</span>\n</div>\n", H);return T; }();
-
-/***/ }),
-/* 71 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	var H = __webpack_require__(62);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-loading show\">");t.b("\n" + i);t.b("  <div class=\"bookingjs-loading-icon\">");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("loadingIcon",c,p,0)));t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-loading show\">\n  <div class=\"bookingjs-loading-icon\">\n    {{& loadingIcon }}\n  </div>\n</div>\n", H);return T; }();
-
-/***/ }),
-/* 72 */
-/***/ (function(module, exports) {
-
-	module.exports = "<svg version=\"1.1\" id=\"loader-1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" viewBox=\"0 0 38 38\" xml:space=\"preserve\"><path fill=\"#fff\" d=\"M38,19 C38,8.50658975 29.4934102,0 19,0 C8.50658975,0 0,8.50658975 0,19 L5,19 C5,11.2680135 11.2680135,5 19,5 C26.7319865,5 33,11.2680135 33,19 L38,19 Z\" id=\"Oval-1\" sketch:type=\"MSShapeGroup\"></path></path></svg>"
-
-/***/ }),
-/* 73 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	var H = __webpack_require__(62);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-error show\">");t.b("\n" + i);t.b("  <div class=\"bookingjs-error-inner\">");t.b("\n" + i);t.b("    <div class=\"bookingjs-error-icon\">");t.b("\n" + i);t.b("      ");t.b(t.t(t.f("errorWarningIcon",c,p,0)));t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <div class=\"bookingjs-error-heading\">");t.b("\n" + i);t.b("      Ouch, we've encountered a problem");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <div class=\"bookingjs-error-text\">");t.b("\n" + i);t.b("      <span class=\"bookingjs-error-text-message\">");t.b(t.t(t.f("message",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"bookingjs-error-text-context\">");t.b(t.t(t.f("context",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-error show\">\n  <div class=\"bookingjs-error-inner\">\n    <div class=\"bookingjs-error-icon\">\n      {{& errorWarningIcon }}\n    </div>\n    <div class=\"bookingjs-error-heading\">\n      Ouch, we've encountered a problem\n    </div>\n    <div class=\"bookingjs-error-text\">\n      <span class=\"bookingjs-error-text-message\">{{& message }}</span>\n      <span class=\"bookingjs-error-text-context\">{{& context }}</span>\n    </div>\n  </div>\n</div>\n", H);return T; }();
-
-/***/ }),
-/* 74 */
-/***/ (function(module, exports) {
-
-	module.exports = "<svg viewBox=\"0 0 62 55\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><title>error-warning-icon</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\"><g id=\"error-warning-icon\" fill-rule=\"nonzero\" fill=\"#D83B46\"><path d=\"M60.2,41.5 L38.7,5.3 C37.1,2.5 34.2,0.9 31,0.9 C27.8,0.9 24.9,2.5 23.3,5.3 L1.8,41.5 C0.1,44.3 0.1,47.7 1.7,50.5 C3.3,53.3 6.2,55 9.5,55 L52.4,55 C55.7,55 58.6,53.3 60.2,50.5 C61.9,47.7 61.9,44.3 60.2,41.5 Z M55.1,47.6 C54.8,48.1 54.1,49.1 52.5,49.1 L9.5,49.1 C7.9,49.1 7.2,48 6.9,47.6 C6.6,47.1 6.1,45.9 6.9,44.6 L28.4,8.4 C29.2,7.1 30.5,6.9 31,6.9 C31.5,6.9 32.8,7 33.6,8.4 L55.1,44.6 C55.9,45.9 55.3,47.1 55.1,47.6 Z\" id=\"Shape\"></path><path d=\"M31,15.2 C29.3,15.2 28,16.5 28,18.2 L28,34.2 C28,35.9 29.3,37.2 31,37.2 C32.7,37.2 34,35.9 34,34.2 L34,18.2 C34,16.6 32.7,15.2 31,15.2 Z\" id=\"Shape\"></path><path d=\"M31,38.8 C29.3,38.8 28,40.1 28,41.8 L28,42.8 C28,44.5 29.3,45.8 31,45.8 C32.7,45.8 34,44.5 34,42.8 L34,41.8 C34,40.1 32.7,38.8 31,38.8 Z\" id=\"Shape\"></path></g></g></svg>"
-
-/***/ }),
-/* 75 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	var H = __webpack_require__(62);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field ");if(t.s(t.f("prefilled",c,p,1),c,p,0,49,76,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("bookingjs-form-field--dirty");});c.pop();}t.b("\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    type=\"");t.b(t.v(t.f("format",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.f("title",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("prefilled",c,p,1),c,p,0,385,410,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.f("prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,446,456,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,491,501,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field {{# prefilled }}bookingjs-form-field--dirty{{/ prefilled }}\">\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label label-{{ key }}\">\n    {{ title }}\n  </label>\n  <input\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input input-{{ key }}\"\n    type=\"{{ format }}\"\n    name=\"{{ key }}\"\n    placeholder=\"{{ title }}\"\n    {{# prefilled }} value=\"{{ prefilled }}\" {{/ prefilled }}\n    {{# readonly }} readonly {{/ readonly }}\n    {{# required }} required {{/ required }}\n  />\n</div>\n", H);return T; }();
-
-/***/ }),
 /* 76 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var H = __webpack_require__(62);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field ");if(t.s(t.f("prefilled",c,p,1),c,p,0,49,76,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("bookingjs-form-field--dirty");});c.pop();}t.b("\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <textarea");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input bookingjs-form-input--textarea input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    rows=\"3\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.f("title",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,407,417,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,452,462,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b(">");if(t.s(t.f("prefilled",c,p,1),c,p,0,494,509,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(t.v(t.f("prefilled",c,p,0)));});c.pop();}t.b("</textarea>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field {{# prefilled }}bookingjs-form-field--dirty{{/ prefilled }}\">\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label label-{{ key }}\">\n    {{ title }}\n  </label>\n  <textarea\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input bookingjs-form-input--textarea input-{{ key }}\"\n    rows=\"3\"\n    name=\"{{ key }}\"\n    placeholder=\"{{ title }}\"\n    {{# readonly }} readonly {{/ readonly }}\n    {{# required }} required {{/ required }}>{{# prefilled }}{{ prefilled }}{{/ prefilled }}</textarea>\n</div>\n", H);return T; }();
+	var H = __webpack_require__(70);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-footer\">");t.b("\n" + i);if(t.s(t.f("showTimezoneHelper",c,p,1),c,p,0,58,501,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("  <div class=\"bookingjs-footer-tz\">");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("timezoneIcon",c,p,0)));t.b("\n" + i);t.b("    <span>Your timezone</span>");t.b("\n" + i);t.b("    <div class=\"bookingjs-footer-tz-picker\">");t.b("\n" + i);t.b("      <select class=\"bookingjs-footer-tz-picker-select\">");t.b("\n" + i);if(t.s(t.f("listTimezones",c,p,1),c,p,0,280,343,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("        <option value=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b(t.v(t.f("name",c,p,0)));t.b("</option>");t.b("\n" + i);});c.pop();}t.b("      </select>");t.b("\n" + i);t.b("      <div class=\"bookingjs-footer-tz-picker-arrowdown\">");t.b("\n" + i);t.b("        ");t.b(t.t(t.f("arrowDownIcon",c,p,0)));t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);});c.pop();}if(t.s(t.f("showCredits",c,p,1),c,p,0,547,794,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("  <a class=\"bookingjs-footer-by\" href=\"http://timekit.io?utm_medium=link&utm_source=");t.b(t.v(t.f("campaignSource",c,p,0)));t.b("&utm_campaign=");t.b(t.v(t.f("campaignName",c,p,0)));t.b("&utm_content=powered-by\" target=\"_blank\">");t.b("\n" + i);t.b("    <span>Powered by Timekit</span>");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("timekitLogo",c,p,0)));t.b("\n" + i);t.b("  </a>");t.b("\n" + i);});c.pop();}t.b("</div>");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-footer\">\n  {{# showTimezoneHelper }}\n  <div class=\"bookingjs-footer-tz\">\n    {{& timezoneIcon }}\n    <span>Your timezone</span>\n    <div class=\"bookingjs-footer-tz-picker\">\n      <select class=\"bookingjs-footer-tz-picker-select\">\n        {{# listTimezones }}\n        <option value=\"{{ key }}\">{{ name }}</option>\n        {{/ listTimezones }}\n      </select>\n      <div class=\"bookingjs-footer-tz-picker-arrowdown\">\n        {{& arrowDownIcon }}\n      </div>\n    </div>\n  </div>\n  {{/ showTimezoneHelper }}\n  {{# showCredits }}\n  <a class=\"bookingjs-footer-by\" href=\"http://timekit.io?utm_medium=link&utm_source={{ campaignSource }}&utm_campaign={{ campaignName }}&utm_content=powered-by\" target=\"_blank\">\n    <span>Powered by Timekit</span>\n    {{& timekitLogo }}\n  </a>\n  {{/ showCredits }}\n</div>", H);return T; }();
 
 /***/ }),
 /* 77 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var H = __webpack_require__(62);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field bookingjs-form-field--select\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label bookingjs-form-label--select label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <select");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input--select input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,337,346,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" disabed ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,381,391,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("  >");t.b("\n" + i);if(t.s(t.f("enum",c,p,1),c,p,0,426,519,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("    <option value=\"");t.b(t.v(t.d(".",c,p,0)));t.b("\" ");if(t.s(t.f("prefilled",c,p,1),c,p,0,471,481,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" selected ");});c.pop();}t.b(">");t.b(t.v(t.d(".",c,p,0)));t.b("</option>");t.b("\n" + i);});c.pop();}t.b("  </select>");t.b("\n" + i);t.b("  <div class=\"bookingjs-form-input-arrow--select\">");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("arrowDownIcon",c,p,0)));t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field bookingjs-form-field--select\">\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label bookingjs-form-label--select label-{{ key }}\">\n    {{ title }}\n  </label>\n  <select\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input--select input-{{ key }}\"\n    name=\"{{ key }}\"\n    {{# readonly }} disabed {{/ readonly }}\n    {{# required }} required {{/ required }}\n  >\n    {{# enum }}\n    <option value=\"{{ . }}\" {{# prefilled }} selected {{/ prefilled }}>{{ . }}</option>\n    {{/ enum }}\n  </select>\n  <div class=\"bookingjs-form-input-arrow--select\">\n    {{& arrowDownIcon }}\n  </div>\n</div>\n", H);return T; }();
+	var H = __webpack_require__(70);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-avatar\">");t.b("\n" + i);t.b("  <img src=\"");t.b(t.t(t.f("image",c,p,0)));t.b("\" />");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-avatar\">\n  <img src=\"{{& image }}\" />\n</div>\n", H);return T; }();
 
 /***/ }),
 /* 78 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var H = __webpack_require__(62);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field bookingjs-form-field--checkbox\">");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input--checkbox input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    type=\"checkbox\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    value=\"true\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("prefilled",c,p,1),c,p,0,237,246,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" checked ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,282,292,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" disabled ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,327,337,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label--checkbox label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field bookingjs-form-field--checkbox\">\n  <input\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input--checkbox input-{{ key }}\"\n    type=\"checkbox\"\n    name=\"{{ key }}\"\n    value=\"true\"\n    {{# prefilled }} checked {{/ prefilled }}\n    {{# readonly }} disabled {{/ readonly }}\n    {{# required }} required {{/ required }}\n  />\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label--checkbox label-{{ key }}\">\n    {{ title }}\n  </label>\n</div>\n", H);return T; }();
+	var H = __webpack_require__(70);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-displayname\">");t.b("\n" + i);t.b("  <span>");t.b(t.v(t.f("name",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-displayname\">\n  <span>{{ name }}</span>\n</div>\n", H);return T; }();
 
 /***/ }),
 /* 79 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var H = __webpack_require__(62);
-	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-bookpage\">");t.b("\n" + i);t.b("  <a class=\"bookingjs-bookpage-close\" href=\"#\">");t.b(t.t(t.f("closeIcon",c,p,0)));t.b("</a>");t.b("\n" + i);t.b("  <div class=\"bookingjs-bookpage-header\">");t.b("\n" + i);t.b("    <h2 class=\"bookingjs-bookpage-date\">");t.b(t.v(t.f("chosenDate",c,p,0)));t.b("</h2>");t.b("\n" + i);t.b("    <h3 class=\"bookingjs-bookpage-time\">");t.b(t.v(t.f("chosenTime",c,p,0)));t.b("</h3>");t.b("\n" + i);if(t.s(t.f("allocatedResource",c,p,1),c,p,0,293,465,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("      <span class=\"bookingjs-bookpage-resource-prefix\">");t.b(t.v(t.f("allocatedResourcePrefix",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <h3 class=\"bookingjs-bookpage-resource\">");t.b(t.v(t.f("allocatedResource",c,p,0)));t.b("</h3>");t.b("\n" + i);});c.pop();}t.b("  </div>");t.b("\n" + i);t.b("  <form class=\"bookingjs-form\" action=\"#\">");t.b("\n" + i);t.b("    <div class=\"bookingjs-form-box\">");t.b("\n" + i);t.b("      <div class=\"bookingjs-form-success-message\">");t.b("\n" + i);t.b("        <div class=\"bookingjs-form-success-message-body\">");t.b(t.t(t.f("successMessage",c,p,0)));t.b("</div>");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("      <div class=\"bookingjs-form-fields\">");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <button class=\"bookingjs-form-button\" type=\"submit\">");t.b("\n" + i);t.b("      <span class=\"inactive-text\">");t.b(t.v(t.f("submitText",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"loading-text\">");t.b(t.t(t.f("loadingIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"error-text\">");t.b(t.t(t.f("errorIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"success-text\">");t.b(t.t(t.f("checkmarkIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("    </button>");t.b("\n" + i);t.b("  </form>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-bookpage\">\n  <a class=\"bookingjs-bookpage-close\" href=\"#\">{{& closeIcon }}</a>\n  <div class=\"bookingjs-bookpage-header\">\n    <h2 class=\"bookingjs-bookpage-date\">{{ chosenDate }}</h2>\n    <h3 class=\"bookingjs-bookpage-time\">{{ chosenTime }}</h3>\n    {{#allocatedResource}}\n      <span class=\"bookingjs-bookpage-resource-prefix\">{{ allocatedResourcePrefix }}</span>\n      <h3 class=\"bookingjs-bookpage-resource\">{{ allocatedResource }}</h3>\n    {{/allocatedResource}}\n  </div>\n  <form class=\"bookingjs-form\" action=\"#\">\n    <div class=\"bookingjs-form-box\">\n      <div class=\"bookingjs-form-success-message\">\n        <div class=\"bookingjs-form-success-message-body\">{{& successMessage }}</div>\n      </div>\n      <div class=\"bookingjs-form-fields\">\n      </div>\n    </div>\n    <button class=\"bookingjs-form-button\" type=\"submit\">\n      <span class=\"inactive-text\">{{ submitText }}</span>\n      <span class=\"loading-text\">{{& loadingIcon }}</span>\n      <span class=\"error-text\">{{& errorIcon }}</span>\n      <span class=\"success-text\">{{& checkmarkIcon }}</span>\n    </button>\n  </form>\n</div>\n", H);return T; }();
+	var H = __webpack_require__(70);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-loading show\">");t.b("\n" + i);t.b("  <div class=\"bookingjs-loading-icon\">");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("loadingIcon",c,p,0)));t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-loading show\">\n  <div class=\"bookingjs-loading-icon\">\n    {{& loadingIcon }}\n  </div>\n</div>\n", H);return T; }();
 
 /***/ }),
 /* 80 */
 /***/ (function(module, exports) {
 
-	module.exports = "<svg class=\"bookingjs-closeicon\" viewBox=\"0 0 90 90\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>close-icon</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"close-icon\" sketch:type=\"MSLayerGroup\" fill=\"#000000\"><path d=\"M58,45 L87.2,15.8 C90.9,12.1 90.9,6.3 87.3,2.7 C83.7,-0.9 77.8,-0.8 74.2,2.8 L45,32 L15.8,2.8 C12.1,-0.9 6.3,-0.9 2.7,2.7 C-0.9,6.3 -0.8,12.2 2.8,15.8 L32,45 L2.8,74.2 C-0.9,77.9 -0.9,83.7 2.7,87.3 C6.3,90.9 12.2,90.8 15.8,87.2 L45,58 L74.2,87.2 C77.9,90.9 83.7,90.9 87.3,87.3 C90.9,83.7 90.8,77.8 87.2,74.2 L58,45 L58,45 Z\" id=\"Shape\" sketch:type=\"MSShapeGroup\"></path></g></g></svg>"
+	module.exports = "<svg version=\"1.1\" id=\"loader-1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" viewBox=\"0 0 38 38\" xml:space=\"preserve\"><path fill=\"#fff\" d=\"M38,19 C38,8.50658975 29.4934102,0 19,0 C8.50658975,0 0,8.50658975 0,19 L5,19 C5,11.2680135 11.2680135,5 19,5 C26.7319865,5 33,11.2680135 33,19 L38,19 Z\" id=\"Oval-1\" sketch:type=\"MSShapeGroup\"></path></path></svg>"
 
 /***/ }),
 /* 81 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	var H = __webpack_require__(70);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-error show\">");t.b("\n" + i);t.b("  <div class=\"bookingjs-error-inner\">");t.b("\n" + i);t.b("    <div class=\"bookingjs-error-icon\">");t.b("\n" + i);t.b("      ");t.b(t.t(t.f("errorWarningIcon",c,p,0)));t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <div class=\"bookingjs-error-heading\">");t.b("\n" + i);t.b("      Ouch, we've encountered a problem");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <div class=\"bookingjs-error-text\">");t.b("\n" + i);t.b("      <span class=\"bookingjs-error-text-message\">");t.b(t.t(t.f("message",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"bookingjs-error-text-context\">");t.b(t.t(t.f("context",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-error show\">\n  <div class=\"bookingjs-error-inner\">\n    <div class=\"bookingjs-error-icon\">\n      {{& errorWarningIcon }}\n    </div>\n    <div class=\"bookingjs-error-heading\">\n      Ouch, we've encountered a problem\n    </div>\n    <div class=\"bookingjs-error-text\">\n      <span class=\"bookingjs-error-text-message\">{{& message }}</span>\n      <span class=\"bookingjs-error-text-context\">{{& context }}</span>\n    </div>\n  </div>\n</div>\n", H);return T; }();
+
+/***/ }),
+/* 82 */
+/***/ (function(module, exports) {
+
+	module.exports = "<svg viewBox=\"0 0 62 55\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><title>error-warning-icon</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\"><g id=\"error-warning-icon\" fill-rule=\"nonzero\" fill=\"#D83B46\"><path d=\"M60.2,41.5 L38.7,5.3 C37.1,2.5 34.2,0.9 31,0.9 C27.8,0.9 24.9,2.5 23.3,5.3 L1.8,41.5 C0.1,44.3 0.1,47.7 1.7,50.5 C3.3,53.3 6.2,55 9.5,55 L52.4,55 C55.7,55 58.6,53.3 60.2,50.5 C61.9,47.7 61.9,44.3 60.2,41.5 Z M55.1,47.6 C54.8,48.1 54.1,49.1 52.5,49.1 L9.5,49.1 C7.9,49.1 7.2,48 6.9,47.6 C6.6,47.1 6.1,45.9 6.9,44.6 L28.4,8.4 C29.2,7.1 30.5,6.9 31,6.9 C31.5,6.9 32.8,7 33.6,8.4 L55.1,44.6 C55.9,45.9 55.3,47.1 55.1,47.6 Z\" id=\"Shape\"></path><path d=\"M31,15.2 C29.3,15.2 28,16.5 28,18.2 L28,34.2 C28,35.9 29.3,37.2 31,37.2 C32.7,37.2 34,35.9 34,34.2 L34,18.2 C34,16.6 32.7,15.2 31,15.2 Z\" id=\"Shape\"></path><path d=\"M31,38.8 C29.3,38.8 28,40.1 28,41.8 L28,42.8 C28,44.5 29.3,45.8 31,45.8 C32.7,45.8 34,44.5 34,42.8 L34,41.8 C34,40.1 32.7,38.8 31,38.8 Z\" id=\"Shape\"></path></g></g></svg>"
+
+/***/ }),
+/* 83 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	var H = __webpack_require__(70);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field ");if(t.s(t.f("prefilled",c,p,1),c,p,0,49,76,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("bookingjs-form-field--dirty");});c.pop();}t.b("\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    type=\"");t.b(t.v(t.f("format",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.f("title",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("prefilled",c,p,1),c,p,0,385,410,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.f("prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,446,456,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,491,501,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field {{# prefilled }}bookingjs-form-field--dirty{{/ prefilled }}\">\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label label-{{ key }}\">\n    {{ title }}\n  </label>\n  <input\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input input-{{ key }}\"\n    type=\"{{ format }}\"\n    name=\"{{ key }}\"\n    placeholder=\"{{ title }}\"\n    {{# prefilled }} value=\"{{ prefilled }}\" {{/ prefilled }}\n    {{# readonly }} readonly {{/ readonly }}\n    {{# required }} required {{/ required }}\n  />\n</div>\n", H);return T; }();
+
+/***/ }),
+/* 84 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	var H = __webpack_require__(70);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field ");if(t.s(t.f("prefilled",c,p,1),c,p,0,49,76,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("bookingjs-form-field--dirty");});c.pop();}t.b("\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <textarea");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input bookingjs-form-input--textarea input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    rows=\"3\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.f("title",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,407,417,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,452,462,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b(">");if(t.s(t.f("prefilled",c,p,1),c,p,0,494,509,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(t.v(t.f("prefilled",c,p,0)));});c.pop();}t.b("</textarea>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field {{# prefilled }}bookingjs-form-field--dirty{{/ prefilled }}\">\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label label-{{ key }}\">\n    {{ title }}\n  </label>\n  <textarea\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input bookingjs-form-input--textarea input-{{ key }}\"\n    rows=\"3\"\n    name=\"{{ key }}\"\n    placeholder=\"{{ title }}\"\n    {{# readonly }} readonly {{/ readonly }}\n    {{# required }} required {{/ required }}>{{# prefilled }}{{ prefilled }}{{/ prefilled }}</textarea>\n</div>\n", H);return T; }();
+
+/***/ }),
+/* 85 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	var H = __webpack_require__(70);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field bookingjs-form-field--select\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label bookingjs-form-label--select label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <select");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input--select input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,337,346,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" disabed ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,381,391,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("  >");t.b("\n" + i);if(t.s(t.f("enum",c,p,1),c,p,0,426,519,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("    <option value=\"");t.b(t.v(t.d(".",c,p,0)));t.b("\" ");if(t.s(t.f("prefilled",c,p,1),c,p,0,471,481,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" selected ");});c.pop();}t.b(">");t.b(t.v(t.d(".",c,p,0)));t.b("</option>");t.b("\n" + i);});c.pop();}t.b("  </select>");t.b("\n" + i);t.b("  <div class=\"bookingjs-form-input-arrow--select\">");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("arrowDownIcon",c,p,0)));t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field bookingjs-form-field--select\">\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label bookingjs-form-label--select label-{{ key }}\">\n    {{ title }}\n  </label>\n  <select\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input--select input-{{ key }}\"\n    name=\"{{ key }}\"\n    {{# readonly }} disabed {{/ readonly }}\n    {{# required }} required {{/ required }}\n  >\n    {{# enum }}\n    <option value=\"{{ . }}\" {{# prefilled }} selected {{/ prefilled }}>{{ . }}</option>\n    {{/ enum }}\n  </select>\n  <div class=\"bookingjs-form-input-arrow--select\">\n    {{& arrowDownIcon }}\n  </div>\n</div>\n", H);return T; }();
+
+/***/ }),
+/* 86 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	var H = __webpack_require__(70);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field bookingjs-form-field--checkbox\">");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input--checkbox input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    type=\"checkbox\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    value=\"true\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("prefilled",c,p,1),c,p,0,237,246,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" checked ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,282,292,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" disabled ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,327,337,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label--checkbox label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field bookingjs-form-field--checkbox\">\n  <input\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input--checkbox input-{{ key }}\"\n    type=\"checkbox\"\n    name=\"{{ key }}\"\n    value=\"true\"\n    {{# prefilled }} checked {{/ prefilled }}\n    {{# readonly }} disabled {{/ readonly }}\n    {{# required }} required {{/ required }}\n  />\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label--checkbox label-{{ key }}\">\n    {{ title }}\n  </label>\n</div>\n", H);return T; }();
+
+/***/ }),
+/* 87 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	var H = __webpack_require__(70);
+	module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-bookpage\">");t.b("\n" + i);t.b("  <a class=\"bookingjs-bookpage-close\" href=\"#\">");t.b(t.t(t.f("closeIcon",c,p,0)));t.b("</a>");t.b("\n" + i);t.b("  <div class=\"bookingjs-bookpage-header\">");t.b("\n" + i);t.b("    <h2 class=\"bookingjs-bookpage-date\">");t.b(t.v(t.f("chosenDate",c,p,0)));t.b("</h2>");t.b("\n" + i);t.b("    <h3 class=\"bookingjs-bookpage-time\">");t.b(t.v(t.f("chosenTime",c,p,0)));t.b("</h3>");t.b("\n" + i);if(t.s(t.f("allocatedResource",c,p,1),c,p,0,293,465,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("      <span class=\"bookingjs-bookpage-resource-prefix\">");t.b(t.v(t.f("allocatedResourcePrefix",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <h3 class=\"bookingjs-bookpage-resource\">");t.b(t.v(t.f("allocatedResource",c,p,0)));t.b("</h3>");t.b("\n" + i);});c.pop();}t.b("  </div>");t.b("\n" + i);t.b("  <form class=\"bookingjs-form\" action=\"#\">");t.b("\n" + i);t.b("    <div class=\"bookingjs-form-box\">");t.b("\n" + i);t.b("      <div class=\"bookingjs-form-success-message\">");t.b("\n" + i);t.b("        <div class=\"bookingjs-form-success-message-body\">");t.b(t.t(t.f("successMessage",c,p,0)));t.b("</div>");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("      <div class=\"bookingjs-form-fields\">");t.b("\n" + i);t.b("      </div>");t.b("\n" + i);t.b("    </div>");t.b("\n" + i);t.b("    <button class=\"bookingjs-form-button\" type=\"submit\">");t.b("\n" + i);t.b("      <span class=\"inactive-text\">");t.b(t.v(t.f("submitText",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"loading-text\">");t.b(t.t(t.f("loadingIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"error-text\">");t.b(t.t(t.f("errorIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("      <span class=\"success-text\">");t.b(t.t(t.f("checkmarkIcon",c,p,0)));t.b("</span>");t.b("\n" + i);t.b("    </button>");t.b("\n" + i);t.b("  </form>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-bookpage\">\n  <a class=\"bookingjs-bookpage-close\" href=\"#\">{{& closeIcon }}</a>\n  <div class=\"bookingjs-bookpage-header\">\n    <h2 class=\"bookingjs-bookpage-date\">{{ chosenDate }}</h2>\n    <h3 class=\"bookingjs-bookpage-time\">{{ chosenTime }}</h3>\n    {{#allocatedResource}}\n      <span class=\"bookingjs-bookpage-resource-prefix\">{{ allocatedResourcePrefix }}</span>\n      <h3 class=\"bookingjs-bookpage-resource\">{{ allocatedResource }}</h3>\n    {{/allocatedResource}}\n  </div>\n  <form class=\"bookingjs-form\" action=\"#\">\n    <div class=\"bookingjs-form-box\">\n      <div class=\"bookingjs-form-success-message\">\n        <div class=\"bookingjs-form-success-message-body\">{{& successMessage }}</div>\n      </div>\n      <div class=\"bookingjs-form-fields\">\n      </div>\n    </div>\n    <button class=\"bookingjs-form-button\" type=\"submit\">\n      <span class=\"inactive-text\">{{ submitText }}</span>\n      <span class=\"loading-text\">{{& loadingIcon }}</span>\n      <span class=\"error-text\">{{& errorIcon }}</span>\n      <span class=\"success-text\">{{& checkmarkIcon }}</span>\n    </button>\n  </form>\n</div>\n", H);return T; }();
+
+/***/ }),
+/* 88 */
+/***/ (function(module, exports) {
+
+	module.exports = "<svg class=\"bookingjs-closeicon\" viewBox=\"0 0 90 90\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>close-icon</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"close-icon\" sketch:type=\"MSLayerGroup\" fill=\"#000000\"><path d=\"M58,45 L87.2,15.8 C90.9,12.1 90.9,6.3 87.3,2.7 C83.7,-0.9 77.8,-0.8 74.2,2.8 L45,32 L15.8,2.8 C12.1,-0.9 6.3,-0.9 2.7,2.7 C-0.9,6.3 -0.8,12.2 2.8,15.8 L32,45 L2.8,74.2 C-0.9,77.9 -0.9,83.7 2.7,87.3 C6.3,90.9 12.2,90.8 15.8,87.2 L45,58 L74.2,87.2 C77.9,90.9 83.7,90.9 87.3,87.3 C90.9,83.7 90.8,77.8 87.2,74.2 L58,45 L58,45 Z\" id=\"Shape\" sketch:type=\"MSShapeGroup\"></path></g></g></svg>"
+
+/***/ }),
+/* 89 */
 /***/ (function(module, exports) {
 
 	module.exports = "<svg viewBox=\"0 0 38 26\" x=\"0px\" y=\"0px\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><path fill=\"#fff\" d=\"M4.59255916,9.14153015 L4.59255916,9.14153015 L4.59255917,9.14153016 C3.61060488,8.15335155 2.0152224,8.15314806 1.03260582,9.1419932 L0.737322592,9.43914816 C-0.245558943,10.4282599 -0.245836003,12.0327396 0.736862454,13.0216671 L12.8967481,25.2586313 C13.4826504,25.8482474 14.3060779,26.1023412 15.1093609,25.9623831 L15.1946218,25.9520176 C15.7962843,25.9101633 16.3621851,25.6553951 16.7974015,25.21742 L37.2642739,4.6208133 C38.2456495,3.63321696 38.2453889,2.02851586 37.2626092,1.03950653 L36.967326,0.742351578 C35.9843771,-0.246827998 34.390543,-0.247513927 33.4085772,0.740676315 L15.4197831,18.8434968 L14.826599,19.4404409 L14.2334149,18.8434968 L4.59255916,9.14153015 Z\" id=\"Path\"></path></svg>"
 
 /***/ }),
-/* 82 */
+/* 90 */
 /***/ (function(module, exports) {
 
 	module.exports = "<svg class=\"bookingjs-closeicon\" viewBox=\"0 0 90 90\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:sketch=\"http://www.bohemiancoding.com/sketch/ns\"><title>error-icon</title><desc>Created with Sketch.</desc><defs></defs><g id=\"Page-1\" stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\" sketch:type=\"MSPage\"><g id=\"error-icon\" sketch:type=\"MSLayerGroup\" fill=\"#FFFFFF\"><path d=\"M58,45 L87.2,15.8 C90.9,12.1 90.9,6.3 87.3,2.7 C83.7,-0.9 77.8,-0.8 74.2,2.8 L45,32 L15.8,2.8 C12.1,-0.9 6.3,-0.9 2.7,2.7 C-0.9,6.3 -0.8,12.2 2.8,15.8 L32,45 L2.8,74.2 C-0.9,77.9 -0.9,83.7 2.7,87.3 C6.3,90.9 12.2,90.8 15.8,87.2 L45,58 L74.2,87.2 C77.9,90.9 83.7,90.9 87.3,87.3 C90.9,83.7 90.8,77.8 87.2,74.2 L58,45 L58,45 Z\" id=\"Shape\" sketch:type=\"MSShapeGroup\"></path></g></g></svg>"

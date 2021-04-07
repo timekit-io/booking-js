@@ -31,8 +31,15 @@ module.exports = {
 						loader: 'style-loader',
 						options: { injectType: 'singletonStyleTag' },
 					},
-					'css-loader',
-					'postcss-loader',
+					{ loader: 'css-loader' },
+					{
+						loader: 'postcss-loader',
+						options: {
+							postcssOptions: {
+								plugins: [['autoprefixer']],
+							},
+						},
+					},
 				],
 			},
 			{
@@ -42,9 +49,16 @@ module.exports = {
 						loader: 'style-loader',
 						options: { injectType: 'singletonStyleTag' },
 					},
-					'css-loader',
-					'postcss-loader',
-					'sass-loader',
+					{ loader: 'css-loader' },
+					{
+						loader: 'postcss-loader',
+						options: {
+							postcssOptions: {
+								plugins: [['autoprefixer']],
+							},
+						},
+					},
+					{ loader: 'sass-loader' },
 				],
 			},
 			{ test: /\.svg$/, loader: 'svg-inline-loader' },

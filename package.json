@@ -32,6 +32,7 @@
 		"timekit-sdk": "^1.16.0"
 	},
 	"devDependencies": {
+		"autoprefixer": "^10.2.5",
 		"css-loader": "^5.2.0",
 		"jasmine": "^3.7.0",
 		"jasmine-jquery": "^2.1.1",

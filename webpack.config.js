@@ -11,7 +11,7 @@ module.exports = {
 		libraryTarget: 'umd',
 		filename: 'booking.js',
 		library: 'TimekitBooking',
-		path: __dirname + './dist',
+		path: __dirname + '/dist',
 	},
 	externals: {
 		jquery: {

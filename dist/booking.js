@@ -1968,7 +1968,7 @@ module.exports = {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(module, global) {var __WEBPACK_AMD_DEFINE_RESULT__;/*! http://mths.be/base64 v0.1.0 by @mathias | MIT license */
+/* WEBPACK VAR INJECTION */(function(module, global) {var __WEBPACK_AMD_DEFINE_RESULT__;/*! https://mths.be/base64 v1.0.0 by @mathias | MIT license */
 ;(function(root) {
 
 	// Detect free variables `exports`.
@@ -2061,7 +2061,6 @@ module.exports = {
 		var a;
 		var b;
 		var c;
-		var d;
 		var buffer;
 		// Make sure any padding is handled outside of the loop.
 		var length = input.length - padding;
@@ -2107,7 +2106,7 @@ module.exports = {
 	var base64 = {
 		'encode': encode,
 		'decode': decode,
-		'version': '0.1.0'
+		'version': '1.0.0'
 	};
 
 	// Some AMD build optimizers, like r.js, check for specific condition patterns
@@ -2441,70 +2440,106 @@ function isReactElement(value) {
 }
 
 function emptyTarget(val) {
-    return Array.isArray(val) ? [] : {}
+	return Array.isArray(val) ? [] : {}
 }
 
-function cloneIfNecessary(value, optionsArgument) {
-    var clone = optionsArgument && optionsArgument.clone === true;
-    return (clone && isMergeableObject(value)) ? deepmerge(emptyTarget(value), value, optionsArgument) : value
+function cloneUnlessOtherwiseSpecified(value, options) {
+	return (options.clone !== false && options.isMergeableObject(value))
+		? deepmerge(emptyTarget(value), value, options)
+		: value
 }
 
-function defaultArrayMerge(target, source, optionsArgument) {
-    var destination = target.slice();
-    source.forEach(function(e, i) {
-        if (typeof destination[i] === 'undefined') {
-            destination[i] = cloneIfNecessary(e, optionsArgument);
-        } else if (isMergeableObject(e)) {
-            destination[i] = deepmerge(target[i], e, optionsArgument);
-        } else if (target.indexOf(e) === -1) {
-            destination.push(cloneIfNecessary(e, optionsArgument));
-        }
-    });
-    return destination
+function defaultArrayMerge(target, source, options) {
+	return target.concat(source).map(function(element) {
+		return cloneUnlessOtherwiseSpecified(element, options)
+	})
 }
 
-function mergeObject(target, source, optionsArgument) {
-    var destination = {};
-    if (isMergeableObject(target)) {
-        Object.keys(target).forEach(function(key) {
-            destination[key] = cloneIfNecessary(target[key], optionsArgument);
-        });
-    }
-    Object.keys(source).forEach(function(key) {
-        if (!isMergeableObject(source[key]) || !target[key]) {
-            destination[key] = cloneIfNecessary(source[key], optionsArgument);
-        } else {
-            destination[key] = deepmerge(target[key], source[key], optionsArgument);
-        }
-    });
-    return destination
+function getMergeFunction(key, options) {
+	if (!options.customMerge) {
+		return deepmerge
+	}
+	var customMerge = options.customMerge(key);
+	return typeof customMerge === 'function' ? customMerge : deepmerge
 }
 
-function deepmerge(target, source, optionsArgument) {
-    var sourceIsArray = Array.isArray(source);
-    var targetIsArray = Array.isArray(target);
-    var options = optionsArgument || { arrayMerge: defaultArrayMerge };
-    var sourceAndTargetTypesMatch = sourceIsArray === targetIsArray;
-
-    if (!sourceAndTargetTypesMatch) {
-        return cloneIfNecessary(source, optionsArgument)
-    } else if (sourceIsArray) {
-        var arrayMerge = options.arrayMerge || defaultArrayMerge;
-        return arrayMerge(target, source, optionsArgument)
-    } else {
-        return mergeObject(target, source, optionsArgument)
-    }
+function getEnumerableOwnPropertySymbols(target) {
+	return Object.getOwnPropertySymbols
+		? Object.getOwnPropertySymbols(target).filter(function(symbol) {
+			return target.propertyIsEnumerable(symbol)
+		})
+		: []
 }
 
-deepmerge.all = function deepmergeAll(array, optionsArgument) {
-    if (!Array.isArray(array) || array.length < 2) {
-        throw new Error('first argument should be an array with at least two elements')
-    }
+function getKeys(target) {
+	return Object.keys(target).concat(getEnumerableOwnPropertySymbols(target))
+}
 
-    // we are sure there are at least 2 values, so it is safe to have no initial value
-    return array.reduce(function(prev, next) {
-        return deepmerge(prev, next, optionsArgument)
-    })
+function propertyIsOnObject(object, property) {
+	try {
+		return property in object
+	} catch(_) {
+		return false
+	}
+}
+
+// Protects from prototype poisoning and unexpected merging up the prototype chain.
+function propertyIsUnsafe(target, key) {
+	return propertyIsOnObject(target, key) // Properties are safe to merge if they don't exist in the target yet,
+		&& !(Object.hasOwnProperty.call(target, key) // unsafe if they exist up the prototype chain,
+			&& Object.propertyIsEnumerable.call(target, key)) // and also unsafe if they're nonenumerable.
+}
+
+function mergeObject(target, source, options) {
+	var destination = {};
+	if (options.isMergeableObject(target)) {
+		getKeys(target).forEach(function(key) {
+			destination[key] = cloneUnlessOtherwiseSpecified(target[key], options);
+		});
+	}
+	getKeys(source).forEach(function(key) {
+		if (propertyIsUnsafe(target, key)) {
+			return
+		}
+
+		if (propertyIsOnObject(target, key) && options.isMergeableObject(source[key])) {
+			destination[key] = getMergeFunction(key, options)(target[key], source[key], options);
+		} else {
+			destination[key] = cloneUnlessOtherwiseSpecified(source[key], options);
+		}
+	});
+	return destination
+}
+
+function deepmerge(target, source, options) {
+	options = options || {};
+	options.arrayMerge = options.arrayMerge || defaultArrayMerge;
+	options.isMergeableObject = options.isMergeableObject || isMergeableObject;
+	// cloneUnlessOtherwiseSpecified is added to `options` so that custom arrayMerge()
+	// implementations can use it. The caller may not replace it.
+	options.cloneUnlessOtherwiseSpecified = cloneUnlessOtherwiseSpecified;
+
+	var sourceIsArray = Array.isArray(source);
+	var targetIsArray = Array.isArray(target);
+	var sourceAndTargetTypesMatch = sourceIsArray === targetIsArray;
+
+	if (!sourceAndTargetTypesMatch) {
+		return cloneUnlessOtherwiseSpecified(source, options)
+	} else if (sourceIsArray) {
+		return options.arrayMerge(target, source, options)
+	} else {
+		return mergeObject(target, source, options)
+	}
+}
+
+deepmerge.all = function deepmergeAll(array, options) {
+	if (!Array.isArray(array)) {
+		throw new Error('first argument should be an array')
+	}
+
+	return array.reduce(function(prev, next) {
+		return deepmerge(prev, next, options)
+	}, {})
 };
 
 var deepmerge_1 = deepmerge;
@@ -19699,7 +19734,6 @@ var Hogan = {};
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;// =========
 // = humps =
 // =========
-// version 0.7.0
 // Underscore-to-camelCase converter (and vice versa)
 // for strings and object keys
 
@@ -19709,8 +19743,8 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;// =========
 
 ;(function(global) {
 
-  var _processKeys = function(convert, obj, separator, ignoreNumbers) {
-    if(!_isObject(obj) || _isDate(obj) || _isRegExp(obj) || _isBoolean(obj)) {
+  var _processKeys = function(convert, obj, options) {
+    if(!_isObject(obj) || _isDate(obj) || _isRegExp(obj) || _isBoolean(obj) || _isFunction(obj)) {
       return obj;
     }
 
@@ -19721,14 +19755,14 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;// =========
     if(_isArray(obj)) {
       output = [];
       for(l=obj.length; i<l; i++) {
-        output.push(_processKeys(convert, obj[i], separator, ignoreNumbers));
+        output.push(_processKeys(convert, obj[i], options));
       }
     }
     else {
       output = {};
       for(var key in obj) {
-        if(obj.hasOwnProperty(key)) {
-          output[convert(key, separator, ignoreNumbers)] = _processKeys(convert, obj[key], separator, ignoreNumbers);
+        if(Object.prototype.hasOwnProperty.call(obj, key)) {
+          output[convert(key, options)] = _processKeys(convert, obj[key], options);
         }
       }
     }
@@ -19737,18 +19771,12 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;// =========
 
   // String conversion methods
 
-  var separateWords = function(string, separator, ignoreNumbers) {
-    if (typeof separator === 'undefined') {
-      separator = '_';
-    }
+  var separateWords = function(string, options) {
+    options = options || {};
+    var separator = options.separator || '_';
+    var split = options.split || /(?=[A-Z])/;
 
-    var regexp = /([a-z])([A-Z0-9])/g;
-
-    if (ignoreNumbers) {
-      regexp = /([a-z])([A-Z])/g;
-    }
-
-    return string.replace(regexp, '$1'+ separator +'$2');
+    return string.split(split).join(separator);
   };
 
   var camelize = function(string) {
@@ -19768,8 +19796,8 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;// =========
     return camelized.substr(0, 1).toUpperCase() + camelized.substr(1);
   };
 
-  var decamelize = function(string, separator, ignoreNumbers) {
-    return separateWords(string, separator, ignoreNumbers).toLowerCase();
+  var decamelize = function(string, options) {
+    return separateWords(string, options).toLowerCase();
   };
 
   // Utilities
@@ -19777,6 +19805,9 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;// =========
 
   var toString = Object.prototype.toString;
 
+  var _isFunction = function(obj) {
+    return typeof(obj) === 'function';
+  };
   var _isObject = function(obj) {
     return obj === Object(obj);
   };
@@ -19799,19 +19830,33 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;// =========
     return obj === obj;
   };
 
+  // Sets up function which handles processing keys
+  // allowing the convert function to be modified by a callback
+  var _processor = function(convert, options) {
+    var callback = options && 'process' in options ? options.process : options;
+
+    if(typeof(callback) !== 'function') {
+      return convert;
+    }
+
+    return function(string, options) {
+      return callback(string, convert, options);
+    }
+  };
+
   var humps = {
     camelize: camelize,
     decamelize: decamelize,
     pascalize: pascalize,
     depascalize: decamelize,
-    camelizeKeys: function(object) {
-      return _processKeys(camelize, object);
+    camelizeKeys: function(object, options) {
+      return _processKeys(_processor(camelize, options), object);
     },
-    decamelizeKeys: function(object, separator, ignoreNumbers) {
-      return _processKeys(decamelize, object, separator, ignoreNumbers);
+    decamelizeKeys: function(object, options) {
+      return _processKeys(_processor(decamelize, options), object, options);
     },
-    pascalizeKeys: function(object) {
-      return _processKeys(pascalize, object);
+    pascalizeKeys: function(object, options) {
+      return _processKeys(_processor(pascalize, options), object);
     },
     depascalizeKeys: function () {
       return this.decamelizeKeys.apply(this, arguments);
@@ -28426,824 +28471,714 @@ module.exports = function (TK) {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ./utils */ "./node_modules/timekit-sdk/src/utils.js")
+var utils = __webpack_require__(/*! ./utils */ "./node_modules/timekit-sdk/src/utils.js");
 
 module.exports = function (TK) {
-
-  /**
-   * Get user's connected accounts
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.getAccounts = function() {
-
-    return TK.makeRequest({
-      url: '/accounts',
-      method: 'get'
-    });
-
-  };
-
-  /**
-   * Initiate a Google account sync
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.accountGoogleSync = function() {
-
-    return TK.makeRequest({
-      url: '/accounts/sync',
-      method: 'post'
-    });
-
-  };
-
-  /**
-   * Initiate a Microsoft account sync
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.accountMicrosoftSync = function() {
-
-    return TK.makeRequest({
-      url: '/accounts/microsoft/sync',
-      method: 'post'
-    });
-
-  };
-
-  /**
-   * Authenticate a user to retrive API token for future calls
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.auth = function(data) {
-
-    var r = TK.makeRequest({
-      url: '/auth',
-      method: 'post',
-      data: data
-    });
-
-    r.then(function(response) {
-
-      var token = response.data.api_token || response.data.apiToken;
-
-      TK.setUser(response.data.email, token);
-
-    }).catch(function(){
-      TK.setUser('','');
-    });
-
-    return r;
-
-  };
-
-  /**
-   * Get list of apps
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.getApps = function() {
-
-    return TK.makeRequest({
-      url: '/apps',
-      method: 'get'
-    });
-
-  };
-
-  /**
-   * Get settings for a specific app
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.getApp = function() {
-
-    return TK.makeRequest({
-      url: '/app',
-      method: 'get'
-    });
-
-  };
-
-  /**
-   * Create a new Timekit app
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.createApp = function(data) {
-
-    return TK.makeRequest({
-      url: '/apps',
-      method: 'post',
-      data: data
-    });
-
-  };
-
-  /**
-   * Update settings for a specific app
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.updateApp = function(data) {
-
-    var slug = data.slug;
-    delete data.slug;
-
-    return TK.makeRequest({
-      url: '/apps/' + slug,
-      method: 'put',
-      data: data
-    });
-
-  };
-
-  /**
-   * Delete an app
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.deleteApp = function(data) {
-
-    return TK.makeRequest({
-      url: '/apps/' + data.slug,
-      method: 'delete'
-    });
-
-  };
-
-  /**
-   * Fetch current resource data from server
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.getResources = function() {
-
-    return TK.makeRequest({
-      url: '/resources',
-      method: 'get'
-    });
-
-  };
-
-  /**
-   * Fetch current resource data from server
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.getResource = function(data) {
-
-    return TK.makeRequest({
-      url: '/resources/' + data.id,
-      method: 'get'
-    });
-
-  };
-
-  /**
-   * Create a new resource with the given properties
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.createResource = function(data) {
-
-    return TK.makeRequest({
-      url: '/resources',
-      method: 'post',
-      data: data
-    });
-
-  };
-
-  /**
-   * Fetch current resource data from server
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.updateResource = function(data) {
-
-    var id = data.id;
-    delete data.id;
-
-    return TK.makeRequest({
-      url: '/resources/' + id,
-      method: 'put',
-      data: data
-    });
-
-  };
-
-  /**
-   * Delete a resource with the given properties
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.deleteResource = function(data) {
-
-    return TK.makeRequest({
-      url: '/resources/' + data.id,
-      method: 'delete',
-      data: data
-    });
-
-  };
-
-  /**
-   * Reset password for a resource
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.resetResourcePassword = function(data) {
-
-    return TK.makeRequest({
-      url: '/resources/resetpassword',
-      method: 'post',
-      data: data
-    });
-
-  };
-
-  /**
-   * Get a specific resource's timezone
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.getResourceTimezone = function(data) {
-
-    return TK.makeRequest({
-      url: '/resources/timezone/' + data.email,
-      method: 'get'
-    });
-
-  };
-
-  /**
-   * Get users calendars that are present on Timekit (synced from providers)
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.getCalendars = function() {
-
-    return TK.makeRequest({
-      url: '/calendars',
-      method: 'get'
-    });
-
-  };
-
-  /**
-   * Get users calendars that are present on Timekit (synced from providers)
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.getCalendar = function(data) {
-
-    return TK.makeRequest({
-      url: '/calendars/' + data.id,
-      method: 'get'
-    });
-
-  };
-
-  /**
-   * Create a new calendar for current user
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.createCalendar = function(data) {
-
-    return TK.makeRequest({
-      url: '/calendars/',
-      method: 'post',
-      data: data
-    });
-
-  };
-
-  /**
-   * Update a calendar for current user
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.updateCalendar = function(data) {
-
-    var id = data.id;
-    delete data.id;
-
-    return TK.makeRequest({
-      url: '/calendars/' + id,
-      method: 'put',
-      data: data
-    });
-
-  };
-
-  /**
-   * Delete a calendar
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.deleteCalendar = function(data) {
-
-    return TK.makeRequest({
-      url: '/calendars/' + data.id,
-      method: 'delete'
-    });
-
-  };
-
-  /**
-   * Get all user's events
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.getEvents = function(data) {
-
-    return TK.makeRequest({
-      url: '/events',
-      method: 'get',
-      params: data
-    });
-
-  };
-
-  /**
-   * Get a user's event by ID
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.getEvent = function(data) {
-
-    return TK.makeRequest({
-      url: '/events/' + data.id,
-      method: 'get'
-    });
-
-  };
-
-  /**
-   * Create a new event
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.createEvent = function(data) {
-
-    return TK.makeRequest({
-      url: '/events',
-      method: 'post',
-      data: data
-    });
-
-  };
-
-  /**
-   * Update an existing event
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.updateEvent = function(data) {
-
-    var id = data.id;
-    delete data.id;
-
-    return TK.makeRequest({
-      url: '/events/' + id,
-      method: 'put',
-      data: data
-    });
-
-  };
-
-  /**
-   * Delete a user's event by ID
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.deleteEvent = function(data) {
-
-    return TK.makeRequest({
-      url: '/events/' + data.id,
-      method: 'delete'
-    });
-
-  };
-
-  /**
-   * Find mutual availability across multiple users/calendars
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.findTime = function(data) {
-
-    return TK.makeRequest({
-      url: '/findtime',
-      method: 'post',
-      data: data
-    });
-
-  };
-
-  /**
-   * Find bulk availability across multiple users/calendars
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.findTimeBulk = function(data) {
-
-    return TK.makeRequest({
-      url: '/findtime/bulk',
-      method: 'post',
-      data: data
-    });
-
-  };
-
-  /**
-   * Find team availability across multiple users/calendars
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.findTimeTeam = function(data) {
-
-    return TK.makeRequest({
-      url: '/findtime/team',
-      method: 'post',
-      data: data
-    });
-
-  };
-
-  /**
-   * Fetch availability on the new availability endpoint (successor to findtime)
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.fetchAvailability = function(data) {
-
-    return TK.makeRequest({
-      url: '/availability',
-      method: 'post',
-      data: data
-    });
-
-  };
-
-  /**
-   * Get all user auth credentials
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.getCredentials = function() {
-
-    return TK.makeRequest({
-      url: '/credentials',
-      method: 'get'
-    });
-
-  };
-
-  /**
-   * Create a new pair of auth credentials
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.createCredential = function(data) {
-
-    return TK.makeRequest({
-      url: '/credentials',
-      method: 'post',
-      data: data
-    });
-
-  };
-
-  /**
-   * Delete a pair of auth credentials
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.deleteCredential = function(data) {
-
-    return TK.makeRequest({
-      url: '/credentials/' + data.id,
-      method: 'delete'
-    });
-
-  };
-
-  /**
-   * Get all bookings
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.getBookings = function() {
-
-    return TK.makeRequest({
-      url: '/bookings',
-      method: 'get'
-    });
-
-  };
-
-  /**
-   * Get specific booking
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.getBooking = function(data) {
-
-    return TK.makeRequest({
-      url: '/bookings/' + data.id,
-      method: 'get'
-    });
-
-  };
-
-  /**
-   * Create a new booking
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.createBooking = function(data) {
-
-    return TK.makeRequest({
-      url: '/bookings',
-      method: 'post',
-      data: data
-    });
-
-  };
-
-  /**
-   * Create bookings in bulk
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.createBookingsBulk = function(data) {
-
-    return TK.makeRequest({
-      url: '/bookings/bulk',
-      method: 'post',
-      data: data
-    });
-
-  };
-
-  /**
-   * Update an existing booking
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.updateBooking = function(data) {
-
-    var id = data.id;
-    delete data.id;
-
-    var action = data.action;
-    delete data.action;
-
-    return TK.makeRequest({
-      url: '/bookings/' + id + '/' + action,
-      method: 'put',
-      data: data
-    });
-
-  };
-
-  /**
-   * Delete specific booking
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.deleteBooking = function(data) {
-    
-    var id = data.id
-    delete data.id;
-
-    return TK.makeRequest({
-      url: '/bookings/' + id,
-      method: 'delete'
-    })
-  };
-
-  /**
-   * Update an bookings in bulk
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.updateBookingsBulk = function(data) {
-
-    return TK.makeRequest({
-      url: '/bookings/bulk',
-      method: 'put',
-      data: data
-    });
-
-  };
-
-  /**
-   * Get all bookings
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.getGroupBookings = function() {
-
-    return TK.makeRequest({
-      url: '/bookings/groups',
-      method: 'get'
-    });
-
-  };
-
-  /**
-   * Get specific booking
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.getGroupBooking = function(data) {
-
-    return TK.makeRequest({
-      url: '/bookings/groups/' + data.id,
-      method: 'get'
-    });
-
-  };
-
-  /**
-   * Get all projects
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.getProjects = function() {
-
-    return TK.makeRequest({
-      url: '/projects',
-      method: 'get'
-    });
-
-  };
-
-  /**
-   * Get a project
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.getProject = function(data) {
-
-    return TK.makeRequest({
-      url: '/projects/' + data.id,
-      method: 'get'
-    });
-
-  };
-
-  /**
-   * Get a project for public use on hosted page
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.getHostedProject = function(data) {
-
-    return TK.makeRequest({
-      url: '/projects/hosted/' + data.slug,
-      method: 'get'
-    });
-
-  };
-
-  /**
-   * Get a project for embedding on website
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.getEmbedProject = function(data) {
-
-    return TK.makeRequest({
-      url: '/projects/embed/' + data.id,
-      method: 'get'
-    });
-
-  };
-
-  /**
-   * Create a new project
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.createProject = function(data) {
-
-    return TK.makeRequest({
-      url: '/projects',
-      method: 'post',
-      data: data
-    });
-
-  };
-
-  /**
-   * Update an existing project
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.updateProject = function(data) {
-
-    var id = data.id;
-    delete data.id;
-
-    return TK.makeRequest({
-      url: '/projects/' + id,
-      method: 'put',
-      data: data
-    });
-
-  };
-
-  /**
-   * Delete a project
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.deleteProject = function(data) {
-
-    return TK.makeRequest({
-      url: '/projects/' + data.id,
-      method: 'delete'
-    });
-
-  };
-
-  /**
-   * Add a resource to a project
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.addProjectResource = function(data) {
-
-    var id = data.id;
-    delete data.id;
-
-    return TK.makeRequest({
-      url: '/projects/' + id + '/resources',
-      method: 'post',
-      data: data
-    });
-
-  };
-
-  /**
-   * Get resources for a project
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.getProjectResources = function(data) {
-
-    var id = data.id;
-    delete data.id;
-
-    return TK.makeRequest({
-      url: '/projects/' + id + '/resources',
-      method: 'get'
-    });
-
-  };
-
-  /**
-   * Set resources for a project
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.setProjectResources = function(data) {
-
-    var id = data.id;
-    delete data.id;
-
-    return TK.makeRequest({
-      url: '/projects/' + id + '/resources',
-      method: 'put',
-      data: data.resources
-    });
-
-  };
-
-  /**
-   * Remove a resource from a project
-   * @type {Function}
-   * @return {Promise}
-   */
-  TK.removeProjectResource = function(data) {
-
-    return TK.makeRequest({
-      url: '/projects/' + data.id + '/resources/' + data.resourceId,
-      method: 'delete'
-    });
-
-  };
-
-  return TK;
-
-}
+	/**
+	 * Get user's connected accounts
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.getAccounts = function () {
+		return TK.makeRequest({
+			url: '/accounts',
+			method: 'get',
+		});
+	};
+
+	/**
+	 * Initiate a Google account sync
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.accountGoogleSync = function () {
+		return TK.makeRequest({
+			url: '/accounts/sync',
+			method: 'post',
+		});
+	};
+
+	/**
+	 * Initiate a Microsoft account sync
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.accountMicrosoftSync = function () {
+		return TK.makeRequest({
+			url: '/accounts/microsoft/sync',
+			method: 'post',
+		});
+	};
+
+	/**
+	 * Authenticate a user to retrive API token for future calls
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.auth = function (data) {
+		var r = TK.makeRequest({
+			data: data,
+			url: '/auth',
+			method: 'post',
+		});
+
+		r.then(function (response) {
+			var token = response.data.api_token || response.data.apiToken;
+			TK.setUser(response.data.email, token);
+		}).catch(function (error) {
+			TK.setUser('', '');
+		});
+
+		return r;
+	};
+
+	/**
+	 * Get list of apps
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.getApps = function () {
+		return TK.makeRequest({
+			url: '/apps',
+			method: 'get',
+		});
+	};
+
+	/**
+	 * Get settings for a specific app
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.getApp = function () {
+		return TK.makeRequest({
+			url: '/app',
+			method: 'get',
+		});
+	};
+
+	/**
+	 * Create a new Timekit app
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.createApp = function (data) {
+		return TK.makeRequest({
+			url: '/apps',
+			method: 'post',
+			data: data,
+		});
+	};
+
+	/**
+	 * Update settings for a specific app
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.updateApp = function (data) {
+		var slug = data.slug;
+		delete data.slug;
+
+		return TK.makeRequest({
+			url: '/apps/' + slug,
+			method: 'put',
+			data: data,
+		});
+	};
+
+	/**
+	 * Delete an app
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.deleteApp = function (data) {
+		return TK.makeRequest({
+			url: '/apps/' + data.slug,
+			method: 'delete',
+		});
+	};
+
+	/**
+	 * Fetch current resource data from server
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.getResources = function () {
+		return TK.makeRequest({
+			url: '/resources',
+			method: 'get',
+		});
+	};
+
+	/**
+	 * Fetch current resource data from server
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.getResource = function (data) {
+		return TK.makeRequest({
+			url: '/resources/' + data.id,
+			method: 'get',
+		});
+	};
+
+	/**
+	 * Create a new resource with the given properties
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.createResource = function (data) {
+		return TK.makeRequest({
+			url: '/resources',
+			method: 'post',
+			data: data,
+		});
+	};
+
+	/**
+	 * Fetch current resource data from server
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.updateResource = function (data) {
+		var id = data.id;
+		delete data.id;
+
+		return TK.makeRequest({
+			url: '/resources/' + id,
+			method: 'put',
+			data: data,
+		});
+	};
+
+	/**
+	 * Delete a resource with the given properties
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.deleteResource = function (data) {
+		return TK.makeRequest({
+			url: '/resources/' + data.id,
+			method: 'delete',
+			data: data,
+		});
+	};
+
+	/**
+	 * Reset password for a resource
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.resetResourcePassword = function (data) {
+		return TK.makeRequest({
+			url: '/resources/resetpassword',
+			method: 'post',
+			data: data,
+		});
+	};
+
+	/**
+	 * Get a specific resource's timezone
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.getResourceTimezone = function (data) {
+		return TK.makeRequest({
+			url: '/resources/timezone/' + data.email,
+			method: 'get',
+		});
+	};
+
+	/**
+	 * Get users calendars that are present on Timekit (synced from providers)
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.getCalendars = function () {
+		return TK.makeRequest({
+			url: '/calendars',
+			method: 'get',
+		});
+	};
+
+	/**
+	 * Get users calendars that are present on Timekit (synced from providers)
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.getCalendar = function (data) {
+		return TK.makeRequest({
+			url: '/calendars/' + data.id,
+			method: 'get',
+		});
+	};
+
+	/**
+	 * Create a new calendar for current user
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.createCalendar = function (data) {
+		return TK.makeRequest({
+			url: '/calendars/',
+			method: 'post',
+			data: data,
+		});
+	};
+
+	/**
+	 * Update a calendar for current user
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.updateCalendar = function (data) {
+		var id = data.id;
+		delete data.id;
+
+		return TK.makeRequest({
+			url: '/calendars/' + id,
+			method: 'put',
+			data: data,
+		});
+	};
+
+	/**
+	 * Delete a calendar
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.deleteCalendar = function (data) {
+		return TK.makeRequest({
+			url: '/calendars/' + data.id,
+			method: 'delete',
+		});
+	};
+
+	/**
+	 * Get all user's events
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.getEvents = function (data) {
+		return TK.makeRequest({
+			url: '/events',
+			method: 'get',
+			params: data,
+		});
+	};
+
+	/**
+	 * Get a user's event by ID
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.getEvent = function (data) {
+		return TK.makeRequest({
+			url: '/events/' + data.id,
+			method: 'get',
+		});
+	};
+
+	/**
+	 * Create a new event
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.createEvent = function (data) {
+		return TK.makeRequest({
+			url: '/events',
+			method: 'post',
+			data: data,
+		});
+	};
+
+	/**
+	 * Update an existing event
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.updateEvent = function (data) {
+		var id = data.id;
+		delete data.id;
+
+		return TK.makeRequest({
+			url: '/events/' + id,
+			method: 'put',
+			data: data,
+		});
+	};
+
+	/**
+	 * Delete a user's event by ID
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.deleteEvent = function (data) {
+		return TK.makeRequest({
+			url: '/events/' + data.id,
+			method: 'delete',
+		});
+	};
+
+	/**
+	 * Find mutual availability across multiple users/calendars
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.findTime = function (data) {
+		return TK.makeRequest({
+			url: '/findtime',
+			method: 'post',
+			data: data,
+		});
+	};
+
+	/**
+	 * Find bulk availability across multiple users/calendars
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.findTimeBulk = function (data) {
+		return TK.makeRequest({
+			url: '/findtime/bulk',
+			method: 'post',
+			data: data,
+		});
+	};
+
+	/**
+	 * Find team availability across multiple users/calendars
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.findTimeTeam = function (data) {
+		return TK.makeRequest({
+			url: '/findtime/team',
+			method: 'post',
+			data: data,
+		});
+	};
+
+	/**
+	 * Fetch availability on the new availability endpoint (successor to findtime)
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.fetchAvailability = function (data) {
+		return TK.makeRequest({
+			url: '/availability',
+			method: 'post',
+			data: data,
+		});
+	};
+
+	/**
+	 * Get all user auth credentials
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.getCredentials = function () {
+		return TK.makeRequest({
+			url: '/credentials',
+			method: 'get',
+		});
+	};
+
+	/**
+	 * Create a new pair of auth credentials
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.createCredential = function (data) {
+		return TK.makeRequest({
+			url: '/credentials',
+			method: 'post',
+			data: data,
+		});
+	};
+
+	/**
+	 * Delete a pair of auth credentials
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.deleteCredential = function (data) {
+		return TK.makeRequest({
+			url: '/credentials/' + data.id,
+			method: 'delete',
+		});
+	};
+
+	/**
+	 * Get all bookings
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.getBookings = function () {
+		return TK.makeRequest({
+			url: '/bookings',
+			method: 'get',
+		});
+	};
+
+	/**
+	 * Get specific booking
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.getBooking = function (data) {
+		return TK.makeRequest({
+			url: '/bookings/' + data.id,
+			method: 'get',
+		});
+	};
+
+	/**
+	 * Create a new booking
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.createBooking = function (data) {
+		return TK.makeRequest({
+			url: '/bookings',
+			method: 'post',
+			data: data,
+		});
+	};
+
+	/**
+	 * Create bookings in bulk
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.createBookingsBulk = function (data) {
+		return TK.makeRequest({
+			url: '/bookings/bulk',
+			method: 'post',
+			data: data,
+		});
+	};
+
+	/**
+	 * Update an existing booking
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.updateBooking = function (data) {
+		var id = data.id;
+		delete data.id;
+
+		var action = data.action;
+		delete data.action;
+
+		return TK.makeRequest({
+			url: '/bookings/' + id + '/' + action,
+			method: 'put',
+			data: data,
+		});
+	};
+
+	/**
+	 * Delete specific booking
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.deleteBooking = function (data) {
+		var id = data.id;
+		delete data.id;
+
+		return TK.makeRequest({
+			url: '/bookings/' + id,
+			method: 'delete',
+		});
+	};
+
+	/**
+	 * Update an bookings in bulk
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.updateBookingsBulk = function (data) {
+		return TK.makeRequest({
+			url: '/bookings/bulk',
+			method: 'put',
+			data: data,
+		});
+	};
+
+	/**
+	 * Get all bookings
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.getGroupBookings = function () {
+		return TK.makeRequest({
+			url: '/bookings/groups',
+			method: 'get',
+		});
+	};
+
+	/**
+	 * Get specific booking
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.getGroupBooking = function (data) {
+		return TK.makeRequest({
+			url: '/bookings/groups/' + data.id,
+			method: 'get',
+		});
+	};
+
+	/**
+	 * Get all projects
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.getProjects = function () {
+		return TK.makeRequest({
+			url: '/projects',
+			method: 'get',
+		});
+	};
+
+	/**
+	 * Get a project
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.getProject = function (data) {
+		return TK.makeRequest({
+			url: '/projects/' + data.id,
+			method: 'get',
+		});
+	};
+
+	/**
+	 * Get a project for public use on hosted page
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.getHostedProject = function (data) {
+		return TK.makeRequest({
+			url: '/projects/hosted/' + data.slug,
+			method: 'get',
+		});
+	};
+
+	/**
+	 * Get a project for embedding on website
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.getEmbedProject = function (data) {
+		return TK.makeRequest({
+			url: '/projects/embed/' + data.id,
+			method: 'get',
+		});
+	};
+
+	/**
+	 * Create a new project
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.createProject = function (data) {
+		return TK.makeRequest({
+			url: '/projects',
+			method: 'post',
+			data: data,
+		});
+	};
+
+	/**
+	 * Update an existing project
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.updateProject = function (data) {
+		var id = data.id;
+		delete data.id;
+
+		return TK.makeRequest({
+			url: '/projects/' + id,
+			method: 'put',
+			data: data,
+		});
+	};
+
+	/**
+	 * Delete a project
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.deleteProject = function (data) {
+		return TK.makeRequest({
+			url: '/projects/' + data.id,
+			method: 'delete',
+		});
+	};
+
+	/**
+	 * Add a resource to a project
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.addProjectResource = function (data) {
+		var id = data.id;
+		delete data.id;
+
+		return TK.makeRequest({
+			url: '/projects/' + id + '/resources',
+			method: 'post',
+			data: data,
+		});
+	};
+
+	/**
+	 * Get resources for a project
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.getProjectResources = function (data) {
+		var id = data.id;
+		delete data.id;
+
+		return TK.makeRequest({
+			url: '/projects/' + id + '/resources',
+			method: 'get',
+		});
+	};
+
+	/**
+	 * Set resources for a project
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.setProjectResources = function (data) {
+		var id = data.id;
+		delete data.id;
+
+		return TK.makeRequest({
+			url: '/projects/' + id + '/resources',
+			method: 'put',
+			data: data.resources,
+		});
+	};
+
+	/**
+	 * Remove a resource from a project
+	 * @type {Function}
+	 * @return {Promise}
+	 */
+	TK.removeProjectResource = function (data) {
+		return TK.makeRequest({
+			url: '/projects/' + data.id + '/resources/' + data.resourceId,
+			method: 'delete',
+		});
+	};
+
+	return TK;
+};
 
 
 /***/ }),
@@ -29274,298 +29209,322 @@ var endpoints = __webpack_require__(/*! ./endpoints */ "./node_modules/timekit-s
 var deprecatedEndpoints = __webpack_require__(/*! ./deprecated_endpoints */ "./node_modules/timekit-sdk/src/deprecated_endpoints.js");
 
 function Timekit() {
+	/**
+	 * Auth variables for login gated API methods
+	 * @type {String}
+	 */
+	var includes = [];
+	var headers = {};
+	var nextPayload = {};
 
-  /**
-   * Auth variables for login gated API methods
-   * @type {String}
-   */
-  var includes = [];
-  var headers = {};
-  var nextPayload = {};
+	/**
+	 * Default config
+	 * @type {Object}
+	 */
+	var config = {
+		app: '',
+		apiBaseUrl: 'https://api.timekit.io/',
+		apiVersion: 'v2',
+		convertResponseToCamelcase: false,
+		convertRequestToSnakecase: true,
+		autoFlattenResponse: true,
+		resourceEmail: null,
+		resourceKey: null,
+		appKey: null,
+	};
 
-  /**
-   * Default config
-   * @type {Object}
-   */
-  var config = {
-    app: '',
-    apiBaseUrl: 'https://api.timekit.io/',
-    apiVersion: 'v2',
-    convertResponseToCamelcase: false,
-    convertRequestToSnakecase: true,
-    autoFlattenResponse: true,
-    resourceEmail: null,
-    resourceKey: null,
-    appKey: null,
-  };
+	/**
+	 * Root Object that holds methods to expose for API consumption
+	 * @type {Object}
+	 */
+	var TK = {};
 
-  /**
-   * Root Object that holds methods to expose for API consumption
-   * @type {Object}
-   */
-  var TK = {};
+	/**
+	 * Prepare and make HTTP request to API
+	 * @type {Object}
+	 * @return {Promise}
+	 */
+	TK.makeRequest = function (args) {
+		// Handle chained payload data if applicable
+		args = utils.mergeNextPayload(args, nextPayload);
+		nextPayload = {};
 
-  /**
-   * Prepare and make HTTP request to API
-   * @type {Object}
-   * @return {Promise}
-   */
-  TK.makeRequest = function(args) {
+		// construct URL with base, version and endpoint
+		args.url = utils.buildUrl(args.url, config);
 
-    // Handle chained payload data if applicable
-    args = utils.mergeNextPayload(args, nextPayload)
-    nextPayload = {};
+		// add http headers if applicable
+		args.headers = args.headers || headers || {};
 
-    // construct URL with base, version and endpoint
-    args.url = utils.buildUrl(args.url, config);
+		if (config.headers) {
+			args.headers = merge(config.headers, args.headers);
+		}
+		if (!args.headers['Timekit-App'] && config.app) {
+			args.headers['Timekit-App'] = config.app;
+		}
+		if (config.inputTimestampFormat) {
+			args.headers['Timekit-InputTimestampFormat'] =
+				config.inputTimestampFormat;
+		}
+		if (config.outputTimestampFormat) {
+			args.headers['Timekit-OutputTimestampFormat'] =
+				config.outputTimestampFormat;
+		}
+		if (config.timezone) {
+			args.headers['Timekit-Timezone'] = config.timezone;
+		}
 
-    // add http headers if applicable
-    args.headers = args.headers || headers || {};
+		// add auth headers (personal token) if not being overwritten by request/asUser
+		if (
+			!args.headers['Authorization'] &&
+			config.resourceEmail &&
+			config.resourceKey
+		) {
+			args.headers['Authorization'] =
+				'Basic ' +
+				utils.encodeAuthHeader(config.resourceEmail, config.resourceKey);
+		}
 
-    if (config.headers) {
-      args.headers = merge(config.headers, args.headers)
-    }
-    if (!args.headers['Timekit-App'] && config.app) {
-      args.headers['Timekit-App'] = config.app;
-    }
-    if (config.inputTimestampFormat) {
-      args.headers['Timekit-InputTimestampFormat'] = config.inputTimestampFormat;
-    }
-    if (config.outputTimestampFormat) {
-      args.headers['Timekit-OutputTimestampFormat'] = config.outputTimestampFormat;
-    }
-    if (config.timezone) {
-      args.headers['Timekit-Timezone'] = config.timezone;
-    }
+		// add auth headers (app token)
+		if (!args.headers['Authorization'] && config.appKey) {
+			args.headers['Authorization'] =
+				'Basic ' + utils.encodeAuthHeader('', config.appKey);
+		}
 
-    // add auth headers (personal token) if not being overwritten by request/asUser
-    if (!args.headers['Authorization'] && config.resourceEmail && config.resourceKey) {
-      args.headers['Authorization'] = 'Basic ' + utils.encodeAuthHeader(config.resourceEmail, config.resourceKey);
-    }
+		// reset headers
+		if (Object.keys(headers).length > 0) {
+			headers = {};
+		}
 
-    // add auth headers (app token)
-    if (!args.headers['Authorization'] && config.appKey) {
-      args.headers['Authorization'] = 'Basic ' + utils.encodeAuthHeader('', config.appKey);
-    }
+		// add dynamic includes if applicable
+		if (includes && includes.length > 0) {
+			if (args.params === undefined) {
+				args.params = {};
+			}
+			args.params.include = includes.join();
+			includes = [];
+		}
 
-    // reset headers
-    if (Object.keys(headers).length > 0) {
-      headers = {};
-    }
+		// decamelize keys in data objects
+		if (args.data && config.convertRequestToSnakecase) {
+			args.data = humps.decamelizeKeys(args.data);
+		}
 
-    // add dynamic includes if applicable
-    if (includes && includes.length > 0) {
-      if (args.params === undefined) { args.params = {}; }
-      args.params.include = includes.join();
-      includes = [];
-    }
+		// register response interceptor for data manipulation
+		var interceptor = axios.interceptors.response.use(
+			function (response) {
+				if (response.data && response.data.data) {
+					if (config.autoFlattenResponse) {
+						response = utils.copyResponseMetaData(response);
+					}
+					if (config.convertResponseToCamelcase) {
+						response.data = humps.camelizeKeys(response.data);
+					}
+				}
+				return response;
+			},
+			function (error) {
+				if (error.response) {
+					return Promise.reject(error.response);
+				} else if (error.request) {
+					return Promise.reject(error.request);
+				}
+				return Promise.reject(error);
+			}
+		);
 
-    // decamelize keys in data objects
-    if (args.data && config.convertRequestToSnakecase) { args.data = humps.decamelizeKeys(args.data); }
+		// execute request!
+		var request = axios(args);
 
-    // register response interceptor for data manipulation
-    var interceptor = axios.interceptors.response.use(function (response) {
-      if (response.data && response.data.data) {
-        if (config.autoFlattenResponse) {
-          response = utils.copyResponseMetaData(response)
-        }
-        if (config.convertResponseToCamelcase) {
-          response.data = humps.camelizeKeys(response.data);
-        }
-      }
-      return response;
-    }, function (error) {
-      return Promise.reject(error);
-    });
+		// deregister response interceptor
+		axios.interceptors.response.eject(interceptor);
 
-    // execute request!
-    var request = axios(args);
+		return request;
+	};
 
-    // deregister response interceptor
-    axios.interceptors.response.eject(interceptor);
+	/**
+	 * Overwrite default config with supplied settings
+	 * @type {Function}
+	 * @return {Object}
+	 */
+	TK.configure = function (custom) {
+		for (var attr in custom) {
+			config[attr] = custom[attr];
+		}
+		return config;
+	};
 
-    return request;
-  };
+	/**
+	 * Returns the current config
+	 * @type {Function}
+	 * @return {Object}
+	 */
+	TK.getConfig = function () {
+		return config;
+	};
 
-  /**
-   * Overwrite default config with supplied settings
-   * @type {Function}
-   * @return {Object}
-   */
-  TK.configure = function(custom) {
-    for (var attr in custom) { config[attr] = custom[attr]; }
-    return config;
-  };
+	/**
+	 * Set the active user manually (happens automatically on timekit.auth())
+	 * @type {Function}
+	 */
+	TK.setUser = function (email, apiKey) {
+		config.resourceEmail = email;
+		config.resourceKey = apiKey;
+	};
 
-  /**
-   * Returns the current config
-   * @type {Function}
-   * @return {Object}
-   */
-  TK.getConfig = function() {
-    return config;
-  };
+	/**
+	 * Returns the current active user
+	 * @type {Function}
+	 * @return {Object}
+	 */
+	TK.getUser = function () {
+		return {
+			email: config.resourceEmail,
+			apiToken: config.resourceKey,
+		};
+	};
 
-  /**
-   * Set the active user manually (happens automatically on timekit.auth())
-   * @type {Function}
-   */
-  TK.setUser = function(email, apiKey) {
-    config.resourceEmail = email;
-    config.resourceKey = apiKey;
-  };
+	/**
+	 * Set app token (happens automatically on timekit.auth())
+	 * @type {Function}
+	 */
+	TK.setAppKey = function (apiKey) {
+		config.appKey = apiKey;
+	};
 
-  /**
-   * Returns the current active user
-   * @type {Function}
-   * @return {Object}
-   */
-  TK.getUser = function() {
-    return {
-      email: config.resourceEmail,
-      apiToken: config.resourceKey
-    };
-  };
+	/**
+	 * Returns the app token
+	 * @type {Function}
+	 * @return {Object}
+	 */
+	TK.getAppKey = function () {
+		return config.appKey;
+	};
 
-  /**
-   * Set app token (happens automatically on timekit.auth())
-   * @type {Function}
-   */
-  TK.setAppKey = function(apiKey) {
-    config.appKey = apiKey;
-  };
+	/**
+	 * Set the active user temporarily for the next request (fluent/chainable return)
+	 * @type {Function}
+	 */
+	TK.asUser = function (email, apiKey) {
+		headers['Authorization'] = 'Basic ' + utils.encodeAuthHeader(email, apiKey);
+		return this;
+	};
 
-  /**
-   * Returns the app token
-   * @type {Function}
-   * @return {Object}
-   */
-  TK.getAppKey = function() {
-    return config.appKey
-  };
+	/**
+	 * Set the timekit app slug temporarily for the next request (fluent/chainable return)
+	 * @type {Function}
+	 */
+	TK.asApp = function (slug) {
+		headers['Timekit-App'] = slug;
+		return this;
+	};
 
-  /**
-   * Set the active user temporarily for the next request (fluent/chainable return)
-   * @type {Function}
-   */
-  TK.asUser = function(email, apiKey) {
-    headers['Authorization'] = 'Basic ' + utils.encodeAuthHeader(email, apiKey);
-    return this;
-  };
+	/**
+	 * Add supplied dynamic includes to the next request (fluent/chainable return)
+	 * @type {Function}
+	 * @return {Object}
+	 */
+	TK.include = function (arg) {
+		if (Array.isArray(arg)) includes = arg;
+		else includes = Array.prototype.slice.call(arguments);
+		return this;
+	};
 
-  /**
-  * Set the timekit app slug temporarily for the next request (fluent/chainable return)
-  * @type {Function}
-  */
-  TK.asApp = function(slug) {
-    headers['Timekit-App'] = slug;
-    return this;
-  };
+	/**
+	 * Add supplied headers to the next request (fluent/chainable return)
+	 * @type {Function}
+	 * @return {Object}
+	 */
+	TK.headers = function (data) {
+		headers = merge(headers, data);
+		return this;
+	};
 
-  /**
-   * Add supplied dynamic includes to the next request (fluent/chainable return)
-   * @type {Function}
-   * @return {Object}
-   */
-  TK.include = function(arg) {
-    if (Array.isArray(arg)) includes = arg
-    else includes = Array.prototype.slice.call(arguments);
-    return this;
-  };
+	/**
+	 * Add supplied payload to the next request only
+	 * @type {Function}
+	 * @return {Object}
+	 */
+	TK.carry = function (data) {
+		nextPayload = merge(nextPayload, data);
+		return this;
+	};
 
-  /**
-   * Add supplied headers to the next request (fluent/chainable return)
-   * @type {Function}
-   * @return {Object}
-   */
-  TK.headers = function(data) {
-    headers = merge(headers, data)
-    return this;
-  };
+	/**
+	 * Return a new instance of the SDK
+	 * @type {Function}
+	 * @return {Object}
+	 */
+	TK.newInstance = function () {
+		return new Timekit();
+	};
 
-  /**
-   * Add supplied payload to the next request only
-   * @type {Function}
-   * @return {Object}
-   */
-  TK.carry = function(data) {
-    nextPayload = merge(nextPayload, data)
-    return this;
-  };
+	/**
+	 * Redirect to the Google signup/login page
+	 * Kept this in this file (not endpoints.js) because of internal dependencies to headers, config etc.
+	 * @type {Function}
+	 * @return {String}
+	 */
+	TK.accountGoogleSignup = function (data, shouldAutoRedirect) {
+		var app = config.app;
 
-  /**
-   * Return a new instance of the SDK
-   * @type {Function}
-   * @return {Object}
-   */
-  TK.newInstance = function() {
-    return new Timekit();
-  };
+		// If app header exists (using .asApp() function), use that
+		if (headers['Timekit-App']) {
+			app = headers['Timekit-App'];
+		}
 
-  /**
-   * Redirect to the Google signup/login page
-   * Kept this in this file (not endpoints.js) because of internal dependencies to headers, config etc.
-   * @type {Function}
-   * @return {String}
-   */
-  TK.accountGoogleSignup = function(data, shouldAutoRedirect) {
+		var baseUrl = utils.buildUrl('/accounts/google/signup', config);
+		var finalUrl =
+			baseUrl +
+			'?Timekit-App=' +
+			app +
+			(data && data.callback ? '&callback=' + data.callback : '');
 
-    var app = config.app;
+		if (shouldAutoRedirect && window) {
+			window.location.href = finalUrl;
+		} else {
+			return finalUrl;
+		}
+	};
 
-    // If app header exists (using .asApp() function), use that
-    if (headers['Timekit-App']) {
-      app = headers['Timekit-App'];
-    }
+	/**
+	 * Redirect to the Microsoft signup/login page
+	 * Kept this in this file (not endpoints.js) because of internal dependencies to headers, config etc.
+	 * @type {Function}
+	 * @return {String}
+	 */
+	TK.accountMicrosoftSignup = function (data, shouldAutoRedirect) {
+		var app = config.app;
 
-    var baseUrl = utils.buildUrl('/accounts/google/signup', config);
-    var finalUrl = baseUrl + '?Timekit-App=' + app + (data && data.callback ? '&callback=' + data.callback : '')
+		// If app header exists (using .asApp() function), use that
+		if (headers['Timekit-App']) {
+			app = headers['Timekit-App'];
+		}
 
-    if(shouldAutoRedirect && window) {
-      window.location.href = finalUrl;
-    } else {
-      return finalUrl;
-    }
+		var baseUrl = utils.buildUrl('/accounts/microsoft/signup', config);
+		var finalUrl =
+			baseUrl +
+			'?Timekit-App=' +
+			app +
+			(data && data.callback ? '&callback=' + data.callback : '');
 
-  };
+		if (shouldAutoRedirect && window) {
+			window.location.href = finalUrl;
+		} else {
+			return finalUrl;
+		}
+	};
 
-  /**
-   * Redirect to the Microsoft signup/login page
-   * Kept this in this file (not endpoints.js) because of internal dependencies to headers, config etc.
-   * @type {Function}
-   * @return {String}
-   */
-  TK.accountMicrosoftSignup = function(data, shouldAutoRedirect) {
+	/**
+	 * Import endpoint defintions
+	 */
+	TK = endpoints(TK);
 
-    var app = config.app;
+	/**
+	 * Import deprecated endpoint defintions
+	 */
+	TK = deprecatedEndpoints(TK);
 
-    // If app header exists (using .asApp() function), use that
-    if (headers['Timekit-App']) {
-      app = headers['Timekit-App'];
-    }
-
-    var baseUrl = utils.buildUrl('/accounts/microsoft/signup', config);
-    var finalUrl = baseUrl + '?Timekit-App=' + app + (data && data.callback ? '&callback=' + data.callback : '')
-
-    if(shouldAutoRedirect && window) {
-      window.location.href = finalUrl;
-    } else {
-      return finalUrl;
-    }
-
-  };
-
-  /**
-   * Import endpoint defintions
-   */
-  TK = endpoints(TK)
-
-  /**
-   * Import deprecated endpoint defintions
-   */
-  TK = deprecatedEndpoints(TK)
-
-  return TK;
-
+	return TK;
 }
 
 module.exports = new Timekit();
@@ -29585,62 +29544,62 @@ var base64 = __webpack_require__(/*! base-64 */ "./node_modules/base-64/base64.j
 var merge = __webpack_require__(/*! deepmerge */ "./node_modules/deepmerge/dist/cjs.js");
 
 module.exports = {
+	/**
+	 * Generate base64 string for basic auth purposes
+	 * @type {Function}
+	 * @return {String}
+	 */
+	encodeAuthHeader: function (email, token) {
+		return base64.encode(email + ':' + token);
+	},
 
-  /**
-   * Generate base64 string for basic auth purposes
-   * @type {Function}
-   * @return {String}
-   */
-  encodeAuthHeader: function(email, token) {
-    return base64.encode(email + ':' + token);
-  },
+	/**
+	 * Retrieve metadata from response.data object and save it on response.metaData instead
+	 * @type {Function}
+	 * @return {String}
+	 */
+	copyResponseMetaData: function (response) {
+		if (Object.keys(response.data).length > 1) {
+			response.metaData = {};
+			Object.keys(response.data).forEach(function (key) {
+				if (key !== 'data') response.metaData[key] = response.data[key];
+			});
+		}
+		if (response.data.data) {
+			response.data = response.data.data;
+		}
+		return response;
+	},
 
-  /**
-   * Retrieve metadata from response.data object and save it on response.metaData instead
-   * @type {Function}
-   * @return {String}
-   */
-  copyResponseMetaData: function(response) {
-    if (Object.keys(response.data).length > 1) {
-      response.metaData = {}
-      Object.keys(response.data).forEach(function(key) {
-        if (key !== 'data') response.metaData[key] = response.data[key]
-      })
-    }
-    response.data = response.data.data;
-    return response
-  },
+	/**
+	 * Add the carried payload for next request to the actual payload
+	 * @type {Function}
+	 * @return {String}
+	 */
+	mergeNextPayload: function (args, nextPayload) {
+		if (Object.keys(nextPayload).length === 0) return args;
+		// Merge potential query string params manually
+		if (nextPayload.params && args.params) {
+			var nextParams = nextPayload.params;
+			for (var param in nextParams) {
+				if (typeof args.params[param] !== 'undefined') {
+					args.params[param] += ';' + nextParams[param];
+				}
+			}
+		}
+		args = merge(nextPayload, args);
+		return args;
+	},
 
-  /**
-   * Add the carried payload for next request to the actual payload
-   * @type {Function}
-   * @return {String}
-   */
-  mergeNextPayload: function (args, nextPayload) {
-    if (Object.keys(nextPayload).length === 0) return args
-    // Merge potential query string params manually
-    if (nextPayload.params && args.params) {
-      var nextParams = nextPayload.params
-      for (var param in nextParams) {
-        if (typeof args.params[param] !== 'undefined') {
-          args.params[param] += (';' + nextParams[param])
-        }
-      }
-    }
-    args = merge(nextPayload, args)
-    return args
-  },
-
-  /**
-   * Build absolute URL for API call
-   * @type {Function}
-   * @return {String}
-   */
-  buildUrl: function(endpoint, config) {
-    return config.apiBaseUrl + config.apiVersion + endpoint;
-  }
-
-}
+	/**
+	 * Build absolute URL for API call
+	 * @type {Function}
+	 * @return {String}
+	 */
+	buildUrl: function (endpoint, config) {
+		return config.apiBaseUrl + config.apiVersion + endpoint;
+	},
+};
 
 
 /***/ }),

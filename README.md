@@ -23,3 +23,20 @@ See [Issues](https://github.com/timekit-io/booking-js/issues) for feature reques
 ## License attributions
 
 The `json-schema` v0.2.3 package is used pursuant to the BSD-3-Clause license
+
+
+## How to publish changes to npm
+make sure you upgrade version number in package.json file follow sementic versioning
+- run ```yarn test``
+- test manually to make sure widget works fine
+- merge your changes to master and pull master branch locally
+- make sure your changes are uptodate and clean
+- run following commands
+
+```
+# login as tulipnpm user
+yarn login
+
+# commit and publish new changes
+yarn publish
+```

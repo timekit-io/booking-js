@@ -29993,14 +29993,11 @@ var RenderDep     = __webpack_require__(/*! ./render */ "./src/render.js");
 function Initialize() {
 
   // SDK instance
-  var sdk     = timekitSdk.newInstance({
-    apiBaseUrl:"https://api-localhost.timekit.io/"
-  });
-
+  var sdk     = timekitSdk.newInstance();
   var config  = new ConfigDep();
-  var getConfig = config.retrieve;
   var utils   = new UtilsDep({ config: config });
   var render  = new RenderDep({ config: config, utils: utils, sdk: sdk });
+  var getConfig = config.retrieve;
 
   // Initilization method
   var init = function(suppliedConfig, global) {

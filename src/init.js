@@ -11,10 +11,7 @@ var RenderDep     = require('./render');
 function Initialize() {
 
   // SDK instance
-  var sdk     = timekitSdk.newInstance({
-    apiBaseUrl:"https://api-localhost.timekit.io/"
-  });
-
+  var sdk     = timekitSdk.newInstance();
   var config  = new ConfigDep();
   var getConfig = config.retrieve;
   var utils   = new UtilsDep({ config: config });

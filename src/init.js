@@ -26,6 +26,7 @@ function Initialize() {
 
     // Make sure that SDK is ready and debug flag is checked early
     var localConfig = config.setDefaults(suppliedConfig || {});
+
     config.update(localConfig);
     utils.logDebug(['Version:', getVersion()]);
     utils.logDebug(['Supplied config:', suppliedConfig]);

@@ -11,14 +11,11 @@ var RenderDep     = require('./render');
 function Initialize() {
 
   // SDK instance
-  var sdk     = timekitSdk.newInstance({
-    apiBaseUrl:"https://api-localhost.timekit.io/"
-  });
-
+  var sdk     = timekitSdk.newInstance();
   var config  = new ConfigDep();
-  var getConfig = config.retrieve;
   var utils   = new UtilsDep({ config: config });
   var render  = new RenderDep({ config: config, utils: utils, sdk: sdk });
+  var getConfig = config.retrieve;
 
   // Initilization method
   var init = function(suppliedConfig, global) {
@@ -29,7 +26,6 @@ function Initialize() {
 
     // Make sure that SDK is ready and debug flag is checked early
     var localConfig = config.setDefaults(suppliedConfig || {});
-
     config.update(localConfig);
     utils.logDebug(['Version:', getVersion()]);
     utils.logDebug(['Supplied config:', suppliedConfig]);

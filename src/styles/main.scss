@@ -325,19 +325,20 @@
 
   &-form {
     width: 350px;
-    margin: 0 auto;
-    text-align: left;
     position: relative;
+    margin: 0 auto;
+    text-align: center;
 
     .is-small & {
       width: 90%;
     }
 
     &-box {
-      overflow: hidden;
       position: relative;
-      line-height: normal;
       box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      background-color: white;
+      line-height: 0;
     }
 
     &-success-message {
@@ -384,34 +385,38 @@
       position: relative;
     }
 
+    &-field--dirty &-label {
+      opacity: 1;
+      top: 20px;
+      font-size: 11px;
+      color: $primaryColor;
+    }
+
     &-field--dirty &-input {
+      padding: 25px 25px 5px;
+
       &:invalid {
         box-shadow: inset 0px 0px 1px 1px $errorColor;
       }
     }
 
-    &-label {
-      border: 0;
-      outline: none;
-      display: flex;    
-      font-size: 11px;
-      text-align: left;
-      margin-top: 10px;
-      margin-bottom: 5px;
-      color: $primaryColor;
-      flex-direction: column;
+    &-field--dirty &-input--textarea {
+      padding: 30px 25px 10px;
     }
 
-    &:first-child {
-      &-label {
-        margin-top: 0;
-      }
+    &-label {
+      position: absolute;
+      top: 30px;
+      left: 25px;
+      color: $textColor;
+      opacity: 0;
+      font-size: 12px;
+      transition: opacity .2s ease, font-size .2s ease, color .2s ease, top .2s ease;
     }
 
     &-input {
       @include formInput;
-      padding: 10px 20px;
-
+  
       &:read-only {
         cursor: not-allowed;
         font-style: italic;
@@ -430,11 +435,11 @@
     }
 
     &-label--checkbox {
+      padding: 25px 25px 25px 50px;
       display: block;
-      font-size: 1em;
-      margin-left: 35px;
-      color: $textLightColor;
       font-family: $fontFamily;
+      color: $textLightColor;
+      font-size: 1em;
       border-bottom: 1px solid $borderColor;
 
       &:disabled {
@@ -449,8 +454,8 @@
 
     &-input--checkbox[type=checkbox] {
       position: absolute;
-      top: 10px;
-      left: 10px;
+      top: 19px;
+      left: 25px;
       width: auto;
       margin: 0;
     }
@@ -458,6 +463,7 @@
     // Textarea field
 
     &-input--textarea {
+      padding: 15px 25px 25px;
       overflow: auto;
     }
 
@@ -476,7 +482,7 @@
 
     &-input--select {
       @include formInput;
-      padding: 5px 10px;
+      padding: 25px 25px 5px;
       appearance: none;
       border-radius: 0;
       background: transparent;
@@ -485,7 +491,7 @@
 
     &-input-arrow--select {
       position: absolute;
-      top: 45px;
+      top: 31px;
       right: 25px;
       width: 12px;
       height: 7.42px;

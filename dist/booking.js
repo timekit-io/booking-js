@@ -30162,7 +30162,7 @@ function Initialize() {
 
   // Get library version
   var getVersion = function() {
-    return "2.7.2";
+    return "2.7.3";
   };
 
   var destroy = function() {

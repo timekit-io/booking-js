@@ -1,5 +1,5 @@
 {
-	"version": "2.7.2",
+	"version": "2.7.3",
 	"name": "timekit-booking",
 	"description": "Make a beautiful embeddable booking widget in minutes",
 	"main": "dist/booking.min.js",

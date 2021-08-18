@@ -30834,6 +30834,15 @@ function InitRender(deps) {
 			else field.removeClass('bookingjs-form-field--dirty');
 		});
 
+		var requiredCheckboxes = $(form).find('.bookingjs-form-field--checkbox-multi :checkbox[required]');
+		requiredCheckboxes.change(function() {
+			if(requiredCheckboxes.is(':checked')) {
+				requiredCheckboxes.removeAttr('required');
+			} else {
+				requiredCheckboxes.attr('required', 'required');
+			}
+		});
+		
 		form.submit(function (e) {
 			submitBookingForm(this, e, eventData);
 		});

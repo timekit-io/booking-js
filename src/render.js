@@ -798,12 +798,14 @@ function InitRender(deps) {
 					formData[key] = !!formData[key];
 				}
 			};
-			args.customer[key] = formData[key];
-			args.description +=
-				(getConfig().customer_fields[key].title || key) +
-				': ' +
-				formData[key] +
-				'\n';
+			if (field.format !== 'label') {
+				args.customer[key] = formData[key];
+				args.description +=
+					(getConfig().customer_fields[key].title || key) +
+					': ' +
+					formData[key] +
+					'\n';
+			}
 		});
 
 		if (

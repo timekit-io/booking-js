@@ -431,8 +431,9 @@
 
     &-label--checkbox {
       display: block;
+      padding: 10px;
       font-size: 1em;
-      margin-left: 35px;
+      margin-left: 28px;
       color: $textLightColor;
       font-family: $fontFamily;
       border-bottom: 1px solid $borderColor;
@@ -440,19 +441,31 @@
       &:disabled {
         cursor: not-allowed;
         font-style: italic;
-
         &:focus {
           box-shadow: inset 0px 0px 1px 1px #D8D8D8;
         }
       }
+
+      input[type=checkbox] {
+        position: absolute;
+        left: 3px;
+        top: 9px;
+      }
     }
 
-    &-input--checkbox[type=checkbox] {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      width: auto;
-      margin: 0;
+    &-field--checkbox-multi {
+      margin-bottom: 5px;
+      label {
+        position: relative;
+        margin-left: 0;
+        padding: 2px 0;
+        border: 0;
+
+        input[type=checkbox] {
+          position: initial;
+          margin-right: 10px;
+        }
+      }
     }
 
     // Textarea field
@@ -485,7 +498,7 @@
 
     &-input-arrow--select {
       position: absolute;
-      top: 45px;
+      top: 34px;
       right: 25px;
       width: 12px;
       height: 7.42px;

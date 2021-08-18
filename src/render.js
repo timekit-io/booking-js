@@ -489,19 +489,33 @@ function InitRender(deps) {
 		return message;
 	};
 
+	var parseHtmlTags = function (field) {
+		if (field.format === 'label') {
+			field.title = field.title.replace(/\(\((.*?)\)\)/g, function(match, token) {
+				var linkTag = token.split(',');
+				return '<a target="_blank" href="' + linkTag[1].trim() + '">' + linkTag[0].trim() + '</a>';
+			});
+		}
+		return field;
+	};
+
 	// Render customer fields
 	var renderCustomerFields = function () {
 		var textTemplate = require('./templates/fields/text.html');
-		var textareaTemplate = require('./templates/fields/textarea.html');
+		var labelTemplate = require('./templates/fields/label.html');
 		var selectTemplate = require('./templates/fields/select.html');
+		var textareaTemplate = require('./templates/fields/textarea.html');
 		var checkboxTemplate = require('./templates/fields/checkbox.html');
+		var multiCheckboxTemplate = require('./templates/fields/multi-checkbox.html');
 
 		var fieldsTarget = [];
 		$.each(getConfig().customer_fields, function (key, field) {
 			var tmpl = textTemplate;
-			if (field.format === 'textarea') tmpl = textareaTemplate;
+			if (field.format === 'label') tmpl = labelTemplate;
 			if (field.format === 'select') tmpl = selectTemplate;
+			if (field.format === 'textarea') tmpl = textareaTemplate;
 			if (field.format === 'checkbox') tmpl = checkboxTemplate;
+			if (field.format === 'checkbox' && field.enum) tmpl = multiCheckboxTemplate;
 			if (!field.format) field.format = 'text';
 			if (key === 'email') field.format = 'email';
 			var data = $.extend(
@@ -509,7 +523,7 @@ function InitRender(deps) {
 					key: key,
 					arrowDownIcon: require('!svg-inline-loader!./assets/arrow-down-icon.svg'),
 				},
-				field
+				parseHtmlTags(field)
 			);
 			var fieldTarget = $(tmpl.render(data));
 			fieldsTarget.push(fieldTarget);
@@ -581,6 +595,15 @@ function InitRender(deps) {
 			else field.removeClass('bookingjs-form-field--dirty');
 		});
 
+		var requiredCheckboxes = $(form).find('.bookingjs-form-field--checkbox-multi :checkbox[required]');
+		requiredCheckboxes.change(function() {
+			if(requiredCheckboxes.is(':checked')) {
+				requiredCheckboxes.removeAttr('required');
+			} else {
+				requiredCheckboxes.attr('required', 'required');
+			}
+		});
+		
 		form.submit(function (e) {
 			submitBookingForm(this, e, eventData);
 		});
@@ -657,11 +680,19 @@ function InitRender(deps) {
 
 		var formData = {};
 		$.each(formElement.serializeArray(), function (i, field) {
-			formData[field.name] = field.value;
+			var fieldKey = field.name;
+			if (!(fieldKey in formData)) {
+				formData[fieldKey] = field.value;
+			} else {
+				if (!Array.isArray(formData[fieldKey])) {
+					formData[fieldKey] = [formData[fieldKey], field.value];
+				} else {
+					formData[fieldKey].push(field.value);
+				}
+			}
 		});
 
 		formElement.addClass('loading');
-
 		utils.doCallback('submitBookingForm', formData);
 
 		// Call create event endpoint
@@ -762,13 +793,19 @@ function InitRender(deps) {
 		// Save custom fields in meta object
 		$.each(getConfig().customer_fields, function (key, field) {
 			if ($.inArray(key, nativeFields) >= 0) return;
-			if (field.format === 'checkbox') formData[key] = !!formData[key];
-			args.customer[key] = formData[key];
-			args.description +=
-				(getConfig().customer_fields[key].title || key) +
-				': ' +
-				formData[key] +
-				'\n';
+			if (field.format === 'checkbox') {
+				if (!Array.isArray(formData[key])) {
+					formData[key] = !!formData[key];
+				}
+			};
+			if (field.format !== 'label') {
+				args.customer[key] = formData[key];
+				args.description +=
+					(getConfig().customer_fields[key].title || key) +
+					': ' +
+					formData[key] +
+					'\n';
+			}
 		});
 
 		if (

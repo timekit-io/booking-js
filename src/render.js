@@ -489,19 +489,31 @@ function InitRender(deps) {
 		return message;
 	};
 
+	var parseHtmlTags = function (field) {
+		if (field.format === 'label') {
+			field.title = field.title.replace(/\(\((.*?)\)\)/g, function(match, token) {
+				var linkTag = token.split(',');
+				return '<a target="_blank" href="' + linkTag[1].trim() + '">' + linkTag[0].trim() + '</a>';
+			});
+		}
+		return field;
+	};
+
 	// Render customer fields
 	var renderCustomerFields = function () {
 		var textTemplate = require('./templates/fields/text.html');
-		var textareaTemplate = require('./templates/fields/textarea.html');
+		var labelTemplate = require('./templates/fields/label.html');
 		var selectTemplate = require('./templates/fields/select.html');
+		var textareaTemplate = require('./templates/fields/textarea.html');
 		var checkboxTemplate = require('./templates/fields/checkbox.html');
 		var multiCheckboxTemplate = require('./templates/fields/multi-checkbox.html');
 
 		var fieldsTarget = [];
 		$.each(getConfig().customer_fields, function (key, field) {
 			var tmpl = textTemplate;
-			if (field.format === 'textarea') tmpl = textareaTemplate;
+			if (field.format === 'label') tmpl = labelTemplate;
 			if (field.format === 'select') tmpl = selectTemplate;
+			if (field.format === 'textarea') tmpl = textareaTemplate;
 			if (field.format === 'checkbox') tmpl = checkboxTemplate;
 			if (field.format === 'checkbox' && field.enum) tmpl = multiCheckboxTemplate;
 			if (!field.format) field.format = 'text';
@@ -511,7 +523,7 @@ function InitRender(deps) {
 					key: key,
 					arrowDownIcon: require('!svg-inline-loader!./assets/arrow-down-icon.svg'),
 				},
-				field
+				parseHtmlTags(field)
 			);
 			var fieldTarget = $(tmpl.render(data));
 			fieldsTarget.push(fieldTarget);

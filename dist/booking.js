@@ -30728,19 +30728,31 @@ function InitRender(deps) {
 		return message;
 	};
 
+	var parseHtmlTags = function (field) {
+		if (field.format === 'label') {
+			field.title = field.title.replace(/\(\((.*?)\)\)/g, function(match, token) {
+				var linkTag = token.split(',');
+				return '<a target="_blank" href="' + linkTag[1].trim() + '">' + linkTag[0].trim() + '</a>';
+			});
+		}
+		return field;
+	};
+
 	// Render customer fields
 	var renderCustomerFields = function () {
 		var textTemplate = __webpack_require__(/*! ./templates/fields/text.html */ "./src/templates/fields/text.html");
-		var textareaTemplate = __webpack_require__(/*! ./templates/fields/textarea.html */ "./src/templates/fields/textarea.html");
+		var labelTemplate = __webpack_require__(/*! ./templates/fields/label.html */ "./src/templates/fields/label.html");
 		var selectTemplate = __webpack_require__(/*! ./templates/fields/select.html */ "./src/templates/fields/select.html");
+		var textareaTemplate = __webpack_require__(/*! ./templates/fields/textarea.html */ "./src/templates/fields/textarea.html");
 		var checkboxTemplate = __webpack_require__(/*! ./templates/fields/checkbox.html */ "./src/templates/fields/checkbox.html");
 		var multiCheckboxTemplate = __webpack_require__(/*! ./templates/fields/multi-checkbox.html */ "./src/templates/fields/multi-checkbox.html");
 
 		var fieldsTarget = [];
 		$.each(getConfig().customer_fields, function (key, field) {
 			var tmpl = textTemplate;
-			if (field.format === 'textarea') tmpl = textareaTemplate;
+			if (field.format === 'label') tmpl = labelTemplate;
 			if (field.format === 'select') tmpl = selectTemplate;
+			if (field.format === 'textarea') tmpl = textareaTemplate;
 			if (field.format === 'checkbox') tmpl = checkboxTemplate;
 			if (field.format === 'checkbox' && field.enum) tmpl = multiCheckboxTemplate;
 			if (!field.format) field.format = 'text';
@@ -30750,7 +30762,7 @@ function InitRender(deps) {
 					key: key,
 					arrowDownIcon: __webpack_require__(/*! svg-inline-loader!./assets/arrow-down-icon.svg */ "./node_modules/svg-inline-loader/index.js!./src/assets/arrow-down-icon.svg"),
 				},
-				field
+				parseHtmlTags(field)
 			);
 			var fieldTarget = $(tmpl.render(data));
 			fieldsTarget.push(fieldTarget);
@@ -31242,6 +31254,18 @@ module.exports = function() { var T = new H.Template({code: function (c,p,i) { v
 
 var H = __webpack_require__(/*! hogan.js */ "./node_modules/hogan.js/lib/hogan.js");
 module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field bookingjs-form-field--checkbox\">  ");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label--checkbox label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("    <input");t.b("\n" + i);t.b("      id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("      class=\"bookingjs-form-input--checkbox input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("      type=\"checkbox\"");t.b("\n" + i);t.b("      name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("      value=\"true\"");t.b("\n" + i);t.b("      ");if(t.s(t.f("prefilled",c,p,1),c,p,0,364,373,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" checked ");});c.pop();}t.b("\n" + i);t.b("      ");if(t.s(t.f("readonly",c,p,1),c,p,0,411,421,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" disabled ");});c.pop();}t.b("\n" + i);t.b("      ");if(t.s(t.f("required",c,p,1),c,p,0,458,468,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field bookingjs-form-field--checkbox\">  \n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label--checkbox label-{{ key }}\">\n    {{ title }}\n    <input\n      id=\"input-{{ key }}\"\n      class=\"bookingjs-form-input--checkbox input-{{ key }}\"\n      type=\"checkbox\"\n      name=\"{{ key }}\"\n      value=\"true\"\n      {{# prefilled }} checked {{/ prefilled }}\n      {{# readonly }} disabled {{/ readonly }}\n      {{# required }} required {{/ required }}\n  />\n  </label>\n</div>\n", H);return T; }();
+
+/***/ }),
+
+/***/ "./src/templates/fields/label.html":
+/*!*****************************************!*\
+  !*** ./src/templates/fields/label.html ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var H = __webpack_require__(/*! hogan.js */ "./node_modules/hogan.js/lib/hogan.js");
+module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field ");if(t.s(t.f("prefilled",c,p,1),c,p,0,49,76,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("bookingjs-form-field--dirty");});c.pop();}t.b("\">");t.b("\n" + i);t.b("  <p");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-text label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field {{# prefilled }}bookingjs-form-field--dirty{{/ prefilled }}\">\n  <p\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-text label-{{ key }}\">\n    {{& title }}\n  </p>\n</div>", H);return T; }();
 
 /***/ }),
 

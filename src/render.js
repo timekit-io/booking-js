@@ -276,21 +276,15 @@ function InitRender(deps) {
 
 	// Guess the timezone and set global variable
 	var guessCustomerTimezone = function () {
-		var tzGuess = moment.tz.guess() || 'UTC';
-		setCustomerTimezone(tzGuess);
+		setCustomerTimezone(moment.tz.guess() || 'UTC');
 
 		// Add the guessed customer timezone to list if its unknwon
-		var knownTimezone =
-			$.grep(timezones, function (tz) {
-				return tz.key === customerTimezone;
-			}).length > 0;
+		var knownTimezone = $.grep(timezones, (tz) => tz.key === customerTimezone).length > 0;
+
 		if (!knownTimezone) {
-			var name =
-				'(' +
-				moment().tz(customerTimezone).format('Z') +
-				') ' +
-				customerTimezone;
+			var name = '(' + moment().tz(customerTimezone).format('Z') + ') ' + customerTimezone;
 			timezones.unshift({
+				value: customerTimezone,
 				key: customerTimezone,
 				name: name,
 			});
@@ -302,7 +296,8 @@ function InitRender(deps) {
 		if (!newTz || !moment.tz.zone(newTz)) {
 			throw triggerError(['Trying to set invalid or unknown timezone', newTz]);
 		}
-		customerTimezone = newTz;
+		var found = _.find(timezones, { key: newTz })
+		customerTimezone = found !== undefined ? found.value : newTz;
 	};
 
 	// Setup and render FullCalendar

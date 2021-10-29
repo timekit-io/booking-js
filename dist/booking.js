@@ -46436,8 +46436,8 @@ function Timekit() {
 	 */
 	var config = {
 		app: '',
+		apiBaseUrl: 'https://api.timekit.io/',
 		apiVersion: 'v2',
-		apiBaseUrl: 'https://api-localhost.timekit.io/',
 		convertResponseToCamelcase: false,
 		convertRequestToSnakecase: true,
 		autoFlattenResponse: true,
@@ -47375,7 +47375,7 @@ function Initialize() {
 
   // Get library version
   var getVersion = function() {
-    return "2.7.4";
+    return "2.9.1";
   };
 
   var destroy = function() {

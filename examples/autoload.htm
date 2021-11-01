@@ -10,13 +10,16 @@
  <body>
 
   <div id="bookingjs"></div>
+  
   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-  <script type="text/javascript" src="../dist/booking.js" defer></script>
+  <script type="text/javascript" src="../dist/booking.js"></script>
+
   <script type="text/javascript">
-    window.timekitBookingConfig = {
-      app_key: 'live_widget_key_yYXHsUurvCUctNYflzGDMqEJo6mol0Yo',
-      project_id: 'ce04b164-49c5-4ae3-976e-daf698c67fbf'
-    };
+    var widget = new TimekitBooking();
+    widget.init({
+      app_key: 'test_api_key_k1gGRGUjNB8z6e0TvoKHWGLlsVLpPZiO',
+      project_id: 'e611d0f3-f216-43b0-b2f2-e691f5b7fd22'
+    });
   </script>
 
 </body>

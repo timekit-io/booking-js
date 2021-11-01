@@ -31,7 +31,7 @@ var oldTimeZones = [
   { key: 'America/Santiago', value: 'America/Santiago', name: '(-04:00) Santiago' },
   { key: 'Canada/Newfoundland', value: 'Canada/Newfoundland', name: '(-03:30) Newfoundland' },
   { key: 'America/Sao_Paulo', value: 'America/Sao_Paulo', name: '(-03:00) Brasilia' },
-  { key: 'America/Argentina/Buenos_Aires', value: 'America/Argentina/Buenos_Aires', name: '(-03:00) Buenos Aires' },
+  { key: 'America/Buenos_Aires', value: 'America/Argentina/Buenos_Aires', name: '(-03:00) Buenos Aires' },
   { key: 'America/Argentina/Buenos_Aires', value: 'America/Argentina/Buenos_Aires', name: '(-03:00) Georgetown' },
   { key: 'America/Godthab', value: 'America/Godthab', name: '(-03:00) Greenland' },
   { key: 'America/Noronha', value: 'America/Noronha', name: '(-02:00) Mid-Atlantic' },

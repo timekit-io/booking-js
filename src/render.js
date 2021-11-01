@@ -296,7 +296,7 @@ function InitRender(deps) {
 		if (!newTz || !moment.tz.zone(newTz)) {
 			throw triggerError(['Trying to set invalid or unknown timezone', newTz]);
 		}
-		var found = _.find(timezones, { key: newTz })
+		var found = _.find(timezones, { key: newTz });
 		customerTimezone = found !== undefined ? found.value : newTz;
 	};
 

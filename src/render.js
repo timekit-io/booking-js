@@ -28,6 +28,7 @@ function InitRender(deps) {
 
 	// State
 	var customerTimezone;
+	var customerTimezoneSelected;
 
 	// Make sure DOM element is ready and clean it
 	var prepareDOM = function (suppliedConfig) {
@@ -48,7 +49,7 @@ function InitRender(deps) {
 	// Fetch availabile time through Timekit SDK
 	var timekitFetchAvailability = function () {
 		var args = {
-			output_timezone: customerTimezone,
+			output_timezone: customerTimezoneSelected,
 		};
 
 		if (getConfig().project_id) args.project_id = getConfig().project_id;
@@ -94,7 +95,7 @@ function InitRender(deps) {
 			url: '/bookings/groups',
 			method: 'get',
 			headers: {
-				'Timekit-Timezone': customerTimezone,
+				'Timekit-Timezone': customerTimezoneSelected,
 			},
 		};
 
@@ -293,11 +294,13 @@ function InitRender(deps) {
 
 	// Set timezone
 	var setCustomerTimezone = function (newTz) {
+		var found = _.find(timezones, { key: newTz });
 		if (!newTz || !moment.tz.zone(newTz)) {
 			throw triggerError(['Trying to set invalid or unknown timezone', newTz]);
 		}
-		var found = _.find(timezones, { key: newTz });
-		customerTimezone = found !== undefined ? found.value : newTz;
+
+		customerTimezone = newTz;
+		customerTimezoneSelected = found !== undefined ? found.value : newTz;
 	};
 
 	// Setup and render FullCalendar
@@ -328,7 +331,7 @@ function InitRender(deps) {
 			calendarTarget.fullCalendar(
 				'option',
 				'now',
-				moment().tz(customerTimezone).format()
+				moment().tz(customerTimezoneSelected).format()
 			);
 		});
 
@@ -631,7 +634,7 @@ function InitRender(deps) {
 
 	// Output timestamp into given format in customers timezone
 	var formatTimestamp = function (start, format) {
-		return moment(start).tz(customerTimezone).format(format);
+		return moment(start).tz(customerTimezoneSelected).format(format);
 	};
 
 	// Remove the booking page DOM node
@@ -732,7 +735,7 @@ function InitRender(deps) {
 			customer: {
 				name: formData.name,
 				email: formData.email,
-				timezone: customerTimezone,
+				timezone: customerTimezoneSelected,
 			},
 		};
 

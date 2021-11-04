@@ -47375,7 +47375,7 @@ function Initialize() {
 
   // Get library version
   var getVersion = function() {
-    return "2.9.2";
+    return "2.9.3";
   };
 
   var destroy = function() {
@@ -48615,29 +48615,18 @@ __webpack_require__(/*! moment-timezone/builds/moment-timezone-with-data-2012-20
 
 var oldTimeZones = [    
     { key: 'Pacific/Midway', name: '(-11:00) Midway Island' },
-    { key: 'Pacific/Honolulu', name: '(-10:00) Hawaii' },
-    { key: 'America/Los_Angeles', name: '(-08:00) Pacific Time (US & Canada)' },
     { key: 'US/Mountain', name: '(-07:00) Mountain Time (US & Canada)' },
-    { key: 'America/Managua', name: '(-06:00) Central America' },
     { key: 'US/Central', name: '(-06:00) Central Time (US & Canada)' },
-    { key: 'America/Mexico_City', name: '(-06:00) Mexico City' },
     { key: 'America/Monterrey', name: '(-06:00) Monterrey' },
     { key: 'US/Eastern', name: '(-05:00) Eastern Time (US & Canada)' },
     { key: 'US/East-Indiana', name: '(-05:00) Indiana (East)' },
     { key: 'America/Bogota', name: '(-05:00) Quito' },
     { key: 'Canada/Atlantic', name: '(-04:00) Atlantic Time (Canada)' },
-    { key: 'America/La_Paz', name: '(-04:00) La Paz' },
-    { key: 'America/Santiago', name: '(-04:00) Santiago' },
     { key: 'Canada/Newfoundland', name: '(-03:30) Newfoundland' },
-    { key: 'America/Sao_Paulo', name: '(-03:00) Brasilia' },
     { key: 'America/Argentina/Buenos_Aires', name: '(-03:00) Buenos Aires' },
     { key: 'America/Godthab', name: '(-03:00) Greenland' },
-    { key: 'America/Noronha', name: '(-02:00) Mid-Atlantic' },
-    { key: 'Atlantic/Cape_Verde', name: '(-01:00) Cape Verde Is.' },
-    { key: 'Europe/London', name: '(+00:00) Edinburgh' },
     { key: 'Etc/Greenwich', name: '(+00:00) Dublin (Greenwich Mean Time)' },
     { key: 'Africa/Monrovia', name: '(+00:00) Monrovia' },
-    { key: 'UTC', name: '(+00:00) UTC' },
     { key: 'Europe/Amsterdam', name: '(+01:00) Amsterdam' },
     { key: 'Europe/Belgrade', name: '(+01:00) Belgrade' },
     { key: 'Europe/Berlin', name: '(+01:00) Bern' },
@@ -48647,20 +48636,32 @@ var oldTimeZones = [
     { key: 'Europe/Helsinki', name: '(+02:00) Kyiv' },
     { key: 'Africa/Johannesburg', name: '(+02:00) Pretoria' },
     { key: 'Asia/Muscat', name: '(+04:00) Abu Dhabi' },
-    { key: 'Europe/Moscow', name: '(+04:00) St. Petersburg' },
     { key: 'Asia/Karachi', name: '(+05:00) Islamabad' },
     { key: 'Asia/Tashkent', name: '(+05:00) Tashkent' },
     { key: 'Asia/Yekaterinburg', name: '(+06:00) Ekaterinburg' },
     { key: 'Asia/Bangkok', name: '(+07:00) Hanoi' },
-    { key: 'Asia/Hong_Kong', name: '(+08:00) Hong Kong' },
     { key: 'Asia/Krasnoyarsk', name: '(+08:00) Krasnoyarsk' },
-    { key: 'Asia/Kuala_Lumpur', name: '(+08:00) Kuala Lumpur' },
     { key: 'Asia/Ulan_Bator', name: '(+08:00) Ulaan Bataar' },
-    { key: 'Pacific/Port_Moresby', name: '(+10:00) Port Moresby' },
     { key: 'Pacific/Kwajalein', name: '(+12:00) International Date Line West' },
     { key: 'Pacific/Fiji', name: '(+12:00) Marshall Is.' },
-    { key: 'Pacific/Auckland', name: '(+12:00) Wellington' },
-    { key: 'Pacific/Tongatapu', name: '(+13:00) Nuku\'alofa' },    
+    { key: 'Pacific/Tongatapu', name: '(+13:00) Nuku\'alofa' },
+
+    // Fix for timezones
+    { key: 'UTC', value: 'UTC', name: '(+00:00) UTC' },
+    { key: 'Hongkong', value: 'Asia/Hong_Kong', name: '(+08:00) Hong Kong' },
+    { key: 'America/La_Paz', value: 'America/La_Paz', name: '(-04:00) La Paz' },
+    { key: 'Europe/London', value: 'Europe/London', name: '(+00:00) Edinburgh' },
+    { key: 'Pacific/Honolulu', value: 'Pacific/Honolulu', name: '(-10:00) Hawaii' },
+    { key: 'Europe/Moscow', value: 'Europe/Moscow', name: '(+04:00) St. Petersburg' },
+    { key: 'Pacific/Auckland', value: 'Pacific/Auckland', name: '(+12:00) Wellington' },
+    { key: 'America/Noronha', value: 'America/Noronha', name: '(-02:00) Mid-Atlantic' },
+    { key: 'America/Sao_Paulo', value: 'America/Sao_Paulo', name: '(-03:00) Brasilia' },
+    { key: 'America/Managua', value: 'America/Managua', name: '(-06:00) Central America' },
+    { key: 'Asia/Kuala_Lumpur', value: 'Asia/Kuala_Lumpur', name: '(+08:00) Kuala Lumpur' },
+    { key: 'America/Mexico_City', value: 'America/Mexico_City', name: '(-06:00) Mexico City' },
+    { key: 'Pacific/Port_Moresby', value: 'Pacific/Port_Moresby', name: '(+10:00) Port Moresby' },
+    { key: 'Atlantic/Cape_Verde', value: 'Atlantic/Cape_Verde', name: '(-01:00) Cape Verde Is.' },
+    { key: 'America/Los_Angeles', value: 'America/Los_Angeles', name: '(-08:00) Pacific Time (US & Canada)' },
 ];
 
 var depericated = [
@@ -48847,18 +48848,21 @@ var getFriendlyName = function(targetName, tzName) {
 
     var key = tzObj.tz();
     var found = _.filter(oldTimeZones, { key });
-
+    
     if (found !== undefined && found[0] && found[0].name) {
         return {
             key,
-            value: targetTz,
             depericated: false,
             name: found[0].name,
+            value: (found[0].value !== undefined) ? found[0].value : targetTz,
         }
     }
 
     var foundDepericated = _.filter(depericated, { key });
-    if (foundDepericated !== undefined && foundDepericated[0] && foundDepericated[0].key) {
+    var foundDepericatedTarget = _.filter(depericated, { key: targetTz });
+        
+    var depericatedTz = foundDepericatedTarget.length > 0;
+    if (foundDepericated.length > 0 && foundDepericated[0] && foundDepericated[0].key && !depericatedTz) {
         return {
             key,
             value: targetTz,
@@ -48867,13 +48871,11 @@ var getFriendlyName = function(targetName, tzName) {
         }
     }
 
-    var foundDepericated = _.filter(depericated, { key: targetTz });
-
     return {
         key,
         value: targetTz,
         name: prefix + key,
-        depericated: foundDepericated !== undefined
+        depericated: depericatedTz
     }
 }
 

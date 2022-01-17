@@ -47376,7 +47376,7 @@ function Initialize() {
 
   // Get library version
   var getVersion = function() {
-    return "2.9.4";
+    return "2.9.5";
   };
 
   var destroy = function() {

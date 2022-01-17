@@ -48149,7 +48149,6 @@ function InitRender(deps) {
 		}
 
 		var formData = {};
-		var nameFields = { fist_name: '', last_name: '', name: ''}
 		$.each(formElement.serializeArray(), function (i, field) {
 			var fieldKey = field.name;
 			if (!(fieldKey in formData)) {

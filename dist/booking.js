@@ -47077,7 +47077,8 @@ var primaryWithoutProject = {
   customer_fields: {
     name: {
       title: 'Name',
-      required: true
+      required: true,
+      split_name: false
     },
     email: {
       title: 'E-mail',
@@ -47968,15 +47969,34 @@ function InitRender(deps) {
 			if (field.format === 'checkbox' && field.enum) tmpl = multiCheckboxTemplate;
 			if (!field.format) field.format = 'text';
 			if (key === 'email') field.format = 'email';
-			var data = $.extend(
-				{
-					key: key,
-					arrowDownIcon: __webpack_require__(/*! svg-inline-loader!./assets/arrow-down-icon.svg */ "./node_modules/svg-inline-loader/index.js!./src/assets/arrow-down-icon.svg"),
-				},
-				parseHtmlTags(field)
-			);
-			var fieldTarget = $(tmpl.render(data));
-			fieldsTarget.push(fieldTarget);
+
+			if (key === 'name' && field.split_name) {
+				var nameFields = [];
+				
+				nameFields.push({ ...field, hidden: true, key })
+				nameFields.push({ ...field, title: 'First Name', key: 'first_name' })
+				nameFields.push({ ...field, title: 'Last Name', key: 'last_name' })
+				
+				for(var i=0; i<nameFields.length; i++) {
+					var data = $.extend(
+						{
+							key: nameFields[i].key,
+							arrowDownIcon: __webpack_require__(/*! svg-inline-loader!./assets/arrow-down-icon.svg */ "./node_modules/svg-inline-loader/index.js!./src/assets/arrow-down-icon.svg"),
+						},
+						parseHtmlTags(nameFields[i])
+					);
+					fieldsTarget.push($(tmpl.render(data)));	
+				}
+			} else {
+				var data = $.extend(
+					{
+						key: key,
+						arrowDownIcon: __webpack_require__(/*! svg-inline-loader!./assets/arrow-down-icon.svg */ "./node_modules/svg-inline-loader/index.js!./src/assets/arrow-down-icon.svg"),
+					},
+					parseHtmlTags(field)
+				);
+				fieldsTarget.push($(tmpl.render(data)));	
+			}
 		});
 
 		return fieldsTarget;
@@ -48129,6 +48149,7 @@ function InitRender(deps) {
 		}
 
 		var formData = {};
+		var nameFields = { fist_name: '', last_name: '', name: ''}
 		$.each(formElement.serializeArray(), function (i, field) {
 			var fieldKey = field.name;
 			if (!(fieldKey in formData)) {
@@ -48141,6 +48162,11 @@ function InitRender(deps) {
 				}
 			}
 		});
+
+		// fix for first/last name
+		if (formData.first_name || formData.last_name) {
+			formData.name = formData.first_name + ' ' + formData.last_name;
+		}
 
 		formElement.addClass('loading');
 		utils.doCallback('submitBookingForm', formData);
@@ -48190,6 +48216,12 @@ function InitRender(deps) {
 				timezone: customerTimezoneSelected,
 			},
 		};
+
+		// fix for first/last name
+		if (formData.first_name || formData.last_name) {
+			args.customer.last_name = formData.last_name;
+			args.customer.first_name = formData.first_name;
+		}
 
 		if (getConfig().project_id) {
 			args.project_id = getConfig().project_id;
@@ -48523,7 +48555,7 @@ module.exports = function() { var T = new H.Template({code: function (c,p,i) { v
 /***/ (function(module, exports, __webpack_require__) {
 
 var H = __webpack_require__(/*! hogan.js */ "./node_modules/hogan.js/lib/hogan.js");
-module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field ");if(t.s(t.f("prefilled",c,p,1),c,p,0,49,76,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("bookingjs-form-field--dirty");});c.pop();}t.b("\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <input");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    type=\"");t.b(t.v(t.f("format",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.f("title",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("prefilled",c,p,1),c,p,0,385,410,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.f("prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,446,456,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,491,501,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field {{# prefilled }}bookingjs-form-field--dirty{{/ prefilled }}\">\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label label-{{ key }}\">\n    {{ title }}\n  </label>\n  <input\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input input-{{ key }}\"\n    type=\"{{ format }}\"\n    name=\"{{ key }}\"\n    placeholder=\"{{ title }}\"\n    {{# prefilled }} value=\"{{ prefilled }}\" {{/ prefilled }}\n    {{# readonly }} readonly {{/ readonly }}\n    {{# required }} required {{/ required }}\n  />\n</div>\n", H);return T; }();
+module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field ");if(t.s(t.f("prefilled",c,p,1),c,p,0,49,76,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("bookingjs-form-field--dirty");});c.pop();}t.b("\">");t.b("\n" + i);if(!t.s(t.f("hidden",c,p,1),c,p,1,0,0,"")){t.b("    <label");t.b("\n" + i);t.b("      for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("      class=\"bookingjs-form-label label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("      ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("    </label>");t.b("\n" + i);};t.b("  <input");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.f("title",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("prefilled",c,p,1),c,p,0,403,428,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.f("prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,464,474,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,509,519,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("hidden",c,p,1),c,p,0,552,567,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" type=\"hidden\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(!t.s(t.f("hidden",c,p,1),c,p,1,0,0,"")){t.b(" type=\"");t.b(t.v(t.f("format",c,p,0)));t.b("\" (");};t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field {{# prefilled }}bookingjs-form-field--dirty{{/ prefilled }}\">\n  {{^ hidden }}\n    <label\n      for=\"input-{{ key }}\"\n      class=\"bookingjs-form-label label-{{ key }}\">\n      {{ title }}\n    </label>\n  {{/ hidden }}\n  <input\n    name=\"{{ key }}\"\n    id=\"input-{{ key }}\"\n    placeholder=\"{{ title }}\"\n    class=\"bookingjs-form-input input-{{ key }}\"\n    {{# prefilled }} value=\"{{ prefilled }}\" {{/ prefilled }}\n    {{# readonly }} readonly {{/ readonly }}\n    {{# required }} required {{/ required }}\n    {{# hidden }} type=\"hidden\" {{/ hidden}}\n    {{^ hidden }} type=\"{{ format }}\" ({{/ hidden }}\n  />\n</div>\n", H);return T; }();
 
 /***/ }),
 

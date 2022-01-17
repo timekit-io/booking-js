@@ -519,10 +519,10 @@ function InitRender(deps) {
 
 			if (key === 'name' && field.split_name) {
 				var nameFields = [];
-				
-				nameFields.push({ ...field, hidden: true, key })
-				nameFields.push({ ...field, title: 'First Name', key: 'first_name' })
-				nameFields.push({ ...field, title: 'Last Name', key: 'last_name' })
+
+				nameFields.push($.extend({}, field, {hidden: true, key}));
+				nameFields.push($.extend({}, field, {title: 'First Name', key: 'first_name'}));
+				nameFields.push($.extend({}, field, {title: 'Last Name', key: 'last_name'}));
 				
 				for(var i=0; i<nameFields.length; i++) {
 					var data = $.extend(

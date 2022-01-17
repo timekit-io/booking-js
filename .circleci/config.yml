@@ -20,6 +20,7 @@ jobs:
             npm -v
             yarn -v
             yarn install --pure-lockfile
+            yarn add node-sass
             npm rebuild node-sass
     # Save dependency cache
     - save_cache:

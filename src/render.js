@@ -516,15 +516,34 @@ function InitRender(deps) {
 			if (field.format === 'checkbox' && field.enum) tmpl = multiCheckboxTemplate;
 			if (!field.format) field.format = 'text';
 			if (key === 'email') field.format = 'email';
-			var data = $.extend(
-				{
-					key: key,
-					arrowDownIcon: require('!svg-inline-loader!./assets/arrow-down-icon.svg'),
-				},
-				parseHtmlTags(field)
-			);
-			var fieldTarget = $(tmpl.render(data));
-			fieldsTarget.push(fieldTarget);
+
+			if (key === 'name' && field.split_name) {
+				var nameFields = [];
+				
+				nameFields.push({ ...field, hidden: true, key })
+				nameFields.push({ ...field, title: 'First Name', key: 'first_name' })
+				nameFields.push({ ...field, title: 'Last Name', key: 'last_name' })
+				
+				for(var i=0; i<nameFields.length; i++) {
+					var data = $.extend(
+						{
+							key: nameFields[i].key,
+							arrowDownIcon: require('!svg-inline-loader!./assets/arrow-down-icon.svg'),
+						},
+						parseHtmlTags(nameFields[i])
+					);
+					fieldsTarget.push($(tmpl.render(data)));	
+				}
+			} else {
+				var data = $.extend(
+					{
+						key: key,
+						arrowDownIcon: require('!svg-inline-loader!./assets/arrow-down-icon.svg'),
+					},
+					parseHtmlTags(field)
+				);
+				fieldsTarget.push($(tmpl.render(data)));	
+			}
 		});
 
 		return fieldsTarget;
@@ -677,6 +696,7 @@ function InitRender(deps) {
 		}
 
 		var formData = {};
+		var nameFields = { fist_name: '', last_name: '', name: ''}
 		$.each(formElement.serializeArray(), function (i, field) {
 			var fieldKey = field.name;
 			if (!(fieldKey in formData)) {
@@ -689,6 +709,11 @@ function InitRender(deps) {
 				}
 			}
 		});
+
+		// fix for first/last name
+		if (formData.first_name || formData.last_name) {
+			formData.name = formData.first_name + ' ' + formData.last_name;
+		}
 
 		formElement.addClass('loading');
 		utils.doCallback('submitBookingForm', formData);
@@ -738,6 +763,12 @@ function InitRender(deps) {
 				timezone: customerTimezoneSelected,
 			},
 		};
+
+		// fix for first/last name
+		if (formData.first_name || formData.last_name) {
+			args.customer.last_name = formData.last_name;
+			args.customer.first_name = formData.first_name;
+		}
 
 		if (getConfig().project_id) {
 			args.project_id = getConfig().project_id;

@@ -65,7 +65,8 @@ var primaryWithoutProject = {
   customer_fields: {
     name: {
       title: 'Name',
-      required: true
+      required: true,
+      split_name: false
     },
     email: {
       title: 'E-mail',

@@ -19,8 +19,7 @@ jobs:
             node -v
             yarn -v
             yarn install --pure-lockfile
-            yarn add node-sass
-            yarn rebuild node-sass
+            yarn add sass
     # Save dependency cache
     - save_cache:
         key: v1-dep-{{ .Branch }}-{{ .Revision }}

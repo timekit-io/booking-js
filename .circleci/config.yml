@@ -17,11 +17,10 @@ jobs:
         name: Install dependencies
         command: |
             node -v
-            npm -v
             yarn -v
             yarn install --pure-lockfile
             yarn add node-sass
-            npm rebuild node-sass
+            yarn rebuild node-sass
     # Save dependency cache
     - save_cache:
         key: v1-dep-{{ .Branch }}-{{ .Revision }}

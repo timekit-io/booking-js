@@ -238,11 +238,11 @@ var getFriendlyName = function(targetName, tzName) {
     var prefix = '(' + tzObj.format('Z') + ') ';
 
     var key = tzObj.tz();
-    var found = _.filter(oldTimeZones, { key });
+    var found = _.filter(oldTimeZones, { key: key });
     
     if (found !== undefined && found[0] && found[0].name) {
         return {
-            key,
+            key: key,
             depericated: false,
             name: found[0].name,
             value: (found[0].value !== undefined) ? found[0].value : targetTz,
@@ -255,7 +255,7 @@ var getFriendlyName = function(targetName, tzName) {
     var depericatedTz = foundDepericatedTarget.length > 0;
     if (foundDepericated.length > 0 && foundDepericated[0] && foundDepericated[0].key && !depericatedTz) {
         return {
-            key,
+            key: key,
             value: targetTz,
             depericated: false,
             name: prefix + key,
@@ -263,14 +263,18 @@ var getFriendlyName = function(targetName, tzName) {
     }
 
     return {
-        key,
+        key: key,
         value: targetTz,
         name: prefix + key,
         depericated: depericatedTz
     }
 }
 
-var newList = _.map(tzNames, (targetName, tzName) => getFriendlyName(targetName, tzName))
-        .filter(record => !record.depericated);
+var newList = _.map(tzNames, function (targetName, tzName) { 
+            return getFriendlyName(targetName, tzName);
+        })
+        .filter(function (record) {
+            return !record.depericated;
+        });
 
 module.exports = _.orderBy(newList, ['name'], ['asc']);

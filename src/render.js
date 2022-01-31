@@ -280,7 +280,9 @@ function InitRender(deps) {
 		setCustomerTimezone(moment.tz.guess() || 'UTC');
 
 		// Add the guessed customer timezone to list if its unknwon
-		var knownTimezone = $.grep(timezones, (tz) => tz.key === customerTimezone).length > 0;
+		var knownTimezone = $.grep(timezones, function(tz) {
+			return tz.key === customerTimezone;
+		}).length > 0;
 
 		if (!knownTimezone) {
 			var name = '(' + moment().tz(customerTimezone).format('Z') + ') ' + customerTimezone;

@@ -23,8 +23,6 @@ var oldTimeZones = [
     { key: 'Europe/Berlin', name: '(+01:00) Bern' },
     { key: 'Europe/Bratislava', name: '(+01:00) Bratislava' },
     { key: 'Africa/Lagos', name: '(+01:00) West Central Africa' },
-    { key: 'Europe/Bucharest', name: '(+02:00) Bucharest' },
-    { key: 'Europe/Helsinki', name: '(+02:00) Kyiv' },
     { key: 'Africa/Johannesburg', name: '(+02:00) Pretoria' },
     { key: 'Asia/Muscat', name: '(+04:00) Abu Dhabi' },
     { key: 'Asia/Karachi', name: '(+05:00) Islamabad' },
@@ -39,6 +37,7 @@ var oldTimeZones = [
 
     // Fix for timezones
     { key: 'UTC', value: 'UTC', name: '(+00:00) UTC' },
+    { key: 'EET', value: 'Europe/Zaporozhye', name: '(+02:00) EET' },
     { key: 'Hongkong', value: 'Asia/Hong_Kong', name: '(+08:00) Hong Kong' },
     { key: 'America/La_Paz', value: 'America/La_Paz', name: '(-04:00) La Paz' },
     { key: 'Europe/London', value: 'Europe/London', name: '(+00:00) Edinburgh' },
@@ -48,6 +47,7 @@ var oldTimeZones = [
     { key: 'Europe/Sofia', value: 'Europe/Zaporozhye', name: '(+02:00) Europe/Sofia' },
     { key: 'Europe/Vilnius', value: 'Europe/Zaporozhye', name: '(+02:00) Europe/Vilnius' },
     { key: 'Europe/Tallinn', value: 'Europe/Zaporozhye', name: '(+02:00) Europe/Tallinn' },
+    { key: 'Asia/Nicosia', value: 'Europe/Zaporozhye', name: '(+02:00) Asia/Nicosia' },
     { key: 'Europe/Nicosia', value: 'Europe/Zaporozhye', name: '(+02:00) Europe/Nicosia' },
     { key: 'Europe/Uzhgorod', value: 'Europe/Zaporozhye', name: '(+02:00) Europe/Uzhgorod' },
     { key: 'Europe/Helsinki', value: 'Europe/Zaporozhye', name: '(+02:00) Europe/Helsinki' },

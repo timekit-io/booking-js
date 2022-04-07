@@ -48611,7 +48611,11 @@ function InitRender(deps) {
 			if ($.inArray(key, nativeFields) >= 0) return;
 			if (field.format === 'checkbox') {
 				if (!Array.isArray(formData[key])) {
-					formData[key] = !!formData[key];
+					if (!field.enum) {
+						formData[key] = !!formData[key];	
+					} else {
+						formData[key] = [formData[key]];
+					}
 				}
 			};
 			if (field.format !== 'label') {

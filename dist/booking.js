@@ -47709,7 +47709,7 @@ function Initialize() {
 
   // Get library version
   var getVersion = function() {
-    return "2.9.10";
+    return "2.9.11";
   };
 
   var destroy = function() {

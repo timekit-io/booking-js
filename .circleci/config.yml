@@ -16,6 +16,10 @@ jobs:
     - run:
         name: Install dependencies
         command: |
+            git config --global url."https://".insteadOf git://
+    - run:
+        name: Install dependencies
+        command: |
             node -v
             yarn -v
             yarn install --pure-lockfile

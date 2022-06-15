@@ -64,10 +64,10 @@
       min-height: 25px;
     line-height: 25px;
     }
-    
+
     &-tz {
       float: left;
-      
+
       &-picker {
         display: inline-block;
 
@@ -93,7 +93,7 @@
           outline: none;
           max-width: 220px;
 
-          &::-ms-expand { 
+          &::-ms-expand {
             display: none; // hide the default arrow in ie10 and ie11
           }
 
@@ -142,7 +142,7 @@
         margin-left: 5px;
         top: 1px;
         position: relative;
-  
+
         path {
           transition: fill 0.2s ease;
           fill: $textLighterColor;
@@ -165,7 +165,7 @@
       .is-small & {
         float: left;
       }
-    }    
+    }
   }
 
   // Image avatar
@@ -207,6 +207,21 @@
     padding: 15px 20px;
     color: $textColor;
     font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    @media only screen and (max-width: 300px) {
+      width: 40%;
+    }
+    @media only screen and (min-width: 300px) {
+      width: 45%;
+    }
+    @media only screen and (min-width: 480px) {
+      width: 65%;
+    }
+    @media only screen and (min-width: 640px) {
+      width: 75%;
+    }
 
     .is-small.has-avatar & {
       top: 44px;
@@ -393,7 +408,7 @@
     &-label {
       border: 0;
       outline: none;
-      display: flex;    
+      display: flex;
       font-size: 11px;
       text-align: left;
       margin-top: 10px;

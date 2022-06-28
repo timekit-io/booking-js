@@ -69,9 +69,13 @@ function InitConfig() {
     if (!newConfig.app_key) throw 'A required config setting ("app_key") was missing';
 
     // Prefill fields based on query string
-    var urlParams = getGlobal().location && getGlobal().location.search;
-    if (urlParams) newConfig = applyPrefillFromUrlGetParams(newConfig, qs.parse(urlParams));
-
+    var urlParams = qs.parse(getGlobal().location && getGlobal().location.search);
+    if (urlParams) newConfig = applyPrefillFromUrlGetParams(newConfig, urlParams);
+    if (urlParams['booking.uuid']) {
+      newConfig.booking.uuid = urlParams['booking.uuid'];
+    } else {
+      newConfig.booking.uuid = false;
+    }
     // Set new config to instance config
     update(newConfig);
 
@@ -90,7 +94,7 @@ function InitConfig() {
   var setGlobal = function(val) {
     global = val
   }
-  
+
   var getGlobal = function(val) {
     return global
   }

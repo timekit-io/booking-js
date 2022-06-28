@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="UTF-8">
+  <title>Booking.js autoload example</title>
+  <style type="text/css">
+    body { background-color: #E6E6E6; max-width: 700px; margin: 0 auto; }
+  </style>
+ </head>
+ <body>
+
+  <div id="bookingjs"></div>
+
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script type="text/javascript" src="../dist/booking.js"></script>
+
+  <script type="text/javascript">
+    var widget = new TimekitBooking();
+    widget.init({
+      app_key: 'test_widget_key_NKkDDgnUsmVg5LKVo1WYviMOSTiwYYOT',
+      project_id: 'd0e338da-ff96-4b3b-961d-76824912177c'
+    });
+  </script>
+
+</body>
+</html>

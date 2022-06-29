@@ -502,6 +502,7 @@ function InitRender(deps) {
 	// Render customer fields
 	var renderCustomerFields = function () {
 		var textTemplate = require('./templates/fields/text.html');
+        var telTemplate = require('./templates/fields/tel.html');
 		var labelTemplate = require('./templates/fields/label.html');
 		var selectTemplate = require('./templates/fields/select.html');
 		var textareaTemplate = require('./templates/fields/textarea.html');
@@ -511,11 +512,14 @@ function InitRender(deps) {
 		var fieldsTarget = [];
 		$.each(getConfig().customer_fields, function (key, field) {
 			var tmpl = textTemplate;
+
 			if (field.format === 'label') tmpl = labelTemplate;
 			if (field.format === 'select') tmpl = selectTemplate;
 			if (field.format === 'textarea') tmpl = textareaTemplate;
 			if (field.format === 'checkbox') tmpl = checkboxTemplate;
 			if (field.format === 'checkbox' && field.enum) tmpl = multiCheckboxTemplate;
+            if (field.format === 'textarea') tmpl = textareaTemplate;
+            if (field.format === 'tel') tmpl = telTemplate;
 			if (!field.format) field.format = 'text';
 			if (key === 'email') field.format = 'email';
 
@@ -525,7 +529,7 @@ function InitRender(deps) {
 				nameFields.push($.extend({}, field, {hidden: true, key}));
 				nameFields.push($.extend({}, field, {title: 'First Name', key: 'first_name'}));
 				nameFields.push($.extend({}, field, {title: 'Last Name', key: 'last_name'}));
-				
+
 				for(var i=0; i<nameFields.length; i++) {
 					var data = $.extend(
 						{
@@ -534,7 +538,7 @@ function InitRender(deps) {
 						},
 						parseHtmlTags(nameFields[i])
 					);
-					fieldsTarget.push($(tmpl.render(data)));	
+					fieldsTarget.push($(tmpl.render(data)));
 				}
 			} else {
 				var data = $.extend(
@@ -544,7 +548,7 @@ function InitRender(deps) {
 					},
 					parseHtmlTags(field)
 				);
-				fieldsTarget.push($(tmpl.render(data)));	
+				fieldsTarget.push($(tmpl.render(data)));
 			}
 		});
 
@@ -554,7 +558,6 @@ function InitRender(deps) {
 	// Event handler when a timeslot is clicked in FullCalendar
 	var showBookingPage = function (eventData) {
 		utils.doCallback('showBookingPage', eventData);
-
 		var template = require('./templates/booking-page.html');
 
 		var dateFormat =
@@ -622,7 +625,7 @@ function InitRender(deps) {
 				requiredCheckboxes.attr('required', 'required');
 			}
 		});
-		
+
 		form.submit(function (e) {
 			submitBookingForm(this, e, eventData);
 		});
@@ -826,7 +829,7 @@ function InitRender(deps) {
 			if (field.format === 'checkbox') {
 				if (!Array.isArray(formData[key])) {
 					if (!field.enum) {
-						formData[key] = !!formData[key];	
+						formData[key] = !!formData[key];
 					} else {
 						formData[key] = [formData[key]];
 					}

@@ -47237,6 +47237,7 @@ function InitConfig() {
   var prepareSdkConfig = function(suppliedConfig) {
     if (typeof suppliedConfig.sdk === 'undefined') suppliedConfig.sdk = {}
     if (suppliedConfig.app_key) suppliedConfig.sdk.appKey = suppliedConfig.app_key
+    if (suppliedConfig.api_url) suppliedConfig.sdk.apiBaseUrl = suppliedConfig.api_url
     return $.extend(true, {}, defaultConfig.primary.sdk, suppliedConfig.sdk);
   }
 
@@ -48287,6 +48288,7 @@ function InitRender(deps) {
 
 	// Render customer fields
 	var renderCustomerFields = function () {
+        var telTemplate = __webpack_require__(/*! ./templates/fields/tel.html */ "./src/templates/fields/tel.html");
 		var textTemplate = __webpack_require__(/*! ./templates/fields/text.html */ "./src/templates/fields/text.html");
 		var labelTemplate = __webpack_require__(/*! ./templates/fields/label.html */ "./src/templates/fields/label.html");
 		var selectTemplate = __webpack_require__(/*! ./templates/fields/select.html */ "./src/templates/fields/select.html");
@@ -48297,11 +48299,14 @@ function InitRender(deps) {
 		var fieldsTarget = [];
 		$.each(getConfig().customer_fields, function (key, field) {
 			var tmpl = textTemplate;
+
+            if (field.format === 'tel') tmpl = telTemplate;
 			if (field.format === 'label') tmpl = labelTemplate;
 			if (field.format === 'select') tmpl = selectTemplate;
 			if (field.format === 'textarea') tmpl = textareaTemplate;
 			if (field.format === 'checkbox') tmpl = checkboxTemplate;
 			if (field.format === 'checkbox' && field.enum) tmpl = multiCheckboxTemplate;
+
 			if (!field.format) field.format = 'text';
 			if (key === 'email') field.format = 'email';
 
@@ -48311,7 +48316,7 @@ function InitRender(deps) {
 				nameFields.push($.extend({}, field, {hidden: true, key}));
 				nameFields.push($.extend({}, field, {title: 'First Name', key: 'first_name'}));
 				nameFields.push($.extend({}, field, {title: 'Last Name', key: 'last_name'}));
-				
+
 				for(var i=0; i<nameFields.length; i++) {
 					var data = $.extend(
 						{
@@ -48320,7 +48325,7 @@ function InitRender(deps) {
 						},
 						parseHtmlTags(nameFields[i])
 					);
-					fieldsTarget.push($(tmpl.render(data)));	
+					fieldsTarget.push($(tmpl.render(data)));
 				}
 			} else {
 				var data = $.extend(
@@ -48330,7 +48335,7 @@ function InitRender(deps) {
 					},
 					parseHtmlTags(field)
 				);
-				fieldsTarget.push($(tmpl.render(data)));	
+				fieldsTarget.push($(tmpl.render(data)));
 			}
 		});
 
@@ -48340,7 +48345,6 @@ function InitRender(deps) {
 	// Event handler when a timeslot is clicked in FullCalendar
 	var showBookingPage = function (eventData) {
 		utils.doCallback('showBookingPage', eventData);
-
 		var template = __webpack_require__(/*! ./templates/booking-page.html */ "./src/templates/booking-page.html");
 
 		var dateFormat =
@@ -48408,7 +48412,7 @@ function InitRender(deps) {
 				requiredCheckboxes.attr('required', 'required');
 			}
 		});
-		
+
 		form.submit(function (e) {
 			submitBookingForm(this, e, eventData);
 		});
@@ -48612,7 +48616,7 @@ function InitRender(deps) {
 			if (field.format === 'checkbox') {
 				if (!Array.isArray(formData[key])) {
 					if (!field.enum) {
-						formData[key] = !!formData[key];	
+						formData[key] = !!formData[key];
 					} else {
 						formData[key] = [formData[key]];
 					}
@@ -48882,6 +48886,18 @@ module.exports = function() { var T = new H.Template({code: function (c,p,i) { v
 
 var H = __webpack_require__(/*! hogan.js */ "./node_modules/hogan.js/lib/hogan.js");
 module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field bookingjs-form-field--select\">");t.b("\n" + i);t.b("  <label");t.b("\n" + i);t.b("    for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-label bookingjs-form-label--select label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("    ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("  </label>");t.b("\n" + i);t.b("  <select");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input--select input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,337,346,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" disabed ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,381,391,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("  >");t.b("\n" + i);if(t.s(t.f("enum",c,p,1),c,p,0,426,519,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("    <option value=\"");t.b(t.v(t.d(".",c,p,0)));t.b("\" ");if(t.s(t.f("prefilled",c,p,1),c,p,0,471,481,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" selected ");});c.pop();}t.b(">");t.b(t.v(t.d(".",c,p,0)));t.b("</option>");t.b("\n" + i);});c.pop();}t.b("  </select>");t.b("\n" + i);t.b("  <div class=\"bookingjs-form-input-arrow--select\">");t.b("\n" + i);t.b("    ");t.b(t.t(t.f("arrowDownIcon",c,p,0)));t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field bookingjs-form-field--select\">\n  <label\n    for=\"input-{{ key }}\"\n    class=\"bookingjs-form-label bookingjs-form-label--select label-{{ key }}\">\n    {{ title }}\n  </label>\n  <select\n    id=\"input-{{ key }}\"\n    class=\"bookingjs-form-input--select input-{{ key }}\"\n    name=\"{{ key }}\"\n    {{# readonly }} disabed {{/ readonly }}\n    {{# required }} required {{/ required }}\n  >\n    {{# enum }}\n    <option value=\"{{ . }}\" {{# prefilled }} selected {{/ prefilled }}>{{ . }}</option>\n    {{/ enum }}\n  </select>\n  <div class=\"bookingjs-form-input-arrow--select\">\n    {{& arrowDownIcon }}\n  </div>\n</div>\n", H);return T; }();
+
+/***/ }),
+
+/***/ "./src/templates/fields/tel.html":
+/*!***************************************!*\
+  !*** ./src/templates/fields/tel.html ***!
+  \***************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var H = __webpack_require__(/*! hogan.js */ "./node_modules/hogan.js/lib/hogan.js");
+module.exports = function() { var T = new H.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"bookingjs-form-field ");if(t.s(t.f("prefilled",c,p,1),c,p,0,49,76,"{{ }}")){t.rs(c,p,function(c,p,t){t.b("bookingjs-form-field--dirty");});c.pop();}t.b("\">");t.b("\n" + i);if(!t.s(t.f("hidden",c,p,1),c,p,1,0,0,"")){t.b("    <label");t.b("\n" + i);t.b("      for=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("      class=\"bookingjs-form-label label-");t.b(t.v(t.f("key",c,p,0)));t.b("\">");t.b("\n" + i);t.b("      ");t.b(t.v(t.f("title",c,p,0)));t.b("\n" + i);t.b("    </label>");t.b("\n" + i);};t.b("  <input");t.b("\n" + i);t.b("    name=\"");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    id=\"input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    placeholder=\"");t.b(t.v(t.f("title",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    pattern=\"^[\\+0-9 \\(\\)\\-]+$\"");t.b("\n" + i);t.b("    class=\"bookingjs-form-input input-");t.b(t.v(t.f("key",c,p,0)));t.b("\"");t.b("\n" + i);t.b("    ");if(t.s(t.f("readonly",c,p,1),c,p,0,434,444,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" readonly ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("required",c,p,1),c,p,0,479,489,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" required ");});c.pop();}t.b("\n" + i);t.b("    ");if(t.s(t.f("hidden",c,p,1),c,p,0,522,537,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" type=\"hidden\" ");});c.pop();}t.b("\n" + i);t.b("    ");if(!t.s(t.f("hidden",c,p,1),c,p,1,0,0,"")){t.b(" type=\"");t.b(t.v(t.f("format",c,p,0)));t.b("\" (");};t.b("\n" + i);t.b("    ");if(t.s(t.f("prefilled",c,p,1),c,p,0,623,648,"{{ }}")){t.rs(c,p,function(c,p,t){t.b(" value=\"");t.b(t.v(t.f("prefilled",c,p,0)));t.b("\" ");});c.pop();}t.b("\n" + i);t.b("  />");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }}, "<div class=\"bookingjs-form-field {{# prefilled }}bookingjs-form-field--dirty{{/ prefilled }}\">\n  {{^ hidden }}\n    <label\n      for=\"input-{{ key }}\"\n      class=\"bookingjs-form-label label-{{ key }}\">\n      {{ title }}\n    </label>\n  {{/ hidden }}\n  <input\n    name=\"{{ key }}\"\n    id=\"input-{{ key }}\"\n    placeholder=\"{{ title }}\"\n    pattern=\"^[\\+0-9 \\(\\)\\-]+$\"\n    class=\"bookingjs-form-input input-{{ key }}\"\n    {{# readonly }} readonly {{/ readonly }}\n    {{# required }} required {{/ required }}\n    {{# hidden }} type=\"hidden\" {{/ hidden}}\n    {{^ hidden }} type=\"{{ format }}\" ({{/ hidden }}\n    {{# prefilled }} value=\"{{ prefilled }}\" {{/ prefilled }}\n  />\n</div>\n", H);return T; }();
 
 /***/ }),
 

@@ -13,6 +13,7 @@ function InitConfig() {
   var prepareSdkConfig = function(suppliedConfig) {
     if (typeof suppliedConfig.sdk === 'undefined') suppliedConfig.sdk = {}
     if (suppliedConfig.app_key) suppliedConfig.sdk.appKey = suppliedConfig.app_key
+    if (suppliedConfig.api_url) suppliedConfig.sdk.apiBaseUrl = suppliedConfig.api_url
     return $.extend(true, {}, defaultConfig.primary.sdk, suppliedConfig.sdk);
   }
 

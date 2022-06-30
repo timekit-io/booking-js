@@ -501,8 +501,8 @@ function InitRender(deps) {
 
 	// Render customer fields
 	var renderCustomerFields = function () {
-		var textTemplate = require('./templates/fields/text.html');
         var telTemplate = require('./templates/fields/tel.html');
+		var textTemplate = require('./templates/fields/text.html');
 		var labelTemplate = require('./templates/fields/label.html');
 		var selectTemplate = require('./templates/fields/select.html');
 		var textareaTemplate = require('./templates/fields/textarea.html');
@@ -513,13 +513,13 @@ function InitRender(deps) {
 		$.each(getConfig().customer_fields, function (key, field) {
 			var tmpl = textTemplate;
 
+            if (field.format === 'tel') tmpl = telTemplate;
 			if (field.format === 'label') tmpl = labelTemplate;
 			if (field.format === 'select') tmpl = selectTemplate;
 			if (field.format === 'textarea') tmpl = textareaTemplate;
 			if (field.format === 'checkbox') tmpl = checkboxTemplate;
 			if (field.format === 'checkbox' && field.enum) tmpl = multiCheckboxTemplate;
-            if (field.format === 'textarea') tmpl = textareaTemplate;
-            if (field.format === 'tel') tmpl = telTemplate;
+
 			if (!field.format) field.format = 'text';
 			if (key === 'email') field.format = 'email';
 

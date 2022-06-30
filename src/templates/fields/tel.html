@@ -12,10 +12,10 @@
     placeholder="{{ title }}"
     pattern="^[\+0-9 \(\)\-]+$"
     class="bookingjs-form-input input-{{ key }}"
-    {{# prefilled }} value="{{ prefilled }}" {{/ prefilled }}
     {{# readonly }} readonly {{/ readonly }}
     {{# required }} required {{/ required }}
     {{# hidden }} type="hidden" {{/ hidden}}
     {{^ hidden }} type="{{ format }}" ({{/ hidden }}
+    {{# prefilled }} value="{{ prefilled }}" {{/ prefilled }}
   />
 </div>

@@ -23,14 +23,6 @@ See [Issues](https://github.com/timekit-io/booking-js/issues) for feature reques
 
 The `json-schema` v0.2.3 package is used pursuant to the BSD-3-Clause license
 
-### BookingJS and Booking Hosted
-
-This project is combination of following two projects.
-* [Booking Hosted](https://github.com/timekit-io/book-hosted)
-* [Booking JS](https://github.com/timekit-io/booking-js)
-
-This new project aims to combine both of these project and build with latest packages.
-
 ### Setting up locally
 
 Checkout this new project locally using git command showed below:

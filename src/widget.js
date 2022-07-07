@@ -66,60 +66,6 @@ class BookingWidget {
         return this;
     }
 
-    startWithConfig(suppliedConfig) {
-        try {
-            // Handle config and defaults
-            const configs = this.config.parseAndUpdate(suppliedConfig);
-            this.utils.logDebug(['Final config:', configs]);
-            this.render();
-        } catch (e) {
-            this.template.triggerError(e);
-            return this;
-        }
-    }
-
-    loadRemoteHostedProject(suppliedConfig) {
-        this.sdk.configure(this.config.get('sdk'));
-        this.sdk.makeRequest({
-            method: 'get',
-            url: '/projects/hosted/' + suppliedConfig.project_slug
-          })
-          .then((response) => this.remoteProjectLoaded(response, suppliedConfig))
-          .catch(e => this.template.triggerError(['The project could not be found, please double-check your "project_slug"', e]));
-    }
-
-    loadRemoteEmbeddedProject(suppliedConfig) {
-        // App key is required when fetching an embedded project, bail if not fund
-        if (!suppliedConfig.app_key) {
-            this.template.triggerError('Missing "app_key" in conjunction with "project_id", please provide your "app_key" for authentication');
-            return this;
-        }
-
-        this.sdk.configure(this.config.get('sdk'));
-        this.sdk.makeRequest({
-            method: 'get',
-            url: '/projects/embed/' + suppliedConfig.project_id
-          })
-          .then((response) => this.remoteProjectLoaded(response, suppliedConfig))
-          .catch(e => this.template.triggerError(['The project could not be found, please double-check your "project_id" and "app_key"', e]));
-    }
-
-    remoteProjectLoaded(response, suppliedConfig) {
-        const remoteConfig = response.data;
-            
-        if (remoteConfig.id) {
-            remoteConfig.project_id = remoteConfig.id;
-            delete remoteConfig.id;
-        }
-        if (remoteConfig.slug) {
-            remoteConfig.project_slug = remoteConfig.slug;
-            delete remoteConfig.slug;
-        }
-
-        this.utils.logDebug(['Remote config:', remoteConfig]);
-        return this.startWithConfig(merge({}, remoteConfig, suppliedConfig));
-    }
-
     init(suppliedConfig, global) {
 
         // Allows mokcing the window object if passed
@@ -147,20 +93,74 @@ class BookingWidget {
 
         // Start from local config
         if (!this.utils.isRemoteProject(suppliedConfig) || suppliedConfig.disable_remote_load) {
-            return this.startWithConfig(this.config.setDefaultsWithoutProject(suppliedConfig));
+            return this.#startWithConfig(this.config.setDefaultsWithoutProject(suppliedConfig));
         }
 
         // Load remote embedded config
         if (this.utils.isEmbeddedProject(suppliedConfig)) {
-            this.loadRemoteEmbeddedProject(suppliedConfig);
+            this.#loadRemoteEmbeddedProject(suppliedConfig);
         }
   
         // Load remote hosted config
         if (this.utils.isHostedProject(suppliedConfig)) {
-            this.loadRemoteHostedProject(suppliedConfig);
+            this.#loadRemoteHostedProject(suppliedConfig);
         }
           
         return this;
+    }
+    
+    #startWithConfig(suppliedConfig) {
+        try {
+            // Handle config and defaults
+            const configs = this.config.parseAndUpdate(suppliedConfig);
+            this.utils.logDebug(['Final config:', configs]);
+            this.render();
+        } catch (e) {
+            this.template.triggerError(e);
+            return this;
+        }
+    }
+
+    #loadRemoteHostedProject(suppliedConfig) {
+        this.sdk.configure(this.config.get('sdk'));
+        this.sdk.makeRequest({
+            method: 'get',
+            url: '/projects/hosted/' + suppliedConfig.project_slug
+          })
+          .then((response) => this.#remoteProjectLoaded(response, suppliedConfig))
+          .catch(e => this.template.triggerError(['The project could not be found, please double-check your "project_slug"', e]));
+    }
+
+    #loadRemoteEmbeddedProject(suppliedConfig) {
+        // App key is required when fetching an embedded project, bail if not fund
+        if (!suppliedConfig.app_key) {
+            this.template.triggerError('Missing "app_key" in conjunction with "project_id", please provide your "app_key" for authentication');
+            return this;
+        }
+
+        this.sdk.configure(this.config.get('sdk'));
+        this.sdk.makeRequest({
+            method: 'get',
+            url: '/projects/embed/' + suppliedConfig.project_id
+          })
+          .then((response) => this.#remoteProjectLoaded(response, suppliedConfig))
+          .catch(e => this.template.triggerError(['The project could not be found, please double-check your "project_id" and "app_key"', e]));
+    }
+
+    #remoteProjectLoaded(response, suppliedConfig) {
+        const remoteConfig = response.data;
+            
+        if (remoteConfig.id) {
+            remoteConfig.project_id = remoteConfig.id;
+            delete remoteConfig.id;
+        }
+        if (remoteConfig.slug) {
+            remoteConfig.project_slug = remoteConfig.slug;
+            delete remoteConfig.slug;
+        }
+
+        this.utils.logDebug(['Remote config:', remoteConfig]);
+        return this.#startWithConfig(merge({}, remoteConfig, suppliedConfig));
     }
 }
 

@@ -1,0 +1,363 @@
+@import 'variables';
+
+// Classes
+.fc-theme-standard .fc-scrollgrid {
+  border-top: 0;
+}
+
+.fc-view-container {
+  background-color: $bgColor;
+  color: $textColor;
+}
+
+.fc-col-header {
+  border-bottom: 1px solid $borderColor;
+  .fc-day {
+    font-size: 12px;
+    font-weight: 600;
+    color: $subtleColor;
+  }
+}
+
+.fc-timegrid-slot-label-cushion {
+  color: $subtleColor;
+  font-size: 0.9em;
+}
+
+.fc-state-default {
+  text-shadow: none;
+  box-shadow: none;
+  background-image: none;
+  background-color: white;
+  border-color: white;
+}
+
+.fc-button {
+  text-transform: uppercase;
+  font-weight: 600;
+  font-size: 1.1em;
+  border: 0px;
+  outline: none;  
+  &:hover,
+  &:visited,
+  &:active,
+  &:focus {
+    outline: none;
+    border: 0px;
+    background-color: transparent;
+  }
+}
+
+.fc-content-skeleton {
+  border-top: 1px solid #DDD;
+}
+
+.fc .fc-toolbar.fc-header-toolbar {
+  padding: 0px;
+  margin-bottom: 0;
+  min-height: 48px;
+  border-bottom: 1px solid $borderColor;
+
+  .fc--button {
+    display: none;
+  }
+
+  .fc-button {
+    border: 0;
+    opacity: 0.3;
+    height: auto;
+    outline: none;
+    color: #333;
+    margin-left: 0;
+    font-size: 1em;
+    font-weight: bold;
+    padding: 15px 17px;
+    background-color: white;
+    text-transform: uppercase;
+    transition: opacity 0.2s ease;
+
+    &.fc-today-button {
+      padding: 16px 5px;
+    }
+
+    &:hover {
+      opacity: 1;
+    }
+
+    &.fc-state-disabled {
+      transition: opacity 0s;
+      opacity: 0;
+    }
+
+    &.fc-prev-button {
+      padding-right: 8px;
+    }
+
+    &.fc-next-button {
+      padding-left: 8px;
+    }
+        
+    .fc-icon {
+      font-size: 150%;
+      top: -7%;
+    }
+  }
+
+  > .fc-right > button.fc-today-button {
+    padding: 16px 5px;
+  }
+
+  > .fc-right h2 {
+    font-size: 13px;
+    padding: 15px 0px 15px 20px;
+    color: $textColor;
+    font-weight: 600;
+  }
+
+}
+
+.fc-theme-standard td.fc-today {
+  background: white;
+}
+
+.fc-body > tr > .fc-widget-content,
+.fc-head > tr > .fc-widget-header {
+  border: 0 !important;
+}
+
+.fc th {
+  border-color: white;
+}
+
+.fc-theme-standard .fc-divider,
+.fc-theme-standard .fc-popover .fc-header {
+  background-color: transparent;
+}
+
+.empty-calendar .fc-event {
+  opacity: 0;
+}
+
+.fc-event {
+  transition: color .2s ease, border-color .2s ease, opacity .6s ease, box-shadow .2s ease;
+  border: none;
+  border-left: 2px solid darken($borderColor, 35%);
+  padding: 3px;
+  background-color: white;
+  border-radius: 3px;
+  margin: 1px 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.07);
+  cursor: pointer;
+  margin-bottom: 2px;
+  opacity: 1;
+
+  &.fc-v-event {
+    .fc-event-main {
+      color: $textColor;
+    }
+  }
+
+  &:hover,
+  &-clicked {
+    box-shadow: 0 2px 4px rgba(0,0,0,.12);
+    border-left: 3px solid $primaryColor;
+    color: $primaryColor;
+    font-weight: 600;
+    padding-left: 2px;
+  }
+
+  .fc-content {
+    transform: translateX(0);
+    transition: transform .2s ease;
+  }
+
+  &:hover .fc-content {
+    transform: translateX(2px);
+  }
+
+  .fc-bg {
+    opacity: 0;
+  }
+}
+
+.fc-daygrid-event {
+  margin: 1px 0 3px;
+  padding: 10px 15px;
+
+  .fc-daygrid-event-dot {
+    display: none;
+  }
+
+  &:hover,
+  &-clicked {
+    padding-left: 14px;
+  }
+
+  .fc-event-time {
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .fc-event-title {
+    padding: 0 5px 5px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  &:hover .fc-event-time,
+  &-clicked .fc-event-time,
+  &:hover .fc-event-title,
+  &-clicked .fc-event-title {
+    font-weight: 600;
+  }
+}
+
+.fc-timegrid-body .fc-timegrid-slots {
+  td.fc-timegrid-slot-minor {
+    border-top-style: none;
+  }
+  td {
+    border-top-color: $bgColor;
+    &.fc-axis {
+      border-top-color: $borderColor;
+    }
+  }
+}
+
+.fc-time-grid-event {
+
+  &.fc-short {
+
+    .fc-content {
+      font-size: 0.7em;
+      line-height:  0.2em;
+    }
+
+    .fc-time:after {
+      content: '';
+    }
+  }
+
+  .fc-time {
+    font-size: 1.1em;
+    padding: 5px;
+  }
+
+  .fc-title {
+    padding: 0 5px 5px;
+    font-weight: bold;
+  }
+}
+
+.fc-theme-standard th, .fc-theme-standard td, .fc-theme-standard thead, .fc-theme-standard tbody, .fc-theme-standard .fc-divider, .fc-theme-standard .fc-row, .fc-theme-standard .fc-popover {
+  border-color: $borderColor;
+}
+
+.fc-agendaMonthly-view .fc-event {
+  color: white;
+}
+
+.fc-now-indicator {
+  border-color: rgba(255, 0, 0, 0.5);
+}
+
+.fc-theme-standard .fc-daygrid {
+  .fc-daygrid-day {
+    background: white;
+  }
+  .fc-scroller {
+    padding: 5px 15px;
+  }
+  .fc-content-skeleton {
+    border-top: 0px;
+  }
+}
+
+
+// List view
+
+.fc-theme-standard .fc-list-view .fc-scroller {
+  padding: 0px 15px;
+}
+
+.fc-list-view {
+  border-width: 0px;
+}
+
+.fc-list-table {
+  width: 80%;
+  max-width: 400px;
+  margin: 0 auto 30px auto;
+  .fc-list-day th {
+    z-index: 5;
+    font-size: 1.3em;
+    line-height: 1em;
+    font-weight: 500;
+    color: $primaryColor;
+    padding: 20px 19px 15px 0;
+    .fc-list-day-text {
+      color: $subtleColor;
+    }
+  }
+}
+
+.is-small .fc-theme-standard .fc-list-heading td {
+  font-size: 1.1em;
+}
+
+.fc-theme-standard .fc-list-event:hover td {
+  background-color: transparent;
+}
+
+.fc-list-event {
+  display: block;
+  transition: color .2s ease, border-color .2s ease, opacity .6s ease, box-shadow .2s ease;
+  border: none;
+  border-left: 2px solid darken($borderColor, 35%);
+  background-color: #fff;
+  border-radius: 3px;
+  color: #333;
+  margin: 1px 0;
+  box-shadow: 0 1px 2px rgba(0,0,0,.07);
+  cursor: pointer;
+  margin-bottom: 3px;
+  font-weight: 500;
+  font-size: 12px;
+
+  &:hover {
+    box-shadow: 0 2px 4px rgba(0,0,0,.12);
+    border-left: 3px solid $primaryColor;
+    color: $primaryColor;
+    font-weight: 600;
+    padding-left: 2px;
+  }
+
+  td {
+    background: transparent;
+    border-color: transparent;
+    transform: translateX(0);
+    transition: transform .2s ease;
+  }
+
+  &:hover td {
+    background: transparent;
+    transform: translateX(2px);
+  }
+
+  .fc-list-event-dot {
+    display: none;
+  }
+
+  .fc-list-event-time {
+    padding-right: 0px;
+    min-width: 110px;
+  }
+
+  .fc-list-event-title a {
+    font-weight: 600;
+  }
+}
+
+.fc-theme-standard .fc-list-empty {
+  background-color: transparent;
+}

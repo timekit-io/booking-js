@@ -1,0 +1,40 @@
+version: 2.1
+jobs:
+  build:
+    working_directory: ~/timekit-io/booking-js
+    docker:
+        - image: circleci/node:latest-browsers
+    environment:
+        - NODE_ENV: development        
+    steps:
+        - checkout
+        - run: node --version
+        - restore_cache:
+            keys:
+            # This branch if available
+            - v1-dep-{{ .Branch }}-{{ .Revision }}
+            # Default branch if not
+            - v1-dep-master-
+        - run:
+            name: Install dependencies
+            command: |
+                git config --global url."https://".insteadOf git://
+        - run:
+            name: Install dependencies
+            command: |
+                node -v
+                yarn -v
+                yarn install --pure-lockfile
+                yarn add sass
+                yarn add puppeteer
+        # Save dependency cache
+        - save_cache:
+            key: v1-dep-{{ .Branch }}-{{ .Revision }}
+            paths:
+            - ~/.cache/yarn
+            - ./node_modules
+        # Run frontend tests
+        - run:
+            name: Test unit suite and build prod
+            command: |
+                yarn run test

@@ -1,0 +1,17 @@
+// Colors
+$textColor:         #333;
+$textLightColor:    #787878;
+$textLighterColor:    #AEAEAE;
+$bgColor:           #FBFBFB;
+$borderColor:       #ececec;
+$subtleColor:       darken($borderColor, 25%);
+$primaryColor:      #2e5bec;
+$primaryDarkColor:  darken($primaryColor, 10%);
+$errorColor:        #D83B46;
+$successColor:      #46CE92;
+$ribbonColor:       #ffb46e;
+$ribbonDarkColor:   darken($ribbonColor, 15%);
+
+// Fonts
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600');
+$fontFamily:        'Open Sans', Helvetica, Tahoma, Arial, sans-serif;

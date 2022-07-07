@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="UTF-8">
+  <title>Booking.js multiple instances example</title>
+  <link rel="shortcut icon" href="/favicon.png">
+  <link rel="stylesheet" href="/build/booking.min.css"></style>
+  <style type="text/css">
+    body { background-color: #E6E6E6; }
+    body .bookingjs { width: 300px; display: block; float: left; margin: 60px 10px; }
+  </style>
+ </head>
+ <body>
+  <script type="text/javascript" src="/build/booking.min.js"></script>
+  <div id="bookingjs1">
+    <script type="text/javascript">
+      var widget1 = new TimekitBooking();
+      widget1.init({
+        el: '#bookingjs1',
+        app_key: 'test_widget_key_cHiN4hGUtjs0ayycDT4XiIXcLQun65jE',
+        resources: [
+          'cd9169e5-9823-40fd-881c-22d4a366d2a7'
+        ],
+        ui: {
+          display_name: 'Marty McFly',
+        }
+      });
+    </script>
+  </div>
+
+  <div id="bookingjs2">
+    <script type="text/javascript">
+      var widget2 = new TimekitBooking();
+      widget2.init({
+        el: '#bookingjs2',
+        app_key: 'live_widget_key_yYXHsUurvCUctNYflzGDMqEJo6mol0Yo',
+        resources: [
+          '42b956f0-be11-4af3-9221-19e899fcd1fb'
+        ],
+        ui: {
+          display_name: 'Doc Brown'
+        }
+      });
+    </script>
+  </div>
+
+  <div id="bookingjs3">
+    <script type="text/javascript">
+      var widget3 = new TimekitBooking();
+      widget3.init({
+        el: '#bookingjs3',
+        app_key: 'live_widget_key_yYXHsUurvCUctNYflzGDMqEJo6mol0Yo',
+        resources: [
+          '42b956f0-be11-4af3-9221-19e899fcd1fb'
+        ],
+        ui: {
+          display_name: 'Biff Tannen'
+        }
+      });
+    </script>
+  </div>
+</body>
+</html>

@@ -1,0 +1,20 @@
+<div class="bookingjs-form-field bookingjs-form-field--checkbox-multi">
+  <legend class="bookingjs-form-label">{{ title }}</legend>
+  {{# enum }}
+  <label
+    for="input-{{ key }}-{{ . }}"
+    class="bookingjs-form-label--checkbox label-{{ key }}">    
+      <input
+        type="checkbox"
+        value="{{ . }}"
+        name="{{ key }}"
+        id="input-{{ key }}-{{ . }}"
+        {{# readonly }} disabled {{/ readonly }}
+        {{# required }} required {{/ required }}
+        {{# prefilled }} checked {{/ prefilled }}
+        class="bookingjs-form-input--checkbox input-{{ key }}"
+      />
+      {{ . }}
+  </label>
+  {{/ enum }}
+</div>

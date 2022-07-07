@@ -1,0 +1,24 @@
+<div class="bookingjs-footer">
+  {{# showTimezoneHelper }}
+  <div class="bookingjs-footer-tz">
+    {{& timezoneIcon }}
+    <span>Your timezone</span>
+    <div class="bookingjs-footer-tz-picker">
+      <select class="bookingjs-footer-tz-picker-select">
+        {{# listTimezones }}
+        <option value="{{ key }}" data-target="{{ value }}">{{ name }}</option>
+        {{/ listTimezones }}
+      </select>
+      <div class="bookingjs-footer-tz-picker-arrowdown">
+        {{& arrowDownIcon }}
+      </div>
+    </div>
+  </div>
+  {{/ showTimezoneHelper }}
+  {{# showCredits }}
+  <a class="bookingjs-footer-by" href="http://timekit.io?utm_medium=link&utm_source={{ campaignSource }}&utm_campaign={{ campaignName }}&utm_content=powered-by" target="_blank">
+    <span>Powered by Timekit</span>
+    {{& timekitLogo }}
+  </a>
+  {{/ showCredits }}
+</div>

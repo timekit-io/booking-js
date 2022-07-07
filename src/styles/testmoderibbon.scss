@@ -1,0 +1,82 @@
+// Imports
+
+@import 'variables';
+
+// Test Mode Ribbon
+
+.bookingjs-ribbon-wrapper {
+  background: transparent;
+  height: 140px;
+  width: 35px;
+  position: absolute;
+  bottom: -34px;
+  right: 19px;
+  transform: rotate(45deg);
+  overflow: hidden;
+  z-index: 42;
+  -webkit-backface-visibility: hidden;
+
+  .bookingjs-ribbon-container {
+    background : transparent;
+    height: 110px;
+    width: 110px;
+    position: absolute;
+    left: -54px;
+    top: 15px;
+    overflow: hidden;
+    transform: rotate(45deg);
+    
+    &:before { /* Top Curl */ 
+      content: "";
+      display: block;
+      position: absolute;
+      right: 94px;
+      top: 0px;
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-bottom: 6px solid $ribbonDarkColor;
+    }
+
+    &:after { /*  Bottom Curl */ 
+      content: "";
+      display: block;
+      position: absolute;
+      right: 0;
+      top: 92px;
+      width: 0;
+      height: 0;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-left: 6px solid $ribbonDarkColor;
+    }
+
+    .bookingjs-ribbon {
+      width: 140px;
+      height: 21px;
+      position: relative;
+      top: 32px;
+      right: 3px;
+      z-index: 1;
+      overflow: hidden;
+      transform:rotate(45deg);
+      background: $ribbonColor;
+
+      > span {
+        position: relative;
+        text-align: center;
+        display: block;
+        position: relative;
+        bottom: -6px;
+        transform: rotate(180deg);
+        font-size: 10px;
+        color: $bgColor;
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 1px;
+        line-height: 1;
+      }
+    }
+  }
+}

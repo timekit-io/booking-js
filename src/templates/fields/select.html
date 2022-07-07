@@ -1,0 +1,21 @@
+<div class="bookingjs-form-field bookingjs-form-field--select">
+  <label
+    for="input-{{ key }}"
+    class="bookingjs-form-label bookingjs-form-label--select label-{{ key }}">
+    {{ title }}
+  </label>
+  <select
+    name="{{ key }}"
+    id="input-{{ key }}"
+    {{# readonly }} disabed {{/ readonly }}
+    {{# required }} required {{/ required }}
+    class="bookingjs-form-input--select input-{{ key }} {{# required }}field-required {{/ required }}"
+  >
+    {{# enum }}
+      <option value="{{ . }}" {{# prefilled }} selected {{/ prefilled }}>{{ . }}</option>
+    {{/ enum }}
+  </select>
+  <div class="bookingjs-form-input-arrow--select">
+    {{& arrowDownIcon }}
+  </div>
+</div>

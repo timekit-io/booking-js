@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="UTF-8">
+  <title>Booking.js localization strings example</title>
+  <link rel="shortcut icon" href="/favicon.png">
+  <link rel="stylesheet" href="/build/booking.min.css"></style>
+  <style type="text/css">
+    body { background-color: #E6E6E6; max-width: 700px; margin: 0 auto; }
+  </style>
+ </head>
+ <body>
+  <div id="bookingjs"></div>
+  <script type="text/javascript" src="/build/booking.min.js"></script>
+  <script type="text/javascript">
+    new TimekitBooking().init({
+      app_key: 'test_widget_key_cHiN4hGUtjs0ayycDT4XiIXcLQun65jE',
+      resources: [
+        'cd9169e5-9823-40fd-881c-22d4a366d2a7'
+      ],
+      ui: {
+        localization: {
+          submit_button: 'Do it!',
+          allocated_resource_prefix: 'Your Guide',
+          success_message: 'You should check your email (%s) now'
+        }
+      }
+    });
+  </script>
+</body>
+</html>

@@ -2,10 +2,15 @@
 
 function init() {
 
-  var urlPath = location.pathname;
-  var projectSlug = urlPath.replace('/', '');
+  const urlPath = location.pathname;
+  const projectSlug = urlPath.replace('/', '');
+  const urlParams = new URLSearchParams(window.location.search);
+  const host = location.host.includes('-localhost') ? '-localhost' : '';
+  
+  const uuid = urlParams.get('uuid');
+  const action = urlParams.get('action');
 
-  var poweredByLink = document.getElementById('powered-by');
+  const poweredByLink = document.getElementById('powered-by');
   poweredByLink.href = poweredByLink.href + '&utm_term=' + projectSlug;
 
   if (!projectSlug) {
@@ -16,9 +21,13 @@ function init() {
 
   poweredByLink.style.display = 'inline-block';
 
-  var widget = new TimekitBooking();
-  widget.init({
-    project_slug: projectSlug
+  new TimekitBooking().init({
+    project_slug: projectSlug,
+    api_base_url: 'https://api' + host + '.timekit.io/',
+    reschedule: {
+      uuid,
+      action
+    }
   });
 
 }

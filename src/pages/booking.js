@@ -9,6 +9,7 @@ class BookingPage extends BaseTemplate {
         this.template = template;
         this.utils = template.utils;
         this.config = template.config;
+		this.bookingPageTarget = null;
     }
 
     render(eventData) {
@@ -23,13 +24,13 @@ class BookingPage extends BaseTemplate {
 			template({
 				allocatedResource: allocatedResource,
 				submitText: this.config.get('ui.localization.submit_button'),
-				chosenDate: this.#formatTimestamp(eventData.startStr, dateFormat),
+				chosenDate: this.formatTimestamp(eventData.startStr, dateFormat),
 				closeIcon: require('!svg-inline-loader!../assets/close-icon.svg'),
 				errorIcon: require('!svg-inline-loader!../assets/error-icon.svg'),
 				loadingIcon: require('!svg-inline-loader!../assets/loading-spinner.svg'),
 				checkmarkIcon: require('!svg-inline-loader!../assets/checkmark-icon.svg'),
 				allocatedResourcePrefix: this.config.get('ui.localization.allocated_resource_prefix'),
-				chosenTime: this.#formatTimestamp(eventData.startStr, timeFormat) + ' - ' + this.#formatTimestamp(eventData.endStr, timeFormat),
+				chosenTime: this.formatTimestamp(eventData.startStr, timeFormat) + ' - ' + this.formatTimestamp(eventData.endStr, timeFormat),
 				successMessage: interpolate.sprintf(
 					this.config.get('ui.localization.success_message'), '<span class="booked-email"></span>'
 				)
@@ -37,18 +38,8 @@ class BookingPage extends BaseTemplate {
 		);
 
         this.#renderCustomerFields(eventData);
+		this.initCloseButton(this.bookingPageTarget);
         this.template.rootTarget.append(this.bookingPageTarget);
-
-        const form = this.bookingPageTarget.querySelector('.bookingjs-form');
-        const closeButton = this.bookingPageTarget.querySelector('.bookingjs-bookpage-close');
-
-        closeButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (form.classList.contains('success')) {
-                this.template.getAvailability();
-            }
-            this.#hide();
-        });
 
         if (eventData.extendedProps.resources) {
 			this.utils.logDebug([
@@ -62,18 +53,16 @@ class BookingPage extends BaseTemplate {
             if (!this.bookingPageTarget) return;
             
             const bookingPageDate = this.bookingPageTarget.querySelector('.bookingjs-bookpage-date');
-            bookingPageDate.innerHTML = this.#formatTimestamp(eventData.startStr, dateFormat);
+            bookingPageDate.innerHTML = this.formatTimestamp(eventData.startStr, dateFormat);
 
             const bookingPageTime = this.bookingPageTarget.querySelector('.bookingjs-bookpage-time');
-            bookingPageTime.innerHTML = this.#formatTimestamp(eventData.startStr, timeFormat) + ' - ' + this.#formatTimestamp(eventData.endStr, timeFormat);
+            bookingPageTime.innerHTML = this.formatTimestamp(eventData.startStr, timeFormat) + ' - ' + this.formatTimestamp(eventData.endStr, timeFormat);
         });
 
         setTimeout(() => this.bookingPageTarget.classList.add('show'), 100);
     }
 
     #renderCustomerFields(eventData) {
-        const formFieldsEle = this.bookingPageTarget.querySelector('.bookingjs-form-fields');
-        
         const telTemplate = require('../templates/fields/tel.html');
         const textTemplate = require('../templates/fields/text.html');
 		const labelTemplate = require('../templates/fields/label.html');
@@ -81,6 +70,9 @@ class BookingPage extends BaseTemplate {
 		const textareaTemplate = require('../templates/fields/textarea.html');
 		const checkboxTemplate = require('../templates/fields/checkbox.html');
 		const multiCheckboxTemplate = require('../templates/fields/multi-checkbox.html');
+
+        const form = this.bookingPageTarget.querySelector('.bookingjs-form');
+        const formFieldsEle = this.bookingPageTarget.querySelector('.bookingjs-form-fields');
 
         const customerFields = this.config.get('customer_fields');
         const customerFieldsKeys = Object.keys(customerFields);
@@ -128,65 +120,8 @@ class BookingPage extends BaseTemplate {
 			}
         }
 
-        const form = this.bookingPageTarget.querySelector('.bookingjs-form');
-		const formElements = form.querySelectorAll('.bookingjs-form-input');
-
-        for (let i = 0; i < formElements.length; i++) {
-            if (formElements[i].value && formElements[i].value.trim()) {
-                formElements[i].classList.remove('field-required');
-            }
-            formElements[i].addEventListener("input", function(e) {
-                const field = e.target.closest('.bookingjs-form-field');
-                if (e.target.value) {
-                    e.target.classList.remove('field-required');
-                    field.classList.add('bookingjs-form-field--dirty');
-                } else {
-                    e.target.classList.add('field-required');
-                    field.classList.remove('bookingjs-form-field--dirty')
-                };
-                e.preventDefault();
-            });
-        }
-
-        const formCheckBoxElements = form.querySelectorAll('.bookingjs-form-field--checkbox-multi');
-        for (let j = 0; j < formCheckBoxElements.length; j++) {
-            if (formCheckBoxElements[j].value && formCheckBoxElements[j].value.trim()) {
-                formCheckBoxElements[j].classList.remove('field-required');
-            }
-            formCheckBoxElements[j].addEventListener("change", function(e) {
-                if (e.target.checked) {
-                    e.target.classList.remove('field-required');
-                    formCheckBoxElements[j].removeAttribute('required');
-                } else {
-                    e.target.classList.add('field-required');
-                    formCheckBoxElements[j].setAttribute('required', 'required');
-                }
-                e.preventDefault();
-            });
-        }
-
-        const selectElements = form.querySelectorAll('.bookingjs-form-input--select');
-        for (let k = 0; k < selectElements.length; k++) {
-            if (selectElements[k].value && selectElements[k].value.trim()) {
-                selectElements[k].classList.remove('field-required');
-            }
-            selectElements[k].addEventListener("change", function(e) {
-                if (e.target.value) {
-                    e.target.classList.remove('field-required');
-                } else {
-                    e.target.classList.add('field-required');
-                }
-                e.preventDefault();
-            });
-        }
-
-        form.addEventListener("submit", e => this.#submitForm(e, eventData));
-    }
-
-    #hide() {
-		this.utils.doCallback('closeBookingPage');
-		this.bookingPageTarget.classList.remove('show');
-		setTimeout(() => this.bookingPageTarget.remove(), 200);
+		this.initFormValidation(form);
+		form.addEventListener("submit", e => this.#submitForm(e, eventData));
     }
 
     #submitForm(e, eventData) {
@@ -197,7 +132,7 @@ class BookingPage extends BaseTemplate {
         // close the form if submitted
         if (form.classList.contains('success')) {
             this.template.getAvailability();
-            this.#hide();
+            this.initCloseButton(this.bookingPageTarget);
             return;
         }
 
@@ -214,22 +149,7 @@ class BookingPage extends BaseTemplate {
 			return;
 		}
 
-        const formData = {};
-        const formElements = Array.from(form.elements);
-
-        for(let i=0; i<formElements.length; i++) {
-            const field = formElements[i];
-			const fieldKey = field.name;
-			if (!(fieldKey in formData)) {
-				formData[fieldKey] = field.value;
-			} else {
-				if (!Array.isArray(formData[fieldKey])) {
-					formData[fieldKey] = [formData[fieldKey], field.value];
-				} else {
-					formData[fieldKey].push(field.value);
-				}
-			}
-        }
+        const formData = this.prepareFormFields(form);
 
         // fix for first/last name
 		if (formData.first_name || formData.last_name) {
@@ -246,7 +166,7 @@ class BookingPage extends BaseTemplate {
 				form.classList.remove('loading');
                 form.classList.add('success');
 			})
-			.catch(() => this.#showBookingFailed(form));
+			.catch(() => this.showBookingFailed(form));
     }
 
     timekitCreateBooking(formData, eventData) {
@@ -364,22 +284,6 @@ class BookingPage extends BaseTemplate {
 			});
 
 		return request;
-    }
-
-    #showBookingFailed(form) {
-		const submitButton = form.querySelector('.bookingjs-form-button');
-		
-        submitButton.classList.add('button-shake');
-		setTimeout(() => submitButton.classList.remove('button-shake'), 500);
-
-		form.classList.add('loading');
-        form.classList.add('error');
-
-		setTimeout(() => form.classList.remove('error'), 2000);
-    }
-
-    #formatTimestamp(start, format) {
-        return moment(start).tz(this.template.customerTimezoneSelected).format(format);
     }
 }
 

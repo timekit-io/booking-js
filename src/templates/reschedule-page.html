@@ -1,0 +1,31 @@
+<div class="bookingjs-bookpage">
+    <a class="bookingjs-bookpage-close" href="#">{{& closeIcon }}</a>
+    <div class="bookingjs-bookpage-header">
+      <h2 class="bookingjs-bookpage-date" style="margin-top: 10px;">{{ chosenDate }}</h2>
+      <h3 class="bookingjs-bookpage-time">{{ chosenTime }}</h3>
+      {{#allocatedResource}}
+        <span class="bookingjs-bookpage-resource-prefix">{{ allocatedResourcePrefix }}</span>
+        <h3 class="bookingjs-bookpage-resource">{{ allocatedResource }}</h3>
+      {{/allocatedResource}}
+    </div>
+    <form class="bookingjs-form" action="#">
+      <div class="bookingjs-form-box">
+        <div class="bookingjs-form-field">
+          <p class="cancel-text">Following booking will be cancelled</p>
+          <p><b class="bookingjs-form-text">Date:</b> {{ oldDate }}</p>
+          <p><b class="bookingjs-form-text">Time:</b>	{{ oldTime }}</p>
+          <p><b class="bookingjs-form-text">Host:</b>	{{ oldResource }}</p>
+        </div>
+        <div class="bookingjs-form-success-message">
+          <div class="bookingjs-form-success-message-body">{{& successMessage }}</div>
+        </div>
+        <div class="bookingjs-form-fields"></div>
+      </div>
+      <button class="bookingjs-form-button" type="submit">
+        <span class="inactive-text">{{ submitText }}</span>
+        <span class="loading-text">{{& loadingIcon }}</span>
+        <span class="error-text">{{& errorIcon }}</span>
+        <span class="success-text">{{& checkmarkIcon }}</span>
+      </button>
+    </form>
+  </div>

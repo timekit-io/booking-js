@@ -1,4 +1,6 @@
-# Booking.js by Timekit
+# DEPRECATED
+
+This repo is now deprecated new repository can be found at [BookingJS V3](https://github.com/timekit-io/bookingjs-v3)
 
 [![Circle CI](https://img.shields.io/circleci/build/github/timekit-io/booking-js)](https://circleci.com/gh/timekit-io/booking-js)
 

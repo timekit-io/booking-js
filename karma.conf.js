@@ -20,7 +20,7 @@ module.exports = function (config) {
 			'node_modules/jquery/dist/jquery.js',
 			'node_modules/jasmine-jquery/lib/jasmine-jquery.js',
 			{ pattern: 'misc/**/*.*', included: false, served: true, watched: false },
-			{ pattern: 'dist/build/**/*', included: false, served: true, watched: true },			
+			{ pattern: 'public/build/**/*', included: false, served: true, watched: true },			
 			{
 				pattern: 'test/*.spec.js',
 				included: true,

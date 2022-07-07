@@ -17,7 +17,7 @@ module.exports = {
     publicPath: '/build/',
     library: 'TimekitBooking',
     filename: '[name].min.js',
-    path: path.resolve(__dirname, 'dist/build'),
+    path: path.resolve(__dirname, 'public/build'),
   },
   module: {
     rules: [

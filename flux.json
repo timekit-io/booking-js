@@ -12,11 +12,12 @@
     "prod": {
       "check-git-master": true,
       "install-npm-deps": true,
-      "source-dir": "dist/build",
+      "source-dir": "public/build",
       "build-dist-bundle": "yarn run build",
       "aws-cdn-deploy": "timekit-cdn/booking-js/v3"
     },
     "staging": {
+      "source-dir": "public/build",
       "build-dist-bundle": "yarn run build",
       "aws-cdn-deploy": "timekit-cdn-staging/booking-js/v3"
     }

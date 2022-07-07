@@ -9,14 +9,14 @@ module.exports = merge(common, {
   devServer: {
     static: { 
       publicPath: '/',
-      directory: path.resolve(__dirname, 'dist'), 
+      directory: path.resolve(__dirname, 'public'), 
     },
     historyApiFallback: true,
   },
   plugins: [
     new HtmlWebpackPlugin({
       filename: 'index.html',
-      template: path.resolve(__dirname, 'dist/index.html'),
+      template: path.resolve(__dirname, 'public/index.html'),
     }),
   ],  
 });

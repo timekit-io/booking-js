@@ -2,20 +2,20 @@
   "private": true,
   "license": "ISC",
   "version": "v3.0.0",
-  "name": "bookingjs-v3",
+  "name": "bookingjs",
   "main": "public/dist/booking.min.js",
   "author": "Sandip Patel <sandip.patel@tulip.com>",
-  "repository": "git@github.com:timekit-io/bookingjs-v3.git",
+  "repository": "git@github.com:timekit-io/bookingjs.git",
   "scripts": {
     "test": "karma start",
     "test:watch": "karma start --watch",
     "build": "webpack --config webpack.prod.js",
     "dev": "webpack serve --config webpack.dev.js",
-    "deploy:prod": "../flux/flux timekit:deploy prod bookingjs-v3",
-    "deploy:hosted": "../flux/flux timekit:deploy hosted bookingjs-v3",
-    "release:patch": "../flux/flux timekit:release patch bookingjs-v3",
-    "release:minor": "../flux/flux timekit:release minor bookingjs-v3",
-    "release:major": "../flux/flux timekit:release major bookingjs-v3"
+    "deploy:prod": "../flux/flux timekit:deploy prod bookingjs",
+    "deploy:hosted": "../flux/flux timekit:deploy hosted bookingjs",
+    "release:patch": "../flux/flux timekit:release patch bookingjs",
+    "release:minor": "../flux/flux timekit:release minor bookingjs",
+    "release:major": "../flux/flux timekit:release major bookingjs"
   },
   "devDependencies": {
     "browserify": "^17.0.0",

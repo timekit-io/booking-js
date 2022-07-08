@@ -5,14 +5,14 @@
     {{ title }}
   </label>
   <select
-    id="input-{{ key }}"
-    class="bookingjs-form-input--select input-{{ key }}"
     name="{{ key }}"
+    id="input-{{ key }}"
     {{# readonly }} disabed {{/ readonly }}
     {{# required }} required {{/ required }}
+    class="bookingjs-form-input--select input-{{ key }} {{# required }}field-required {{/ required }}"
   >
     {{# enum }}
-    <option value="{{ . }}" {{# prefilled }} selected {{/ prefilled }}>{{ . }}</option>
+      <option value="{{ . }}" {{# prefilled }} selected {{/ prefilled }}>{{ . }}</option>
     {{/ enum }}
   </select>
   <div class="bookingjs-form-input-arrow--select">

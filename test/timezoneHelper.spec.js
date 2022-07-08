@@ -2,8 +2,8 @@
 
 jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 
-var createWidget = require('./utils/createWidget');
 var mockAjax = require('./utils/mockAjax');
+var createWidget = require('./utils/createWidget');
 var interact = require('./utils/commonInteractions');
 
 var moment = require('moment');
@@ -34,7 +34,6 @@ describe('Timezone helper', function() {
     setTimeout(function() {
 
       var picker = $('.bookingjs-footer-tz-picker-select');
-      
       expect(picker.val()).toBe(fixedTimezone);
       done()
 
@@ -45,7 +44,6 @@ describe('Timezone helper', function() {
   it('should be able guess user timezone', function(done) {
 
     createWidget();
-
     setTimeout(function() {
 
       var picker = $('.bookingjs-footer-tz-picker-select');
@@ -64,44 +62,51 @@ describe('Timezone helper', function() {
   it('should be able change user timezone and re-render timeslots', function(done) {
 
     createWidget();
-
     setTimeout(function() {
 
-      var picker = $('.bookingjs-footer-tz-picker-select');
+      const changeEvent = new Event("change");
+      const pickerSelect = document.querySelector('.bookingjs-footer-tz-picker-select');
 
       // Change timezone to LA
       var firstTimezone = 'America/Los_Angeles';
       mockAjax.findTimeWithTimezone(firstTimezone);
-      picker.val(firstTimezone);
-      picker.trigger('change');
-
+      
+      pickerSelect.value = firstTimezone;
+      pickerSelect.dispatchEvent(changeEvent);
+      
       setTimeout(function() {
 
-        expect(picker.val()).toBe(firstTimezone);
+        expect(pickerSelect.value).toBe(firstTimezone);
 
-        var laTimeslot = $('.fc-event').eq(0).find('.fc-time').data('start');
+        var tkEventText = document.querySelector('.fc-timegrid-col .fc-timegrid-col-events .fc-timegrid-event-harness .fc-event-time').innerHTML;
+        var laTimeslot = tkEventText.split("-")[0].trim();
         var laStart = moment(laTimeslot, 'h:mma')
         
         // Change timezone to CPH
         var secondTimezone = 'Europe/Copenhagen';
         mockAjax.findTimeWithTimezone(secondTimezone);
-        picker.val(secondTimezone);
-        picker.trigger('change');
+
+        pickerSelect.value = secondTimezone;
+        pickerSelect.dispatchEvent(changeEvent);
 
         setTimeout(function() {
 
-          expect(picker.val()).toBe(secondTimezone);
+          expect(pickerSelect.value).toBe(secondTimezone);
+          var tkEventText2 = document.querySelector('.fc-timegrid-col .fc-timegrid-col-events .fc-timegrid-event-harness .fc-event-time').innerHTML;
 
           // Make sure that the two rendered timeslots timestamps are not the same
-          var cphTimeslot = $('.fc-event').eq(0).find('.fc-time').data('start');
+          var cphTimeslot = tkEventText2.split("-")[0].trim();
+          
           var cphStart = moment(cphTimeslot, 'h:mma');
-          var diffInMins = moment(laStart, 'h:mma').diff(moment(cphStart, 'h:mma'), 'minutes')
+          var diffInMins = moment(laStart, 'h:mma').diff(moment(cphStart, 'h:mma'), 'minutes');
+
           expect(diffInMins).not.toBe(0);
 
           // Make sure that the rendered timeslot timestamps are correctly skewed by the timezone offset
-          var controlLaTime = moment().tz(firstTimezone).format('h:mma')
-          var controlCphTime = moment().tz(secondTimezone).format('h:mma')
-          var controlDiffInMins = moment(controlLaTime, 'h:mma').diff(moment(controlCphTime, 'h:mma'), 'minutes')
+          var controlLaTime = moment().tz(firstTimezone).format('h:mma');
+          var controlCphTime = moment().tz(secondTimezone).format('h:mma');
+          var controlDiffInMins = moment(controlLaTime, 'h:mma').diff(moment(controlCphTime, 'h:mma'), 'minutes');
+
           expect(diffInMins).toBe(controlDiffInMins);
 
           done()
@@ -120,17 +125,19 @@ describe('Timezone helper', function() {
 
       interact.clickEvent();
 
-      var picker = $('.bookingjs-footer-tz-picker-select');
+      const changeEvent = new Event("change");
+      const pickerSelect = document.querySelector('.bookingjs-footer-tz-picker-select');
 
       // Change timezone to LA
       var firstTimezone = 'America/Los_Angeles';
       mockAjax.findTimeWithTimezone(firstTimezone);
-      picker.val(firstTimezone);
-      picker.change();
+
+      pickerSelect.value = firstTimezone;
+      pickerSelect.dispatchEvent(changeEvent);
 
       setTimeout(function() {
 
-        expect(picker.val()).toBe(firstTimezone);
+        expect(pickerSelect.value).toBe(firstTimezone);
 
         var laTimeString = $('.bookingjs-bookpage-time').text();
         var laTimeslot = laTimeString.split(' - ')[0];
@@ -139,12 +146,13 @@ describe('Timezone helper', function() {
         // Change timezone to CPH
         var secondTimezone = 'Europe/Copenhagen';
         mockAjax.findTimeWithTimezone(secondTimezone);
-        picker.val(secondTimezone);
-        picker.change();
+
+        pickerSelect.value = secondTimezone;
+        pickerSelect.dispatchEvent(changeEvent);
 
         setTimeout(function() {
 
-          expect(picker.val()).toBe(secondTimezone);
+          expect(pickerSelect.value).toBe(secondTimezone);
 
           // Make sure that the two rendered timeslots timestamps are not the same
           var cphTimeString = $('.bookingjs-bookpage-time').text();
@@ -173,17 +181,19 @@ describe('Timezone helper', function() {
 
     setTimeout(function() {
 
-      var picker = $('.bookingjs-footer-tz-picker-select');
+      const changeEvent = new Event("change");
+      const pickerSelect = document.querySelector('.bookingjs-footer-tz-picker-select');
 
       // Change timezone to LA
       var firstTimezone = 'America/Los_Angeles';
       mockAjax.findTimeWithTimezone(firstTimezone);
-      picker.val(firstTimezone);
-      picker.change();
+      
+      pickerSelect.value = firstTimezone;
+      pickerSelect.dispatchEvent(changeEvent);
 
       setTimeout(function() {
 
-        expect(picker.val()).toBe(firstTimezone);
+        expect(pickerSelect.value).toBe(firstTimezone);
         interact.clickEvent();
 
         setTimeout(function() {
@@ -192,17 +202,16 @@ describe('Timezone helper', function() {
 
           var laTimeString = $('.bookingjs-bookpage-time').text();
           var laTimeslot = laTimeString.split(' - ')[0];
-          var laStart = moment(laTimeslot, 'h:mma');
           
           setTimeout(function() {
 
             var request = jasmine.Ajax.requests.mostRecent();
             expect(request.url).toBe('https://api.timekit.io/v2/bookings?include=attributes,event,user');
             
-            var requestData = JSON.parse(request.params);
-            var startTime = moment.parseZone(requestData.start).format('h:mma')
+            var requestData = JSON.parse(request.params);            
+            var startTime = moment.parseZone(requestData.start).format('h:mma');
             
-            expect(startTime).toBe(laTimeslot)
+            expect(startTime).toBe(laTimeslot.replace(/^0+/, ''));
             expect(requestData.customer.timezone).toBe(firstTimezone);
 
             done()
@@ -227,34 +236,40 @@ describe('Timezone helper', function() {
       var request = jasmine.Ajax.requests.mostRecent();
       expect(request.url).toBe('https://api.timekit.io/v2/bookings/groups');
 
-      var picker = $('.bookingjs-footer-tz-picker-select');
+      const changeEvent = new Event("change");
+      const pickerSelect = document.querySelector('.bookingjs-footer-tz-picker-select');
 
       // Change timezone to LA
       var firstTimezone = 'America/Los_Angeles';
       mockAjax.groupSlotsWithTimezone(firstTimezone);
-      picker.val(firstTimezone);
-      picker.trigger('change');
+
+      pickerSelect.value = firstTimezone;
+      pickerSelect.dispatchEvent(changeEvent);
 
       setTimeout(function() {
 
-        expect(picker.val()).toBe(firstTimezone);
+        expect(pickerSelect.value).toBe(firstTimezone);
 
-        var laTimeslot = $('.fc-event').eq(0).find('.fc-time').data('start');
+        var tkEventText = document.querySelector('.fc-timegrid-col .fc-timegrid-col-events .fc-timegrid-event-harness .fc-event-time').innerHTML;
+        var laTimeslot = tkEventText.split("-")[0].trim();
         var laStart = moment(laTimeslot, 'h:mma')
         
         // Change timezone to CPH
         var secondTimezone = 'Europe/Copenhagen';
         mockAjax.groupSlotsWithTimezone(secondTimezone);
-        picker.val(secondTimezone);
-        picker.trigger('change');
+
+        pickerSelect.value = secondTimezone;
+        pickerSelect.dispatchEvent(changeEvent);
 
         setTimeout(function() {
 
-          expect(picker.val()).toBe(secondTimezone);
+          expect(pickerSelect.value).toBe(secondTimezone);
 
-          // Make sure that the two rendered timeslots timestamps are not the same
-          var cphTimeslot = $('.fc-event').eq(0).find('.fc-time').data('start');
+          var tkEventText = document.querySelector('.fc-timegrid-col .fc-timegrid-col-events .fc-timegrid-event-harness .fc-event-time').innerHTML;
+          var cphTimeslot = tkEventText.split("-")[0].trim();
           var cphStart = moment(cphTimeslot, 'h:mma');
+  
+          // Make sure that the two rendered timeslots timestamps are not the same
           var diffInMins = moment(laStart, 'h:mma').diff(moment(cphStart, 'h:mma'), 'minutes')
           expect(diffInMins).not.toBe(0);
 
@@ -262,8 +277,8 @@ describe('Timezone helper', function() {
           var controlLaTime = moment().tz(firstTimezone).format('h:mma')
           var controlCphTime = moment().tz(secondTimezone).format('h:mma')
           var controlDiffInMins = moment(controlLaTime, 'h:mma').diff(moment(controlCphTime, 'h:mma'), 'minutes')
+          
           expect(diffInMins).toBe(controlDiffInMins);
-
           done()
 
         }, 1000);

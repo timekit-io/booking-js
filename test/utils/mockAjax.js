@@ -1,14 +1,14 @@
 'use strict';
 
-var moment = require('moment');
+const moment = require('moment');
 
 module.exports = {
 
   // Find time endpoint with results in near future
   findTime: function() {
 
-    var today = moment();
-    var tomorrow = moment().add(1, 'day');
+    const today = moment();
+    const tomorrow = moment().add(1, 'day');
 
     jasmine.Ajax.stubRequest(
       'https://api.timekit.io/v2/availability'
@@ -29,8 +29,8 @@ module.exports = {
   // Find time endpoint with testmode: true
   findTimeOnTestModeApp: function() {
 
-    var today = moment();
-    var tomorrow = moment().add(1, 'day');
+    const today = moment();
+    const tomorrow = moment().add(1, 'day');
 
     jasmine.Ajax.stubRequest(
       'https://api.timekit.io/v2/availability'
@@ -54,7 +54,7 @@ module.exports = {
   // Find time endpoint with results long into the future
   findTimeWithDateInFuture: function() {
 
-    var future = moment().add(1, 'month').startOf('day');
+    const future = moment().add(1, 'month').startOf('day');
 
     jasmine.Ajax.stubRequest(
       'https://api.timekit.io/v2/availability'
@@ -100,8 +100,8 @@ module.exports = {
   // Find time endpoint with results in near future
   findTimeWithTimezone: function(timezone) {
 
-    var today = moment().tz(timezone);
-    var tomorrow = moment().tz(timezone).add(1, 'day');
+    const today = moment().tz(timezone);
+    const tomorrow = moment().tz(timezone).add(1, 'day');
 
     jasmine.Ajax.stubRequest(
       'https://api.timekit.io/v2/availability'
@@ -122,8 +122,8 @@ module.exports = {
   // Find time team endpoint with results in near future
   findTimeTeam: function() {
 
-    var today = moment();
-    var tomorrow = moment().add(1, 'day');
+    const today = moment();
+    const tomorrow = moment().add(1, 'day');
 
     jasmine.Ajax.stubRequest(
       'https://api.timekit.io/v2/availability'
@@ -248,8 +248,8 @@ module.exports = {
   // Find time endpoint with results in near future
   groupSlots: function() {
 
-    var today = moment();
-    var tomorrow = moment().add(1, 'day');
+    const today = moment();
+    const tomorrow = moment().add(1, 'day');
 
     jasmine.Ajax.stubRequest(
       'https://api.timekit.io/v2/bookings/groups'
@@ -269,8 +269,8 @@ module.exports = {
   // Find time endpoint with results in near future
   groupSlotsWithTimezone: function(timezone) {
 
-    var today = moment().tz(timezone);
-    var tomorrow = moment().tz(timezone).add(1, 'day');
+    const today = moment().tz(timezone);
+    const tomorrow = moment().tz(timezone).add(1, 'day');
 
     jasmine.Ajax.stubRequest(
       'https://api.timekit.io/v2/bookings/groups'
@@ -289,14 +289,11 @@ module.exports = {
 
   // Mocks all common endpoints
   all: function() {
-
     this.findTime();
     this.findTimeTeam();
     this.createBooking();
     this.getHostedWidget();
     this.getEmbedWidget();
     this.groupSlots();
-
   }
-
 };

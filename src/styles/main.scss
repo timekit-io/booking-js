@@ -200,7 +200,8 @@
     }
   }
 
-  &-displayname {
+  &-displayname,
+  .fc-header-toolbar .fc-toolbar-chunk:first-child {
     position: absolute;
     top: 0;
     left: 0;
@@ -397,6 +398,10 @@
 
     &-field {
       position: relative;
+      
+      .field-required {
+        box-shadow: inset 0px 0px 1px 1px $errorColor;
+      }
     }
 
     &-field--dirty &-input {

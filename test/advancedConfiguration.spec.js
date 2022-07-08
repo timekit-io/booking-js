@@ -2,12 +2,12 @@
 
 jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 
-var moment = require('moment');
-var createWidget = require('./utils/createWidget');
-var mockAjax = require('./utils/mockAjax');
+const moment = require('moment');
+const mockAjax = require('./utils/mockAjax');
+const createWidget = require('./utils/createWidget');
 var interact = require('./utils/commonInteractions');
 
-describe('Advanced configuration', function() {
+describe('spec', () => {
 
   beforeEach(function(){
     loadFixtures('main.html');
@@ -22,44 +22,31 @@ describe('Advanced configuration', function() {
   it('should go to the first upcoming event automatically', function(done) {
 
     mockAjax.findTimeWithDateInFuture();
-
-    var widget = createWidget();
+    const widget = createWidget();
 
     setTimeout(function() {
 
-      var future = moment().add(1, 'month').startOf('day');
+      const calendarDate = moment(widget.getCalendar().getDate());
+      const future = moment().add(1, 'month').startOf('day');
 
-      var calendarDate = widget.fullCalendar('getDate');
       expect(calendarDate.format('YYYY-MM-DD')).toBe(future.format('YYYY-MM-DD'));
 
       setTimeout(function() {
-
-        var scrollable = $('.bookingjs-calendar').find('.fc-scroller');
-        var scrollTop = scrollable.scrollTop();
+        const scrollable = $('.bookingjs-calendar').find('.fc-scroller');
+        const scrollTop = scrollable.scrollTop();
         expect(scrollTop).not.toBe(321);
-
         done();
-
       }, 300);
     }, 100);
-
-  });
+  });  
 
   it('should be able to load even though no timeslots are available', function(done) {
-
     mockAjax.findTimeWithNoTimeslots();
-
     createWidget();
-
     setTimeout(function() {
-
-      var availableTimeslots = $('.fc-time-grid-event')
-      expect(availableTimeslots.length).toBe(0)
-
+      expect($('.fc-time-grid-event').length).toBe(0)
       done();
-
     }, 300);
-
   });
 
   it('should be able override config settings fetched remotely, but before render', function(done) {
@@ -67,10 +54,13 @@ describe('Advanced configuration', function() {
     mockAjax.all();
 
     function updateConfig () {
-      var widgetConfig = widget.getConfig()
-      expect(widgetConfig.name).toBe('Marty McFly')
-      widgetConfig.name = 'Marty McFly 2'
-      widget.setConfig(widgetConfig)
+      let configObj = widget.getConfig();
+      let widgetConfig = configObj.all();
+
+      expect(widgetConfig.name).toBe('Marty McFly');
+      
+      widgetConfig.name = 'Marty McFly 2';
+      configObj.set(widgetConfig);
     }
 
     var widget = new TimekitBooking();
@@ -87,18 +77,16 @@ describe('Advanced configuration', function() {
     widget.init(config);
 
     setTimeout(function() {
-
       expect(config.callbacks.renderStarted).toHaveBeenCalled();
 
       var request = jasmine.Ajax.requests.first();
       expect(request.url).toBe('https://api.timekit.io/v2/projects/embed/12345');
 
-      var widgetConfig = widget.getConfig()
-
-      expect(widgetConfig.name).toBe('Marty McFly 2')
+      let configObj = widget.getConfig();
+      let widgetConfig = configObj.all();
+      expect(widgetConfig.name).toBe('Marty McFly 2');
 
       done();
-
     }, 100)
 
   });
@@ -106,8 +94,6 @@ describe('Advanced configuration', function() {
   it('should be able to inject custom fullcalendar settings and register callbacks', function(done) {
 
     mockAjax.all();
-
-    function fcCallback () {}
 
     var config = {
       fullcalendar: {
@@ -125,14 +111,12 @@ describe('Advanced configuration', function() {
     createWidget(config);
 
     setTimeout(function() {
-
       expect(config.callbacks.fullCalendarInitialized).toHaveBeenCalled();
 
       var todayButton = $('.fc-today-button')
       expect(todayButton.text()).toBe('idag')
 
       done();
-
     }, 600);
 
   });
@@ -144,8 +128,8 @@ describe('Advanced configuration', function() {
     var config = {
       create_booking_response_include: ['provider_event', 'attributes', 'event', 'user']
     }
+    
     createWidget(config);
-
     setTimeout(function() {
 
       interact.clickEvent();
@@ -153,12 +137,9 @@ describe('Advanced configuration', function() {
       setTimeout(function() {
 
         interact.fillSubmit();
-
         setTimeout(function() {
 
           var request = jasmine.Ajax.requests.mostRecent();
-          var requestData = JSON.parse(request.params);
-
           expect(request.url).toBe('https://api.timekit.io/v2/bookings?include=provider_event,attributes,event,user');
           done();
 
@@ -168,4 +149,4 @@ describe('Advanced configuration', function() {
 
   });
 
-});
+})

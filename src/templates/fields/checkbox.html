@@ -2,16 +2,16 @@
   <label
     for="input-{{ key }}"
     class="bookingjs-form-label--checkbox label-{{ key }}">
-    {{ title }}
-    <input
-      id="input-{{ key }}"
-      class="bookingjs-form-input--checkbox input-{{ key }}"
-      type="checkbox"
-      name="{{ key }}"
-      value="true"
-      {{# prefilled }} checked {{/ prefilled }}
-      {{# readonly }} disabled {{/ readonly }}
-      {{# required }} required {{/ required }}
-  />
+      {{ title }}
+      <input
+        value="true"
+        type="checkbox"
+        name="{{ key }}"
+        id="input-{{ key }}"
+        {{# prefilled }} checked {{/ prefilled }}
+        {{# readonly }} disabled {{/ readonly }}
+        {{# required }} required {{/ required }}
+        class="bookingjs-form-input--checkbox input-{{ key }} {{# required }}field-required {{/ required }}"
+      />
   </label>
 </div>

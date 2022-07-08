@@ -11,11 +11,11 @@
     id="input-{{ key }}"
     placeholder="{{ title }}"
     pattern="^[\+0-9 \(\)\-]+$"
-    class="bookingjs-form-input input-{{ key }}"
     {{# readonly }} readonly {{/ readonly }}
     {{# required }} required {{/ required }}
     {{# hidden }} type="hidden" {{/ hidden}}
     {{^ hidden }} type="{{ format }}" ({{/ hidden }}
     {{# prefilled }} value="{{ prefilled }}" {{/ prefilled }}
+    class="bookingjs-form-input input-{{ key }} {{# required }}field-required {{/ required }}"
   />
 </div>

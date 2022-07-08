@@ -2,8 +2,8 @@
 
 jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 
-var createWidget = require('./utils/createWidget');
 var mockAjax = require('./utils/mockAjax');
+var createWidget = require('./utils/createWidget');
 var interact = require('./utils/commonInteractions');
 
 describe('Availability view', function() {
@@ -26,21 +26,14 @@ describe('Availability view', function() {
       }
     });
 
-    expect($('.fc-listing-view')).toBeInDOM();
-
     setTimeout(function() {
-
+      expect($('.fc-list-table')).toBeInDOM();
       interact.clickListEvent();
-
       setTimeout(function() {
-
         expect($('.bookingjs-bookpage')).toBeInDOM();
         expect($('.bookingjs-bookpage')).toBeVisible();
-
         done();
-
       }, 500);
-
     }, 500);
 
   });

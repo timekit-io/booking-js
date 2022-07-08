@@ -29,13 +29,13 @@ describe('Multiple instances', function() {
       app_key: '67890'
     });
 
-    var widget1SdkAppKey = widget1.timekitSdk.getConfig().appKey
-    var widget2SdkAppKey = widget2.timekitSdk.getConfig().appKey
+    var widget1SdkAppKey = widget1.getSdk().getConfig().appKey;
+    var widget2SdkAppKey = widget2.getSdk().getConfig().appKey;
 
     expect(widget1SdkAppKey).not.toEqual(widget2SdkAppKey);
 
-    var widget1ConfigAppKey = widget1.getConfig().app_key
-    var widget2ConfigAppKey = widget2.getConfig().app_key
+    var widget1ConfigAppKey = widget1.getConfig().get('app_key');
+    var widget2ConfigAppKey = widget2.getConfig().get('app_key');
 
     expect(widget1ConfigAppKey).not.toEqual(widget2ConfigAppKey);
 

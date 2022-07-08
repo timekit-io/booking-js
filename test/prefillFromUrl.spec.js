@@ -3,9 +3,8 @@
 jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 
 var qs = require('querystringify');
-
-var createWidget = require('./utils/createWidget');
 var mockAjax = require('./utils/mockAjax');
+var createWidget = require('./utils/createWidget');
 var interact = require('./utils/commonInteractions');
 
 describe('Prefill fields from URL', function() {
@@ -50,11 +49,9 @@ describe('Prefill fields from URL', function() {
     }
 
     createWidget(config, global);
-
     setTimeout(function() {
 
       interact.clickEvent();
-
       setTimeout(function() {
 
         var nameInput = $('.input-name');

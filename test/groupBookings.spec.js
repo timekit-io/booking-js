@@ -2,8 +2,8 @@
 
 jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 
-var createWidget = require('./utils/createWidget');
 var mockAjax = require('./utils/mockAjax');
+var createWidget = require('./utils/createWidget');
 var interact = require('./utils/commonInteractions');
 
 describe('Group bookings', function() {
@@ -32,11 +32,9 @@ describe('Group bookings', function() {
       expect(request.url).toBe('https://api.timekit.io/v2/bookings/groups');
 
       interact.clickEvent();
-
       setTimeout(function() {
 
         interact.fillSubmit();
-
         expect($('.bookingjs-form').hasClass('loading')).toBe(true);
 
         setTimeout(function() {
@@ -46,6 +44,7 @@ describe('Group bookings', function() {
 
           var request = jasmine.Ajax.requests.mostRecent();
           var requestData = JSON.parse(request.params)
+          
           expect(request.url).toBe('https://api.timekit.io/v2/bookings?include=attributes,event,user');
           expect(requestData.graph).toBe('group_customer')
           expect(requestData.related.owner_booking_id).toBe('87623db3-cb5f-41e8-b85b-23b5efd04e07')

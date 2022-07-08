@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="UTF-8">
+  <title>Booking.js group bookings example</title>
+  <link rel="shortcut icon" href="/favicon.png">
+  <link rel="stylesheet" href="/build/booking.min.css" />
+  <style type="text/css">
+    body { background-color: #E6E6E6; max-width: 700px; margin: 0 auto; }
+  </style>
+ </head>
+ <body>
+  <div id="bookingjs"></div>
+  <script type="text/javascript" src="/build/booking.min.js"></script>
+  <script type="text/javascript">
+    new TimekitBooking().init({
+      app_key: 'test_widget_key_cHiN4hGUtjs0ayycDT4XiIXcLQun65jE',
+      project_id: 'fdb3b224-5cc3-4465-ba33-c2237591216e',
+      booking: {
+        graph: 'group_customer'
+      }
+    });
+  </script>
+</body>
+</html>

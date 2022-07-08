@@ -2,8 +2,8 @@
 
 jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 
-var createWidget = require('./utils/createWidget');
 var mockAjax = require('./utils/mockAjax');
+var createWidget = require('./utils/createWidget');
 var interact = require('./utils/commonInteractions');
 
 describe('Disable booking page', function() {
@@ -43,7 +43,6 @@ describe('Disable booking page', function() {
     setTimeout(function() {
 
       interact.clickEvent();
-
       setTimeout(function() {
 
         expect(config.callbacks.clickTimeslot).toHaveBeenCalled();
@@ -58,13 +57,11 @@ describe('Disable booking page', function() {
         spyOn(request, 'then').and.callThrough();
 
         request.then(function(){});
-
         setTimeout(function() {
 
           expect(request.then).toHaveBeenCalled();
           expect(config.callbacks.createBookingSuccessful).toHaveBeenCalled();
           expect(successResponse.data).toBeDefined();
-
           done();
 
         }, 200);

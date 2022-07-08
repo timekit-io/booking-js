@@ -2,8 +2,8 @@
 
 jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 
-var createWidget = require('./utils/createWidget');
 var mockAjax = require('./utils/mockAjax');
+var createWidget = require('./utils/createWidget');
 var interact = require('./utils/commonInteractions');
 
 describe('Basic interaction', function() {
@@ -36,6 +36,7 @@ describe('Basic interaction', function() {
 
         var pageTime = $('.bookingjs-bookpage-time').text();
         var contains = pageTime.indexOf(calEventStart) > -1;
+
         expect(contains).toBe(true);
 
         done();
@@ -52,20 +53,16 @@ describe('Basic interaction', function() {
     setTimeout(function() {
 
       interact.clickEvent();
-
       setTimeout(function() {
 
         expect($('.bookingjs-bookpage')).toBeInDOM();
         expect($('.bookingjs-bookpage')).toBeVisible();
 
-        $('.bookingjs-bookpage-close').click();
+        document.querySelector('.bookingjs-bookpage-close').click();
 
         setTimeout(function() {
-
           expect($('.bookingjs-bookpage').length).toBe(0);
-
           done();
-
         }, 500);
       }, 500);
     }, 500);
@@ -75,7 +72,6 @@ describe('Basic interaction', function() {
   it('should be able to book an event', function(done) {
 
     createWidget();
-
     setTimeout(function() {
 
       interact.clickEvent();
@@ -83,7 +79,6 @@ describe('Basic interaction', function() {
       setTimeout(function() {
 
         var inputs = interact.fillSubmit();
-
         expect($('.bookingjs-form').hasClass('loading')).toBe(true);
 
         setTimeout(function() {
@@ -112,11 +107,9 @@ describe('Basic interaction', function() {
     setTimeout(function() {
 
       interact.clickEvent();
-
       setTimeout(function() {
 
         interact.fillSubmit();
-
         expect($('.bookingjs-form').hasClass('loading')).toBe(true);
 
         setTimeout(function() {
@@ -124,8 +117,8 @@ describe('Basic interaction', function() {
           expect($('.bookingjs-form').hasClass('success')).toBe(true);
 
           var request = jasmine.Ajax.requests.mostRecent();
-
           expect(JSON.parse(request.params).project_id).toBeDefined()
+
           done();
 
         }, 200);
@@ -141,19 +134,16 @@ describe('Basic interaction', function() {
     setTimeout(function() {
 
       interact.clickEvent();
-
       setTimeout(function() {
 
         interact.fillSubmit();
-
         setTimeout(function() {
 
           expect($('.bookingjs-form').hasClass('success')).toBe(true);
           var request = jasmine.Ajax.requests.mostRecent();
           expect(request.url).toBe('https://api.timekit.io/v2/bookings?include=attributes,event,user');
 
-          $('.bookingjs-bookpage-close').click();
-
+          document.querySelector('.bookingjs-bookpage-close').click();
           setTimeout(function() {
 
             expect($('.bookingjs-bookpage').length).toBe(0);
@@ -175,19 +165,16 @@ describe('Basic interaction', function() {
     setTimeout(function() {
 
       interact.clickEvent();
-
       setTimeout(function() {
 
         interact.fillSubmit();
-
         setTimeout(function() {
 
           expect($('.bookingjs-form').hasClass('success')).toBe(true);
           var request = jasmine.Ajax.requests.mostRecent();
           expect(request.url).toBe('https://api.timekit.io/v2/bookings?include=attributes,event,user');
 
-          $('.bookingjs-form-button').click();
-
+          document.querySelector('.bookingjs-form-button').click();
           setTimeout(function() {
 
             expect($('.bookingjs-bookpage').length).toBe(0);

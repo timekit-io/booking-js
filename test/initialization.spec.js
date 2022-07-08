@@ -2,8 +2,8 @@
 
 jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 
-var baseConfig = require('./utils/defaultConfig');
 var mockAjax = require('./utils/mockAjax');
+var baseConfig = require('./utils/defaultConfig');
 
 describe('Initialization regular', function() {
 
@@ -18,31 +18,22 @@ describe('Initialization regular', function() {
   });
 
   it('should be able to load the fixture page', function() {
-
     expect(window).toBeDefined();
-    expect($).toBeDefined();
     expect($('#bookingjs')).toBeInDOM();
-
   });
 
   it('should be able init and display the widget with instance pattern', function() {
-
     var widget = new TimekitBooking();
     widget.init(baseConfig);
 
     expect(widget).toBeDefined();
-    expect(widget.getConfig()).toBeDefined();
-
+    expect(widget.getConfig().all()).toBeDefined();
     expect($('.bookingjs-calendar')).toBeInDOM();
-
   });
 
   it('should be able init and display the widget with singleton pattern', function() {
-
-    TimekitBooking().init(baseConfig);
-
+    new TimekitBooking().init(baseConfig);
     expect($('.bookingjs-calendar')).toBeInDOM();
-
   });
 
 });
@@ -60,39 +51,30 @@ describe('Initialization minified', function() {
   });
 
   it('should be able to load the fixture page', function() {
-
     expect(window).toBeDefined();
     expect($).toBeDefined();
     expect($('#bookingjs')).toBeInDOM();
-
   });
 
   it('should be able init and display the widget with instance pattern', function() {
-
     var widget = new TimekitBooking();
     widget.init(baseConfig);
 
     expect(widget).toBeDefined();
-    expect(widget.getConfig()).toBeDefined();
-
+    expect(widget.getConfig().all()).toBeDefined();
     expect($('.bookingjs-calendar')).toBeInDOM();
-
   });
 
   it('should be destroy and cleanup itself', function() {
-
     var widget = new TimekitBooking();
     widget.init(baseConfig);
 
     expect(widget).toBeDefined();
-    expect(widget.getConfig()).toBeDefined();
-
+    expect(widget.getConfig().all()).toBeDefined();
     expect($('.bookingjs-calendar')).toBeInDOM();
 
     widget.destroy();
-
     expect($('.bookingjs-calendar')).not.toBeInDOM();
-
   });
 
 });

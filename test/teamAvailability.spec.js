@@ -22,26 +22,23 @@ describe('Team availability', function() {
   it('should be able to book a timeslot', function(done) {
 
     createWidget(teamAvailabilityConfig);
-
     setTimeout(function() {
 
       interact.clickEvent();
-
       setTimeout(function() {
 
         interact.fillSubmit();
-
         expect($('.bookingjs-form').hasClass('loading')).toBe(true);
 
         setTimeout(function() {
-
           expect($('.bookingjs-form').hasClass('success')).toBe(true);
           expect($('.bookingjs-form-success-message')).toBeVisible();
 
           var successMessage = $('.bookingjs-form-success-message').html();
-          var contains = successMessage.indexOf('An invitation has been sent to') > -1;
+          var contains = successMessage.indexOf('We have received your booking and sent a confirmation to') > -1;
+
           // TODO:
-          // expect(contains).toBe(true);
+          expect(contains).toBe(true);
           done();
 
         }, 200);
@@ -53,19 +50,15 @@ describe('Team availability', function() {
   it('should show bookable resource name', function(done) {
 
     mockAjax.findTimeTeam();
-
     createWidget(teamAvailabilityConfig);
 
     setTimeout(function() {
 
       interact.clickEvent();
-
       setTimeout(function() {
 
         var resourceHeader = $('.bookingjs-bookpage-resource').html();
-        // TODO:
-        // var contains = resourceHeader.indexOf('Marty McFly') > -1;
-        // expect(contains).toBe(true);
+        expect(resourceHeader).toBe(undefined);
 
         done();
 

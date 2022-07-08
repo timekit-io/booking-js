@@ -111,7 +111,6 @@ describe('Booking fields', function() {
     setTimeout(function() {
 
       interact.clickEvent();
-
       setTimeout(function() {
 
         var phoneInput = $('.input-phone');
@@ -136,16 +135,13 @@ describe('Booking fields', function() {
     }
 
     createWidget(config);
-
     setTimeout(function() {
 
       interact.clickEvent();
-
       setTimeout(function() {
 
         var commentInput = $('.input-comment');
         expect(commentInput.length).toBe(0);
-
         done();
 
       }, 500);
@@ -177,26 +173,24 @@ describe('Booking fields', function() {
     setTimeout(function() {
 
       interact.clickEvent();
-
       setTimeout(function() {
 
-        var nameInput = $('.input-name');
+        var nameInput = $('#input-name');
         expect(nameInput.prop('readonly')).toBe(true);
         expect(nameInput.is('[readonly]')).toBe(true);
 
-        var emailInput = $('.input-email');
+        var emailInput = $('#input-email');
         expect(emailInput.prop('readonly')).toBe(false);
         expect(emailInput.is('[readonly]')).toBe(false);
 
         emailInput.val('someemail@timekit.io');
 
-        var commentInput = $('.input-comment');
+        var commentInput = $('#input-comment');
         expect(commentInput.prop('readonly')).toBe(true);
         expect(commentInput.is('[readonly]')).toBe(true);
         expect(commentInput.val()).toBe('This should be submitted');
 
-        $('.bookingjs-form-button').click();
-
+        document.querySelector('.bookingjs-form-button').click();
         expect($('.bookingjs-form').hasClass('loading')).toBe(true);
 
         setTimeout(function() {
@@ -204,7 +198,6 @@ describe('Booking fields', function() {
           expect($('.bookingjs-form').hasClass('success')).toBe(true);
 
           var request = jasmine.Ajax.requests.mostRecent();
-
           let expectedDescription = 'Name: ' + config.customer_fields.name.prefilled + '\nEmail: someemail@timekit.io\nComment: ' + config.customer_fields.comment.prefilled + '\n';
 
           var requestDescription = JSON.parse(request.params).description

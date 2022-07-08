@@ -6,10 +6,10 @@
   </label>
   <textarea
     id="input-{{ key }}"
-    class="bookingjs-form-input bookingjs-form-input--textarea input-{{ key }}"
     rows="3"
     name="{{ key }}"
     placeholder="{{ title }}"
     {{# readonly }} readonly {{/ readonly }}
-    {{# required }} required {{/ required }}>{{# prefilled }}{{ prefilled }}{{/ prefilled }}</textarea>
+    {{# required }} required {{/ required }}
+    class="bookingjs-form-input bookingjs-form-input--textarea input-{{ key }} {{# required }}field-required {{/ required }}">{{# prefilled }}{{ prefilled }}{{/ prefilled }}</textarea>
 </div>

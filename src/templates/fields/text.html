@@ -10,11 +10,11 @@
     name="{{ key }}"
     id="input-{{ key }}"
     placeholder="{{ title }}"
-    class="bookingjs-form-input input-{{ key }}"
-    {{# prefilled }} value="{{ prefilled }}" {{/ prefilled }}
     {{# readonly }} readonly {{/ readonly }}
     {{# required }} required {{/ required }}
     {{# hidden }} type="hidden" {{/ hidden}}
-    {{^ hidden }} type="{{ format }}" ({{/ hidden }}
+    {{^ hidden }} type="{{ format }}" {{/ hidden }} 
+    {{# prefilled }} value="{{ prefilled }}" {{/ prefilled }}
+    class="bookingjs-form-input input-{{ key }} {{# required }}field-required {{/ required }}"
   />
 </div>

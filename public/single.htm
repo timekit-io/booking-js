@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="UTF-8">
+  <title>Booking.js single instance example</title>
+  <link rel="shortcut icon" href="/favicon.png">
+  <link rel="stylesheet" href="/build/booking.min.css" />
+  <style type="text/css">
+    body { background-color: #E6E6E6; max-width: 700px; margin: 0 auto; }
+  </style>
+ </head>
+ <body>
+  <div id="bookingjs"></div>
+  <script type="text/javascript" src="/build/booking.min.js"></script>
+  <script type="text/javascript">
+    new TimekitBooking().init({
+      project_id: 'f12e1fb5-73ff-4d5d-9bf8-381bb6f09685',
+      app_key: 'test_widget_key_cHiN4hGUtjs0ayycDT4XiIXcLQun65jE',
+      resources: [
+        'cd9169e5-9823-40fd-881c-22d4a366d2a7'
+      ],
+      availability: {
+        length: '1 hour'
+      }
+    });
+  </script>
+</body>
+</html>

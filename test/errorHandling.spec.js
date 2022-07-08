@@ -12,7 +12,6 @@ describe('Error handling', function() {
     loadFixtures('main.html');
     jasmine.Ajax.install();
     mockAjax.all();
-    // disable console log temporarily
     window.console.warn = function() {}
   });
 

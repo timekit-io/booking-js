@@ -12,5 +12,4 @@ module.exports = function(config, global) {
   widget.init(newConfig, global);
 
   return widget;
-
 }

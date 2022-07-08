@@ -2,11 +2,9 @@
 
 jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 
-var createWidget = require('./utils/createWidget');
 var mockAjax = require('./utils/mockAjax');
+var createWidget = require('./utils/createWidget');
 var interact = require('./utils/commonInteractions');
-
-var browserWidth;
 
 describe('Mobile & responsive', function() {
 
@@ -14,25 +12,25 @@ describe('Mobile & responsive', function() {
     loadFixtures('main.html');
     jasmine.Ajax.install();
     mockAjax.all();
-    browserWidth = $('body').width();
-    $('body').width(400);
+    viewport.set(360, 740);
   });
 
   afterEach(function() {
     jasmine.Ajax.uninstall();
-    $('body').width(browserWidth);
+    viewport.reset()
   });
 
   it('should be able change day in mobile mode by clicking arrows', function(done) {
 
     createWidget({
       ui: {
-        display_name: 'John Doe'
+        display_name: 'John Doe',
+        availability_view: 'agendaWeek'
       }
     });
 
-    expect($('.fc-basicDay-view')).toBeInDOM()
-    var currentDay = $('.fc-day-header')[0].textContent;
+    expect($('.fc-dayGridDay-view')).toBeInDOM()
+    var currentDay = $('.fc-col-header-cell-cushion')[0].textContent;
 
     var displayNameRect = $('.bookingjs-displayname')[0].getBoundingClientRect();
     var clickableArrowRect = $('.fc-next-button')[0].getBoundingClientRect();
@@ -45,11 +43,10 @@ describe('Mobile & responsive', function() {
 
     setTimeout(function() {
 
-      var calEventStart = interact.clickNextArrow();
-
+      interact.clickNextArrow();
       setTimeout(function() {
 
-        var nextDay = $('.fc-day-header')[0].textContent;
+        var nextDay = $('.fc-col-header-cell-cushion')[0].textContent;
         expect(currentDay).not.toBe(nextDay);
         done();
 

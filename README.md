@@ -1,16 +1,13 @@
-# DEPRECATED
-
-This repo is now deprecated new repository can be found at [BookingJS V3](https://github.com/timekit-io/bookingjs-v3)
-
-[![Circle CI](https://img.shields.io/circleci/build/github/timekit-io/booking-js)](https://circleci.com/gh/timekit-io/booking-js)
-
-[**Releases & changelog**](https://github.com/timekit-io/booking-js/releases)
+# Booking.js by Timekit
 
 > Make a beautiful embeddable booking widget in minutes running on the Timekit API.
 
-![Booking.js Screenshot](misc/widget-screenshot.png)
+⚠️ This is **version 3** of booking.js that supports the new projects model and uses App Widget Key for authentication. 
 
-⚠️ This is **version 2** of booking.js that supports the new projects model and uses App Widget Key for authentication. [Version 1 is still supported](https://github.com/timekit-io/booking-js/tree/master-v1).
+- [Version 1 is still supported](https://github.com/timekit-io/booking-js/tree/master-v1).
+- [Version 2 is still supported](https://github.com/timekit-io/booking-js/tree/master).
+
+![Booking.js Screenshot](misc/widget-screenshot.png)
 
 ## Documentation
 
@@ -26,6 +23,23 @@ See [Issues](https://github.com/timekit-io/booking-js/issues) for feature reques
 
 The `json-schema` v0.2.3 package is used pursuant to the BSD-3-Clause license
 
+### Setting up locally
+
+Checkout this new project locally using git command showed below:
+```
+# go to timekit workspace
+cd ~/timekit-io
+
+# clone this new project loacally
+git clone git@github.com:timekit-io/bookingjs.git
+
+# install depedencies
+yarn install
+
+# run bookingjs project
+# for local testing use: http://localhost:8081
+yarn dev
+```
 
 ## How to publish changes to npm
 make sure you upgrade version number in package.json file follow sementic versioning

@@ -33,11 +33,9 @@ describe('Booking configuration', function() {
     setTimeout(function() {
 
       interact.clickEvent();
-
       setTimeout(function() {
 
         interact.fillSubmit();
-
         setTimeout(function() {
 
           var request = jasmine.Ajax.requests.mostRecent();
@@ -74,7 +72,6 @@ describe('Booking configuration', function() {
     setTimeout(function() {
 
       expect($('.bookingjs-displayname span')).toContainText('McFlys Widget');
-
       interact.clickEvent();
 
       setTimeout(function() {
@@ -86,7 +83,6 @@ describe('Booking configuration', function() {
         expect(phoneNumberLabel).toContainText('Phone Number')
 
         interact.fillSubmit();
-
         setTimeout(function() {
 
           var request = jasmine.Ajax.requests.mostRecent();

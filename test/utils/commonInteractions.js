@@ -4,35 +4,38 @@
 module.exports = {
 
   clickNextArrow: function () {
-    var calEvent = $('.fc-next-button')[0];
-    $(calEvent).click();
+    document.querySelector(".fc-next-button").click();
   },
 
   clickEvent: function() {
-    var calEvent = $('.fc-time-grid-event')[0];
-    var calEventStart = $(calEvent).find('.fc-time').attr('data-start');
-    $(calEvent).click();
-    return calEventStart;
+    var calEvent = document.querySelector(".fc-timegrid-event");
+    calEvent.click();
+    return calEvent.querySelector(".fc-event-time").innerHTML;
   },
 
   clickListEvent: function() {
-    var calEvent = $('.fc-list-item')[0];
-    var calEventStart = $(calEvent).find('.fc-list-item-time').text();
-    $(calEvent).click();
-    return calEventStart;
+    var calEvent = document.querySelector('.fc-list-event');
+    calEvent.click();
+    return calEvent.querySelector('.fc-list-event-time').innerHTML;
   },
 
   fillSubmit: function() {
-    var data = {
+    const data = {
       name: 'Joe Test',
       email: 'test@timekit.io',
       comment: 'This is a test'
     };
-    $('.input-name').val(data.name);
-    $('.input-email').val(data.email);
-    $('.input-comment').val(data.comment);
-    $('.bookingjs-form-button').click();
+
+    let nameInput = document.getElementById('input-name');
+    let emailInput = document.getElementById('input-email');
+    let commentInput = document.getElementById('input-comment');
+
+    nameInput && (nameInput.value = data.name);
+    emailInput && (emailInput.value = data.email);
+    commentInput && (commentInput.value = data.comment);
+
+    document.querySelector('.bookingjs-form-button').click();
+
     return data;
   }
-
 }

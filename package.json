@@ -1,11 +1,15 @@
 {
   "private": true,
-  "license": "ISC",
+  "license": "MIT",
   "version": "v3.0.0",
-  "name": "booking-js",
-  "main": "public/dist/booking.min.js",
-  "author": "Sandip Patel <sandip.patel@tulip.com>",
-  "repository": "git@github.com:timekit-io/booking-js.git",
+  "author": "Timekit Inc.",
+  "name": "timekit-booking",
+  "main": "public/build/booking.min.js",
+  "description": "Make a beautiful embeddable booking widget in minutes",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/timekit-io/booking-js.git"
+  },
   "scripts": {
     "test": "karma start",
     "test:watch": "karma start --watch",

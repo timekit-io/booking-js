@@ -19,7 +19,7 @@ const primary = {
   ui: {
     show_timezone_helper: true,
     localization: {
-      reschedule_submit_button: 'Cancel & Reschedule',
+      reschedule_submit_button: 'Confirm Reschedule',
       reschedule_success_message: 'We have reschduled your booking successfully',
     }
   },

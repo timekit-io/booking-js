@@ -23,20 +23,20 @@ class BookingPage extends BaseTemplate {
 			template({
 				allocatedResource: allocatedResource,
 				submitText: this.config.get('ui.localization.submit_button'),
-				chosenDate: this.#formatTimestamp(eventData.startStr, dateFormat),
+				chosenDate: this.formatTimestamp(eventData.startStr, dateFormat),
 				closeIcon: require('!svg-inline-loader!../assets/close-icon.svg'),
 				errorIcon: require('!svg-inline-loader!../assets/error-icon.svg'),
 				loadingIcon: require('!svg-inline-loader!../assets/loading-spinner.svg'),
 				checkmarkIcon: require('!svg-inline-loader!../assets/checkmark-icon.svg'),
 				allocatedResourcePrefix: this.config.get('ui.localization.allocated_resource_prefix'),
-				chosenTime: this.#formatTimestamp(eventData.startStr, timeFormat) + ' - ' + this.#formatTimestamp(eventData.endStr, timeFormat),
+				chosenTime: this.formatTimestamp(eventData.startStr, timeFormat) + ' - ' + this.formatTimestamp(eventData.endStr, timeFormat),
 				successMessage: interpolate.sprintf(
 					this.config.get('ui.localization.success_message'), '<span class="booked-email"></span>'
 				)
 			})
 		);
 
-        this.#renderCustomerFields(eventData);
+        this.renderCustomerFields(eventData);
         this.template.rootTarget.append(this.bookingPageTarget);
 
         const form = this.bookingPageTarget.querySelector('.bookingjs-form');
@@ -47,7 +47,7 @@ class BookingPage extends BaseTemplate {
             if (form.classList.contains('success')) {
                 this.template.getAvailability();
             }
-            this.#hide();
+            this.hideBookingPage();
         });
 
         if (eventData.extendedProps.resources) {
@@ -62,16 +62,16 @@ class BookingPage extends BaseTemplate {
             if (!this.bookingPageTarget) return;
             
             const bookingPageDate = this.bookingPageTarget.querySelector('.bookingjs-bookpage-date');
-            bookingPageDate.innerHTML = this.#formatTimestamp(eventData.startStr, dateFormat);
+            bookingPageDate.innerHTML = this.formatTimestamp(eventData.startStr, dateFormat);
 
             const bookingPageTime = this.bookingPageTarget.querySelector('.bookingjs-bookpage-time');
-            bookingPageTime.innerHTML = this.#formatTimestamp(eventData.startStr, timeFormat) + ' - ' + this.#formatTimestamp(eventData.endStr, timeFormat);
+            bookingPageTime.innerHTML = this.formatTimestamp(eventData.startStr, timeFormat) + ' - ' + this.formatTimestamp(eventData.endStr, timeFormat);
         });
 
         setTimeout(() => this.bookingPageTarget.classList.add('show'), 100);
     }
 
-    #renderCustomerFields(eventData) {
+    renderCustomerFields(eventData) {
         const formFieldsEle = this.bookingPageTarget.querySelector('.bookingjs-form-fields');
         
         const telTemplate = require('../templates/fields/tel.html');
@@ -180,16 +180,16 @@ class BookingPage extends BaseTemplate {
             });
         }
 
-        form.addEventListener("submit", e => this.#submitForm(e, eventData));
+        form.addEventListener("submit", e => this.submitForm(e, eventData));
     }
 
-    #hide() {
+    hideBookingPage() {
 		this.utils.doCallback('closeBookingPage');
 		this.bookingPageTarget.classList.remove('show');
 		setTimeout(() => this.bookingPageTarget.remove(), 200);
     }
 
-    #submitForm(e, eventData) {
+    submitForm(e, eventData) {
         e.preventDefault();
 
         const form = e.target;
@@ -197,7 +197,7 @@ class BookingPage extends BaseTemplate {
         // close the form if submitted
         if (form.classList.contains('success')) {
             this.template.getAvailability();
-            this.#hide();
+            this.hideBookingPage();
             return;
         }
 
@@ -246,7 +246,7 @@ class BookingPage extends BaseTemplate {
 				form.classList.remove('loading');
                 form.classList.add('success');
 			})
-			.catch(() => this.#showBookingFailed(form));
+			.catch(() => this.showBookingFailed(form));
     }
 
     timekitCreateBooking(formData, eventData) {
@@ -366,7 +366,7 @@ class BookingPage extends BaseTemplate {
 		return request;
     }
 
-    #showBookingFailed(form) {
+    showBookingFailed(form) {
 		const submitButton = form.querySelector('.bookingjs-form-button');
 		
         submitButton.classList.add('button-shake');
@@ -378,7 +378,7 @@ class BookingPage extends BaseTemplate {
 		setTimeout(() => form.classList.remove('error'), 2000);
     }
 
-    #formatTimestamp(start, format) {
+    formatTimestamp(start, format) {
         return moment(start).tz(this.template.customerTimezoneSelected).format(format);
     }
 }

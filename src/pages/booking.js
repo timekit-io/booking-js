@@ -134,7 +134,7 @@ class BookingPage extends BaseTemplate {
         // close the form if submitted
         if (form.classList.contains('success')) {
             this.template.getAvailability();
-            this.initCloseButton(this.bookingPageTarget);
+            this.hidePageModel(this.bookingPageTarget);
             return;
         }
 

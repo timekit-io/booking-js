@@ -1,6 +1,6 @@
-const moment = require("moment");
 const find = require("lodash/find");
 const merge= require('lodash/merge');
+const moment = require('moment-timezone');
 const stringify = require('json-stringify-safe');
 const { Calendar } = require("@fullcalendar/core");
 

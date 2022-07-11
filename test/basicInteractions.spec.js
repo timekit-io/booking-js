@@ -171,6 +171,7 @@ describe('Basic interaction', function() {
         setTimeout(function() {
 
           expect($('.bookingjs-form').hasClass('success')).toBe(true);
+          
           var request = jasmine.Ajax.requests.mostRecent();
           expect(request.url).toBe('https://api.timekit.io/v2/bookings?include=attributes,event,user');
 

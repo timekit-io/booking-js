@@ -1,6 +1,6 @@
 {
   "license": "MIT",
-  "version": "v3.0.0",
+  "version": "3.0.1",
   "author": "Timekit Inc.",
   "name": "timekit-booking",
   "main": "public/build/booking.min.js",

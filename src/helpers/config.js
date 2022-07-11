@@ -22,7 +22,7 @@ class Config {
     }
 
     set(configs) {
-        return (this.config = this.#setDefaults(configs));
+        return (this.config = this.setDefaults(configs));
     }
 
     setGlobal(value) {
@@ -32,21 +32,21 @@ class Config {
 
     parseAndUpdate(suppliedConfig) {
         // Extend the default config with supplied settings
-        let newConfig = this.#setDefaults(suppliedConfig);
+        let newConfig = this.setDefaults(suppliedConfig);
         
         // Apply presets
-        newConfig = this.#applyConfigPreset(newConfig, 'timeDateFormat', newConfig.ui.time_date_format)
-        newConfig = this.#applyConfigPreset(newConfig, 'availabilityView', newConfig.ui.availability_view)
+        newConfig = this.applyConfigPreset(newConfig, 'timeDateFormat', newConfig.ui.time_date_format)
+        newConfig = this.applyConfigPreset(newConfig, 'availabilityView', newConfig.ui.availability_view)
 
         // Set default formats for native fields
-        newConfig = this.#setCustomerFieldsNativeFormats(newConfig);
+        newConfig = this.setCustomerFieldsNativeFormats(newConfig);
 
         // Check for required settings
         if (!newConfig.app_key) throw 'A required config setting ("app_key") was missing';
 
         // Prefill fields based on query string
         const urlParams = this.getGlobal("location") && this.getGlobal("location.search");
-        if (urlParams) newConfig = this.#applyPrefillFromUrlGetParams(newConfig, qs.parse(urlParams));
+        if (urlParams) newConfig = this.applyPrefillFromUrlGetParams(newConfig, qs.parse(urlParams));
 
         return this.set(newConfig);
     }
@@ -55,7 +55,7 @@ class Config {
         return merge({}, this.defaultConfigs.primaryWithoutProject, suppliedConfig);
     }
 
-    #applyPrefillFromUrlGetParams(suppliedConfig, urlParams) {
+    applyPrefillFromUrlGetParams(suppliedConfig, urlParams) {
         const customerFields = suppliedConfig.customer_fields;
         const customerFieldsKeys = Object.keys(customerFields);
 
@@ -69,7 +69,7 @@ class Config {
         return suppliedConfig;
     }
 
-    #setCustomerFieldsNativeFormats(config) {
+    setCustomerFieldsNativeFormats(config) {
         const customerFields = config.customer_fields;
         const customerFieldsKeys = Object.keys(customerFields);
 
@@ -84,18 +84,18 @@ class Config {
         return config;
     }
 
-    #applyConfigPreset(localConfig, propertyName, propertyObject) {
+    applyConfigPreset(localConfig, propertyName, propertyObject) {
         const presetCheck = this.defaultConfigs.presets[propertyName][propertyObject];
         if (presetCheck) return merge({}, presetCheck, localConfig);
         return localConfig;
     }
 
-    #setDefaults(suppliedConfig) {
-        suppliedConfig.sdk = this.#prepareSdkConfig(suppliedConfig);
+    setDefaults(suppliedConfig) {
+        suppliedConfig.sdk = this.prepareSdkConfig(suppliedConfig);
         return merge({}, this.defaultConfigs.primary, suppliedConfig);
     }
 
-    #prepareSdkConfig(suppliedConfig) {
+    prepareSdkConfig(suppliedConfig) {
         if (typeof suppliedConfig.sdk === 'undefined') {
             suppliedConfig.sdk = {};
         }

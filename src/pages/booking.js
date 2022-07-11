@@ -151,7 +151,7 @@ class BookingPage extends BaseTemplate {
 			return;
 		}
 
-        const formData = this.prepareFormFields(form);
+        let formData = this.prepareFormFields(form);
 
         // fix for first/last name
 		if (formData.first_name || formData.last_name) {

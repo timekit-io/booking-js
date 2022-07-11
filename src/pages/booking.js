@@ -1,5 +1,5 @@
-const moment = require('moment');
 const merge= require('lodash/merge');
+const moment = require('moment-timezone');
 const interpolate = require('sprintf-js');
 const BaseTemplate = require('../helpers/base');
 

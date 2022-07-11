@@ -1,9 +1,9 @@
 'use strict';
 
-const moment = require('moment');
 const map = require('lodash/map');
 const filter = require('lodash/filter');
 const orderBy = require('lodash/orderBy');
+const moment = require('moment-timezone');
 
 require('moment-timezone/builds/moment-timezone-with-data-2012-2022.js');
 

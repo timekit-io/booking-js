@@ -66,6 +66,49 @@ class BookingWidget {
         return this;
     }
 
+    init(suppliedConfig, global) {
+
+        // Allows mokcing the window object if passed
+        global = global || window;
+        this.config.setGlobal(global);
+
+        // Make sure that SDK is ready and debug flag is checked early
+        this.config.set(suppliedConfig || {});
+
+        this.utils.logDebug(['Version:', this.getVersion()]);
+        this.utils.logDebug(['Supplied config:', suppliedConfig]);
+
+        try {
+            this.template.render(suppliedConfig || {});
+        } catch (e) {
+            this.utils.logError(e);
+            return this;
+        }
+
+        // Check whether a config is supplied
+        if (!this.utils.doesConfigExist(suppliedConfig)) {
+            this.template.triggerError('No configuration was supplied. Please supply a config object upon library initialization');
+            return this;
+        }
+
+        // Start from local config
+        if (!this.utils.isRemoteProject(suppliedConfig) || suppliedConfig.disable_remote_load) {
+            return this.startWithConfig(this.config.setDefaultsWithoutProject(suppliedConfig));
+        }
+
+        // Load remote embedded config
+        if (this.utils.isEmbeddedProject(suppliedConfig)) {
+            this.loadRemoteEmbeddedProject(suppliedConfig);
+        }
+  
+        // Load remote hosted config
+        if (this.utils.isHostedProject(suppliedConfig)) {
+            this.loadRemoteHostedProject(suppliedConfig);
+        }
+          
+        return this;
+    }
+    
     startWithConfig(suppliedConfig) {
         try {
             // Handle config and defaults
@@ -118,49 +161,6 @@ class BookingWidget {
 
         this.utils.logDebug(['Remote config:', remoteConfig]);
         return this.startWithConfig(merge({}, remoteConfig, suppliedConfig));
-    }
-
-    init(suppliedConfig, global) {
-
-        // Allows mokcing the window object if passed
-        global = global || window;
-        this.config.setGlobal(global);
-
-        // Make sure that SDK is ready and debug flag is checked early
-        this.config.set(suppliedConfig || {});
-
-        this.utils.logDebug(['Version:', this.getVersion()]);
-        this.utils.logDebug(['Supplied config:', suppliedConfig]);
-
-        try {
-            this.template.render(suppliedConfig || {});
-        } catch (e) {
-            this.utils.logError(e);
-            return this;
-        }
-
-        // Check whether a config is supplied
-        if (!this.utils.doesConfigExist(suppliedConfig)) {
-            this.template.triggerError('No configuration was supplied. Please supply a config object upon library initialization');
-            return this;
-        }
-
-        // Start from local config
-        if (!this.utils.isRemoteProject(suppliedConfig) || suppliedConfig.disable_remote_load) {
-            return this.startWithConfig(this.config.setDefaultsWithoutProject(suppliedConfig));
-        }
-
-        // Load remote embedded config
-        if (this.utils.isEmbeddedProject(suppliedConfig)) {
-            this.loadRemoteEmbeddedProject(suppliedConfig);
-        }
-  
-        // Load remote hosted config
-        if (this.utils.isHostedProject(suppliedConfig)) {
-            this.loadRemoteHostedProject(suppliedConfig);
-        }
-          
-        return this;
     }
 }
 

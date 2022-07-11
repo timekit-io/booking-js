@@ -3,8 +3,8 @@
  <head>
   <meta charset="UTF-8">
   <title>Booking.js autoload example</title>
-  <link rel="shortcut icon" href="/assets/favicon.png" />
-  <link rel="stylesheet" href="/build/booking.min.css" />
+  <link rel="shortcut icon" href="/favicon.png">
+  <link rel="stylesheet" href="/build/booking.min.css"></style>
   <style type="text/css">
     body { background-color: #E6E6E6; max-width: 700px; margin: 0 auto; }
   </style>
@@ -13,10 +13,64 @@
   <div id="bookingjs"></div>
   <script type="text/javascript" src="/build/booking.min.js"></script>
   <script type="text/javascript">
-    var widget = new TimekitBooking();
+    const widget = new TimekitBooking();
     widget.init({
-      project_id: 'f12e1fb5-73ff-4d5d-9bf8-381bb6f09685',
-      app_key: 'test_widget_key_cHiN4hGUtjs0ayycDT4XiIXcLQun65jE'
+      api_base_url: 'https://api-localhost.timekit.io/',
+      app_key: 'test_widget_key_9hRBjTw2yphubH2bYiNDaiE4awc6zlpC',
+      resources: ['6ed66588-b3a9-4124-90d0-235c542b2f22'],
+      ui: {
+        availability_view: 'agendaWeek',
+        time_date_format: '12h-mdy-sun',
+        display_name: 'Martys Timetravel Service',
+        avatar: 'http://via.placeholder.com/100x100',
+        localization: {
+          submit_button: 'Book it now!',
+          allocated_resource_prefix: 'for',
+          success_message: 'Thanks for booking!'
+        }
+      },
+      availability: {
+        length: '30 minutes'
+      },
+      disable_confirm_page: true,
+      callbacks: {
+        clickTimeslot: function (timeslot) {
+          const customer = {
+            name: 'Marty',
+            email: 'marty.mcfly@timekit.io'
+          }
+          widget.timekitCreateBooking(customer, timeslot)
+            .then(function () {
+              console.log('Success, booking created!');
+            });
+        }
+      },
+      customer_fields: {
+        name: {
+          title: 'Full name',
+          prefilled: false,
+          readonly: false
+        },
+        email: {
+          title: 'E-mail',
+          prefilled: 'marty.mcfly@timekit.io',
+          readonly: true
+        },
+        comment: {
+          title: 'Comment',
+          prefilled: false,
+          required: true,
+          readonly: false,
+          format: 'textarea'
+        },
+        phone: {
+          title: 'Phone number',
+          prefilled: false,
+          required: false,
+          readonly: false,
+          format: 'tel'
+        }
+      }
     });
   </script>
 </body>

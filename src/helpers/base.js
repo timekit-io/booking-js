@@ -1,4 +1,4 @@
-const moment = require('moment');
+const moment = require('moment-timezone');
 
 class BaseTemplate {
 
@@ -32,7 +32,7 @@ class BaseTemplate {
             if (form.classList.contains('success')) {
                 this.template.getAvailability();
             }
-            this.#hidePageModel(page);
+            this.hidePageModel(page);
         });
 	}
 
@@ -122,7 +122,7 @@ class BaseTemplate {
 		return formData;
 	}
 
-	#hidePageModel(page) {
+	hidePageModel(page) {
 		this.utils.doCallback('closeBookingPage');
 		page.classList.remove('show');
 		setTimeout(() => page.remove(), 200);

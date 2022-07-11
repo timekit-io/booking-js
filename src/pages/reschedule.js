@@ -1,5 +1,5 @@
-const moment = require('moment');
 const merge = require('lodash/merge');
+const moment = require('moment-timezone');
 const interpolate = require('sprintf-js');
 const BaseTemplate = require('../helpers/base');
 
@@ -55,7 +55,7 @@ class BookingReschdulePage extends BaseTemplate {
 			})
 		);
 
-        this.#renderCustomerFields(eventData);
+        this.renderCustomerFields(eventData);
         this.initCloseButton(this.bookingReschdulePageTarget);
         this.template.rootTarget.append(this.bookingReschdulePageTarget);
 
@@ -75,7 +75,7 @@ class BookingReschdulePage extends BaseTemplate {
         return this;
     }
 
-    #renderCustomerFields(eventData) {
+    renderCustomerFields(eventData) {
         const textareaTemplate = require('../templates/fields/textarea.html');
         const form = this.bookingReschdulePageTarget.querySelector('.bookingjs-form');
         const formFieldsEle = this.bookingReschdulePageTarget.querySelector('.bookingjs-form-fields');
@@ -91,10 +91,10 @@ class BookingReschdulePage extends BaseTemplate {
         })));
 
         this.initFormValidation(form);
-		form.addEventListener("submit", e => this.#submitForm(e, eventData));
+		form.addEventListener("submit", e => this.submitForm(e, eventData));
     }
 
-    #submitForm(e, eventData) {
+    submitForm(e, eventData) {
         e.preventDefault();
 
         const form = e.target;

@@ -1,9 +1,9 @@
 'use strict';
 
-const moment = require('moment');
 const map = require('lodash/map');
 const filter = require('lodash/filter');
 const orderBy = require('lodash/orderBy');
+const moment = require('moment-timezone');
 
 require('moment-timezone/builds/moment-timezone-with-data-2012-2022.js');
 
@@ -243,51 +243,44 @@ const depericated = [
     { key: 'Zulu'}
 ];
 
-const tzNames = moment.tz._links;
-
-const getFriendlyName = function(targetName, tzName) {
+const tzNames = moment.tz.names();
+const getFriendlyName = function(tzName) {
 
     const tzObj = moment().tz(tzName);
-    const targetTz = moment().tz(targetName).tz();
     const prefix = '(' + tzObj.format('Z') + ') ';
-
-    const key = tzObj.tz();
-    const found = filter(oldTimeZones, { key: key });
-    
+   
+    const found = filter(oldTimeZones, { key: tzName });
     if (found !== undefined && found[0] && found[0].name) {
         return {
-            key: key,
+            key: tzName,
             depericated: false,
             name: found[0].name,
-            value: (found[0].value !== undefined) ? found[0].value : targetTz,
+            value: (found[0].value !== undefined) ? found[0].value : tzName,
         }
     }
 
-    const foundDepericated = filter(depericated, { key });
-    const foundDepericatedTarget = filter(depericated, { key: targetTz });
-        
-    const depericatedTz = foundDepericatedTarget.length > 0;
-    if (foundDepericated.length > 0 && foundDepericated[0] && foundDepericated[0].key && !depericatedTz) {
+    const foundDepericated = filter(depericated, { key: tzName });
+    if (foundDepericated.length > 0 && foundDepericated[0] && foundDepericated[0].key) {
         return {
-            key: key,
-            value: targetTz,
-            depericated: false,
-            name: prefix + key,
+            key: tzName,
+            value: tzName,
+            depericated: true,
+            name: prefix + tzName,
         }
     }
 
     return {
-        key: key,
-        value: targetTz,
-        name: prefix + key,
-        depericated: depericatedTz
+        key: tzName,
+        value: tzName,
+        depericated: false,
+        name: prefix + tzName
     }
 }
 
-const newList = map(tzNames, (targetName, tzName) => getFriendlyName(targetName, tzName))
-    .filter((record) => !record.depericated);
+const newList = map(tzNames, (tzName) => getFriendlyName(tzName))
+                .filter((record) => !record.depericated);
 
-const timezones = orderBy(newList, ['name'], ['asc']);
+const timezones = orderBy(newList, ['key'], ['asc']);
 
 const guess = () => moment.tz.guess() || 'UTC';
 const getZone = (newTz) => moment.tz.zone(newTz);

@@ -137,10 +137,10 @@ class Template extends BaseTemplate {
         const sizing = this.decideCalendarSize(this.config.get("fullcalendar.initialView"));        
         const args = merge({
 			height: sizing.height,
-            eventClick: async (info) => {
+            eventClick: (info) => {
                 if (!this.config.get('disable_confirm_page')) {
                     if (this.isReschdulePage()) {
-                        await this.bookingReschudlePage.initBookingAndRender(info.event);
+                        this.bookingReschudlePage.initBookingAndRender(info.event);
                     }
                     else {
                         this.bookingPage.render(info.event);

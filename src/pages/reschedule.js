@@ -1,4 +1,3 @@
-const merge = require('lodash/merge');
 const moment = require('moment-timezone');
 const interpolate = require('sprintf-js');
 const BaseTemplate = require('../helpers/base');
@@ -12,7 +11,7 @@ class BookingReschdulePage extends BaseTemplate {
         this.bookingReschdulePageTarget = null;
     }
 
-    async initBookingAndRender(eventData) {
+    initBookingAndRender(eventData) {
         const dateFormat = this.config.get('ui.booking_date_format') || moment.localeData().longDateFormat('LL');
         const timeFormat = this.config.get('ui.booking_time_format') || moment.localeData().longDateFormat('LT');
 

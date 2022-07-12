@@ -57,11 +57,17 @@ class BookingReschdulePage extends BaseTemplate {
             e.preventDefault();
             if (!this.bookingReschdulePageTarget) return;
             
-            const bookingPageDate = this.bookingReschdulePageTarget.querySelector('.bookingjs-bookpage-date');
-            bookingPageDate.innerHTML = this.formatTimestamp(eventData.startStr, dateFormat);
+            const formerBookingDate = this.bookingReschdulePageTarget.querySelector('.former-booking-date');
+            const currentBookingDate = this.bookingReschdulePageTarget.querySelector('.current-booking-date');
 
-            const bookingPageTime = this.bookingReschdulePageTarget.querySelector('.bookingjs-bookpage-time');
-            bookingPageTime.innerHTML = this.formatTimestamp(eventData.startStr, timeFormat) + ' - ' + this.formatTimestamp(eventData.endStr, timeFormat);
+            currentBookingDate.innerHTML = this.formatTimestamp(eventData.startStr, dateFormat);
+            formerBookingDate.innerHTML = this.formatTimestamp(this.config.get('reschedule.eventStart'), dateFormat);
+
+            const formerBookingTime = this.bookingReschdulePageTarget.querySelector('.former-booking-time');
+            const currentBookingTime = this.bookingReschdulePageTarget.querySelector('.current-booking-time');
+
+            currentBookingTime.innerHTML = this.formatTimestamp(eventData.startStr, timeFormat) + ' - ' + this.formatTimestamp(eventData.endStr, timeFormat);
+            formerBookingTime.innerHTML = this.formatTimestamp(this.config.get('reschedule.eventStart'), timeFormat) + ' - ' + this.formatTimestamp(this.config.get('reschedule.eventEnd'), timeFormat);
         });
 
         setTimeout(() => this.bookingReschdulePageTarget.classList.add('show'), 100);

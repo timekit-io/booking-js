@@ -3,11 +3,11 @@
     <div class="bookingjs-bookpage-header">
       <h2>Confirm Rescheduling</h2>
       <h3>Former Booking:</h3>
-      <p><b class="bookingjs-form-text">Date:</b> {{ oldDate }}</p>
-      <p><b class="bookingjs-form-text">Time:</b>	{{ oldTime }}</p>
+      <p><b class="bookingjs-form-text">Date:</b> <span class="former-booking-date">{{ oldDate }}</span></p>
+      <p><b class="bookingjs-form-text">Time:</b>	<span class="former-booking-time">{{ oldTime }}</span></p>
       <h3>Rescheduled Booking:</h3>
-      <p><b class="bookingjs-form-text">Date:</b> {{ chosenDate }}</h3></p>
-      <p><b class="bookingjs-form-text">Time:</b> {{ chosenTime }}</h3></p>
+      <p><b class="bookingjs-form-text">Date:</b> <span class="current-booking-date">{{ chosenDate }}</span></p>
+      <p><b class="bookingjs-form-text">Time:</b> <span class="current-booking-time">{{ chosenTime }}</span></p>
       {{#allocatedResource}}
         <span class="bookingjs-bookpage-resource-prefix">{{ allocatedResourcePrefix }}</span>
         <h3 class="bookingjs-bookpage-resource">{{ allocatedResource }}</h3>

@@ -31,6 +31,7 @@ class Config {
     }
 
     parseAndUpdate(suppliedConfig) {
+
         // Extend the default config with supplied settings
         let newConfig = this.setDefaults(suppliedConfig);
         

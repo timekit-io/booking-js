@@ -1,12 +1,13 @@
-const moment = require("moment");
 const find = require("lodash/find");
 const merge= require('lodash/merge');
+const moment = require('moment-timezone');
 const stringify = require('json-stringify-safe');
 const { Calendar } = require("@fullcalendar/core");
 
 const BaseTemplate = require('./base');
 const BookingPage = require("../pages/booking");
 const timezones = require("../services/timezones");
+const BookingReschudlePage = require("../pages/reschedule");
 
 require('../styles/fullcalendar.scss');
 require('../styles/utils.scss');
@@ -37,6 +38,7 @@ class Template extends BaseTemplate {
 
         // initialize pages
         this.bookingPage = new BookingPage(this);
+        this.bookingReschudlePage = new BookingReschudlePage(this);
     }
 
     destroy() {
@@ -135,9 +137,14 @@ class Template extends BaseTemplate {
         const sizing = this.decideCalendarSize(this.config.get("fullcalendar.initialView"));        
         const args = merge({
 			height: sizing.height,
-            eventClick: (info) => {
+            eventClick: async (info) => {
                 if (!this.config.get('disable_confirm_page')) {
-                    this.bookingPage.render(info.event);
+                    if (this.isReschdulePage()) {
+                        await this.bookingReschudlePage.initBookingAndRender(info.event);
+                    }
+                    else {
+                        this.bookingPage.render(info.event);
+                    }
                 } else {
                     info.el.classList.remove('fc-event-clicked');
                     info.el.classList.add('fc-event-clicked');
@@ -460,11 +467,19 @@ class Template extends BaseTemplate {
             }
 			else height += 66;
         }
+
+        if (this.isReschdulePage()) {
+            height += 100;
+        }
         
         return {
 			view: view,
 			height: height
 		};
+    }
+
+    isReschdulePage() {
+        return this.config.get('reschedule.uuid') && this.config.get('reschedule.action') === 'reschedule';
     }
 
     triggerError(message) {

@@ -4,8 +4,7 @@
 
 ⚠️ This is **version 3** of booking.js that supports the new projects model and uses App Widget Key for authentication. 
 
-- [Version 1 is still supported](https://github.com/timekit-io/booking-js/tree/master-v1).
-- [Version 2 is still supported](https://github.com/timekit-io/booking-js/tree/master).
+- Version 1/2 will not be supported anymore
 
 ![Booking.js Screenshot](misc/widget-screenshot.png)
 

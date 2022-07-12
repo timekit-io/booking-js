@@ -1,21 +1,24 @@
 {
-  "private": true,
-  "license": "ISC",
-  "version": "v3.0.0",
-  "name": "bookingjs-v3",
-  "main": "public/dist/booking.min.js",
-  "author": "Sandip Patel <sandip.patel@tulip.com>",
-  "repository": "git@github.com:timekit-io/bookingjs-v3.git",
+  "license": "MIT",
+  "version": "3.0.4",
+  "author": "Timekit Inc.",
+  "name": "timekit-booking",
+  "main": "public/build/booking.min.js",
+  "description": "Make a beautiful embeddable booking widget in minutes",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/timekit-io/booking-js.git"
+  },
   "scripts": {
     "test": "karma start",
     "test:watch": "karma start --watch",
     "build": "webpack --config webpack.prod.js",
     "dev": "webpack serve --config webpack.dev.js",
-    "deploy:prod": "../flux/flux timekit:deploy prod bookingjs-v3",
-    "deploy:hosted": "../flux/flux timekit:deploy hosted bookingjs-v3",
-    "release:patch": "../flux/flux timekit:release patch bookingjs-v3",
-    "release:minor": "../flux/flux timekit:release minor bookingjs-v3",
-    "release:major": "../flux/flux timekit:release major bookingjs-v3"
+    "deploy:prod": "../flux/flux timekit:deploy prod booking-js",
+    "deploy:hosted": "../flux/flux timekit:deploy hosted booking-js",
+    "release:patch": "../flux/flux timekit:release patch booking-js",
+    "release:minor": "../flux/flux timekit:release minor booking-js",
+    "release:major": "../flux/flux timekit:release major booking-js"
   },
   "devDependencies": {
     "browserify": "^17.0.0",

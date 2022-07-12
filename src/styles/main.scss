@@ -349,6 +349,17 @@
       width: 90%;
     }
 
+    .cancel-text {
+      font-size: 14px;
+      font-weight: 800;
+      color: $errorColor;
+    }
+    &-text {
+      font-size: 11px;
+      margin-right: 1em;
+      color: $primaryColor;
+    }
+
     &-box {
       overflow: hidden;
       position: relative;
@@ -563,6 +574,7 @@
       }
 
       .inactive-text {
+        text-transform: capitalize;
         white-space: nowrap;
         opacity: 1;
       }

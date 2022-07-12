@@ -1,12 +1,13 @@
-const moment = require("moment");
 const find = require("lodash/find");
 const merge= require('lodash/merge');
+const moment = require('moment-timezone');
 const stringify = require('json-stringify-safe');
 const { Calendar } = require("@fullcalendar/core");
 
 const BaseTemplate = require('./base');
 const BookingPage = require("../pages/booking");
 const timezones = require("../services/timezones");
+const BookingReschudlePage = require("../pages/reschedule");
 
 require('../styles/fullcalendar.scss');
 require('../styles/utils.scss');
@@ -37,6 +38,7 @@ class Template extends BaseTemplate {
 
         // initialize pages
         this.bookingPage = new BookingPage(this);
+        this.bookingReschudlePage = new BookingReschudlePage(this);
     }
 
     destroy() {
@@ -92,7 +94,7 @@ class Template extends BaseTemplate {
         return this;
     }   
 
-    #showLoadingScreen() {
+    showLoadingScreen() {
         this.utils.doCallback('showLoadingScreen');
         const template = require('../templates/loading.html');
         this.loadingTarget = this.htmlToElement(template({
@@ -101,7 +103,7 @@ class Template extends BaseTemplate {
         this.rootTarget.append(this.loadingTarget);
     }
 
-    #renderTestModeRibbon() {
+    renderTestModeRibbon() {
 		const template = require('../templates/testmoderibbon.html');
 		const testModeRibbonTarget = this.htmlToElement(
             template({ribbonText: 'Test Mode'})
@@ -132,12 +134,17 @@ class Template extends BaseTemplate {
     }
 
     initializeCalendar() {
-        const sizing = this.#decideCalendarSize(this.config.get("fullcalendar.initialView"));        
+        const sizing = this.decideCalendarSize(this.config.get("fullcalendar.initialView"));        
         const args = merge({
 			height: sizing.height,
-            eventClick: (info) => {
+            eventClick: async (info) => {
                 if (!this.config.get('disable_confirm_page')) {
-                    this.bookingPage.render(info.event);
+                    if (this.isReschdulePage()) {
+                        await this.bookingReschudlePage.initBookingAndRender(info.event);
+                    }
+                    else {
+                        this.bookingPage.render(info.event);
+                    }
                 } else {
                     info.el.classList.remove('fc-event-clicked');
                     info.el.classList.add('fc-event-clicked');
@@ -146,7 +153,7 @@ class Template extends BaseTemplate {
             },
             windowResize: (arg) => {
                 if(!this.calendar) return;
-                var sizing = this.#decideCalendarSize(arg.view.type);
+                var sizing = this.decideCalendarSize(arg.view.type);
 				this.calendar.changeView(sizing.view);
 				this.calendar.setOption('height', sizing.height);
             }
@@ -175,7 +182,7 @@ class Template extends BaseTemplate {
     }
 
     getAvailability() {
-        this.#showLoadingScreen();
+        this.showLoadingScreen();
         const bookingGraph = this.config.get('booking.graph');
 
         if (
@@ -183,10 +190,10 @@ class Template extends BaseTemplate {
 			bookingGraph === 'group_customer_payment'
 		) {
 			// If in group bookings mode, fetch slots
-			this.#timekitGetBookingSlots();
+			this.timekitGetBookingSlots();
 		} else {
 			// If in normal single-participant mode, call findtime
-			this.#timekitFetchAvailability();
+			this.timekitFetchAvailability();
 		}
 
         return this;
@@ -242,13 +249,13 @@ class Template extends BaseTemplate {
         return this;
     }    
 
-    #hideLoadingScreen() {
+    hideLoadingScreen() {
 		this.utils.doCallback('hideLoadingScreen');
 		this.loadingTarget.classList.remove('show');
 		setTimeout(() => this.loadingTarget.remove(), 500);
     }
 
-    #timekitGetBookingSlots() {
+    timekitGetBookingSlots() {
         this.utils.doCallback('GetBookingSlotsStarted');
 
         let requestData = {
@@ -284,17 +291,17 @@ class Template extends BaseTemplate {
 				});
 
 				this.utils.doCallback('getBookingSlotsSuccessful', response);
-				this.#hideLoadingScreen();
+				this.hideLoadingScreen();
 
 				// Render available timeslots in FullCalendar
-				if (slots.length > 0) this.#renderCalendarEvents(slots);
+				if (slots.length > 0) this.renderCalendarEvents(slots);
 
 				// Render test ribbon if enabled
-				if (response.headers['timekit-testmode']) this.#renderTestModeRibbon();
+				if (response.headers['timekit-testmode']) this.renderTestModeRibbon();
 			})
 			.catch((response) => {
 				this.utils.doCallback('getBookingSlotsFailed', response);
-				this.#hideLoadingScreen();
+				this.hideLoadingScreen();
 				this.triggerError([
 					'An error with Timekit Get Booking Slots occured',
 					response,
@@ -302,7 +309,7 @@ class Template extends BaseTemplate {
 			});
     }
 
-    #timekitFetchAvailability() {
+    timekitFetchAvailability() {
         let args = {
 			output_timezone: this.customerTimezoneSelected,
 		}
@@ -328,21 +335,21 @@ class Template extends BaseTemplate {
             })
             .then((response) => {                
                 this.utils.doCallback('fetchAvailabilitySuccessful', response);
-                this.#hideLoadingScreen();
+                this.hideLoadingScreen();
 
                 // Render available timeslots in FullCalendar
                 if (response.data.length > 0) {
-                    this.#renderCalendarEvents(response.data);
+                    this.renderCalendarEvents(response.data);
                 };
 
                 // Render test ribbon if enabled
                 if (response.headers['timekit-testmode']) {
-                    this.#renderTestModeRibbon();
+                    this.renderTestModeRibbon();
                 };
             })
             .catch((response) => {
                 this.utils.doCallback('fetchAvailabilityFailed', response);
-                this.#hideLoadingScreen();
+                this.hideLoadingScreen();
                 this.triggerError([
                     'An error with Timekit Fetch Availability occured',
                     response,
@@ -350,7 +357,7 @@ class Template extends BaseTemplate {
             });
     }
 
-    #renderCalendarEvents(eventData) {
+    renderCalendarEvents(eventData) {
 		const firstEventEnd = moment(eventData[0].end);
         const firstEventStart = moment(eventData[0].start);
 
@@ -370,15 +377,15 @@ class Template extends BaseTemplate {
 		this.calendarTarget.classList.remove('empty-calendar');
         
 		// Go to first event if enabled
-		this.#goToFirstEvent(eventData[0].start);
+		this.goToFirstEvent(eventData[0].start);
     }
 
-    #goToFirstEvent(firstEventStart) {
+    goToFirstEvent(firstEventStart) {
         this.calendar.gotoDate(firstEventStart);
-        this.#scrollToTime(moment(firstEventStart).format('H'));
+        this.scrollToTime(moment(firstEventStart).format('H'));
     }
 
-    #scrollToTime(time) {
+    scrollToTime(time) {
         if (this.calendar.getOption('initialView') !== 'timeGridWeek') {
             return;
         }
@@ -426,15 +433,15 @@ class Template extends BaseTemplate {
 		scrollable.animate({ scrollTop: scrollTo });
     }
 
-    #getWidthOfElement(element) {
+    getWidthOfElement(element) {
         return parseInt(element.getBoundingClientRect().width);
     }
 
-    #decideCalendarSize(currentView) {
+    decideCalendarSize(currentView) {
         let height = 385;
         let view = currentView || this.config.get("fullcalendar.initialView");
 
-        if (this.#getWidthOfElement(this.rootTarget) < 480) {
+        if (this.getWidthOfElement(this.rootTarget) < 480) {
 			this.rootTarget.classList.add("is-small");
 			if (this.config.get("ui.avatar")) height -= 15;
 			if (currentView === 'timeGridWeek' || currentView === 'dayGridDay') {
@@ -460,11 +467,19 @@ class Template extends BaseTemplate {
             }
 			else height += 66;
         }
+
+        if (this.isReschdulePage()) {
+            height += 100;
+        }
         
         return {
 			view: view,
 			height: height
 		};
+    }
+
+    isReschdulePage() {
+        return this.config.get('reschedule.uuid') && this.config.get('reschedule.action') === 'reschedule';
     }
 
     triggerError(message) {

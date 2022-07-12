@@ -9,20 +9,25 @@ const timeGridPlugin = require("@fullcalendar/timegrid").default;
  * Default configuration
  */
 const primary = {
-  el: '#bookingjs',
   name: '',
-  autoload: true,
   debug: false,
+  autoload: true,
+  el: '#bookingjs',
   disable_remote_load: false,
   disable_confirm_page: false,
   create_booking_response_include: ['attributes', 'event', 'user'],
   ui: {
-    show_timezone_helper: true
+    show_timezone_helper: true,
+    localization: {
+      reschedule_submit_button: 'Confirm Reschedule',
+      reschedule_success_message: 'We have reschduled your booking successfully',
+    }
   },
-  availability: {},
   booking: {},
-  customer_fields: {},
   callbacks: {},
+  reschedule: {},
+  availability: {},
+  customer_fields: {},
   sdk: {
     headers: {
       'Timekit-Context': 'widget'
@@ -56,11 +61,14 @@ const primaryWithoutProject = {
     time_date_format: '12h-mdy-sun',
     availability_view: 'timeGridWeek',
     localization: {
-      allocated_resource_prefix: 'with',
       submit_button: 'Book it',
+      allocated_resource_prefix: 'with',
+      reschedule_submit_button: 'Reschedule',
+      reschedule_success_message: 'We have reschduled your booking successfully',
       success_message: 'We have received your booking and sent a confirmation to %s'
     }
   },
+  reschedule: {},
   availability: {
     mode: 'roundrobin_random'
   },

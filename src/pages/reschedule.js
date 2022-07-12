@@ -15,16 +15,11 @@ class BookingReschdulePage extends BaseTemplate {
     async initBookingAndRender(eventData) {
         const dateFormat = this.config.get('ui.booking_date_format') || moment.localeData().longDateFormat('LL');
         const timeFormat = this.config.get('ui.booking_time_format') || moment.localeData().longDateFormat('LT');
-        const data = await this.template.sdk
-            .makeRequest({
-                method: 'get',
-                url: '/bookings/' + this.config.get('reschedule.uuid') + '/external_action/view?include=resource',
-            }).then((response) => ({
-                oldResource: response.data.resource.name,
-                oldDate: this.formatTimestamp(response.data.start, dateFormat),
-                oldTime: this.formatTimestamp(response.data.start, timeFormat) + ' - ' + this.formatTimestamp(response.data.end, timeFormat),
-            })).catch((e) => this.template.triggerError(e));
-        return this.render(merge(eventData, data));
+
+        eventData.oldDate = this.formatTimestamp(this.config.get('reschedule.eventStart'), dateFormat);
+        eventData.oldTime = this.formatTimestamp(this.config.get('reschedule.eventStart'), timeFormat) + ' - ' + this.formatTimestamp(this.config.get('reschedule.eventEnd'), timeFormat);
+
+        return this.render(eventData);
     }
 
     render(eventData) {
@@ -39,7 +34,6 @@ class BookingReschdulePage extends BaseTemplate {
 			template({
                 oldTime: eventData.oldTime,
                 oldDate: eventData.oldDate,
-                oldResource: eventData.oldResource,
 				allocatedResource: allocatedResource,
 				chosenDate: this.formatTimestamp(eventData.startStr, dateFormat),
 				closeIcon: require('!svg-inline-loader!../assets/close-icon.svg'),

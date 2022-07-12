@@ -139,7 +139,7 @@ class Template extends BaseTemplate {
 			height: sizing.height,
             eventClick: async (info) => {
                 if (!this.config.get('disable_confirm_page')) {
-                    if (this.#isReschdulePage()) {
+                    if (this.isReschdulePage()) {
                         await this.bookingReschudlePage.initBookingAndRender(info.event);
                     }
                     else {
@@ -468,7 +468,7 @@ class Template extends BaseTemplate {
 			else height += 66;
         }
 
-        if (this.#isReschdulePage()) {
+        if (this.isReschdulePage()) {
             height += 100;
         }
         
@@ -478,7 +478,7 @@ class Template extends BaseTemplate {
 		};
     }
 
-    #isReschdulePage() {
+    isReschdulePage() {
         return this.config.get('reschedule.uuid') && this.config.get('reschedule.action') === 'reschedule';
     }
 

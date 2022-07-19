@@ -167,9 +167,16 @@ const timeDateFormat12hmdysun = {
           month: 'numeric', 
           day: 'numeric',
           omitCommas: true
-        }
-        // slotLabelFormat: 'h:mma'
-      }
+        },
+      },
+      dayGridDay: {
+        dayHeaderFormat: { 
+          weekday: 'short',
+          month: 'numeric', 
+          day: 'numeric',
+          omitCommas: true
+        },
+      }      
     }
   }
 };

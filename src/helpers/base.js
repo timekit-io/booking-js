@@ -107,16 +107,29 @@ class BaseTemplate {
 
         for(let i=0; i<formElements.length; i++) {
             const field = formElements[i];
-			const fieldKey = field.name;
-			if (!(fieldKey in formData)) {
-				formData[fieldKey] = field.value;
-			} else {
-				if (!Array.isArray(formData[fieldKey])) {
-					formData[fieldKey] = [formData[fieldKey], field.value];
-				} else {
-					formData[fieldKey].push(field.value);
-				}
-			}
+			
+            const fieldKey = field.name;
+            const fieldType = field.type;
+            
+            if (fieldKey) {
+                if (!formData.hasOwnProperty(fieldKey)) {
+                    if (fieldType === 'checkbox') {
+                        formData[fieldKey] = field.checked ? [field.value] : [];
+                    } else {
+                        formData[fieldKey] = field.value;
+                    }
+                } else {
+                    if (Array.isArray(formData[fieldKey])) {
+                        if (fieldType === 'checkbox') {
+                            if (field.checked) {
+                                formData[fieldKey].push(field.value);
+                            }
+                        } else {
+                            formData[fieldKey].push(field.value);
+                        }
+                    }
+                }    
+            }
         }
 
 		return formData;

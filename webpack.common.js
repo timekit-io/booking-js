@@ -6,17 +6,29 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
   entry: {
-    booking: './src/booking/index.js',
-    appointments: './src/appointments/index.js',
+    booking: {
+      import: './src/booking/index.js',
+      library: {
+        type: 'umd',
+        umdNamedDefine: true,
+        name: 'TimekitBooking',
+      },
+    },
+    appointments: {
+      import: './src/appointments/index.js',
+      library: {
+        type: 'umd',
+        umdNamedDefine: true,
+        name: 'TimekitAppointments',
+      },
+    }
   },
   resolve: {
     extensions: ['.js']
   },  
   output: {
     clean: true,
-    libraryTarget: 'umd',
     publicPath: '/build/',
-    library: 'TimekitBooking',
     filename: '[name].min.js',
     path: path.resolve(__dirname, 'public/build'),
   },

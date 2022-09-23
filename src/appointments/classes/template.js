@@ -1,6 +1,6 @@
 const BaseTemplate = require('./base');
 
-require('../styles/button.scss');
+require('../styles/base.scss');
 
 class Template extends BaseTemplate {
     constructor(config, utils, sdk) {
@@ -19,7 +19,7 @@ class Template extends BaseTemplate {
         const targetElement = configs.el || this.config.get('el');
 
         this.rootTarget = document.createElement('div');
-        this.rootTarget.classList.add("tk-widget-window");
+        this.rootTarget.classList.add("tk-appt-window");
         this.rootTarget.id = targetElement.replace('#', '');
 
         document.body.appendChild(this.rootTarget);
@@ -45,7 +45,14 @@ class Template extends BaseTemplate {
         const buttonTarget = this.htmlToElement(template({
             url: this.config.get('ui.buttonImage')
         }));
+        
+        buttonTarget.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.target.classList.toggle("hide");
+        });
+                
         this.rootTarget.append(buttonTarget);
+
         return this;
     }
 }

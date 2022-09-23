@@ -16,9 +16,16 @@ class BookingWidget {
     init(configs) {
         try {
             this.config.parseAndUpdate(configs);
-            this.template.render(this.config.all());
+            this.sdk.configure(this.config.get('sdk'));
+            this.template.init(this.config.all());
         } catch (e) {
             this.utils.logError(e);
+            return this;
+        }
+
+        // Check whether a config is supplied
+        if (!this.utils.doesConfigExist(configs)) {
+            this.template.triggerError('No configuration was supplied. Please supply a config object upon library initialization');
             return this;
         }
     }

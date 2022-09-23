@@ -13,7 +13,7 @@ class Template extends BaseTemplate {
         this.rootTarget = null;
     }
 
-    render(configs) {
+    init(configs) {
         const targetElement = configs.el || this.config.get('el');        
         this.rootTarget = document.getElementById(targetElement.replace('#', ''));
 

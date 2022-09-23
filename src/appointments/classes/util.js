@@ -1,3 +1,5 @@
+const isEmpty = require("lodash/isEmpty");
+
 class Util {
     constructor(config) {
         this.config = config;
@@ -20,6 +22,10 @@ class Util {
             console.log('TimekitBooking Debug: ', message);
         }
     }   
+
+    doesConfigExist(suppliedConfig) {
+        return (suppliedConfig !== undefined && typeof suppliedConfig === 'object' && !isEmpty(suppliedConfig));
+    }
 }
 
 module.exports = Util;

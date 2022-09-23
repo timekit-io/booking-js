@@ -28,6 +28,23 @@ class BookingWidget {
             this.template.triggerError('No configuration was supplied. Please supply a config object upon library initialization');
             return this;
         }
+
+        try {
+            this.render();
+        } catch (e) {
+            this.utils.logError(e);
+            return this;
+        }
+    }
+
+    render() {
+        this.utils.doCallback('renderStarted');
+
+        this.template.initButton();
+
+        this.utils.doCallback('renderCompleted');
+
+        return this;
     }
 }
 

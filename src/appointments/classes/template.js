@@ -1,5 +1,7 @@
 const BaseTemplate = require('./base');
 
+require('../styles/button.scss');
+
 class Template extends BaseTemplate {
     constructor(config, utils, sdk) {
         super();
@@ -14,7 +16,14 @@ class Template extends BaseTemplate {
     }
 
     init(configs) {
-        const targetElement = configs.el || this.config.get('el');        
+        const targetElement = configs.el || this.config.get('el');
+
+        this.rootTarget = document.createElement('div');
+        this.rootTarget.classList.add("tk-widget-window");
+        this.rootTarget.id = targetElement.replace('#', '');
+
+        document.body.appendChild(this.rootTarget);
+
         this.rootTarget = document.getElementById(targetElement.replace('#', ''));
 
         if (!this.rootTarget) {
@@ -23,13 +32,21 @@ class Template extends BaseTemplate {
 			);
         }
 
-        this.rootTarget.classList.add("tk-appointments");
         let child = this.rootTarget.lastElementChild; 
         
         while (child) {
             this.rootTarget.removeChild(child);
             child = this.rootTarget.lastElementChild;
         }
+    }
+
+    initButton() {
+        const template = require('../templates/button.html');
+        const buttonTarget = this.htmlToElement(template({
+            url: this.config.get('ui.buttonImage')
+        }));
+        this.rootTarget.append(buttonTarget);
+        return this;
     }
 }
 

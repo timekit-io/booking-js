@@ -26,6 +26,13 @@ class Util {
     doesConfigExist(suppliedConfig) {
         return (suppliedConfig !== undefined && typeof suppliedConfig === 'object' && !isEmpty(suppliedConfig));
     }
+
+    doCallback(hook, arg) {
+        if(this.config.get('callbacks') && this.isFunction(this.config.get('callbacks.' + hook))) {
+            this.config.get('callbacks.' + hook)(arg);
+          }
+        this.logDebug(['Trigger callback "' + hook + '" with arguments:', arg]);
+    }
 }
 
 module.exports = Util;

@@ -1,3 +1,4 @@
+
 /*
  * Default configuration
  */
@@ -10,6 +11,9 @@ const primary = {
         'Timekit-Context': 'widget'
       }
     },
+    ui: {
+      buttonImage: '/assets/appointment/button.png'
+    }
 };
   
 module.exports = {

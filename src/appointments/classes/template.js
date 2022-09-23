@@ -13,6 +13,8 @@ class Template extends BaseTemplate {
 
         // dom nodes
         this.rootTarget = null;
+        this.buttonTarget = null;
+        this.widgetTarget = null;
     }
 
     init(configs) {
@@ -42,16 +44,27 @@ class Template extends BaseTemplate {
 
     initButton() {
         const template = require('../templates/button.html');
-        const buttonTarget = this.htmlToElement(template({
+        this.buttonTarget = this.htmlToElement(template({
             url: this.config.get('ui.buttonImage')
         }));
         
-        buttonTarget.addEventListener('click', (e) => {
+        this.buttonTarget.addEventListener('click', (e) => {
             e.preventDefault();
-            e.target.classList.toggle("hide");
+            this.widgetTarget && this.widgetTarget.classList.toggle("hide");
         });
                 
-        this.rootTarget.append(buttonTarget);
+        this.rootTarget.append(this.buttonTarget);
+
+        return this;
+    }
+
+    initWidget() {
+        const template = require('../templates/widget.html');
+        this.widgetTarget = this.htmlToElement(template({
+            
+        }));
+         
+        this.rootTarget.append(this.widgetTarget);
 
         return this;
     }

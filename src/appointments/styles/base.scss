@@ -1,6 +1,22 @@
 .tk-appt-window {
-    &.hide {
-        display: none;
+    &__wrapper {
+        opacity: 1;
+        position: fixed;
+        bottom: 100px;
+        right: 20px;
+        width: 376px;
+        min-height: 250px;
+        max-height: 704px;
+        border-radius: 8px;
+        overflow: hidden;
+        z-index: 1000000;
+        height: calc(100% - 120px);
+        box-shadow: rgb(0 0 0 / 16%) 0px 5px 40px;
+        transition: width 200ms ease 0s, height 200ms ease 0s, max-height 200ms ease 0s;
+    
+        &.hide {
+            display: none;
+        }
     }
 
     #tk-bot-btn {
@@ -26,10 +42,6 @@
     
         &:hover {
             box-shadow: 0 4px 5px -2px rgba(0,0,0,.2), 0 7px 10px 1px rgba(0,0,0,.14), 0 2px 16px 1px rgba(0,0,0,.12);
-        }
-
-        &.hide {
-            display: none;
         }
     }
 }

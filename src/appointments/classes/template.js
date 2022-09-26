@@ -3,6 +3,7 @@ const stringify = require('json-stringify-safe');
 
 const ServicesPage = require('../pages/services');
 const LocationsPage = require('../pages/locations');
+const CloseIcon = require('!file-loader!../assets/logo.png').default;
 
 require('../styles/base.scss');
 require('@fontsource/open-sans');
@@ -58,7 +59,7 @@ class Template extends BaseTemplate {
         this.buttonTarget = document.createElement('a');
 
         this.buttonTarget.id = 'tk-bot-btn';        
-        this.buttonTarget.style.backgroundImage = `url(${this.config.get('ui.buttonImage')})`;
+        this.buttonTarget.style.backgroundImage = `url(${CloseIcon})`;
 
         this.buttonTarget.addEventListener('click', (e) => {
             e.preventDefault();

@@ -9,9 +9,6 @@ const primary = {
       headers: {
         'Timekit-Context': 'widget'
       }
-    },
-    ui: {
-      buttonImage: require('!file-loader!./assets/logo.png').default
     }
 };
   

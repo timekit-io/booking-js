@@ -1,21 +1,192 @@
 .tk-appt-window {
+    font-size: 16px;
+    
     &__wrapper {
         opacity: 1;
         position: fixed;
         bottom: 100px;
         right: 20px;
         width: 376px;
+        display: flex;
         min-height: 250px;
         max-height: 704px;
         border-radius: 8px;
         overflow: hidden;
         z-index: 1000000;
+        padding: 24px 24px 4px;
+        flex-direction: column;
         height: calc(100% - 120px);
         box-shadow: rgb(0 0 0 / 16%) 0px 5px 40px;
-        transition: width 200ms ease 0s, height 200ms ease 0s, max-height 200ms ease 0s;
+        transition: background-color 0.25s ease-out, box-shadow 0.25s ease-out;
     
         &.hide {
             display: none;
+        }
+
+        &-body {
+            height: 90%;
+            overflow: hidden;
+            margin-top: 16px;
+
+            &__scroll {
+                height: 90%;
+                width: 100%;
+                scrollbar-width: none;  /* Firefox */
+                -ms-overflow-style: none;  /* IE and Edge */
+                overflow-y: auto;
+
+                &::-webkit-scrollbar {
+                    display: none;
+                }
+
+                .card-wrapper {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    
+                    .card-container-image {
+                        flex-basis: 100%;
+                        background-color: #FFFFFF;
+                        border-radius: 8px;
+                        box-shadow: 0 4px 20px 0 rgb(0 0 0 / 5%);
+                        margin: 5px;
+                        padding: 8px;
+                        display: flex;
+                        flex-direction: column;
+                        transition: 0.3s;
+    
+                        .card-image-container {
+                            height: auto;
+                            text-align: center;
+
+                            .card-image {
+                                width: 100%;
+                                overflow: hidden;
+                                object-fit: cover;
+                                border-radius: 4px;
+                                background-color: #ebebee;
+                            }
+                        }
+                    }
+    
+                    .card-title {
+                        margin-top: 8px;
+                        margin-right: auto;
+                        font-family: 'Open Sans';
+                        font-size: 14px;
+                        font-weight: 600;
+                        text-rendering: geometricPrecision;
+                        font-stretch: normal;
+                        font-style: normal;
+                        line-height: normal;
+                        letter-spacing: normal;
+                        text-align: left;
+                        color: #14141a;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        width: 100%;
+                    }
+    
+                    .card-body {
+                        margin-top: 8px;
+                        margin-right: auto;
+                        font-family: 'Open Sans';
+                        font-size: 14px;
+                        font-weight: normal;
+                        font-stretch: normal;
+                        font-style: normal;
+                        line-height: normal;
+                        letter-spacing: normal;
+                        text-align: left;
+                        color: #8e8e93;
+                    }
+    
+                    .card-footer {
+                        margin-top: 8px;
+                        margin-bottom: 8px;
+                        font-family: 'Open Sans';
+                        font-size: 14px;
+                        font-weight: normal;
+                        font-stretch: normal;
+                        font-style: normal;
+                        line-height: normal;
+                        letter-spacing: normal;
+                        text-align: left;
+                        color: #8e8e93;
+                    }
+                }
+            }
+        }
+
+        &-header {
+            display: flex;
+            padding: 10px;
+            position: relative;
+            flex-direction: column;
+
+            &__close {
+                padding: 10px;
+                text-align: right;
+                transition: opacity 0.2s ease;
+
+                svg {
+                    width: 20px;
+                    height: 20px;
+                }
+            }
+    
+            &__nav {
+                display: flex;
+                margin: 16px 0px;
+                flex-direction: row;
+                justify-content: flex-start;
+                
+                &-point {
+                    width: 9px;
+                    height: 9px;
+                    border-radius: 50%;
+                    background-color: #C7C7CC;
+                    &.active {
+                        background-color: blue;
+                    }
+                }
+
+                &-line {
+                    flex: 2;
+                    height: 1px;
+                    margin-top: auto;
+                    margin-bottom: auto;
+                    background-color: #C7C7CC;
+                }
+            }
+
+            &__title {
+                font-family: 'Open Sans';
+                font-size: 18px;
+                text-rendering: geometricPrecision;
+                font-weight: bold;
+                font-stretch: normal;
+                font-style: normal;
+                line-height: normal;
+                letter-spacing: normal;
+                text-align: left;
+                color: #14141a;
+            }
+
+            &__summary {
+                width: 100%;
+                margin: 8px 0px;
+                font-family: 'Open Sans';
+                font-size: 14px;
+                font-weight: normal;
+                font-stretch: normal;
+                font-style: normal;
+                line-height: 1.5;
+                letter-spacing: normal;
+                text-align: left;
+                color: #8e8e93;
+                overflow: hidden;
+            }
         }
     }
 

@@ -1,4 +1,6 @@
 const BaseTemplate = require('./base');
+const stringify = require('json-stringify-safe');
+const ServicesPage = require('../pages/services');
 
 require('../styles/base.scss');
 
@@ -13,6 +15,7 @@ class Template extends BaseTemplate {
 
         // dom nodes
         this.rootTarget = null;
+        this.errorTarget = null;
         this.buttonTarget = null;
         this.widgetTarget = null;
     }
@@ -59,14 +62,43 @@ class Template extends BaseTemplate {
     }
 
     initWidget() {
-        const template = require('../templates/widget.html');
-        this.widgetTarget = this.htmlToElement(template({
-            
-        }));
-         
-        this.rootTarget.append(this.widgetTarget);
+        return new ServicesPage(this).render();
+    }
 
-        return this;
+    triggerError(message) {
+		// If an error already has been thrown, exit
+        // If no target DOM element exists, only do the logging
+		if (this.errorTarget) return message;
+		if (!this.rootTarget) return message;
+
+		this.utils.logError(message);        
+		this.utils.doCallback('errorTriggered', message);
+
+		let contextProcessed = null;
+        let messageProcessed = message;
+
+        if (this.utils.isArray(message)) {
+            messageProcessed = message[0];
+            if (message[1].data) {
+                contextProcessed = stringify(
+                    message[1].data.errors || message[1].data.error || message[1].data
+                );
+            } else {
+                contextProcessed = stringify(message[1]);
+            }
+        }
+
+		const template = require('../templates/error.html');
+        this.errorTarget = this.htmlToElement(
+			template({
+				message: messageProcessed,
+				context: contextProcessed,
+				errorWarningIcon: require('!svg-inline-loader!../assets/error-warning-icon.svg'),
+			})
+		);
+		this.rootTarget.append(this.errorTarget);
+
+        return message;
     }
 }
 

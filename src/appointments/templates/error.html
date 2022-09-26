@@ -1,0 +1,25 @@
+<div class="tk-appt-window__wrapper">
+    <div class="tk-appt-window__wrapper-header">
+        <a class="tk-appt-window__wrapper-header__close" href="#">{{& closeIcon }}</a>
+        <div class="tk-appt-window__wrapper-header__nav">
+            <div class="tk-appt-window__wrapper-header__nav-point active"></div>
+            <div class="tk-appt-window__wrapper-header__nav-line"></div>
+            <div class="tk-appt-window__wrapper-header__nav-point"></div>
+            <div class="tk-appt-window__wrapper-header__nav-line"></div>
+            <div class="tk-appt-window__wrapper-header__nav-point"></div>
+        </div>
+        <div class="tk-appt-window__wrapper-header__title">
+            Ouch, we've encountered a problem
+        </div>
+    </div>
+    <div class="tk-appt-window__wrapper-body">
+        <div class="tk-appt-window__wrapper-body__scroll">
+            <div class="card-wrapper">
+                <div class="card-container-image">
+                    <div class="card-body">{{& message }}</div>
+                    <span class="card-body">{{& context }}</span>
+                </div>
+            </div>    
+        </div>
+    </div>
+</div>

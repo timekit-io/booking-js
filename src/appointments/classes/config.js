@@ -1,5 +1,4 @@
 const get = require("lodash/get");
-const qs = require('querystringify');
 const merge = require("lodash/merge");
 
 class Config {

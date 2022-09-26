@@ -40,7 +40,7 @@ class BookingWidget {
     render() {
         this.utils.doCallback('renderStarted');
 
-        this.template.initButton().initWidget();
+        this.template.initButton().initServices();
 
         this.utils.doCallback('renderCompleted');
 

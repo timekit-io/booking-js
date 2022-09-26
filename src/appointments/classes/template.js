@@ -1,8 +1,11 @@
 const BaseTemplate = require('./base');
 const stringify = require('json-stringify-safe');
+
 const ServicesPage = require('../pages/services');
+const LocationsPage = require('../pages/locations');
 
 require('../styles/base.scss');
+require('@fontsource/open-sans');
 
 class Template extends BaseTemplate {
     constructor(config, utils, sdk) {
@@ -18,6 +21,17 @@ class Template extends BaseTemplate {
         this.errorTarget = null;
         this.buttonTarget = null;
         this.widgetTarget = null;
+
+        // page target
+        this.pageTarget = null;
+    }
+
+    clearRootElem() {
+        let child = this.rootTarget.lastElementChild;         
+        while (child) {
+            this.rootTarget.removeChild(child);
+            child = this.rootTarget.lastElementChild;
+        }
     }
 
     init(configs) {
@@ -37,12 +51,7 @@ class Template extends BaseTemplate {
 			);
         }
 
-        let child = this.rootTarget.lastElementChild; 
-        
-        while (child) {
-            this.rootTarget.removeChild(child);
-            child = this.rootTarget.lastElementChild;
-        }
+        this.clearRootElem();
     }
 
     initButton() {
@@ -61,8 +70,14 @@ class Template extends BaseTemplate {
         return this;
     }
 
-    initWidget() {
+    initServices() {
+        this.pageTarget && this.rootTarget.removeChild(this.pageTarget);
         return new ServicesPage(this).render();
+    }
+
+    initLocations(serviceId) {
+        this.pageTarget && this.rootTarget.removeChild(this.pageTarget);
+        return new LocationsPage(this).render(serviceId);
     }
 
     triggerError(message) {

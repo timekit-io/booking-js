@@ -1,6 +1,6 @@
 const BaseTemplate = require('../classes/base');
 
-class ServicesPage extends BaseTemplate {
+class LocationsPage extends BaseTemplate {
     constructor(template) {
         super();
         this.sdk = template.sdk;
@@ -9,13 +9,13 @@ class ServicesPage extends BaseTemplate {
         this.config = template.config;
     }
 
-    render() {
+    render(serviceUuid) {
         this.sdk.makeRequest({
             method: 'get',
-            url: '/location/services'
+            url: '/locations?search=services.uuid:' + serviceUuid + ';deleted_at:null'
         })
         .then(({ data }) => {
-            const template = require('../templates/services.html');
+            const template = require('../templates/locations.html');
             this.template.pageTarget = this.htmlToElement(template({
                 services: data,
                 closeIcon: require('!svg-inline-loader!../assets/close-icon.svg'),
@@ -26,7 +26,9 @@ class ServicesPage extends BaseTemplate {
             for (let i=0; i < serviceLinks.length; i++) {
                 serviceLinks[i].addEventListener("click", (e) => {
                     const wrapper = e.target.closest(".card-wrapper"); 
-                    wrapper.id && this.template.initLocations(wrapper.id);
+                    if (wrapper.id) {
+                        console.log(wrapper.id); 
+                    }
                     e.preventDefault();
                 });
             }
@@ -45,4 +47,4 @@ class ServicesPage extends BaseTemplate {
     }
 }
 
-module.exports = ServicesPage;
+module.exports = LocationsPage;

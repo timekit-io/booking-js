@@ -49,6 +49,7 @@
     "webpack-merge": "^5.8.0"
   },
   "dependencies": {
+    "@fontsource/open-sans": "^4.5.11",
     "@fullcalendar/core": "^5.11.0",
     "@fullcalendar/daygrid": "^5.11.0",
     "@fullcalendar/interaction": "^5.11.0",

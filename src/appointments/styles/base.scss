@@ -41,6 +41,8 @@
 
                 .card-wrapper {
                     display: grid;
+                    cursor: pointer;
+                    position: relative;
                     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     
                     .card-container-image {

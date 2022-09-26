@@ -47,10 +47,7 @@ module.exports = {
       { test: /\.svg$/, loader: 'svg-inline-loader' },
       { 
         test: /\.(png|jpg|gif|woff|woff2|svg)$/, 
-        loader: 'file-loader',
-        options: {
-          outputPath: 'assets',
-        }
+        loader: 'file-loader'
       }
     ]
   },  

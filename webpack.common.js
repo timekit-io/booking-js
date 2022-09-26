@@ -45,6 +45,13 @@ module.exports = {
       },
       { test: /\.html$/, loader: 'mustache-loader' },
       { test: /\.svg$/, loader: 'svg-inline-loader' },
+      { 
+        test: /\.(png|jpg|gif|woff|woff2|svg)$/, 
+        loader: 'file-loader',
+        options: {
+          outputPath: 'assets',
+        }
+      }
     ]
   },  
   plugins: [

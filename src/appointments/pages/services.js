@@ -18,7 +18,6 @@ class ServicesPage extends BaseTemplate {
             const template = require('../templates/services.html');
             this.template.pageTarget = this.htmlToElement(template({
                 services: data,
-                closeIcon: require('!svg-inline-loader!../assets/close-icon.svg'),
             }));
 
             const serviceLinks = this.template.pageTarget.querySelectorAll('.card-wrapper');

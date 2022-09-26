@@ -1,4 +1,3 @@
-
 /*
  * Default configuration
  */
@@ -12,7 +11,7 @@ const primary = {
       }
     },
     ui: {
-      buttonImage: '/assets/appointment/button.png'
+      buttonImage: require('!file-loader!./assets/logo.png').default
     }
 };
   

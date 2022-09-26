@@ -55,11 +55,11 @@ class Template extends BaseTemplate {
     }
 
     initButton() {
-        const template = require('../templates/button.html');
-        this.buttonTarget = this.htmlToElement(template({
-            url: this.config.get('ui.buttonImage')
-        }));
-        
+        this.buttonTarget = document.createElement('a');
+
+        this.buttonTarget.id = 'tk-bot-btn';        
+        this.buttonTarget.style.backgroundImage = `url(${this.config.get('ui.buttonImage')})`;
+
         this.buttonTarget.addEventListener('click', (e) => {
             e.preventDefault();
             this.widgetTarget && this.widgetTarget.classList.toggle("hide");

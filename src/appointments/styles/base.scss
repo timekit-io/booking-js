@@ -39,6 +39,74 @@
                     display: none;
                 }
 
+                .card-title {
+                    margin-top: 8px;
+                    margin-right: auto;
+                    font-family: 'Open Sans';
+                    font-size: 14px;
+                    font-weight: 600;
+                    text-rendering: geometricPrecision;
+                    font-stretch: normal;
+                    font-style: normal;
+                    line-height: normal;
+                    letter-spacing: normal;
+                    text-align: left;
+                    color: #14141a;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    width: 100%;
+                }
+
+                .card-body {
+                    margin-top: 8px;
+                    margin-right: auto;
+                    font-family: 'Open Sans';
+                    font-size: 14px;
+                    font-weight: normal;
+                    font-stretch: normal;
+                    font-style: normal;
+                    line-height: normal;
+                    letter-spacing: normal;
+                    text-align: left;
+                    color: #8e8e93;
+                }
+
+                .card-footer {
+                    margin-top: 8px;
+                    margin-bottom: 8px;
+                    font-family: 'Open Sans';
+                    font-size: 14px;
+                    font-weight: normal;
+                    font-stretch: normal;
+                    font-style: normal;
+                    line-height: normal;
+                    letter-spacing: normal;
+                    text-align: left;
+                    color: #8e8e93;
+                }
+
+                .card-container {
+                    width: 100%;
+                    border-radius: 8px;
+                    background-color: #FFFFFF;
+                    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.05);
+                    margin-top: 10px;
+                    padding: 8px;
+                    display: flex;
+                    transition: 0.3s;
+                    flex-direction: column;
+
+                    &:hover {
+                        box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
+                        cursor: pointer;
+                    }
+                      
+                    &:hover .card-title {
+                        color: #214de6;
+                    }                    
+                }            
+                
                 .card-wrapper {
                     display: grid;
                     cursor: pointer;
@@ -69,53 +137,6 @@
                             }
                         }
                     }
-    
-                    .card-title {
-                        margin-top: 8px;
-                        margin-right: auto;
-                        font-family: 'Open Sans';
-                        font-size: 14px;
-                        font-weight: 600;
-                        text-rendering: geometricPrecision;
-                        font-stretch: normal;
-                        font-style: normal;
-                        line-height: normal;
-                        letter-spacing: normal;
-                        text-align: left;
-                        color: #14141a;
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        width: 100%;
-                    }
-    
-                    .card-body {
-                        margin-top: 8px;
-                        margin-right: auto;
-                        font-family: 'Open Sans';
-                        font-size: 14px;
-                        font-weight: normal;
-                        font-stretch: normal;
-                        font-style: normal;
-                        line-height: normal;
-                        letter-spacing: normal;
-                        text-align: left;
-                        color: #8e8e93;
-                    }
-    
-                    .card-footer {
-                        margin-top: 8px;
-                        margin-bottom: 8px;
-                        font-family: 'Open Sans';
-                        font-size: 14px;
-                        font-weight: normal;
-                        font-stretch: normal;
-                        font-style: normal;
-                        line-height: normal;
-                        letter-spacing: normal;
-                        text-align: left;
-                        color: #8e8e93;
-                    }
                 }
             }
         }
@@ -126,14 +147,53 @@
             position: relative;
             flex-direction: column;
 
-            &__close {
-                padding: 10px;
-                text-align: right;
-                transition: opacity 0.2s ease;
+            .search-bar-wrapper {
+                position: relative;
 
-                svg {
-                    width: 20px;
-                    height: 20px;
+                .search-bar {
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    margin-top: 4px;
+                    padding: 10px 30px 11px 8px;
+                    border-radius: 8px;
+                    border: none;
+                    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.05);
+                    background-color: #ffffff;
+                    font-size: 14px;
+                    font-family: 'Open Sans';
+                    width: -webkit-fill-available;
+                    background: url(../assets/icon_search.svg) no-repeat scroll 8px 12px;
+                    padding-left: 30px;
+                    transition: 0.3s;
+
+                    &:hover {
+                        box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
+                    }
+
+                    &::placeholder {
+                        font-size: 14px;
+                        color: #c7c7cc;
+                        font-family: 'Open Sans';
+                    }
+                }    
+                
+                &.hide {
+                    display: none;
+                }
+            }
+
+            &__close {
+                width: 28px;
+                height: 28px;
+                margin: 8px 0px;
+                transition: 0.3s;
+
+                &-icon {
+                    width: 28px;
+                    height: 28px;
+                    display: block;
+                    background-image: url(../assets/icon_close.svg);
                 }
             }
     
@@ -160,6 +220,20 @@
                     margin-bottom: auto;
                     background-color: #C7C7CC;
                 }
+            }
+
+            &__selected {
+                font-family: 'Open Sans';
+                font-weight: normal;
+                font-stretch: normal;
+                font-style: normal;
+                line-height: normal;
+                letter-spacing: normal;
+                text-align: left;
+                text-align: left;
+                color: #8e8e93;
+                margin: 16px 0px;
+                font-size: 12px;
             }
 
             &__title {

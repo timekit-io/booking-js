@@ -1,6 +1,8 @@
 <div class="tk-appt-window__wrapper">
     <div class="tk-appt-window__wrapper-header">
-        <a class="tk-appt-window__wrapper-header__close" href="#">{{& closeIcon }}</a>
+        <a class="tk-appt-window__wrapper-header__close" href="#">
+            <i class="tk-appt-window__wrapper-header__close-icon"></i>
+        </a>
         <div class="tk-appt-window__wrapper-header__nav">
             <div class="tk-appt-window__wrapper-header__nav-point active"></div>
             <div class="tk-appt-window__wrapper-header__nav-line"></div>
@@ -8,16 +10,45 @@
             <div class="tk-appt-window__wrapper-header__nav-line"></div>
             <div class="tk-appt-window__wrapper-header__nav-point"></div>
         </div>
+        <div class="tk-appt-window__wrapper-header__selected">In-Store Styling Appointment</div>
         <div class="tk-appt-window__wrapper-header__title">
-            Select an Appointment Type
+            Select a Store
         </div>
         <div class="tk-appt-window__wrapper-header__summary">
-            Which appointment type would you like?
+            Choose a store from the following that you will be visiting for your appointment.
+        </div>
+        <div class="search-bar-wrapper">
+            <input class="search-bar" type="text" placeholder="Search for a city or postal code">
+            <i class="search-bar-clear hide"></i>
         </div>
     </div>
     <div class="tk-appt-window__wrapper-body">
         <div class="tk-appt-window__wrapper-body__scroll">
-            <h1>Locations</h1>
+            <div class="card-container">
+                <div class="card-title">Columbus Circle</div>
+                <div class="card-body">10 Columbus Circle, New York</div>
+                <div class="card-footer">+11234567890</div>
+            </div>
+            <div class="card-container">
+                <div class="card-title">Columbus Circle</div>
+                <div class="card-body">10 Columbus Circle, New York</div>
+                <div class="card-footer">+11234567890</div>
+            </div>
+            <div class="card-container">
+                <div class="card-title">Columbus Circle</div>
+                <div class="card-body">10 Columbus Circle, New York</div>
+                <div class="card-footer">+11234567890</div>
+            </div>
+            <div class="card-container">
+                <div class="card-title">Columbus Circle</div>
+                <div class="card-body">10 Columbus Circle, New York</div>
+                <div class="card-footer">+11234567890</div>
+            </div>
+            <div class="card-container">
+                <div class="card-title">Columbus Circle</div>
+                <div class="card-body">10 Columbus Circle, New York</div>
+                <div class="card-footer">+11234567890</div>
+            </div>
         </div>
     </div>
 </div>

@@ -1,4 +1,5 @@
 const BaseTemplate = require('../classes/base');
+const CloseIcon = require('!file-loader!../assets/close-icon.svg').default;
 
 class ServicesPage extends BaseTemplate {
     constructor(template) {
@@ -18,6 +19,7 @@ class ServicesPage extends BaseTemplate {
             const template = require('../templates/services.html');
             this.template.pageTarget = this.htmlToElement(template({
                 services: data,
+                closeIcon: CloseIcon
             }));
 
             const serviceLinks = this.template.pageTarget.querySelectorAll('.card-wrapper');

@@ -109,7 +109,6 @@ class Template extends BaseTemplate {
 			template({
 				message: messageProcessed,
 				context: contextProcessed,
-				errorWarningIcon: require('!svg-inline-loader!../assets/error-warning-icon.svg'),
 			})
 		);
 		this.rootTarget.append(this.errorTarget);

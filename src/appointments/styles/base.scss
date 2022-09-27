@@ -241,6 +241,9 @@
                     margin-top: auto;
                     margin-bottom: auto;
                     background-color: #C7C7CC;
+                    &.active {
+                        background-color: blue;
+                    }
                 }
             }
 

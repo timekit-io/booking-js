@@ -15,9 +15,11 @@ class ServicesPage extends BaseTemplate {
     render() {
         this.sdk.makeRequest({
             method: 'get',
-            url: '/location/services'
+            url: '/location/services?include=locations'
         })
         .then(({ data }) => {
+            this.config.setSession('services', data);
+
             const template = require('../templates/services.html');
             this.template.pageTarget = this.htmlToElement(template({
                 services: data,

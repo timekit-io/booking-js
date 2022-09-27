@@ -82,9 +82,9 @@ class Template extends BaseTemplate {
         return new LocationsPage(this).render(serviceId);
     }
 
-    initCalendar(locationServiceId) {
+    initCalendar() {
         this.pageTarget && this.rootTarget.removeChild(this.pageTarget);
-        return new CalendarWidgetPage(this).render(locationServiceId);
+        return new CalendarWidgetPage(this).render();
     }
 
     triggerError(message) {

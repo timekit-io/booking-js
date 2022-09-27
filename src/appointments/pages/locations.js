@@ -1,3 +1,5 @@
+const get = require("lodash/get");
+const find = require("lodash/find");
 const BaseTemplate = require('../classes/base');
 
 const BackIcon = require('!file-loader!../assets/icon_back.svg').default;
@@ -12,38 +14,39 @@ class LocationsPage extends BaseTemplate {
         this.config = template.config;
     }
 
-    render(serviceUuid) {
-        this.sdk.makeRequest({
-            method: 'get',
-            url: '/locations?search=services.uuid:' + serviceUuid + ';deleted_at:null'
-        })
-        .then(({ data }) => {
-            const template = require('../templates/locations.html');
-            this.template.pageTarget = this.htmlToElement(template({
-                locations: data,
-                backIcon: BackIcon,
-                closeIcon: CloseIcon,
-            }));
+    render(serviceId) {
+        const services = this.config.getSession('services');
+        const service = find(services, { id: serviceId });
 
-            const serviceLinks = this.template.pageTarget.querySelectorAll('.card-container');
+        const locations = get(service, 'locations', []);
+        const template = require('../templates/locations.html');
 
-            for (let i=0; i < serviceLinks.length; i++) {
-                serviceLinks[i].addEventListener("click", (e) => {
-                    const wrapper = e.target.closest(".card-container"); 
-                    wrapper.id && this.template.initCalendar(wrapper.id);
-                    e.preventDefault();
-                });
-            }
-            
-            this.renderAndInitActions(this.template.pageTarget);
-        })
-        .catch((response) => {
-            this.utils.doCallback('submitReschduleBookingFailed', response);
-            this.template.triggerError([
-                'An error occurred fetching services',
-                response,
-            ]);
-        });
+        this.config.setSession('locations', locations);
+        this.config.setSession('selectedService', service);
+
+        this.template.pageTarget = this.htmlToElement(template({
+            backIcon: BackIcon,
+            closeIcon: CloseIcon,
+            locations: locations,
+            service: get(service, 'name'),
+        }));
+
+        const serviceLinks = this.template.pageTarget.querySelectorAll('.card-container');
+
+        for (let i=0; i < serviceLinks.length; i++) {
+            serviceLinks[i].addEventListener("click", (e) => {
+                const wrapper = e.target.closest(".card-container"); 
+                if (wrapper.id) {
+                    this.config.setSession('selectedLocation', find(locations, { 
+                        id: wrapper.id 
+                    }));
+                    this.template.initCalendar(wrapper.id);
+                }
+                e.preventDefault();
+            });
+        }
+        
+        this.renderAndInitActions(this.template.pageTarget);
 
         return this.template;
     }

@@ -4,7 +4,16 @@ const merge = require("lodash/merge");
 class Config {
     constructor() {
         this.config = {};
+        this.session = {};
         this.defaultConfigs = require('../configs');
+    }
+
+    getSession(key) {
+        return get(this.session, key);        
+    }
+
+    setSession(key, data) {
+        this.session[key] = data;
     }
 
     all() {

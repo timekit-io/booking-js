@@ -3,6 +3,8 @@ const stringify = require('json-stringify-safe');
 
 const ServicesPage = require('../pages/services');
 const LocationsPage = require('../pages/locations');
+const CalendarWidgetPage = require('../pages/calendar');
+
 const CloseIcon = require('!file-loader!../assets/logo.png').default;
 
 require('../styles/base.scss');
@@ -78,6 +80,11 @@ class Template extends BaseTemplate {
     initLocations(serviceId) {
         this.pageTarget && this.rootTarget.removeChild(this.pageTarget);
         return new LocationsPage(this).render(serviceId);
+    }
+
+    initCalendar(locationServiceId) {
+        this.pageTarget && this.rootTarget.removeChild(this.pageTarget);
+        return new CalendarWidgetPage(this).render(locationServiceId);
     }
 
     triggerError(message) {

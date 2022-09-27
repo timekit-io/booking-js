@@ -17,25 +17,15 @@
         </div>
         <div class="tk-appt-window__wrapper-header__selected">In-Store Styling Appointment</div>
         <div class="tk-appt-window__wrapper-header__title">
-            Select a Store
+            Complete Booking Details
         </div>
         <div class="tk-appt-window__wrapper-header__summary">
-            Choose a store from the following that you will be visiting for your appointment.
-        </div>
-        <div class="search-bar-wrapper">
-            <input class="search-bar" type="text" placeholder="Search for a city or postal code">
-            <i class="search-bar-clear hide"></i>
+            Please select an appointment time and fill out the booking form.
         </div>
     </div>
     <div class="tk-appt-window__wrapper-body">
         <div class="tk-appt-window__wrapper-body__scroll">
-            {{#locations}}
-                <div class="card-container" id="{{ id }}">
-                    <div class="card-title">{{ name }}</div>
-                    <div class="card-body">{{ meta.t_store_address }}, {{ meta.t_store_city }}</div>
-                    <div class="card-footer">{{ meta.t_store_phone }}</div>
-                </div>
-            {{/locations}}
+            <h1>Calendar</h1>
         </div>
     </div>
 </div>

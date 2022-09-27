@@ -20,19 +20,17 @@ class LocationsPage extends BaseTemplate {
         .then(({ data }) => {
             const template = require('../templates/locations.html');
             this.template.pageTarget = this.htmlToElement(template({
-                services: data,
+                locations: data,
                 backIcon: BackIcon,
                 closeIcon: CloseIcon,
             }));
 
-            const serviceLinks = this.template.pageTarget.querySelectorAll('.card-wrapper');
+            const serviceLinks = this.template.pageTarget.querySelectorAll('.card-container');
 
             for (let i=0; i < serviceLinks.length; i++) {
                 serviceLinks[i].addEventListener("click", (e) => {
-                    const wrapper = e.target.closest(".card-wrapper"); 
-                    if (wrapper.id) {
-                        console.log(wrapper.id); 
-                    }
+                    const wrapper = e.target.closest(".card-container"); 
+                    wrapper.id && this.template.initCalendar(wrapper.id);
                     e.preventDefault();
                 });
             }

@@ -1,4 +1,6 @@
 const BaseTemplate = require('./base');
+
+const get = require("lodash/get");
 const stringify = require('json-stringify-safe');
 
 const ServicesPage = require('../pages/services');
@@ -72,6 +74,20 @@ class Template extends BaseTemplate {
         return this;
     }
 
+    initPage() {
+        const step = this.config.getSession('step');
+        const service = this.config.getSession('selectedService');
+        const location = this.config.getSession('selectedLocation');
+
+        if (step === undefined || step === 'services') {
+            this.initServices();
+        } else if (step === 'locations') {
+            this.initLocations(get(service, 'id'));
+        } else if (step === 'calendar') {
+            this.initCalendar(get(service, 'id'), get(location, 'id'));
+        }
+    }
+
     initServices() {
         this.pageTarget && this.rootTarget.removeChild(this.pageTarget);
         return new ServicesPage(this).render();
@@ -82,9 +98,9 @@ class Template extends BaseTemplate {
         return new LocationsPage(this).render(serviceId);
     }
 
-    initCalendar() {
+    initCalendar(serviceId, locationId) {
         this.pageTarget && this.rootTarget.removeChild(this.pageTarget);
-        return new CalendarWidgetPage(this).render();
+        return new CalendarWidgetPage(this).render(serviceId, locationId);
     }
 
     triggerError(message) {

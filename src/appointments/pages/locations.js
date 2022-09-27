@@ -15,6 +15,8 @@ class LocationsPage extends BaseTemplate {
     }
 
     render(serviceId) {
+        this.config.setSession('step', 'locations');
+
         const services = this.config.getSession('services');
         const service = find(services, { id: serviceId });
 
@@ -40,7 +42,7 @@ class LocationsPage extends BaseTemplate {
                     this.config.setSession('selectedLocation', find(locations, { 
                         id: wrapper.id 
                     }));
-                    this.template.initCalendar(wrapper.id);
+                    this.template.initCalendar(serviceId, wrapper.id);
                 }
                 e.preventDefault();
             });

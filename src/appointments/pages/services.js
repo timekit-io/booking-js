@@ -19,6 +19,7 @@ class ServicesPage extends BaseTemplate {
         })
         .then(({ data }) => {
             this.config.setSession('services', data);
+            this.config.setSession('step', 'services');
 
             const template = require('../templates/services.html');
             this.template.pageTarget = this.htmlToElement(template({

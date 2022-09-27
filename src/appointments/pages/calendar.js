@@ -13,12 +13,8 @@ class CalendarWidgetPage extends BaseTemplate {
         this.config = template.config;
     }
 
-    render() {
-        const service = this.config.getSession('selectedService');
-        const location = this.config.getSession('selectedLocation');
-
-        const serviceId = get(service, 'id');
-        const locationId = get(location, 'id');
+    render(serviceId, locationId) {
+        this.config.setSession('step', 'calendar');
 
         this.sdk.makeRequest({
             method: 'get',
@@ -29,6 +25,9 @@ class CalendarWidgetPage extends BaseTemplate {
             const project = get(data, 'projects.0');
             const template = require('../templates/calendar.html');
     
+            const service = this.config.getSession('selectedService');
+            const location = this.config.getSession('selectedLocation');
+            
             this.template.pageTarget = this.htmlToElement(template({
                 backIcon: BackIcon,
                 closeIcon: CloseIcon,

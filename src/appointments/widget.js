@@ -39,11 +39,8 @@ class BookingWidget {
 
     render() {
         this.utils.doCallback('renderStarted');
-
-        this.template.initButton().initServices();
-
+        this.template.initButton().initPage();
         this.utils.doCallback('renderCompleted');
-
         return this;
     }
 }

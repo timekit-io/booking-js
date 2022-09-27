@@ -21,9 +21,17 @@ class BaseTemplate {
 
         if (backIcon) {
             const aTag = backIcon.closest('a');
+            const step = this.config.getSession('step');
+
             aTag && aTag.addEventListener('click', (e) => {
+                if (step === 'locations') {
+                    this.config.setSession('step', 'services');
+                    this.template.initPage();
+                } else if(step === 'calendar') {
+                    this.config.setSession('step', 'locations');
+                    this.template.initPage();
+                }
                 e.preventDefault();
-                pageTarget.classList.toggle("hide");
             });
         }
     }

@@ -21,7 +21,6 @@ class Template extends BaseTemplate {
         this.rootTarget = null;
         this.errorTarget = null;
         this.buttonTarget = null;
-        this.widgetTarget = null;
 
         // page target
         this.pageTarget = null;
@@ -63,7 +62,7 @@ class Template extends BaseTemplate {
 
         this.buttonTarget.addEventListener('click', (e) => {
             e.preventDefault();
-            this.widgetTarget && this.widgetTarget.classList.toggle("hide");
+            this.pageTarget && this.pageTarget.classList.toggle("hide");
         });
                 
         this.rootTarget.append(this.buttonTarget);

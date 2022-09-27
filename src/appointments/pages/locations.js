@@ -35,6 +35,7 @@ class LocationsPage extends BaseTemplate {
             }
             
             this.template.rootTarget.append(this.template.pageTarget);
+            this.initClose(this.template.pageTarget);
         })
         .catch((response) => {
             this.utils.doCallback('submitReschduleBookingFailed', response);

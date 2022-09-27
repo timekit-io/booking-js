@@ -24,6 +24,22 @@ class LocationsPage extends BaseTemplate {
         }));
     }
 
+    initLocationClick(locations, serviceId) {
+        const serviceLinks = this.template.pageTarget.querySelectorAll('.card-container');
+        for (let i=0; i < serviceLinks.length; i++) {
+            serviceLinks[i].addEventListener("click", (e) => {
+                const wrapper = e.target.closest(".card-container"); 
+                if (wrapper.id) {
+                    this.config.setSession('selectedLocation', find(locations, { 
+                        id: wrapper.id 
+                    }));
+                    this.template.initCalendar(serviceId, wrapper.id);
+                }
+                e.preventDefault();
+            });
+        }
+    }
+
     render(serviceId) {
         this.config.setSession('step', 'locations');
 
@@ -49,7 +65,6 @@ class LocationsPage extends BaseTemplate {
 
         const searchInput = this.template.pageTarget.querySelector('#search-bar');
         const locationsEle = this.template.pageTarget.querySelector('#location-list');
-        const serviceLinks = this.template.pageTarget.querySelectorAll('.card-container');
 
         locationsEle.append(this.locationsTarget);
 
@@ -63,24 +78,14 @@ class LocationsPage extends BaseTemplate {
 
             locationsEle.removeChild(this.locationsTarget);
             this.locationsTarget = this.getLocationsTemplate(filteredLocations);
+            
             locationsEle.append(this.locationsTarget);
+            this.initLocationClick(filteredLocations, serviceId);
 
             e.preventDefault();
         });
 
-        for (let i=0; i < serviceLinks.length; i++) {
-            serviceLinks[i].addEventListener("click", (e) => {
-                const wrapper = e.target.closest(".card-container"); 
-                if (wrapper.id) {
-                    this.config.setSession('selectedLocation', find(locations, { 
-                        id: wrapper.id 
-                    }));
-                    this.template.initCalendar(serviceId, wrapper.id);
-                }
-                e.preventDefault();
-            });
-        }
-        
+        this.initLocationClick(locations, serviceId);
         this.renderAndInitActions(this.template.pageTarget);
 
         return this.template;

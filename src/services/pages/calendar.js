@@ -32,7 +32,8 @@ class CalendarWidgetPage extends BaseTemplate {
                 backIcon: BackIcon,
                 closeIcon: CloseIcon,
                 serviceName: get(service, 'name'),
-                locationName: get(location, 'name')
+                locationName: get(location, 'name'),
+                selectorOptions: this.config.get('selectorOptions.booking')
             }));
     
             this.renderAndInitActions(this.template.pageTarget);

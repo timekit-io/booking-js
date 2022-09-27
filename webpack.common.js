@@ -15,7 +15,7 @@ module.exports = {
       },
     },
     appointments: {
-      import: './src/appointments/index.js',
+      import: './src/services/index.js',
       library: {
         type: 'umd',
         umdNamedDefine: true,

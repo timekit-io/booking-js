@@ -22,6 +22,10 @@ const primary = {
           enabled: true,
           placeholder: 'Choose a location from the following that you will be visiting for your appointment.'
         },
+      },
+      booking: {
+        title: 'Complete Booking Details',
+        description: 'Please select an appointment time and fill out the booking form.',
       }
     }
 };

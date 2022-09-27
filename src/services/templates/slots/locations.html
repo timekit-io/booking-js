@@ -1,0 +1,9 @@
+<div class="tk-appt-window__wrapper-body__scroll">
+    {{#locations}}
+        <div class="card-container" id="{{ id }}">
+            <div class="card-title">{{ name }}</div>
+            <div class="card-body">{{ meta.t_store_address }}, {{ meta.t_store_city }}</div>
+            <div class="card-footer">{{ meta.t_store_phone }}</div>
+        </div>
+    {{/locations}}
+</div>

@@ -1,4 +1,10 @@
 class BaseTemplate {
+    constructor(template) {
+        if (template && template.pageTarget) {
+            template.rootTarget.removeChild(template.pageTarget);
+        }
+    }
+
     htmlToElement(html) {
         const template = document.createElement('template');
         template.innerHTML = html.trim();

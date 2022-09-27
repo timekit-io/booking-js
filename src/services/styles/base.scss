@@ -186,7 +186,7 @@
             .search-bar-wrapper {
                 position: relative;
 
-                .search-bar {
+                #search-bar {
                     overflow: hidden;
                     white-space: nowrap;
                     text-overflow: ellipsis;
@@ -199,7 +199,6 @@
                     font-size: 14px;
                     font-family: 'Open Sans';
                     width: -webkit-fill-available;
-                    background: url(../assets/icon_search.svg) no-repeat scroll 8px 12px;
                     padding-left: 30px;
                     transition: 0.3s;
 

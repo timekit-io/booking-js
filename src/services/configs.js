@@ -20,7 +20,7 @@ const primary = {
         description: 'Choose a location from the following that you will be visiting for your appointment.',
         search_bar: {
           enabled: true,
-          placeholder: 'Choose a location from the following that you will be visiting for your appointment.'
+          placeholder: 'Search for a city or postal code.'
         },
       },
       booking: {

@@ -89,17 +89,14 @@ class Template extends BaseTemplate {
     }
 
     initServices() {
-        this.pageTarget && this.rootTarget.removeChild(this.pageTarget);
         return new ServicesPage(this).render();
     }
 
     initLocations(serviceId) {
-        this.pageTarget && this.rootTarget.removeChild(this.pageTarget);
         return new LocationsPage(this).render(serviceId);
     }
 
     initCalendar(serviceId, locationId) {
-        this.pageTarget && this.rootTarget.removeChild(this.pageTarget);
         return new CalendarWidgetPage(this).render(serviceId, locationId);
     }
 

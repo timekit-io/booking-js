@@ -5,7 +5,7 @@ const CloseIcon = require('!file-loader!../assets/icon_close.svg').default;
 
 class ServicesPage extends BaseTemplate {
     constructor(template) {
-        super();
+        super(template);
         this.sdk = template.sdk;
         this.template = template;
         this.utils = template.utils;

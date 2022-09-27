@@ -31,6 +31,7 @@ class LocationsPage extends BaseTemplate {
             closeIcon: CloseIcon,
             locations: locations,
             service: get(service, 'name'),
+            selectorOptions: this.config.get('selectorOptions.location')
         }));
 
         const serviceLinks = this.template.pageTarget.querySelectorAll('.card-container');

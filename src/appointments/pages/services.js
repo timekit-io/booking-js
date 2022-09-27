@@ -26,6 +26,7 @@ class ServicesPage extends BaseTemplate {
                 services: data,
                 backIcon: BackIcon,
                 closeIcon: CloseIcon,
+                selectorOptions: this.config.get('selectorOptions.service')
             }));
 
             const serviceLinks = this.template.pageTarget.querySelectorAll('.card-wrapper');

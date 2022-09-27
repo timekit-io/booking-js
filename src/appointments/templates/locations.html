@@ -17,15 +17,17 @@
         </div>
         <div class="tk-appt-window__wrapper-header__selected">{{ service }}</div>
         <div class="tk-appt-window__wrapper-header__title">
-            Select a Store
+            {{ selectorOptions.title }}
         </div>
         <div class="tk-appt-window__wrapper-header__summary">
-            Choose a store from the following that you will be visiting for your appointment.
+            {{ selectorOptions.description }}
         </div>
-        <div class="search-bar-wrapper">
-            <input class="search-bar" type="text" placeholder="Search for a city or postal code">
-            <i class="search-bar-clear hide"></i>
-        </div>
+        {{#selectorOptions.search_bar.enabled}}
+            <div class="search-bar-wrapper">
+                <input class="search-bar" type="text" placeholder="{{ selectorOptions.search_bar.placeholder }}">
+                <i class="search-bar-clear hide"></i>
+            </div>
+        {{/selectorOptions.search_bar.enabled}}
     </div>
     <div class="tk-appt-window__wrapper-body">
         <div class="tk-appt-window__wrapper-body__scroll">

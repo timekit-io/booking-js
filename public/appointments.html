@@ -16,6 +16,20 @@
     new TimekitAppointments().init({
       api_base_url: 'https://api-localhost.timekit.io/',
       app_key: 'test_widget_key_K9UAe6tB4BgE0rNNWd87rLjBbAOnHjTo',
+      selectorOptions: {
+        service: {
+          title: 'Select an Service Type',
+          description: 'Which appointment type would you like?',
+        },
+        location: {
+          title: 'Select a Store',
+          description: 'Choose a store from the following that you will be visiting for your appointment.',
+          search_bar: {
+            enabled: true,
+            placeholder: 'Placeholder text inside of the search bar'
+          },
+        }
+      }
     });
   </script>
 

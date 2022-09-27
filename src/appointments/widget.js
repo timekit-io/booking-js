@@ -14,27 +14,30 @@ class BookingWidget {
     }
 
     init(configs) {
-        try {
-            this.config.parseAndUpdate(configs);
-            this.sdk.configure(this.config.get('sdk'));
-            this.template.init(this.config.all());
-        } catch (e) {
-            this.utils.logError(e);
-            return this;
-        }
-
-        // Check whether a config is supplied
-        if (!this.utils.doesConfigExist(configs)) {
-            this.template.triggerError('No configuration was supplied. Please supply a config object upon library initialization');
-            return this;
-        }
-
-        try {
-            this.render();
-        } catch (e) {
-            this.utils.logError(e);
-            return this;
-        }
+        return new Promise(async (resolve, reject) => {
+            try {
+                this.config.parseAndUpdate(configs);
+                this.sdk.configure(this.config.get('sdk'));
+                this.template.init(this.config.all());
+            } catch (e) {
+                this.utils.logError(e);
+                return this;
+            }
+    
+            // Check whether a config is supplied
+            if (!this.utils.doesConfigExist(configs)) {
+                this.template.triggerError('No configuration was supplied. Please supply a config object upon library initialization');
+                return this;
+            }
+    
+            try {
+                this.render();
+            } catch (e) {
+                this.utils.logError(e);
+                return reject(e.message);
+            }
+            resolve(true);
+        });
     }
 
     render() {

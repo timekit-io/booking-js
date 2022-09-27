@@ -1,5 +1,7 @@
 const BaseTemplate = require('../classes/base');
-const CloseIcon = require('!file-loader!../assets/close-icon.svg').default;
+
+const BackIcon = require('!file-loader!../assets/icon_back.svg').default;
+const CloseIcon = require('!file-loader!../assets/icon_close.svg').default;
 
 class LocationsPage extends BaseTemplate {
     constructor(template) {
@@ -19,7 +21,8 @@ class LocationsPage extends BaseTemplate {
             const template = require('../templates/locations.html');
             this.template.pageTarget = this.htmlToElement(template({
                 services: data,
-                closeIcon: CloseIcon
+                backIcon: BackIcon,
+                closeIcon: CloseIcon,
             }));
 
             const serviceLinks = this.template.pageTarget.querySelectorAll('.card-wrapper');
@@ -34,8 +37,7 @@ class LocationsPage extends BaseTemplate {
                 });
             }
             
-            this.template.rootTarget.append(this.template.pageTarget);
-            this.initClose(this.template.pageTarget);
+            this.renderAndInitActions(this.template.pageTarget);
         })
         .catch((response) => {
             this.utils.doCallback('submitReschduleBookingFailed', response);

@@ -146,11 +146,27 @@
             flex-direction: row;
             justify-content: space-between;
 
+            i.back-icon,
+            i.close-icon {
+                width: 28px;
+                height: 28px;
+                display: block;
+                font-weight: normal;
+            }
+
             &__left {
-                width: 0;
-                height: 0;
                 margin: 8px 0px;
                 transition: 0.3s;
+
+                i.back-icon {
+                    width: 0;
+                    height: 0;
+                    
+                    &.show {
+                        width: 28px;
+                        height: 28px;
+                    }
+                }
             }
 
             &__right {
@@ -158,13 +174,6 @@
                 height: 28px;
                 margin: 8px 0px;
                 transition: 0.3s;
-
-                i.close-icon {
-                    width: 28px;
-                    height: 28px;
-                    display: block;
-                    font-weight: normal;
-                }
             }
         }
 

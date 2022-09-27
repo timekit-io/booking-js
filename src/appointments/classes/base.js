@@ -5,11 +5,22 @@ class BaseTemplate {
         return template.content.firstChild;
     }
 
-    initClose(pageTarget) {
+    renderAndInitActions(pageTarget) {
+        this.template.rootTarget.append(pageTarget);
+
+        const backIcon = pageTarget.querySelector('i.back-icon');
         const closeIcon = pageTarget.querySelector('i.close-icon');
 
         if (closeIcon) {
             const aTag = closeIcon.closest('a');
+            aTag && aTag.addEventListener('click', (e) => {
+                e.preventDefault();
+                pageTarget.classList.toggle("hide");
+            });
+        }
+
+        if (backIcon) {
+            const aTag = backIcon.closest('a');
             aTag && aTag.addEventListener('click', (e) => {
                 e.preventDefault();
                 pageTarget.classList.toggle("hide");

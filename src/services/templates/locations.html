@@ -1,0 +1,33 @@
+<div class="tk-appt-window__wrapper">
+    <div class="tk-appt-window__wrapper-header">
+        <div class="tk-appt-window__wrapper-actions">
+            <a class="tk-appt-window__wrapper-actions__left" href="#">
+                <i class="back-icon show" style="background-image: url({{&backIcon}})"></i>
+            </a>
+            <a class="tk-appt-window__wrapper-actions__right" href="#">
+                <i class="close-icon" style="background-image: url({{&closeIcon}})"></i>
+            </a>
+        </div>
+        <div class="tk-appt-window__wrapper-header__nav">
+            <div class="tk-appt-window__wrapper-header__nav-point active"></div>
+            <div class="tk-appt-window__wrapper-header__nav-line active"></div>
+            <div class="tk-appt-window__wrapper-header__nav-point active"></div>
+            <div class="tk-appt-window__wrapper-header__nav-line"></div>
+            <div class="tk-appt-window__wrapper-header__nav-point"></div>
+        </div>
+        <div class="tk-appt-window__wrapper-header__selected">{{ service }}</div>
+        <div class="tk-appt-window__wrapper-header__title">
+            {{ selectorOptions.title }}
+        </div>
+        <div class="tk-appt-window__wrapper-header__summary">
+            {{ selectorOptions.description }}
+        </div>
+        {{#selectorOptions.search_bar.enabled}}
+            <div class="search-bar-wrapper">
+                <input id="search-bar" type="text" placeholder="{{ selectorOptions.search_bar.placeholder }}" style="background: url({{&searchIcon}}) no-repeat scroll 8px 12px"/>
+                <i class="search-bar-clear hide"></i>
+            </div>
+        {{/selectorOptions.search_bar.enabled}}
+    </div>
+    <div id="location-list" class="tk-appt-window__wrapper-body"></div>
+</div>

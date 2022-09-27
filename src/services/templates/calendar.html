@@ -1,0 +1,31 @@
+<div class="tk-appt-window__wrapper">
+    <div class="tk-appt-window__wrapper-header">
+        <div class="tk-appt-window__wrapper-actions">
+            <a class="tk-appt-window__wrapper-actions__left" href="#">
+                <i class="back-icon show" style="background-image: url({{&backIcon}})"></i>
+            </a>
+            <a class="tk-appt-window__wrapper-actions__right" href="#">
+                <i class="close-icon" style="background-image: url({{&closeIcon}})"></i>
+            </a>
+        </div>
+        <div class="tk-appt-window__wrapper-header__nav">
+            <div class="tk-appt-window__wrapper-header__nav-point active"></div>
+            <div class="tk-appt-window__wrapper-header__nav-line active"></div>
+            <div class="tk-appt-window__wrapper-header__nav-point active"></div>
+            <div class="tk-appt-window__wrapper-header__nav-line active"></div>
+            <div class="tk-appt-window__wrapper-header__nav-point active"></div>
+        </div>
+        <div class="tk-appt-window__wrapper-header__selected">{{ serviceName }}, {{ locationName }}</div>
+        <div class="tk-appt-window__wrapper-header__title">
+            {{ selectorOptions.title }}
+        </div>
+        <div class="tk-appt-window__wrapper-header__summary">
+            {{ selectorOptions.description }}
+        </div>
+    </div>
+    <div class="tk-appt-window__wrapper-body">
+        <div class="tk-appt-window__wrapper-body__scroll">
+            <div id="bookingjs"></div>
+        </div>
+    </div>
+</div>

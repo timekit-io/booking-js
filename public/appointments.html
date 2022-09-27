@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="UTF-8">
+  <title>Timekit Appointments</title>
+  <link rel="shortcut icon" href="/assets/favicon.png" />
+  <link rel="stylesheet" href="/build/booking.min.css" />
+  <link rel="stylesheet" href="/build/appointments.min.css" />
+ </head>
+ <body>
+  
+  <script type="text/javascript" src="/build/booking.min.js"></script>
+  <script type="text/javascript" src="/build/appointments.min.js"></script>
+  
+  <script type="text/javascript">
+    new TimekitAppointments().init({
+      api_base_url: 'https://api-localhost.timekit.io/',
+      app_key: 'test_widget_key_K9UAe6tB4BgE0rNNWd87rLjBbAOnHjTo',
+      selectorOptions: {
+        service: {
+          title: 'Select an Service Type',
+          description: 'Which appointment type would you like?',
+        },
+        location: {
+          title: 'Select a Store',
+          description: 'Choose a store from the following that you will be visiting for your appointment.',
+          search_bar: {
+            enabled: true,
+            placeholder: 'search stores from the list'
+          },
+        },
+        booking: {
+          title: 'Select the timeslot',
+          description: 'Which appointment type would you like to book?',
+        },
+      }
+    });
+  </script>
+
+</body>
+</html>

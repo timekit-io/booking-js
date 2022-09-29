@@ -35,6 +35,7 @@ const oldTimeZones = [
     { key: 'Asia/Krasnoyarsk', name: '(+08:00) Krasnoyarsk' },
     { key: 'Asia/Ulan_Bator', name: '(+08:00) Ulaan Bataar' },
     { key: 'Pacific/Kwajalein', name: '(+12:00) International Date Line West' },
+    { key: 'Asia/Calcutta', value: 'Asia/Kolkata', name: '(+05:30) Asia/Kolkata' },
     { key: 'Pacific/Fiji', name: '(+12:00) Marshall Is.' },
     { key: 'Pacific/Tongatapu', name: '(+13:00) Nuku\'alofa' },
 

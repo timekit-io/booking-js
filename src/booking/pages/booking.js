@@ -16,6 +16,7 @@ class BookingPage extends BaseTemplate {
         this.utils.doCallback('showBookingPage', eventData);
 
         const template = require('../templates/booking-page.html');
+		const successMessage = this.config.get('ui.localization.success_message');
         const dateFormat = this.config.get('ui.booking_date_format') || moment.localeData().longDateFormat('LL');
         const timeFormat = this.config.get('ui.booking_time_format') || moment.localeData().longDateFormat('LT');
         const allocatedResource = eventData.extendedProps.resources ? eventData.extendedProps.resources[0].name : false;
@@ -32,7 +33,7 @@ class BookingPage extends BaseTemplate {
 				allocatedResourcePrefix: this.config.get('ui.localization.allocated_resource_prefix'),
 				chosenTime: this.formatTimestamp(eventData.startStr, timeFormat) + ' - ' + this.formatTimestamp(eventData.endStr, timeFormat),
 				successMessage: interpolate.sprintf(
-					this.config.get('ui.localization.success_message'), '<span class="booked-email"></span>'
+					successMessage.indexOf('%s') !== -1 ? successMessage : successMessage + ' %s', '<span class="booked-email"></span>'
 				)
 			})
 		);
@@ -131,6 +132,8 @@ class BookingPage extends BaseTemplate {
 
         const form = e.target;
 
+		console.log("success", form.classList.contains('success'));
+
         // close the form if submitted
         if (form.classList.contains('success')) {
             this.template.getAvailability();
@@ -164,11 +167,12 @@ class BookingPage extends BaseTemplate {
 		// Call create event endpoint
 		this.timekitCreateBooking(formData, eventData)
 			.then(() => {
-				form.querySelector('.booked-email').innerHTML = formData.email;
+				const successEle = form.querySelector('.booked-email');
+				if (successEle) form.querySelector('.booked-email').innerHTML = formData.email;
 				form.classList.remove('loading');
                 form.classList.add('success');
 			})
-			.catch(() => this.showBookingFailed(form));
+			.catch((error) => this.showBookingFailed(form, error));
     }
 
     timekitCreateBooking(formData, eventData) {

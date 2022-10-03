@@ -25,6 +25,7 @@ class BookingReschdulePage extends BaseTemplate {
         this.utils.doCallback('showBookingReschdulePage', eventData);
         
         const template = require('../templates/reschedule-page.html');
+        const successMessage = this.config.get('ui.localization.reschedule_success_message');
         const dateFormat = this.config.get('ui.booking_date_format') || moment.localeData().longDateFormat('LL');
         const timeFormat = this.config.get('ui.booking_time_format') || moment.localeData().longDateFormat('LT');
         const allocatedResource = eventData.extendedProps.resources ? eventData.extendedProps.resources[0].name : false;
@@ -43,7 +44,7 @@ class BookingReschdulePage extends BaseTemplate {
 				allocatedResourcePrefix: this.config.get('ui.localization.allocated_resource_prefix'),
 				chosenTime: this.formatTimestamp(eventData.startStr, timeFormat) + ' - ' + this.formatTimestamp(eventData.endStr, timeFormat),
 				successMessage: interpolate.sprintf(
-					this.config.get('ui.localization.reschedule_success_message'), '<span class="booked-email"></span>'
+					successMessage.indexOf('%s') !== -1 ? successMessage : successMessage + ' %s', '<span class="booked-email"></span>'
 				)
 			})
 		);
@@ -116,7 +117,7 @@ class BookingReschdulePage extends BaseTemplate {
             form.classList.add('success');
             setTimeout(() => (window.location.href = window.location.href.split('?')[0]), 500);
         })
-        .catch(() => this.showBookingFailed(form));
+        .catch((error) => this.showBookingFailed(form, error));
     }
 
     timekitRescheduleBooking(formData, eventData) {

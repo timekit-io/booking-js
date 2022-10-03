@@ -89,7 +89,7 @@ class BaseTemplate {
         }
 	}
 
-	showBookingFailed(form) {
+	showBookingFailed(form, error) {
 		const submitButton = form.querySelector('.bookingjs-form-button');
 		
         submitButton.classList.add('button-shake');
@@ -99,6 +99,8 @@ class BaseTemplate {
         form.classList.add('error');
 
 		setTimeout(() => form.classList.remove('error'), 2000);
+
+        console.log(error);
     }
 
 	prepareFormFields(form) {

@@ -132,8 +132,6 @@ class BookingPage extends BaseTemplate {
 
         const form = e.target;
 
-		console.log("success", form.classList.contains('success'));
-
         // close the form if submitted
         if (form.classList.contains('success')) {
             this.template.getAvailability();

@@ -100,7 +100,7 @@ class BaseTemplate {
 
 		setTimeout(() => form.classList.remove('error'), 2000);
 
-        console.log(error);
+        this.utils.logDebug(['Booking Error:', error]);
     }
 
 	prepareFormFields(form) {

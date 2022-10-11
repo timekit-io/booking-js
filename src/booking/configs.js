@@ -112,10 +112,11 @@ const timeDateFormat24hdmymon = {
   },
   fullcalendar: {
     firstDay: 1,
-    eventTimeFormat: { // like '14:30'
+    eventTimeFormat: {
+      hour12: false,
+      meridiem: false,
       hour: '2-digit',
       minute: '2-digit',
-      meridiem: false
     },
     views: {
       week: {
@@ -132,8 +133,12 @@ const timeDateFormat24hdmymon = {
           month: 'numeric', 
           day: 'numeric',
           omitCommas: true
+        },
+        slotLabelFormat: {
+          hour12: false,
+          hour: '2-digit',
+          minute: '2-digit',
         }
-        //slotLabelFormat: 'HH:mm'
       }
     }
   }

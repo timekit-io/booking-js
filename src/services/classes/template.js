@@ -30,6 +30,11 @@ class Template extends BaseTemplate {
         this.pageTarget = null;
     }
 
+    destroy() {
+        this.clearRootElem();
+        this.rootTarget.remove();
+    }
+
     clearRootElem() {
         let child = this.rootTarget.lastElementChild;         
         while (child) {

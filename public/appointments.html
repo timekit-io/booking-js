@@ -20,8 +20,8 @@
   <script type="text/javascript" src="https://cdn.timekit.io/booking-js/v3/appointments.min.js"></script> -->
 
   <script type="text/javascript">
-    new TimekitAppointments().init({
-      elBtn: '#abc',
+    const appointment = new TimekitAppointments();
+    appointment.init({
       api_base_url: 'https://api-localhost.timekit.io/',
       app_key: 'test_widget_key_K9UAe6tB4BgE0rNNWd87rLjBbAOnHjTo',
       selectorOptions: {
@@ -42,7 +42,9 @@
           description: 'Which appointment type would you like to book?',
         },
       }
-    });
+    }).then(() => {
+      appointment.destroy();
+    })
   </script>
 
 </body>

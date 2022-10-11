@@ -40,6 +40,10 @@ class BookingWidget {
         });
     }
 
+    destroy() {
+        this.template.destroy();
+    }
+    
     render() {
         this.utils.doCallback('renderStarted');
         this.template.initButton().initPage();

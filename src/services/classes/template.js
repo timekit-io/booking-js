@@ -59,9 +59,10 @@ class Template extends BaseTemplate {
     }
 
     initButton() {
-        this.buttonTarget = document.createElement('a');
+        const targetElement = this.config.get('elBtn');        
 
-        this.buttonTarget.id = 'tk-bot-btn';        
+        this.buttonTarget = document.createElement('a');
+        this.buttonTarget.id = targetElement.replace('#', '');
         this.buttonTarget.style.backgroundImage = `url(${CloseIcon})`;
 
         this.buttonTarget.addEventListener('click', (e) => {

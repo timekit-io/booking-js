@@ -4,6 +4,7 @@
 const primary = {
     debug: false,
     autoload: true,
+    elBtn: '#tk-bot-btn',
     el: '#tk-appointments',
     sdk: {
       headers: {

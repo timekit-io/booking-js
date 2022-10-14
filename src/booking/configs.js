@@ -205,7 +205,7 @@ const availabilityViewListing = {
     headerToolbar: {
       left: '',
       center: '',
-      right: ''
+      right: 'today prev,next'
     },
   }
 }

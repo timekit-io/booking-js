@@ -17,7 +17,9 @@ const primary = {
   disable_confirm_page: false,
   create_booking_response_include: ['attributes', 'event', 'user'],
   ui: {
+    display_name: '',
     show_timezone_helper: true,
+    availability_view: "agendaWeek",
     localization: {
       reschedule_submit_button: 'Confirm Reschedule',
       reschedule_success_message: 'We have reschduled your booking successfully',
@@ -40,7 +42,7 @@ const primary = {
     plugins: [timeGridPlugin, listPlugin, momentPlugin, dayGridPlugin],
     views: {
       agenda: {
-        displayEventEnd: false
+        displayEventEnd: false,
       },
       listing: {
         type: 'list',
@@ -107,7 +109,9 @@ const customerFieldsNativeFormats = {
 // Preset: timeDateFormat = '24h-dmy-mon'
 const timeDateFormat24hdmymon = {
   ui: {
+    display_name: '',
     booking_time_format: 'HH:mm',
+    availability_view: "agendaWeek",
     booking_date_format: 'D. MMMM YYYY'
   },
   fullcalendar: {
@@ -147,7 +151,9 @@ const timeDateFormat24hdmymon = {
 // Preset: timeDateFormat = '12h-mdy-sun'
 const timeDateFormat12hmdysun = {
   ui: {
+    display_name: '',
     booking_time_format: 'hh:mma',
+    availability_view: "agendaWeek",
     booking_date_format: 'MMMM D, YYYY'
   },
   fullcalendar: {

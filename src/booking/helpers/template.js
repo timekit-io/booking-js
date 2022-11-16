@@ -84,12 +84,10 @@ class Template extends BaseTemplate {
 
     renderDisplayName() {
         if (this.config.get('ui.display_name')) {
-            const template = require('../templates/user-displayname.html');
-            const displayNameTarget = this.htmlToElement(template({
-                name: this.config.get('ui.display_name')
-            }));
-            this.rootTarget.classList.add('has-displayname');
-            this.rootTarget.append(displayNameTarget);    
+            const titleEle = this.calendarTarget.querySelector(".fc-header-toolbar:first-child .fc-toolbar-chunk");
+            if (titleEle) {
+                titleEle.innerHTML = this.config.get('ui.display_name');
+            }
         }
         return this;
     }   
@@ -162,8 +160,8 @@ class Template extends BaseTemplate {
         args.initialView = sizing.view;
         this.calendarTarget = document.createElement("div");
         this.calendarTarget.classList.add("bookingjs-calendar");
-        this.calendarTarget.classList.add("empty-calendar");        
-        
+        this.calendarTarget.classList.add("empty-calendar");      
+                
         this.rootTarget.append(this.calendarTarget);
         this.calendar = new Calendar(this.calendarTarget, args);
         this.calendar.render();

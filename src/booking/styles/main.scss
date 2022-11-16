@@ -10,7 +10,14 @@
 @import 'utils';
 
 // Classes
-
+.fc {
+  .fc-toolbar {
+    z-index: 10;
+    > button {
+      cursor: pointer;
+    }
+  }
+}
 .bookingjs {
   position: relative;
   font-family: $fontFamily;

@@ -19,8 +19,46 @@ class BaseTemplate {
         return template.content.firstChild;
     }
 
-    formatTimestamp(start, format) {
-        return moment(start).tz(this.template.customerTimezoneSelected).format(format);
+    formatTimestamp(start, format = '') {
+        let currentDate = moment(start);
+        if (currentDate.isDST()) {
+            const date = new Date(start);
+            if (format === 'HH:mm') {
+                return date.toLocaleString("default", { 
+                    hour12: false,
+                    hour: "2-digit", 
+                    minute: "2-digit", 
+                    timeZone: this.template.customerTimezoneSelected 
+                });
+            }
+            else if (format === 'hh:mma') {
+                return date.toLocaleString("default", { 
+                    hour: "2-digit", 
+                    minute: "2-digit", 
+                    timeZone: this.template.customerTimezoneSelected 
+                });
+            }
+            else if (format === '') {
+                const day = date.toLocaleString("default", { day: "2-digit", timeZone: this.template.customerTimezoneSelected });
+                const year = date.toLocaleString("default", { year: "numeric", timeZone: this.template.customerTimezoneSelected });
+                const month = date.toLocaleString("default", { month: "2-digit", timeZone: this.template.customerTimezoneSelected });
+                
+                const tz = date.toLocaleString("en", { 
+                    hour12: false, 
+                    hour: "2-digit", 
+                    minute: "2-digit", 
+                    second: "2-digit", 
+                    timeZoneName: "longOffset", 
+                    timeZone: this.template.customerTimezoneSelected
+                });
+
+                const signPosition = tz.indexOf("+") > 0 ? tz.indexOf("+") : tz.indexOf("-");
+                const tzStr = tz.substring(tz.indexOf(" "), signPosition);
+
+                return year + '-' + month + '-' + day + 'T' + tz.replace(tzStr, '');
+            }
+        }
+        return currentDate.tz(this.template.customerTimezoneSelected).format(format);
     }	
 
 	initCloseButton(page) {

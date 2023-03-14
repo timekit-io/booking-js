@@ -20,7 +20,7 @@ class BookingPage extends BaseTemplate {
         const dateFormat = this.config.get('ui.booking_date_format') || moment.localeData().longDateFormat('LL');
         const timeFormat = this.config.get('ui.booking_time_format') || moment.localeData().longDateFormat('LT');
         const allocatedResource = eventData.extendedProps.resources ? eventData.extendedProps.resources[0].name : false;
-
+		
         this.bookingPageTarget = this.htmlToElement(
 			template({
 				allocatedResource: allocatedResource,
@@ -184,13 +184,13 @@ class BookingPage extends BaseTemplate {
 		];
 
         const extendedProps = eventData.extendedProps;
-        const end = moment(eventData.endStr).tz(this.template.customerTimezoneSelected);
-        const start = moment(eventData.startStr).tz(this.template.customerTimezoneSelected);
+        const end = this.formatTimestamp(eventData.endStr);
+        const start = this.formatTimestamp(eventData.startStr);
 
 		let payload = {
+			end,
+			start,
 			description: '',
-			end: end.format(),
-			start: start.format(),
 			customer: {
 				name: formData.name,
 				email: formData.email,

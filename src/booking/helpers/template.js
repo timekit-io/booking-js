@@ -135,6 +135,7 @@ class Template extends BaseTemplate {
         const sizing = this.decideCalendarSize(this.config.get("fullcalendar.initialView"));        
         const args = merge({
 			height: sizing.height,
+            timeZone: this.customerTimezoneSelected,
             eventClick: (info) => {
                 if (!this.config.get('disable_confirm_page')) {
                     if (this.isReschdulePage()) {
@@ -161,7 +162,7 @@ class Template extends BaseTemplate {
         this.calendarTarget = document.createElement("div");
         this.calendarTarget.classList.add("bookingjs-calendar");
         this.calendarTarget.classList.add("empty-calendar");      
-                
+
         this.rootTarget.append(this.calendarTarget);
         this.calendar = new Calendar(this.calendarTarget, args);
         this.calendar.render();

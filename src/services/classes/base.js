@@ -1,7 +1,12 @@
 class BaseTemplate {
     constructor(template) {
         if (template && template.pageTarget) {
-            template.rootTarget.removeChild(template.pageTarget);
+            if (template.rootTarget.contains(template.errorTarget)) {
+                template.rootTarget.removeChild(template.errorTarget);
+            }
+            if (template.rootTarget.contains(template.pageTarget)) {
+                template.rootTarget.removeChild(template.pageTarget);
+            }
         }
     }
 
@@ -11,11 +16,20 @@ class BaseTemplate {
         return template.content.firstChild;
     }
 
-    renderAndInitActions(pageTarget) {
-        this.template.rootTarget.append(pageTarget);
+    renderAndInitActions(pageTarget, isTemplate = false) {
+        const templateObj = isTemplate ? this : this.template;
+
+        templateObj.rootTarget.append(pageTarget);
+
+        const defaultOpt = this.config.get('stratergy');
+        const stratergy = this.config.getSession('stratergy');
 
         const backIcon = pageTarget.querySelector('i.back-icon');
         const closeIcon = pageTarget.querySelector('i.close-icon');
+        
+        if (defaultOpt === stratergy && this.config.noSessions()) {
+            pageTarget.classList.add("hide");
+        }
 
         if (closeIcon) {
             const aTag = closeIcon.closest('a');
@@ -27,17 +41,26 @@ class BaseTemplate {
 
         if (backIcon) {
             const aTag = backIcon.closest('a');
-            const step = this.config.getSession('step');
-
+            if (defaultOpt === stratergy) {
+                backIcon.classList.remove("show");
+            }
             aTag && aTag.addEventListener('click', (e) => {
-                if (step === 'locations') {
-                    this.config.setSession('step', 'services');
-                    this.template.initPage();
-                } else if(step === 'calendar') {
-                    this.config.setSession('step', 'locations');
-                    this.template.initPage();
-                }
                 e.preventDefault();
+
+                const defaultOpt = this.config.get('stratergy');
+                const stratergy = this.config.getSession('stratergy');     
+
+                if (stratergy === 'service') {
+                    this.config.setSession('stratergy', 'location');
+                } else if (stratergy === 'location') {
+                    this.config.setSession('stratergy', 'service');
+                } else if(stratergy === 'calendar') {
+                    this.config
+                        .destroySessions()
+                        .setSession('stratergy', defaultOpt);
+                }
+
+                templateObj.initPage();
             });
         }
     }

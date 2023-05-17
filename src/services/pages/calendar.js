@@ -1,6 +1,6 @@
 const get = require("lodash/get");
-const BaseTemplate = require('../classes/base');
 
+const BaseTemplate = require('../classes/base');
 const BackIcon = require('!file-loader!../assets/icon_back.svg').default;
 const CloseIcon = require('!file-loader!../assets/icon_close.svg').default;
 
@@ -14,15 +14,14 @@ class CalendarWidgetPage extends BaseTemplate {
     }
 
     render(serviceId, locationId) {
-        this.config.setSession('step', 'calendar');
-
+        this.config.setSession('stratergy', 'calendar');
         this.sdk.makeRequest({
             method: 'get',
-            url: '/locations/' + locationId + '?search=services.uuid:' + serviceId + ';deleted_at:null&include=services,projects'
+            url: '/projects?search=locations.uuid:' + locationId + ';services.uuid:' + serviceId
         })
-        .then(({ data }) => {
+        .then(({ data: projects }) => {
 
-            const project = get(data, 'projects.0');
+            const project = get(projects, '0');
             const template = require('../templates/calendar.html');
     
             const service = this.config.getSession('selectedService');
@@ -45,9 +44,9 @@ class CalendarWidgetPage extends BaseTemplate {
             });
         })
         .catch((response) => {
-            this.utils.doCallback('submitReschduleBookingFailed', response);
+            this.utils.doCallback('initCalendarFailed', response);
             this.template.triggerError([
-                'An error occurred fetching services',
+                'For given service and location calendar does not exists',
                 response,
             ]);
         });

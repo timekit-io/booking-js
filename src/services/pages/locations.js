@@ -1,8 +1,8 @@
 const get = require("lodash/get");
 const find = require("lodash/find");
 const filter = require("lodash/filter");
-const BaseTemplate = require('../classes/base');
 
+const BaseTemplate = require('../classes/base');
 const BackIcon = require('!file-loader!../assets/icon_back.svg').default;
 const CloseIcon = require('!file-loader!../assets/icon_close.svg').default;
 const SearchIcon = require('!file-loader!../assets/icon_search.svg').default;
@@ -23,6 +23,10 @@ class LocationsPage extends BaseTemplate {
         return degrees * Math.PI / 180;
     }
 
+    getDistance(project) {
+        return this.getDistanceInKmBetweenEarthCoordinates(get(project, 'meta.t_latitude') || 0, get(project, 'meta.t_longitude') || 0);
+    }
+
     getDistanceInKmBetweenEarthCoordinates(latitude, longitude) {
         const earthRadiusKm = 6371;
         
@@ -38,11 +42,7 @@ class LocationsPage extends BaseTemplate {
         return parseFloat((earthRadiusKm * c).toFixed(1));
     }
 
-    getDistance(project) {
-        return this.getDistanceInKmBetweenEarthCoordinates(get(project, 'meta.t_latitude') || 0, get(project, 'meta.t_longitude') || 0);
-    }
-
-    getLocationsTemplate(locations) {
+    getLocationsTemplate(locations) {        
         const template = require('../templates/slots/locations.html');
         return this.htmlToElement(template({
             selectorOptions: this.config.get('selectorOptions.location'),
@@ -53,42 +53,41 @@ class LocationsPage extends BaseTemplate {
         }));
     }
 
-    initLocationClick(locations, serviceId) {
-        const serviceLinks = this.template.pageTarget.querySelectorAll('.card-container');
-        for (let i=0; i < serviceLinks.length; i++) {
-            serviceLinks[i].addEventListener("click", (e) => {
+    initLocationClick(locations) {
+        const locationLinks = this.template.pageTarget.querySelectorAll('.card-container');
+        for (let i=0; i < locationLinks.length; i++) {
+            locationLinks[i].addEventListener("click", (e) => {
+                e.preventDefault();
                 const wrapper = e.target.closest(".card-container"); 
+                const selectedService = this.config.getSession('selectedService');
                 if (wrapper.id) {
                     this.config.setSession('selectedLocation', find(locations, { 
                         id: wrapper.id 
                     }));
-                    this.template.initCalendar(serviceId, wrapper.id);
+                    if (selectedService && selectedService.id) {
+                        this.template.initCalendar(selectedService.id, wrapper.id);
+                    } else {
+                        this.template.initServices();
+                    }
                 }
-                e.preventDefault();
             });
         }
     }
 
-    render(serviceId) {
-        this.config.setSession('step', 'locations');
-
-        const services = this.config.getSession('services');
-        const service = find(services, { id: serviceId });
-
-        const locations = get(service, 'locations', []);
-        const template = require('../templates/locations.html');
-
+    renderElement(locations) {
         this.config.setSession('locations', locations);
-        this.config.setSession('selectedService', service);
+
+        const template = require('../templates/locations.html');
+        const selectedService = this.config.getSession('selectedService');
 
         this.template.pageTarget = this.htmlToElement(template({
             backIcon: BackIcon,
-            closeIcon: CloseIcon,
             locations: locations,
+            closeIcon: CloseIcon,
             searchIcon: SearchIcon,
-            service: get(service, 'name'),
+            service: selectedService,
             selectorOptions: this.config.get('selectorOptions.location'),
-        }));
+        }));    
 
         this.locationsTarget = this.getLocationsTemplate(locations);
 
@@ -122,7 +121,7 @@ class LocationsPage extends BaseTemplate {
             this.locationsTarget = this.getLocationsTemplate(filteredLocations);
             
             locationsEle.append(this.locationsTarget);
-            this.initLocationClick(filteredLocations, serviceId);
+            this.initLocationClick(filteredLocations);
 
             e.preventDefault();
         });
@@ -152,12 +151,46 @@ class LocationsPage extends BaseTemplate {
                 this.locationsTarget = this.getLocationsTemplate(locations);
                 
                 locationsEle.append(this.locationsTarget);
-                this.initLocationClick(locations, serviceId);
+                this.initLocationClick(locations);
             })
         });
 
-        this.initLocationClick(locations, serviceId);
-        this.renderAndInitActions(this.template.pageTarget);
+        this.initLocationClick(locations);
+        this.renderAndInitActions(this.template.pageTarget);    
+    }
+
+    render() {        
+        this.config.setSession('stratergy', 'location');
+
+        const selectedService = this.config.getSession('selectedService');
+        const selectedServiceLocations = get(selectedService, 'locations', []);
+
+        // when service is already selected in step-1
+        if (selectedService?.id) {
+            if (selectedServiceLocations.length > 0) {
+                this.renderElement(selectedServiceLocations);
+            } else {
+                this.template.triggerError([
+                    'No location found for service: ' + selectedService.name,
+                ]);
+            }
+        }
+
+        // when service is not selected and location is step-1
+        else {
+            this.sdk.makeRequest({
+                method: 'get',
+                url: '/locations?include=services'
+            })
+            .then(({ data: locations }) => this.renderElement(locations))
+            .catch((response) => {
+                this.utils.doCallback('initLocationsFailed', response);
+                this.template.triggerError([
+                    'An error occurred fetching locations',
+                    response,
+                ]);
+            });
+        }
 
         return this.template;
     }

@@ -49,7 +49,7 @@ class LocationsPage extends BaseTemplate {
             locations: locations.map((projectData) => ({
                 ...projectData,
                 distance: this.getDistance(projectData)
-            }))
+            })).sort((prev, next) => prev.distance - next.distance)
         }));
     }
 
@@ -140,12 +140,11 @@ class LocationsPage extends BaseTemplate {
                     this.longitude = position.coords.longitude;
                     return resolve({});
                 }, () => {
-                    this.latitude = null;
-                    this.longitude = null;
+                    this.latitude = 0;
+                    this.longitude = 0;
                     return resolve({});
                 }, options);
             }).then(() => {
-                locations.sort((prev, next) => prev.distance - next.distance);
 
                 locationsEle.removeChild(this.locationsTarget);
                 this.locationsTarget = this.getLocationsTemplate(locations);

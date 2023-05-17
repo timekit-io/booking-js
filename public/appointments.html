@@ -22,6 +22,7 @@
   <script type="text/javascript">
     const appointment = new TimekitAppointments();
     appointment.init({
+      defaultUI: false,
       api_base_url: 'https://api-localhost.timekit.io/',
       app_key: 'test_api_key_u5hoDQryGAuoT1mlEm9uo0F3dXKRNVOX',
       selectorOptions: {
@@ -42,7 +43,7 @@
           description: 'Which appointment type would you like to book?',
         },
       }
-    }).then(() => {
+    }).then((template) => {
       //appointment.destroy();
     })
   </script>

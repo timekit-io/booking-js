@@ -7,7 +7,7 @@ const ServicesPage = require('../pages/services');
 const LocationsPage = require('../pages/locations');
 const CalendarWidgetPage = require('../pages/calendar');
 
-const CloseIcon = require('!file-loader!../assets/logo.png').default;
+const LogoIcon = require('!file-loader!../assets/logo.png').default;
 
 require('../styles/base.scss');
 require('@fontsource/open-sans');
@@ -51,7 +51,6 @@ class Template extends BaseTemplate {
         this.rootTarget.id = targetElement.replace('#', '');
 
         document.body.appendChild(this.rootTarget);
-
         this.rootTarget = document.getElementById(targetElement.replace('#', ''));
 
         if (!this.rootTarget) {
@@ -64,33 +63,40 @@ class Template extends BaseTemplate {
     }
 
     initButton() {
-        const targetElement = this.config.get('elBtn');        
+        const defaultUI = this.config.get('defaultUI');
+        if (defaultUI) {
+            const targetElement = this.config.get('elBtn');        
 
-        this.buttonTarget = document.createElement('a');
-        this.buttonTarget.id = targetElement.replace('#', '');
-        this.buttonTarget.style.backgroundImage = `url(${CloseIcon})`;
+            this.buttonTarget = document.createElement('a');
+            this.buttonTarget.id = targetElement.replace('#', '');
+            this.buttonTarget.style.backgroundImage = `url(${LogoIcon})`;
 
-        this.buttonTarget.addEventListener('click', (e) => {
-            e.preventDefault();
-            this.pageTarget && this.pageTarget.classList.toggle("hide");
-        });
-                
-        this.rootTarget.append(this.buttonTarget);
-
+            this.buttonTarget.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.pageTarget && this.pageTarget.classList.toggle("hide");
+            });
+                    
+            this.rootTarget.append(this.buttonTarget);
+        }
         return this;
     }
 
     initPage() {
-        const step = this.config.getSession('step');
+        const defaultUI = this.config.get('defaultUI');
         const service = this.config.getSession('selectedService');
         const location = this.config.getSession('selectedLocation');
+        const stratergy = this.config.getSession('stratergy', 'service');
 
-        if (step === undefined || step === 'services') {
-            this.initServices();
-        } else if (step === 'locations') {
-            this.initLocations(get(service, 'id'));
-        } else if (step === 'calendar') {
-            this.initCalendar(get(service, 'id'), get(location, 'id'));
+        if (defaultUI) {
+            if (stratergy === 'service') {
+                this.initServices();
+            }
+            if (stratergy === 'location') {
+                this.initLocations();
+            }
+            if (stratergy === 'calendar') {
+                this.initCalendar(get(service, 'id'), get(location, 'id'));
+            }    
         }
     }
 
@@ -98,8 +104,8 @@ class Template extends BaseTemplate {
         return new ServicesPage(this).render();
     }
 
-    initLocations(serviceId) {
-        return new LocationsPage(this).render(serviceId);
+    initLocations() {
+        return new LocationsPage(this).render();
     }
 
     initCalendar(serviceId, locationId) {

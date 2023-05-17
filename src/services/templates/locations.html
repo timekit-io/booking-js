@@ -15,20 +15,26 @@
             <div class="tk-appt-window__wrapper-header__nav-line"></div>
             <div class="tk-appt-window__wrapper-header__nav-point"></div>
         </div>
-        <div class="tk-appt-window__wrapper-header__selected">{{ service }}</div>
+        
+        {{#service}}
+            <div class="tk-appt-window__wrapper-header__selected">{{ service }}</div>
+        {{/service}}
+
         <div class="tk-appt-window__wrapper-header__title">
             {{ selectorOptions.title }}
         </div>
+        
         <div class="tk-appt-window__wrapper-header__summary">
             {{ selectorOptions.description }}
         </div>
+
         {{#selectorOptions.search_bar.enabled}}
             <div class="search-bar-wrapper">
                 <input id="search-bar" type="text" placeholder="{{ selectorOptions.search_bar.placeholder }}" style="background: url({{&searchIcon}}) no-repeat scroll 8px 12px"/>
                 <i class="search-bar-clear hide"></i>
                 <a id="geolocation-search" class="geolocation-button hide">Use my current location</a>
             </div>
-        {{/selectorOptions.search_bar.enabled}}
+        {{/selectorOptions.search_bar.enabled}}        
     </div>
     <div id="location-list" class="tk-appt-window__wrapper-body"></div>
 </div>

@@ -22,13 +22,10 @@
   <script type="text/javascript">
     const appointment = new TimekitAppointments();
     appointment.init({
+      stratergy: 'location',
       api_base_url: 'https://api-localhost.timekit.io/',
-      app_key: 'test_widget_key_K9UAe6tB4BgE0rNNWd87rLjBbAOnHjTo',
+      app_key: 'test_api_key_u5hoDQryGAuoT1mlEm9uo0F3dXKRNVOX',
       selectorOptions: {
-        service: {
-          title: 'Select an Service Type',
-          description: 'Which appointment type would you like?',
-        },
         location: {
           title: 'Select a Store',
           description: 'Choose a store from the following that you will be visiting for your appointment.',
@@ -36,6 +33,10 @@
             enabled: true,
             placeholder: 'search stores from the list'
           },
+        },        
+        service: {
+          title: 'Select an Service Type',
+          description: 'Which appointment type would you like?',
         },
         booking: {
           title: 'Select the timeslot',
@@ -43,6 +44,7 @@
         },
       }
     }).then(() => {
+      console.log("widget initialized");
       //appointment.destroy();
     })
   </script>

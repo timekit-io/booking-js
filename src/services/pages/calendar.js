@@ -14,15 +14,14 @@ class CalendarWidgetPage extends BaseTemplate {
     }
 
     render(serviceId, locationId) {
-        this.config.setSession('step', 'calendar');
-
         this.sdk.makeRequest({
             method: 'get',
-            url: '/locations/' + locationId + '?search=services.uuid:' + serviceId + ';deleted_at:null&include=services,projects'
+            url: '/projects?search=locations.uuid:' + locationId + ';services.uuid:' + serviceId
         })
-        .then(({ data }) => {
+        .then(({ data: projects }) => {
+            this.config.setSession('stratergy', 'calendar');
 
-            const project = get(data, 'projects.0');
+            const project = get(projects, '0');
             const template = require('../templates/calendar.html');
     
             const service = this.config.getSession('selectedService');
@@ -45,9 +44,9 @@ class CalendarWidgetPage extends BaseTemplate {
             });
         })
         .catch((response) => {
-            this.utils.doCallback('submitReschduleBookingFailed', response);
+            this.utils.doCallback('calendarInitFailed', response);
             this.template.triggerError([
-                'An error occurred fetching services',
+                'For given service and location calendar does not exists',
                 response,
             ]);
         });

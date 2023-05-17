@@ -76,7 +76,6 @@ class LocationsPage extends BaseTemplate {
 
     renderElement(locations) {
         this.config.setSession('locations', locations);
-        this.config.setSession('stratergy', 'location');
 
         const template = require('../templates/locations.html');
         this.template.pageTarget = this.htmlToElement(template({
@@ -158,6 +157,8 @@ class LocationsPage extends BaseTemplate {
     }
 
     render() {        
+        this.config.setSession('stratergy', 'location');
+
         const selectedService = this.config.getSession('selectedService');
         const selectedServiceLocations = get(selectedService, 'locations', []);
 

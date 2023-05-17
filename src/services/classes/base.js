@@ -1,7 +1,12 @@
 class BaseTemplate {
     constructor(template) {
         if (template && template.pageTarget) {
-            template.rootTarget.removeChild(template.pageTarget);
+            if (template.rootTarget.contains(template.errorTarget)) {
+                template.rootTarget.removeChild(template.errorTarget);
+            }
+            if (template.rootTarget.contains(template.pageTarget)) {
+                template.rootTarget.removeChild(template.pageTarget);
+            }
         }
     }
 

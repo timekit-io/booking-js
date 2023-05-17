@@ -1,6 +1,13 @@
 <div class="tk-appt-window__wrapper">
     <div class="tk-appt-window__wrapper-header">
-        <a class="tk-appt-window__wrapper-header__close" href="#">{{& closeIcon }}</a>
+        <div class="tk-appt-window__wrapper-actions">
+            <a class="tk-appt-window__wrapper-actions__left" href="#">
+                <i class="back-icon show" style="background-image: url({{&backIcon}})"></i>
+            </a>
+            <a class="tk-appt-window__wrapper-actions__right" href="#">
+                <i class="close-icon" style="background-image: url({{&closeIcon}})"></i>
+            </a>
+        </div>
         <div class="tk-appt-window__wrapper-header__nav">
             <div class="tk-appt-window__wrapper-header__nav-point active"></div>
             <div class="tk-appt-window__wrapper-header__nav-line"></div>

@@ -8,12 +8,21 @@ class Config {
         this.defaultConfigs = require('../configs');
     }
 
-    getSession(key) {
-        return get(this.session, key);        
+    getSession(key, defaultValue) {
+        return get(this.session, key) || defaultValue;        
     }
 
     setSession(key, data) {
         this.session[key] = data;
+    }
+
+    destroySessions() {
+        this.session = {};
+        return this;
+    }
+
+    noSessions() {
+        return !this.getSession('service') && !this.getSession('location');
     }
 
     all() {
@@ -40,8 +49,16 @@ class Config {
     }
 
     setDefaults(configs) {
+        configs = this.prepareSessionConfigs(configs);
         configs.sdk = this.prepareSdkConfig(configs);
-        return merge({}, this.defaultConfigs.primary, configs);
+        return merge({}, this.defaultConfigs, configs);
+    }
+
+    prepareSessionConfigs(configs) {
+        if (configs.stratergy) {
+            this.setSession("stratergy", configs.stratergy);
+        }
+        return configs;
     }
 
     prepareSdkConfig(configs) {
@@ -54,7 +71,7 @@ class Config {
         if (configs.api_base_url) {
             configs.sdk.apiBaseUrl = configs.api_base_url;
         }
-        return merge({}, this.defaultConfigs.primary.sdk, configs.sdk);
+        return merge({}, this.defaultConfigs.sdk, configs.sdk);
     }
 }
 

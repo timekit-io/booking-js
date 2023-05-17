@@ -1,6 +1,6 @@
 const get = require("lodash/get");
-const BaseTemplate = require('../classes/base');
 
+const BaseTemplate = require('../classes/base');
 const BackIcon = require('!file-loader!../assets/icon_back.svg').default;
 const CloseIcon = require('!file-loader!../assets/icon_close.svg').default;
 
@@ -26,6 +26,8 @@ class CalendarWidgetPage extends BaseTemplate {
     
             const service = this.config.getSession('selectedService');
             const location = this.config.getSession('selectedLocation');
+
+            console.log(service, location);
             
             this.template.pageTarget = this.htmlToElement(template({
                 backIcon: BackIcon,
@@ -44,7 +46,7 @@ class CalendarWidgetPage extends BaseTemplate {
             });
         })
         .catch((response) => {
-            this.utils.doCallback('calendarInitFailed', response);
+            this.utils.doCallback('initCalendarFailed', response);
             this.template.triggerError([
                 'For given service and location calendar does not exists',
                 response,

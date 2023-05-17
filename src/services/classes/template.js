@@ -8,6 +8,8 @@ const LocationsPage = require('../pages/locations');
 const CalendarWidgetPage = require('../pages/calendar');
 
 const LogoIcon = require('!file-loader!../assets/logo.png').default;
+const BackIcon = require('!file-loader!../assets/icon_back.svg').default;
+const CloseIcon = require('!file-loader!../assets/icon_close.svg').default;
 
 require('../styles/base.scss');
 require('@fontsource/open-sans');
@@ -83,20 +85,14 @@ class Template extends BaseTemplate {
 
     initPage() {
         const defaultUI = this.config.get('defaultUI');
-        const service = this.config.getSession('selectedService');
-        const location = this.config.getSession('selectedLocation');
         const stratergy = this.config.getSession('stratergy', 'service');
 
         if (defaultUI) {
             if (stratergy === 'service') {
                 this.initServices();
-            }
-            if (stratergy === 'location') {
+            } else if (stratergy === 'location') {
                 this.initLocations();
-            }
-            if (stratergy === 'calendar') {
-                this.initCalendar(get(service, 'id'), get(location, 'id'));
-            }    
+            }   
         }
     }
 
@@ -126,7 +122,7 @@ class Template extends BaseTemplate {
 
         if (this.utils.isArray(message)) {
             messageProcessed = message[0];
-            if (message[1].data) {
+            if (message[1]?.data) {
                 contextProcessed = stringify(
                     message[1].data.errors || message[1].data.error || message[1].data
                 );
@@ -138,11 +134,14 @@ class Template extends BaseTemplate {
 		const template = require('../templates/error.html');
         this.errorTarget = this.htmlToElement(
 			template({
+                backIcon: BackIcon,
+                closeIcon: CloseIcon,
 				message: messageProcessed,
 				context: contextProcessed,
 			})
 		);
-		this.rootTarget.append(this.errorTarget);
+
+        this.renderAndInitActions(this.errorTarget, true);
 
         return message;
     }

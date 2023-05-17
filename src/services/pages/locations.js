@@ -66,8 +66,7 @@ class LocationsPage extends BaseTemplate {
                     }));
                     if (selectedService && selectedService.id) {
                         this.template.initCalendar(selectedService.id, wrapper.id);
-                    }
-                    else {
+                    } else {
                         this.template.initServices();
                     }
                 }
@@ -163,8 +162,14 @@ class LocationsPage extends BaseTemplate {
         const selectedServiceLocations = get(selectedService, 'locations', []);
 
         // when service is already selected in step-1
-        if (selectedServiceLocations.length > 0) {
-            this.renderElement(locations);
+        if (selectedService?.id) {
+            if (selectedServiceLocations.length > 0) {
+                this.renderElement(selectedServiceLocations);
+            } else {
+                this.template.triggerError([
+                    'No location found for service: ' + selectedService.name,
+                ]);
+            }
         }
 
         // when service is not selected and location is step-1

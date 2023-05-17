@@ -16,6 +16,11 @@ class Config {
         this.session[key] = data;
     }
 
+    destroySessions() {
+        this.session = {};
+        return this;
+    }
+
     all() {
         return this.config;        
     }

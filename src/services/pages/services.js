@@ -39,8 +39,7 @@ class ServicesPage extends BaseTemplate {
                     }));
                     if (selectedLocation && selectedLocation.id) {
                         this.template.initCalendar(wrapper.id, selectedLocation.id);
-                    }
-                    else {
+                    } else {
                         this.template.initLocations();
                     }    
                 }               
@@ -55,8 +54,14 @@ class ServicesPage extends BaseTemplate {
         const selectedLocationServices = get(selectedLocation, 'services', []);
         
         // when location is already selected in step-1
-        if (selectedLocationServices.length > 0) {
-            this.renderElement(selectedLocationServices);
+        if (selectedLocation?.id) {
+            if (selectedLocationServices.length > 0) {
+                this.renderElement(selectedLocationServices);
+            } else {
+                this.template.triggerError([
+                    'No services found for location: ' + selectedLocation.name,
+                ]);
+            }
         }
 
         // when location is not selected and service is step-1
@@ -67,7 +72,7 @@ class ServicesPage extends BaseTemplate {
             })
             .then(({ data: services }) => this.renderElement(services))
             .catch((response) => {
-                this.utils.doCallback('submitReschduleBookingFailed', response);
+                this.utils.doCallback('initServiceFailed', response);
                 this.template.triggerError([
                     'An error occurred fetching services',
                     response,

@@ -11,8 +11,10 @@ class BaseTemplate {
         return template.content.firstChild;
     }
 
-    renderAndInitActions(pageTarget) {
-        this.template.rootTarget.append(pageTarget);
+    renderAndInitActions(pageTarget, isTemplate = false) {
+        const templateObj = isTemplate ? this : this.template;
+
+        templateObj.rootTarget.append(pageTarget);
 
         const defaultOpt = this.config.get('stratergy');
         const stratergy = this.config.getSession('stratergy');
@@ -25,7 +27,6 @@ class BaseTemplate {
             aTag && aTag.addEventListener('click', (e) => {
                 e.preventDefault();
                 pageTarget.classList.toggle("hide");
-                console.log("I am here");
             });
         }
 
@@ -35,23 +36,22 @@ class BaseTemplate {
                 backIcon.classList.remove("show");
             }
             aTag && aTag.addEventListener('click', (e) => {
+                e.preventDefault();
+
                 const defaultOpt = this.config.get('stratergy');
-                const stratergy = this.config.getSession('stratergy');              
-                console.log(defaultOpt, stratergy);
+                const stratergy = this.config.getSession('stratergy');     
 
                 if (stratergy === 'service') {
                     this.config.setSession('stratergy', 'location');
                 } else if (stratergy === 'location') {
                     this.config.setSession('stratergy', 'service');
                 } else if(stratergy === 'calendar') {
-                    if (defaultOpt === "location") {
-                        this.config.setSession('stratergy', 'service');
-                    } else if (defaultOpt === "service") {
-                        this.config.setSession('stratergy', 'location');
-                    }
+                    this.config
+                        .destroySessions()
+                        .setSession('stratergy', defaultOpt);
                 }
-                this.template.initPage();
-                e.preventDefault();
+
+                templateObj.initPage();
             });
         }
     }

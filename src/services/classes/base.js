@@ -26,6 +26,10 @@ class BaseTemplate {
 
         const backIcon = pageTarget.querySelector('i.back-icon');
         const closeIcon = pageTarget.querySelector('i.close-icon');
+        
+        if (defaultOpt === stratergy && this.config.noSessions()) {
+            pageTarget.classList.add("hide");
+        }
 
         if (closeIcon) {
             const aTag = closeIcon.closest('a');

@@ -8,16 +8,24 @@
                 <i class="close-icon" style="background-image: url({{&closeIcon}})"></i>
             </a>
         </div>
-        <div class="tk-appt-window__wrapper-header__nav">
-            <div class="tk-appt-window__wrapper-header__nav-point active"></div>
-            <div class="tk-appt-window__wrapper-header__nav-line active"></div>
-            <div class="tk-appt-window__wrapper-header__nav-point active"></div>
-            <div class="tk-appt-window__wrapper-header__nav-line"></div>
-            <div class="tk-appt-window__wrapper-header__nav-point"></div>
-        </div>
-        
+
         {{#service}}
-            <div class="tk-appt-window__wrapper-header__selected">{{ service }}</div>
+            <div class="tk-appt-window__wrapper-header__nav">
+                <div class="tk-appt-window__wrapper-header__nav-point active"></div>
+                <div class="tk-appt-window__wrapper-header__nav-line active"></div>
+                <div class="tk-appt-window__wrapper-header__nav-point active"></div>
+                <div class="tk-appt-window__wrapper-header__nav-line"></div>
+                <div class="tk-appt-window__wrapper-header__nav-point"></div>
+            </div>
+        {{/service}}
+        {{^service}}
+            <div class="tk-appt-window__wrapper-header__nav">
+                <div class="tk-appt-window__wrapper-header__nav-point active"></div>
+                <div class="tk-appt-window__wrapper-header__nav-line"></div>
+                <div class="tk-appt-window__wrapper-header__nav-point"></div>
+                <div class="tk-appt-window__wrapper-header__nav-line"></div>
+                <div class="tk-appt-window__wrapper-header__nav-point"></div>
+            </div>
         {{/service}}
 
         <div class="tk-appt-window__wrapper-header__title">

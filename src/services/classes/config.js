@@ -21,6 +21,10 @@ class Config {
         return this;
     }
 
+    noSessions() {
+        return !this.getSession('service') && !this.getSession('location');
+    }
+
     all() {
         return this.config;        
     }

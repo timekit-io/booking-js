@@ -3,6 +3,7 @@ module.exports = {
   autoload: true,
   defaultUI: true,
   elBtn: '#tk-bot-btn',
+  stratergy: 'location',
   el: '#tk-appointments',
   sdk: {
     headers: {

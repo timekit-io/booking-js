@@ -78,11 +78,14 @@ class LocationsPage extends BaseTemplate {
         this.config.setSession('locations', locations);
 
         const template = require('../templates/locations.html');
+        const selectedService = this.config.getSession('selectedService');
+
         this.template.pageTarget = this.htmlToElement(template({
             backIcon: BackIcon,
             locations: locations,
             closeIcon: CloseIcon,
             searchIcon: SearchIcon,
+            service: selectedService,
             selectorOptions: this.config.get('selectorOptions.location'),
         }));    
 

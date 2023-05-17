@@ -18,10 +18,13 @@ class ServicesPage extends BaseTemplate {
         this.config.setSession('services', services);
 
         const template = require('../templates/services.html');
+        const selectedLocation = this.config.getSession('selectedLocation');
+
         this.template.pageTarget = this.htmlToElement(template({
             services,
             backIcon: BackIcon,
             closeIcon: CloseIcon,
+            location: selectedLocation,
             selectorOptions: this.config.get('selectorOptions.service')
         }));
 
